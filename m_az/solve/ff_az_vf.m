@@ -1,7 +1,10 @@
 %% ff_vf_az solves the one asset one shock asset problem
 function [mt_val, mt_pol_a, tb_valpol_iter] = ff_az_vf(varargin)
-
 %% Parameters Defaults
+% * it_param_set = 1: quick test
+% * it_param_set = 2: benchmark run
+% * it_param_set = 3: benchmark profile
+% * it_param_set = 4: press publish button
 it_param_set = 4;
 bl_input_override = true;
 [param_map, support_map] = ffs_az_set_default_param(it_param_set);
@@ -32,8 +35,9 @@ params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z'});
 params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons'});
 [f_util_log, f_util_crra, f_cons] = params_group{:};
 % param_map
-params_group = values(param_map, {'it_a_n', 'it_z_n', 'fl_crra', 'fl_beta', 'fl_c_min'});
-[it_a_n, it_z_n, fl_crra, fl_beta, fl_c_min] = params_group{:};
+params_group = values(param_map, {'fl_r_save', 'fl_r_borr', 'fl_w',...
+    'it_a_n', 'it_z_n', 'fl_crra', 'fl_beta', 'fl_c_min'});
+[fl_r_save, fl_r_borr, fl_wage, it_a_n, it_z_n, fl_crra, fl_beta, fl_c_min] = params_group{:};
 params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol', 'it_tol_pol_nochange'});
 [it_maxiter_val, fl_tol_val, fl_tol_pol, it_tol_pol_nochange] = params_group{:};
 % support_map
@@ -85,6 +89,7 @@ while bl_vfi_continue
             for it_ap_k = 1:length(ar_a)
                 fl_ap = ar_a(it_ap_k);
                 fl_c = f_cons(fl_z, fl_a, fl_ap);
+%                 fl_c = fl_z*fl_wage + fl_a.*((1+fl_r_save).*(b>0) + (1+fl_r_borr).*(b<=0)) - fl_ap;
                 
                 % current utility
                 if (fl_crra == 1)

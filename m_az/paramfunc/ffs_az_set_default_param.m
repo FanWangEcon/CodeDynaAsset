@@ -1,20 +1,33 @@
-%% Generating model default parameters
 function [param_map, support_map] = ffs_az_set_default_param(varargin)
-%% Defaults
-params_len = length(varargin);
-if params_len > 1
-    error('cm_test_a:TooManyOptionalParameters', ...
-        'allows at most 1 optional parameters');
-end
+%% FFS_AZ_SET_DEFAULT_PARAM setting model default parameters
+% two groups of default parameters stored in container maps
+%
+% @param it_subset integer default parameter control subsetting. it_subset = 1 is
+% basic invoke quick test. it_subset = 2 is main invoke. it_subset = 3 is
+% profiling invoke. it_subset = 4 is matlab publish. 
+%
+% @param bl_display_defparam boolean local printing
+%
+% @return param_map container parameters needed for solving the model
+%
+% @return support_map container programming control parameters like to graph to print etc
+%
+% @example
+%
+%   it_param_set = 1;
+%   [param_map, support_map] = ffs_az_set_default_param(it_param_set);
+%
+
+%% Default
 
 it_subset = 0;
-bl_graph_defparam = false;
 bl_display_defparam = false;
-default_params = {it_subset bl_graph_defparam bl_display_defparam};
-[default_params{1:params_len}] = varargin{:};
-[it_subset, bl_graph_defparam, bl_display_defparam] = default_params{:};
+default_params = {it_subset bl_display_defparam};
+[default_params{1:length(varargin)}] = varargin{:};
+[it_subset, bl_display_defparam] = default_params{:};
 
-%% Main Setting for param_map
+%% Setting param_map container
+
 param_map = containers.Map('KeyType','char', 'ValueType','any');
 % Preferences
 param_map('fl_crra') = 1.5;
@@ -44,7 +57,8 @@ param_map('fl_tol_val') = 10^-5;
 param_map('fl_tol_pol') = 10^-5;
 param_map('it_tol_pol_nochange') = 25; % number of iterations where policy does not change
 
-%% Setting for support_map
+%% Setting support_map container
+
 support_map = containers.Map('KeyType','char', 'ValueType','any');
 % root directory
 st_matimg_path_root = 'C:/Users/fan/CodeDynaAsset/m_az/';
@@ -88,7 +102,14 @@ support_map('st_img_suffix') = ['_p' num2str(it_subset) '.png'];
 support_map('bl_graph_funcgrids') = false;
 support_map('bl_display_funcgrids') = false;
 
-%% Subset Options, Basic Testing Options
+%% Subset Options
+%
+% # it_subset = 1 is basic invoke quick test
+% # it_subset = 2 is main invoke
+% # it_subset = 3 is profiling invoke
+% # it_subset = 4 is matlab publish. 
+%
+
 if (ismember(it_subset, [1,2,3,4]))
     if (ismember(it_subset, [1]))
         % TEST quick
@@ -125,6 +146,7 @@ if (ismember(it_subset, [1,2,3,4]))
 end
 
 %% Display
+
 if (bl_display_defparam)
     disp('param_map');
     disp(param_map);

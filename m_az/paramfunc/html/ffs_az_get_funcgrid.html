@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>ffs_az_get_funcgrid</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-05-27"><meta name="DC.source" content="ffs_az_get_funcgrid.m"><style type="text/css">
+      --><title>ffs_az_get_funcgrid</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-05-28"><meta name="DC.source" content="ffs_az_get_funcgrid.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,29 +66,26 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">Get Functions, and Asset and Shock Grids</a></li><li><a href="#2">Parse Parameter INputs if they exist</a></li><li><a href="#3">Defaults</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Asset and Choice Grid</a></li><li><a href="#6">Get Shock Grids</a></li><li><a href="#7">Get Equations</a></li><li><a href="#8">Store</a></li><li><a href="#9">Display</a></li></ul></div><h2 id="1">Get Functions, and Asset and Shock Grids</h2><pre class="codeinput"><span class="keyword">function</span> [armt_map, func_map] = ffs_az_get_funcgrid(varargin)
-</pre><h2 id="2">Parse Parameter INputs if they exist</h2><pre class="codeinput">params_len = length(varargin);
-<span class="keyword">if</span> params_len &gt; 3
-    error(<span class="string">'ffs_az_get_funcgrid:Can only have 3 container map parameters'</span>);
-<span class="keyword">end</span>
-
-bl_input_override = 0;
-<span class="keyword">if</span> (params_len == 3)
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">FFS_AZ_GET_FUNCGRID get funcs, params, states choices shocks grids</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Get Asset and Choice Grid</a></li><li><a href="#6">Get Shock Grids</a></li><li><a href="#7">Get Equations</a></li><li><a href="#8">Store</a></li><li><a href="#9">Display</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [armt_map, func_map] = ffs_az_get_funcgrid(varargin)
+</pre><h2 id="2">FFS_AZ_GET_FUNCGRID get funcs, params, states choices shocks grids</h2><p>centralized gateway for retrieving parameters, and solution grids and functions</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param bl_input_override boolean if true varargin contained param_map and support_map fully overrides local default. Local default is not invoked. This could be important for speed if this function is getting invoked within certain loops. Default is 0.</p><p>@return armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@return func_map container container with function handles for consumption cash-on-hand etc.</p><p>@example</p><pre>  it_param_set = 2;
+  bl_input_override = true;
+  [param_map, support_map] = ffs_az_set_default_param(it_param_set);
+  [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override);</pre><h2 id="3">Default</h2><pre class="codeinput">bl_input_override = 0;
+<span class="keyword">if</span> (length(varargin) == 3)
     bl_input_override = varargin{3};
 <span class="keyword">end</span>
-</pre><h2 id="3">Defaults</h2><pre class="codeinput"><span class="keyword">if</span> (bl_input_override)
-    <span class="comment">% this relies on externally generated parameters, defaults do not have to be generated</span>
-    <span class="comment">% if this file has to be invoked many times, then this saves time by avoiding</span>
-    <span class="comment">% regenerating defaults over and over again</span>
+<span class="keyword">if</span> (bl_input_override)
+    <span class="comment">% override when called from outside</span>
     [param_map, support_map, ~] = varargin{:};
 <span class="keyword">else</span>
+    <span class="comment">% default internal run</span>
     [param_map, support_map] = ffs_az_set_default_param();
     support_map(<span class="string">'bl_graph_funcgrids'</span>) = true;
     support_map(<span class="string">'bl_display_funcgrids'</span>) = true;
     default_maps = {param_map, support_map};
 
     <span class="comment">% numvarargs is the number of varagin inputted</span>
-    [default_maps{1:params_len}] = varargin{:};
+    [default_maps{1:length(varargin)}] = varargin{:};
     param_map = [param_map; default_maps{1}];
     support_map = [support_map; default_maps{2}];
 <span class="keyword">end</span>
@@ -98,12 +95,15 @@ bl_input_override = 0;
 params_group = values(param_map, {<span class="string">'fl_b_bd'</span>, <span class="string">'fl_a_min'</span>, <span class="string">'fl_a_max'</span>, <span class="string">'bl_loglin'</span>, <span class="string">'fl_loglin_threshold'</span>, <span class="string">'it_a_n'</span>});
 [fl_b_bd, fl_a_min, fl_a_max, bl_loglin, fl_loglin_threshold, it_a_n] = params_group{:};
 
-params_group = values(param_map, {<span class="string">'fl_crra'</span>, <span class="string">'fl_r_save'</span>, <span class="string">'fl_r_borr'</span>, <span class="string">'fl_w'</span>});
-[fl_crra, fl_r_save, fl_r_borr, fl_w] = params_group{:};
+params_group = values(param_map, {<span class="string">'fl_crra'</span>, <span class="string">'fl_c_min'</span>});
+[fl_crra, fl_c_min] = params_group{:};
+
+params_group = values(param_map, {<span class="string">'fl_r_save'</span>, <span class="string">'fl_r_borr'</span>, <span class="string">'fl_w'</span>});
+[fl_r_save, fl_r_borr, fl_w] = params_group{:};
 
 params_group = values(support_map, {<span class="string">'bl_graph_funcgrids'</span>, <span class="string">'bl_display_funcgrids'</span>});
 [bl_graph_funcgrids, bl_display_funcgrids] = params_group{:};
-</pre><h2 id="5">Asset and Choice Grid</h2><pre class="codeinput"><span class="keyword">if</span> (bl_loglin)
+</pre><h2 id="5">Get Asset and Choice Grid</h2><pre class="codeinput"><span class="keyword">if</span> (bl_loglin)
     <span class="comment">% C:\Users\fan\M4Econ\asset\grid\ff_grid_loglin.m</span>
     ar_a = fft_gen_grid_loglin(it_a_n, fl_a_max, fl_a_min, fl_loglin_threshold);
 <span class="keyword">else</span>
@@ -112,7 +112,7 @@ params_group = values(support_map, {<span class="string">'bl_graph_funcgrids'</s
     ar_a = sort(unique(ar_a));
 <span class="keyword">end</span>
 </pre><h2 id="6">Get Shock Grids</h2><pre class="codeinput">[~, mt_z_trans, ar_stationary, ar_z] = ffto_gen_tauchen_jhl(fl_z_mu,fl_z_rho,fl_z_sig,it_z_n);
-</pre><h2 id="7">Get Equations</h2><pre class="codeinput">[f_util_log, f_util_crra, f_inc, f_coh, f_cons] = ffs_az_set_functions(fl_crra, fl_r_save, fl_r_borr, fl_w);
+</pre><h2 id="7">Get Equations</h2><pre class="codeinput">[f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons] = ffs_az_set_functions(fl_crra, fl_c_min, fl_r_save, fl_r_borr, fl_w);
 </pre><h2 id="8">Store</h2><pre class="codeinput">armt_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
 armt_map(<span class="string">'ar_a'</span>) = ar_a;
 armt_map(<span class="string">'mt_z_trans'</span>) = mt_z_trans;
@@ -122,6 +122,7 @@ armt_map(<span class="string">'ar_z'</span>) = ar_z;
 func_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
 func_map(<span class="string">'f_util_log'</span>) = f_util_log;
 func_map(<span class="string">'f_util_crra'</span>) = f_util_crra;
+func_map(<span class="string">'f_util_standin'</span>) = f_util_standin;
 func_map(<span class="string">'f_inc'</span>) = f_inc;
 func_map(<span class="string">'f_coh'</span>) = f_coh;
 func_map(<span class="string">'f_cons'</span>) = f_cons;
@@ -135,7 +136,6 @@ func_map(<span class="string">'f_cons'</span>) = f_cons;
     disp(size(mt_z_trans));
     disp(mt_z_trans);
 
-
     param_map_keys = keys(func_map);
     param_map_vals = values(func_map);
     <span class="keyword">for</span> i = 1:length(func_map)
@@ -144,82 +144,53 @@ func_map(<span class="string">'f_cons'</span>) = f_cons;
     <span class="keyword">end</span>
 <span class="keyword">end</span>
 </pre><pre class="codeoutput">ar_z
-     1    15
+     1    11
 
   Columns 1 through 7
 
-    0.3474    0.4008    0.4623    0.5333    0.6152    0.7097    0.8186
+    0.3466    0.4234    0.5171    0.6316    0.7715    0.9423    1.1509
 
-  Columns 8 through 14
+  Columns 8 through 11
 
-    0.9444    1.0894    1.2567    1.4496    1.6723    1.9291    2.2253
-
-  Column 15
-
-    2.5670
+    1.4057    1.7169    2.0970    2.5613
 
 mt_z_trans
-    15    15
+    11    11
 
   Columns 1 through 7
 
-    0.2602    0.2683    0.2555    0.1492    0.0534    0.0117    0.0016
-    0.1123    0.1962    0.2763    0.2386    0.1263    0.0410    0.0081
-    0.0371    0.1049    0.2185    0.2790    0.2185    0.1049    0.0309
-    0.0092    0.0410    0.1263    0.2386    0.2763    0.1962    0.0854
-    0.0017    0.0117    0.0534    0.1492    0.2555    0.2683    0.1728
-    0.0002    0.0024    0.0165    0.0682    0.1728    0.2683    0.2555
-    0.0000    0.0004    0.0037    0.0228    0.0854    0.1962    0.2763
-    0.0000    0.0000    0.0006    0.0056    0.0309    0.1049    0.2185
-    0.0000    0.0000    0.0001    0.0010    0.0081    0.0410    0.1263
-    0.0000    0.0000    0.0000    0.0001    0.0016    0.0117    0.0534
-    0.0000    0.0000    0.0000    0.0000    0.0002    0.0024    0.0165
-    0.0000    0.0000    0.0000    0.0000    0.0000    0.0004    0.0037
-    0.0000    0.0000    0.0000    0.0000    0.0000    0.0000    0.0006
-    0.0000    0.0000    0.0000    0.0000    0.0000    0.0000    0.0001
-    0.0000    0.0000    0.0000    0.0000    0.0000    0.0000    0.0000
+    0.3085    0.3829    0.2417    0.0606    0.0060    0.0002    0.0000
+    0.0968    0.2853    0.3759    0.1974    0.0411    0.0034    0.0001
+    0.0179    0.1178    0.3245    0.3558    0.1553    0.0269    0.0018
+    0.0019    0.0269    0.1553    0.3558    0.3245    0.1178    0.0169
+    0.0001    0.0034    0.0411    0.1974    0.3759    0.2853    0.0861
+    0.0000    0.0002    0.0060    0.0606    0.2417    0.3829    0.2417
+    0.0000    0.0000    0.0005    0.0102    0.0861    0.2853    0.3759
+    0.0000    0.0000    0.0000    0.0009    0.0169    0.1178    0.3245
+    0.0000    0.0000    0.0000    0.0000    0.0018    0.0269    0.1553
+    0.0000    0.0000    0.0000    0.0000    0.0001    0.0034    0.0411
+    0.0000    0.0000    0.0000    0.0000    0.0000    0.0002    0.0060
 
-  Columns 8 through 14
+  Columns 8 through 11
 
-    0.0001    0.0000    0.0000    0.0000    0.0000    0.0000    0.0000
-    0.0010    0.0001    0.0000    0.0000    0.0000    0.0000    0.0000
-    0.0056    0.0006    0.0000    0.0000    0.0000    0.0000    0.0000
-    0.0228    0.0037    0.0004    0.0000    0.0000    0.0000    0.0000
-    0.0682    0.0165    0.0024    0.0002    0.0000    0.0000    0.0000
-    0.1492    0.0534    0.0117    0.0016    0.0001    0.0000    0.0000
-    0.2386    0.1263    0.0410    0.0081    0.0010    0.0001    0.0000
-    0.2790    0.2185    0.1049    0.0309    0.0056    0.0006    0.0000
-    0.2386    0.2763    0.1962    0.0854    0.0228    0.0037    0.0004
-    0.1492    0.2555    0.2683    0.1728    0.0682    0.0165    0.0024
-    0.0682    0.1728    0.2683    0.2555    0.1492    0.0534    0.0117
-    0.0228    0.0854    0.1962    0.2763    0.2386    0.1263    0.0410
-    0.0056    0.0309    0.1049    0.2185    0.2790    0.2185    0.1049
-    0.0010    0.0081    0.0410    0.1263    0.2386    0.2763    0.1962
-    0.0001    0.0016    0.0117    0.0534    0.1492    0.2555    0.2683
+    0.0000    0.0000    0.0000         0
+    0.0000    0.0000    0.0000    0.0000
+    0.0000    0.0000    0.0000    0.0000
+    0.0009    0.0000    0.0000    0.0000
+    0.0102    0.0005    0.0000    0.0000
+    0.0606    0.0060    0.0002    0.0000
+    0.1974    0.0411    0.0034    0.0001
+    0.3558    0.1553    0.0269    0.0019
+    0.3558    0.3245    0.1178    0.0179
+    0.1974    0.3759    0.2853    0.0968
+    0.0606    0.2417    0.3829    0.3085
 
-  Column 15
-
-         0
-    0.0000
-    0.0000
-    0.0000
-    0.0000
-    0.0000
-    0.0000
-    0.0000
-    0.0000
-    0.0002
-    0.0017
-    0.0092
-    0.0371
-    0.1123
-    0.2602
-
-pos = 1 ; key = f_coh ; val = @(z,b)(f_inc(z)+b.*(1+fl_r_save).*(b&gt;0)+b.*(1+fl_r_borr).*(b&lt;0))
-pos = 2 ; key = f_cons ; val = @(z,b,bprime)(f_coh(z,k,b)-bprime)
-pos = 3 ; key = f_inc ; val = @(z)(z*fl_wage)
+pos = 1 ; key = f_coh ; val = @(z,b)(z*fl_w+b.*(1+fl_r_save).*(b&gt;0)+b.*(1+fl_r_borr).*(b&lt;=0))
+pos = 2 ; key = f_cons ; val = @(z,b,bprime)(f_coh(z,b)-bprime)
+pos = 3 ; key = f_inc ; val = @(z,b)(z*fl_w+b.*(fl_r_save).*(b&gt;0)+b.*(fl_r_borr).*(b&lt;=0))
 pos = 4 ; key = f_util_crra ; val = @(c)(((c).^(1-fl_crra)-1)./(1-fl_crra))
 pos = 5 ; key = f_util_log ; val = @(c)log(c)
+pos = 6 ; key = f_util_standin ; val = @(z,b)f_util_log(f_coh(z,b).*(f_coh(z,b)&gt;0)+fl_c_min.*(f_coh(z,b)&lt;=0))
 </pre><pre class="codeinput"><span class="keyword">end</span>
 </pre><pre class="codeoutput">
 ans = 
@@ -232,36 +203,56 @@ ans =
 
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
-%% Get Functions, and Asset and Shock Grids
 function [armt_map, func_map] = ffs_az_get_funcgrid(varargin)
-%% Parse Parameter INputs if they exist
-params_len = length(varargin);
-if params_len > 3
-    error('ffs_az_get_funcgrid:Can only have 3 container map parameters');
-end
+%% FFS_AZ_GET_FUNCGRID get funcs, params, states choices shocks grids
+% centralized gateway for retrieving parameters, and solution grids and
+% functions
+%
+% @param param_map container parameter container
+%
+% @param support_map container support container
+%
+% @param bl_input_override boolean if true varargin contained param_map and
+% support_map fully overrides local default. Local default is not invoked.
+% This could be important for speed if this function is getting invoked
+% within certain loops. Default is 0.
+%
+% @return armt_map container container with states, choices and shocks
+% grids that are inputs for grid based solution algorithm
+%
+% @return func_map container container with function handles for
+% consumption cash-on-hand etc.
+%
+% @example
+%
+%    it_param_set = 2;
+%    bl_input_override = true;
+%    [param_map, support_map] = ffs_az_set_default_param(it_param_set);
+%    [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override);
+%
+
+%% Default
 
 bl_input_override = 0;
-if (params_len == 3)
+if (length(varargin) == 3)
     bl_input_override = varargin{3};
 end
-
-%% Defaults
 if (bl_input_override)
-    % this relies on externally generated parameters, defaults do not have to be generated
-    % if this file has to be invoked many times, then this saves time by avoiding
-    % regenerating defaults over and over again
+    % override when called from outside
     [param_map, support_map, ~] = varargin{:};
 else
+    % default internal run
     [param_map, support_map] = ffs_az_set_default_param();
     support_map('bl_graph_funcgrids') = true;
     support_map('bl_display_funcgrids') = true;
     default_maps = {param_map, support_map};
 
     % numvarargs is the number of varagin inputted
-    [default_maps{1:params_len}] = varargin{:};
+    [default_maps{1:length(varargin)}] = varargin{:};
     param_map = [param_map; default_maps{1}];
     support_map = [support_map; default_maps{2}];
 end
+
 %% Parse Parameters
 
 params_group = values(param_map, {'it_z_n', 'fl_z_mu', 'fl_z_rho', 'fl_z_sig'});
@@ -270,13 +261,17 @@ params_group = values(param_map, {'it_z_n', 'fl_z_mu', 'fl_z_rho', 'fl_z_sig'});
 params_group = values(param_map, {'fl_b_bd', 'fl_a_min', 'fl_a_max', 'bl_loglin', 'fl_loglin_threshold', 'it_a_n'});
 [fl_b_bd, fl_a_min, fl_a_max, bl_loglin, fl_loglin_threshold, it_a_n] = params_group{:};
 
-params_group = values(param_map, {'fl_crra', 'fl_r_save', 'fl_r_borr', 'fl_w'});
-[fl_crra, fl_r_save, fl_r_borr, fl_w] = params_group{:};
+params_group = values(param_map, {'fl_crra', 'fl_c_min'});
+[fl_crra, fl_c_min] = params_group{:};
+
+params_group = values(param_map, {'fl_r_save', 'fl_r_borr', 'fl_w'});
+[fl_r_save, fl_r_borr, fl_w] = params_group{:};
 
 params_group = values(support_map, {'bl_graph_funcgrids', 'bl_display_funcgrids'});
 [bl_graph_funcgrids, bl_display_funcgrids] = params_group{:};
 
-%% Asset and Choice Grid
+%% Get Asset and Choice Grid
+
 if (bl_loglin)
     % C:\Users\fan\M4Econ\asset\grid\ff_grid_loglin.m
     ar_a = fft_gen_grid_loglin(it_a_n, fl_a_max, fl_a_min, fl_loglin_threshold);
@@ -287,12 +282,15 @@ else
 end
 
 %% Get Shock Grids
+
 [~, mt_z_trans, ar_stationary, ar_z] = ffto_gen_tauchen_jhl(fl_z_mu,fl_z_rho,fl_z_sig,it_z_n);
 
 %% Get Equations
-[f_util_log, f_util_crra, f_inc, f_coh, f_cons] = ffs_az_set_functions(fl_crra, fl_r_save, fl_r_borr, fl_w);
+
+[f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons] = ffs_az_set_functions(fl_crra, fl_c_min, fl_r_save, fl_r_borr, fl_w);
 
 %% Store
+
 armt_map = containers.Map('KeyType','char', 'ValueType','any');
 armt_map('ar_a') = ar_a;
 armt_map('mt_z_trans') = mt_z_trans;
@@ -302,22 +300,23 @@ armt_map('ar_z') = ar_z;
 func_map = containers.Map('KeyType','char', 'ValueType','any');
 func_map('f_util_log') = f_util_log;
 func_map('f_util_crra') = f_util_crra;
+func_map('f_util_standin') = f_util_standin;
 func_map('f_inc') = f_inc;
 func_map('f_coh') = f_coh;
 func_map('f_cons') = f_cons;
 
 %% Display
+
 if (bl_display_funcgrids)
-    
+
     disp('ar_z');
     disp(size(ar_z));
     disp(ar_z);
-    
+
     disp('mt_z_trans');
     disp(size(mt_z_trans));
     disp(mt_z_trans);
-    
-    
+
     param_map_keys = keys(func_map);
     param_map_vals = values(func_map);
     for i = 1:length(func_map)

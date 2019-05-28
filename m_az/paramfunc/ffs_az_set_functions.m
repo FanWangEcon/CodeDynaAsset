@@ -1,35 +1,56 @@
-%% Generating model functions
 function [f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons] = ffs_az_set_functions(varargin)
+%% FFS_AZ_SET_FUNCTIONS setting model functions
+% define functions here to avoid copy paste mistakes
+%
+% @param fl_crra float crra utility
+%
+% @param fl_c_min float minimum consumption
+%
+% @param fl_r_save float savings interest rate
+%
+% @param fl_r_borr float borrowing interest rate
+%
+% @param fl_w float wage rate
+%
+% @return f_util_log handle log utility
+%
+% @return f_util_crra handle crra utility general
+%
+% @return f_util_standin handle log utility with coh for testing graphing codes
+%
+% @return f_inc income handle equation wage and interests
+%
+% @return f_coh handle cash on hand equation given current period shock
+%
+% @return f_cons handle consumption equation given coh and asset choice
+%
 % @example
-% [f_util, fl_u_neg_c, f_prod, f_coh, f_cons, f_v] = equa_owkbz(fl_crra, fl_u_neg_c, ...
-%            fl_Amean, fl_alpha, fl_delta, fl_r, ...
-%            fl_v_alpha, fl_v_beta, fl_b_bd)
+%
+%   [f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons] = ...
+%        ffs_az_set_functions(fl_crra, fl_c_min, fl_r_save, fl_r_borr, fl_w);
+%
 
-%% Catch Error
-optional_params_len = length(varargin);
-if optional_params_len > 10
-    error('grid_wkb:TooManyOptionalParameters', ...
-        'allows at most 10 optional parameters');
-end
+%% Default
 
-%% Default Parameters
 [fl_crra, fl_c_min] = deal(1, 0.001);
-[fl_r_save, fl_r_borr, fl_wage] = deal(0.02, 0.02, 1.23);
-optional_params = {fl_crra fl_c_min fl_r_save fl_r_borr fl_wage};
+[fl_r_save, fl_r_borr, fl_w] = deal(0.02, 0.02, 1.23);
+default_params = {fl_crra fl_c_min fl_r_save fl_r_borr fl_w};
 
 %% Parse Parameters
+
 % numvarargs is the number of varagin inputted
-[optional_params{1:optional_params_len}] = varargin{:};
-[fl_crra, fl_c_min, fl_r_save, fl_r_borr, fl_wage] = optional_params{:};
+[default_params{1:length(varargin)}] = varargin{:};
+[fl_crra, fl_c_min, fl_r_save, fl_r_borr, fl_w] = default_params{:};
 
 %% Equations
+
 % utility
 f_util_log = @(c) log(c);
 f_util_crra = @(c) (((c).^(1-fl_crra)-1)./(1-fl_crra));
 % Production Function
-f_inc = @(z, b) (z*fl_wage + b.*(fl_r_save).*(b>0) + b.*(fl_r_borr).*(b<=0)); % z already exp
+f_inc = @(z, b) (z*fl_w + b.*(fl_r_save).*(b>0) + b.*(fl_r_borr).*(b<=0)); % z already exp
 % Cash on Hand, b is principle and interest
-f_coh = @(z, b) (z*fl_wage + b.*(1+fl_r_save).*(b>0) + b.*(1+fl_r_borr).*(b<=0));
+f_coh = @(z, b) (z*fl_w + b.*(1+fl_r_save).*(b>0) + b.*(1+fl_r_borr).*(b<=0));
 % Simple Consumption b and k
 f_cons = @(z, b, bprime) (f_coh(z, b) - bprime);
 % Simple Consumption b and k
