@@ -1,0 +1,332 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>ffs_az_get_funcgrid</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-05-27"><meta name="DC.source" content="ffs_az_get_funcgrid.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">Get Functions, and Asset and Shock Grids</a></li><li><a href="#2">Parse Parameter INputs if they exist</a></li><li><a href="#3">Defaults</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Asset and Choice Grid</a></li><li><a href="#6">Get Shock Grids</a></li><li><a href="#7">Get Equations</a></li><li><a href="#8">Store</a></li><li><a href="#9">Display</a></li></ul></div><h2 id="1">Get Functions, and Asset and Shock Grids</h2><pre class="codeinput"><span class="keyword">function</span> [armt_map, func_map] = ffs_az_get_funcgrid(varargin)
+</pre><h2 id="2">Parse Parameter INputs if they exist</h2><pre class="codeinput">params_len = length(varargin);
+<span class="keyword">if</span> params_len &gt; 3
+    error(<span class="string">'ffs_az_get_funcgrid:Can only have 3 container map parameters'</span>);
+<span class="keyword">end</span>
+
+bl_input_override = 0;
+<span class="keyword">if</span> (params_len == 3)
+    bl_input_override = varargin{3};
+<span class="keyword">end</span>
+</pre><h2 id="3">Defaults</h2><pre class="codeinput"><span class="keyword">if</span> (bl_input_override)
+    <span class="comment">% this relies on externally generated parameters, defaults do not have to be generated</span>
+    <span class="comment">% if this file has to be invoked many times, then this saves time by avoiding</span>
+    <span class="comment">% regenerating defaults over and over again</span>
+    [param_map, support_map, ~] = varargin{:};
+<span class="keyword">else</span>
+    [param_map, support_map] = ffs_az_set_default_param();
+    support_map(<span class="string">'bl_graph_funcgrids'</span>) = true;
+    support_map(<span class="string">'bl_display_funcgrids'</span>) = true;
+    default_maps = {param_map, support_map};
+
+    <span class="comment">% numvarargs is the number of varagin inputted</span>
+    [default_maps{1:params_len}] = varargin{:};
+    param_map = [param_map; default_maps{1}];
+    support_map = [support_map; default_maps{2}];
+<span class="keyword">end</span>
+</pre><h2 id="4">Parse Parameters</h2><pre class="codeinput">params_group = values(param_map, {<span class="string">'it_z_n'</span>, <span class="string">'fl_z_mu'</span>, <span class="string">'fl_z_rho'</span>, <span class="string">'fl_z_sig'</span>});
+[it_z_n, fl_z_mu, fl_z_rho, fl_z_sig] = params_group{:};
+
+params_group = values(param_map, {<span class="string">'fl_b_bd'</span>, <span class="string">'fl_a_min'</span>, <span class="string">'fl_a_max'</span>, <span class="string">'bl_loglin'</span>, <span class="string">'fl_loglin_threshold'</span>, <span class="string">'it_a_n'</span>});
+[fl_b_bd, fl_a_min, fl_a_max, bl_loglin, fl_loglin_threshold, it_a_n] = params_group{:};
+
+params_group = values(param_map, {<span class="string">'fl_crra'</span>, <span class="string">'fl_r_save'</span>, <span class="string">'fl_r_borr'</span>, <span class="string">'fl_w'</span>});
+[fl_crra, fl_r_save, fl_r_borr, fl_w] = params_group{:};
+
+params_group = values(support_map, {<span class="string">'bl_graph_funcgrids'</span>, <span class="string">'bl_display_funcgrids'</span>});
+[bl_graph_funcgrids, bl_display_funcgrids] = params_group{:};
+</pre><h2 id="5">Asset and Choice Grid</h2><pre class="codeinput"><span class="keyword">if</span> (bl_loglin)
+    <span class="comment">% C:\Users\fan\M4Econ\asset\grid\ff_grid_loglin.m</span>
+    ar_a = fft_gen_grid_loglin(it_a_n, fl_a_max, fl_a_min, fl_loglin_threshold);
+<span class="keyword">else</span>
+    ar_a = linspace(fl_b_bd, fl_a_max, it_a_n);
+    ar_a = [0 ar_a];
+    ar_a = sort(unique(ar_a));
+<span class="keyword">end</span>
+</pre><h2 id="6">Get Shock Grids</h2><pre class="codeinput">[~, mt_z_trans, ar_stationary, ar_z] = ffto_gen_tauchen_jhl(fl_z_mu,fl_z_rho,fl_z_sig,it_z_n);
+</pre><h2 id="7">Get Equations</h2><pre class="codeinput">[f_util_log, f_util_crra, f_inc, f_coh, f_cons] = ffs_az_set_functions(fl_crra, fl_r_save, fl_r_borr, fl_w);
+</pre><h2 id="8">Store</h2><pre class="codeinput">armt_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
+armt_map(<span class="string">'ar_a'</span>) = ar_a;
+armt_map(<span class="string">'mt_z_trans'</span>) = mt_z_trans;
+armt_map(<span class="string">'ar_stationary'</span>) = ar_stationary;
+armt_map(<span class="string">'ar_z'</span>) = ar_z;
+
+func_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
+func_map(<span class="string">'f_util_log'</span>) = f_util_log;
+func_map(<span class="string">'f_util_crra'</span>) = f_util_crra;
+func_map(<span class="string">'f_inc'</span>) = f_inc;
+func_map(<span class="string">'f_coh'</span>) = f_coh;
+func_map(<span class="string">'f_cons'</span>) = f_cons;
+</pre><h2 id="9">Display</h2><pre class="codeinput"><span class="keyword">if</span> (bl_display_funcgrids)
+
+    disp(<span class="string">'ar_z'</span>);
+    disp(size(ar_z));
+    disp(ar_z);
+
+    disp(<span class="string">'mt_z_trans'</span>);
+    disp(size(mt_z_trans));
+    disp(mt_z_trans);
+
+
+    param_map_keys = keys(func_map);
+    param_map_vals = values(func_map);
+    <span class="keyword">for</span> i = 1:length(func_map)
+        st_display = strjoin([<span class="string">'pos ='</span> num2str(i) <span class="string">'; key ='</span> string(param_map_keys{i}) <span class="string">'; val ='</span> func2str(param_map_vals{i})]);
+        disp(st_display);
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">ar_z
+     1    15
+
+  Columns 1 through 7
+
+    0.3474    0.4008    0.4623    0.5333    0.6152    0.7097    0.8186
+
+  Columns 8 through 14
+
+    0.9444    1.0894    1.2567    1.4496    1.6723    1.9291    2.2253
+
+  Column 15
+
+    2.5670
+
+mt_z_trans
+    15    15
+
+  Columns 1 through 7
+
+    0.2602    0.2683    0.2555    0.1492    0.0534    0.0117    0.0016
+    0.1123    0.1962    0.2763    0.2386    0.1263    0.0410    0.0081
+    0.0371    0.1049    0.2185    0.2790    0.2185    0.1049    0.0309
+    0.0092    0.0410    0.1263    0.2386    0.2763    0.1962    0.0854
+    0.0017    0.0117    0.0534    0.1492    0.2555    0.2683    0.1728
+    0.0002    0.0024    0.0165    0.0682    0.1728    0.2683    0.2555
+    0.0000    0.0004    0.0037    0.0228    0.0854    0.1962    0.2763
+    0.0000    0.0000    0.0006    0.0056    0.0309    0.1049    0.2185
+    0.0000    0.0000    0.0001    0.0010    0.0081    0.0410    0.1263
+    0.0000    0.0000    0.0000    0.0001    0.0016    0.0117    0.0534
+    0.0000    0.0000    0.0000    0.0000    0.0002    0.0024    0.0165
+    0.0000    0.0000    0.0000    0.0000    0.0000    0.0004    0.0037
+    0.0000    0.0000    0.0000    0.0000    0.0000    0.0000    0.0006
+    0.0000    0.0000    0.0000    0.0000    0.0000    0.0000    0.0001
+    0.0000    0.0000    0.0000    0.0000    0.0000    0.0000    0.0000
+
+  Columns 8 through 14
+
+    0.0001    0.0000    0.0000    0.0000    0.0000    0.0000    0.0000
+    0.0010    0.0001    0.0000    0.0000    0.0000    0.0000    0.0000
+    0.0056    0.0006    0.0000    0.0000    0.0000    0.0000    0.0000
+    0.0228    0.0037    0.0004    0.0000    0.0000    0.0000    0.0000
+    0.0682    0.0165    0.0024    0.0002    0.0000    0.0000    0.0000
+    0.1492    0.0534    0.0117    0.0016    0.0001    0.0000    0.0000
+    0.2386    0.1263    0.0410    0.0081    0.0010    0.0001    0.0000
+    0.2790    0.2185    0.1049    0.0309    0.0056    0.0006    0.0000
+    0.2386    0.2763    0.1962    0.0854    0.0228    0.0037    0.0004
+    0.1492    0.2555    0.2683    0.1728    0.0682    0.0165    0.0024
+    0.0682    0.1728    0.2683    0.2555    0.1492    0.0534    0.0117
+    0.0228    0.0854    0.1962    0.2763    0.2386    0.1263    0.0410
+    0.0056    0.0309    0.1049    0.2185    0.2790    0.2185    0.1049
+    0.0010    0.0081    0.0410    0.1263    0.2386    0.2763    0.1962
+    0.0001    0.0016    0.0117    0.0534    0.1492    0.2555    0.2683
+
+  Column 15
+
+         0
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0002
+    0.0017
+    0.0092
+    0.0371
+    0.1123
+    0.2602
+
+pos = 1 ; key = f_coh ; val = @(z,b)(f_inc(z)+b.*(1+fl_r_save).*(b&gt;0)+b.*(1+fl_r_borr).*(b&lt;0))
+pos = 2 ; key = f_cons ; val = @(z,b,bprime)(f_coh(z,k,b)-bprime)
+pos = 3 ; key = f_inc ; val = @(z)(z*fl_wage)
+pos = 4 ; key = f_util_crra ; val = @(c)(((c).^(1-fl_crra)-1)./(1-fl_crra))
+pos = 5 ; key = f_util_log ; val = @(c)log(c)
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><pre class="codeoutput">
+ans = 
+
+  Map with properties:
+
+        Count: 4
+      KeyType: char
+    ValueType: any
+
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Get Functions, and Asset and Shock Grids
+function [armt_map, func_map] = ffs_az_get_funcgrid(varargin)
+%% Parse Parameter INputs if they exist
+params_len = length(varargin);
+if params_len > 3
+    error('ffs_az_get_funcgrid:Can only have 3 container map parameters');
+end
+
+bl_input_override = 0;
+if (params_len == 3)
+    bl_input_override = varargin{3};
+end
+
+%% Defaults
+if (bl_input_override)
+    % this relies on externally generated parameters, defaults do not have to be generated
+    % if this file has to be invoked many times, then this saves time by avoiding
+    % regenerating defaults over and over again
+    [param_map, support_map, ~] = varargin{:};
+else
+    [param_map, support_map] = ffs_az_set_default_param();
+    support_map('bl_graph_funcgrids') = true;
+    support_map('bl_display_funcgrids') = true;
+    default_maps = {param_map, support_map};
+
+    % numvarargs is the number of varagin inputted
+    [default_maps{1:params_len}] = varargin{:};
+    param_map = [param_map; default_maps{1}];
+    support_map = [support_map; default_maps{2}];
+end
+%% Parse Parameters
+
+params_group = values(param_map, {'it_z_n', 'fl_z_mu', 'fl_z_rho', 'fl_z_sig'});
+[it_z_n, fl_z_mu, fl_z_rho, fl_z_sig] = params_group{:};
+
+params_group = values(param_map, {'fl_b_bd', 'fl_a_min', 'fl_a_max', 'bl_loglin', 'fl_loglin_threshold', 'it_a_n'});
+[fl_b_bd, fl_a_min, fl_a_max, bl_loglin, fl_loglin_threshold, it_a_n] = params_group{:};
+
+params_group = values(param_map, {'fl_crra', 'fl_r_save', 'fl_r_borr', 'fl_w'});
+[fl_crra, fl_r_save, fl_r_borr, fl_w] = params_group{:};
+
+params_group = values(support_map, {'bl_graph_funcgrids', 'bl_display_funcgrids'});
+[bl_graph_funcgrids, bl_display_funcgrids] = params_group{:};
+
+%% Asset and Choice Grid
+if (bl_loglin)
+    % C:\Users\fan\M4Econ\asset\grid\ff_grid_loglin.m
+    ar_a = fft_gen_grid_loglin(it_a_n, fl_a_max, fl_a_min, fl_loglin_threshold);
+else
+    ar_a = linspace(fl_b_bd, fl_a_max, it_a_n);
+    ar_a = [0 ar_a];
+    ar_a = sort(unique(ar_a));
+end
+
+%% Get Shock Grids
+[~, mt_z_trans, ar_stationary, ar_z] = ffto_gen_tauchen_jhl(fl_z_mu,fl_z_rho,fl_z_sig,it_z_n);
+
+%% Get Equations
+[f_util_log, f_util_crra, f_inc, f_coh, f_cons] = ffs_az_set_functions(fl_crra, fl_r_save, fl_r_borr, fl_w);
+
+%% Store
+armt_map = containers.Map('KeyType','char', 'ValueType','any');
+armt_map('ar_a') = ar_a;
+armt_map('mt_z_trans') = mt_z_trans;
+armt_map('ar_stationary') = ar_stationary;
+armt_map('ar_z') = ar_z;
+
+func_map = containers.Map('KeyType','char', 'ValueType','any');
+func_map('f_util_log') = f_util_log;
+func_map('f_util_crra') = f_util_crra;
+func_map('f_inc') = f_inc;
+func_map('f_coh') = f_coh;
+func_map('f_cons') = f_cons;
+
+%% Display
+if (bl_display_funcgrids)
+    
+    disp('ar_z');
+    disp(size(ar_z));
+    disp(ar_z);
+    
+    disp('mt_z_trans');
+    disp(size(mt_z_trans));
+    disp(mt_z_trans);
+    
+    
+    param_map_keys = keys(func_map);
+    param_map_vals = values(func_map);
+    for i = 1:length(func_map)
+        st_display = strjoin(['pos =' num2str(i) '; key =' string(param_map_keys{i}) '; val =' func2str(param_map_vals{i})]);
+        disp(st_display);
+    end
+end
+
+end
+
+##### SOURCE END #####
+--></body></html>

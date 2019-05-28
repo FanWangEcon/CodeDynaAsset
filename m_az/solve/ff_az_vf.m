@@ -1,155 +1,179 @@
 %% ff_vf_az solves the one asset one shock asset problem
-function [mt_val, mt_pol, flag] = ff_az_vf(varargin)
+function [mt_val, mt_pol_a, tb_valpol_iter] = ff_az_vf(varargin)
 
-%% Check Parameters
-params_len = length(varargin);
-if params_len > 4
-    error('ff_az_vf:Can only have 4 container map parameters');
-end
+%% Parameters Defaults
+it_param_set = 4;
+bl_input_override = true;
+[param_map, support_map] = ffs_az_set_default_param(it_param_set);
+[armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
+default_params = {param_map support_map armt_map func_map};
 
-%% Parameters  Defaults
-it_param_set = 1;
-[param_map, support_map] = ffs_az_default_param(it_param_set);
-[armt_map] = ffs_az_grids(param_map, support_map);
-default_params = {param_map support_map armt_map};
-
-%% Override
+%% Update Defaults with Varargins
 % if varargin only has param_map and support_map,
-[default_maps{1:params_len}] = varargin{:};
-param_map = [param_map; default_maps{1}];
-support_map = [support_map; default_maps{2}];
+params_len = length(varargin);
+[default_params{1:params_len}] = varargin{:};
+param_map = [param_map; default_params{1}];
+support_map = [support_map; default_params{2}];
 if params_len >= 1 && params_len <= 2
-    [armt_map, func_map] = get_grid_func(param_map, support_map);
+    % If override param_map, re-generate armt and func if they are not
+    % provided
+    [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, 1);
 else
+    % Override all
     armt_map = [armt_map; default_params{3}];
     func_map = [func_map; default_params{4}];
 end
 
-%% Retrieve Parameters from Map
-params_group = values(param_map, {'fl_crra', 'fl_beta', 'fl_rho', 'fl_sig'});
-[fl_crra, fl_beta, fl_rho, fl_sig] = params_group{:};
-params_group = values(param_map, {'it_z_n', 'fl_z_mu', 'fl_z_rho', 'fl_z_sig', 'ar_z', 'mt_z_trans'});
-[it_z_n, ar_z, mt_z_trans] = params_group{:};
-params_group = values(param_map, {'it_a_n', 'ar_a'});
-[it_a_n, ar_a] = params_group{:};
-params_group = values(param_map, {'fl_w', 'fl_r'});
-[fl_w, fl_r] = params_group{:};
-params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol'});
-[it_maxiter_val, fl_tol_val, fl_tol_pol] = params_group{:};
-
-% support
-params_group = values(support_map, {'bl_display', 'bl_graph', 'bl_graph_onebyones'});
-[bl_display, bl_graph, bl_graph_onebyones] = params_group{:};
-params_group = values(support_map, {'bl_time', 'bl_profile', 'st_profile_path'});
-[bl_time, bl_profile, st_profile_path] = params_group{:};
-
+%% Get Values from Keys
+% armt_map
+params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z'});
+[ar_a, mt_z_trans, ar_z] = params_group{:};
+% func_map
+params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons'});
+[f_util_log, f_util_crra, f_cons] = params_group{:};
+% param_map
+params_group = values(param_map, {'it_a_n', 'it_z_n', 'fl_crra', 'fl_beta', 'fl_c_min'});
+[it_a_n, it_z_n, fl_crra, fl_beta, fl_c_min] = params_group{:};
+params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol', 'it_tol_pol_nochange'});
+[it_maxiter_val, fl_tol_val, fl_tol_pol, it_tol_pol_nochange] = params_group{:};
+% support_map
+params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
+    'st_profile_prefix', 'st_profile_name_main', 'st_profile_suffix',...
+    'bl_time', 'bl_display', 'it_display_every', 'bl_post'});
+[bl_profile, st_profile_path, ...
+    st_profile_prefix, st_profile_name_main, st_profile_suffix, ...
+    bl_time, bl_display, it_display_every, bl_post] = params_group{:};
 
 %% Profiling start
-bl_profile = true;
 if (bl_profile)
     close all;
     profile off;
     profile on;
 end
 
-
 %% Initialize value and policy function
-mt_val0 = zeros(length(ar_a),length(ar_z));
-mt_val1 = mt_val0;
-mt_pol1 = zeros(length(ar_a),length(ar_z));
+mt_val_cur = zeros(length(ar_a),length(ar_z));
+mt_val = mt_val_cur - 1;
+mt_pol_a = zeros(length(ar_a),length(ar_z));
+mt_pol_a_cur = mt_pol_a - 1;
 
-fl_diff = 1;
-it_iter = 1;
-
-%% Define Equations and Parameters
-f_cons = @(z, a, aprime)(fl_w*z + (1+fl_r)*a - aprime);
-f_incm = @(z, a)        (fl_w*z + fl_r*a);
-f_util = @(c)           ((c)^(1-fl_crra)-1)/(1-fl_crra);
-u_neg_c = -1000;
+%% Initialize
+bl_vfi_continue = true;
+it_iter = 0;
+ar_val_diff_norm = zeros([it_maxiter_val, 1]);
+ar_pol_diff_norm = zeros([it_maxiter_val, 1]);
+ar_pol_perc_change = zeros([it_maxiter_val, it_z_n]);
 
 %% Timing Starts
-if (bl_time_vf_okz); tic; end
-%% Loop Solution
-while fl_diff > fl_tol_val && it_iter <= it_maxiter_val
-    for i = 1:length(ar_z) %outer loop- current z
-        z = ar_z(i);
-        for j = 1:length(ar_a) %first inner loop - current assets
-            a = ar_a(j);
-            vnew = zeros(size(ar_a));
-            for x = 1:length(ar_a) %second inner loop - chosen a
-                aprime = ar_a(x);
-%                 c = (fl_w*z + (1+fl_r)*a - aprime);
-%                 c = cons_az(fl_w, fl_r, a, z, aprime);
-                  c = f_cons(z, a, aprime);
-                if c > 0
-					if (fl_crra == 1)
-						vnew(x) = log(c);
-					else
-						vnew(x) = f_util(c);
-					end
-                    for y = 1:length(ar_z)
-                        vnew(x) = vnew(x) + fl_beta*mt_z_trans(i,y)*mt_val0(x,y);
-                    end
+if (bl_time); tic; end
+
+%% Value Function Iteration
+while bl_vfi_continue
+    it_iter = it_iter + 1;
+    
+    %% Loop solution with 4 nested loops
+    % loop 1: over exogenous states
+    for it_z_i = 1:length(ar_z)
+        fl_z = ar_z(it_z_i);
+        
+        % loop 2: over endogenous states
+        for it_a_j = 1:length(ar_a)
+            fl_a = ar_a(it_a_j);
+            ar_val_cur = zeros(size(ar_a));
+            
+            % loop 3: over choices
+            for it_ap_k = 1:length(ar_a)
+                fl_ap = ar_a(it_ap_k);
+                fl_c = f_cons(fl_z, fl_a, fl_ap);
+                
+                % current utility
+                if (fl_crra == 1)
+                    ar_val_cur(it_ap_k) = f_util_log(fl_c);
+                    fl_u_neg_c = f_util_log(fl_c_min);
                 else
-                    vnew(x) = u_neg_c;
+                    ar_val_cur(it_ap_k) = f_util_crra(fl_c);
+                    fl_u_neg_c = f_util_crra(fl_c_min);
                 end
+                
+                % loop 4: add future utility, integration--loop over future shocks
+                for y = 1:length(ar_z)
+                    ar_val_cur(it_ap_k) = ar_val_cur(it_ap_k) + fl_beta*mt_z_trans(it_z_i,y)*mt_val_cur(it_ap_k,y);
+                end
+                
+                % Replace if negative consumption
+                if fl_c <= 0
+                    ar_val_cur(it_ap_k) = fl_u_neg_c;
+                end
+                
             end
-            max_a_position = find(vnew == max(vnew));
-            mt_val1(j,i) = vnew(max_a_position(1));
-            mt_pol1(j,i) = ar_a(max_a_position(1));
+            
+            % maximization over loop 3 choices for loop 1+2 states
+            it_max_lin_idx = find(ar_val_cur == max(ar_val_cur));
+            mt_val(it_a_j,it_z_i) = ar_val_cur(it_max_lin_idx(1));
+            mt_pol_a(it_a_j,it_z_i) = ar_a(it_max_lin_idx(1));
+            
         end
     end
-    it_iter = it_iter + 1;
-    fl_diff = norm(mt_val1 - mt_val0);
-    mt_val0 = mt_val1;
+    
+    %% Tolerance and Continuation
+    
+    % Difference across iterations
+    ar_val_diff_norm(it_iter) = norm(mt_val - mt_val_cur);
+    ar_pol_diff_norm(it_iter) = norm(mt_pol_a - mt_pol_a_cur);
+    ar_pol_perc_change(it_iter, :) = sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n);
+    
+    % Update
+    mt_val_cur = mt_val;
+    mt_pol_a_cur = mt_pol_a;
+    
+    % Print Iteration Results
+    if (bl_display && (rem(it_iter, it_display_every)==0))
+        fprintf('VAL it_iter:%d, fl_diff:%d, fl_diff_pol:%d\n', ...
+            it_iter, ar_val_diff_norm(it_iter), ar_pol_diff_norm(it_iter));
+        tb_valpol_iter = array2table([mean(mt_val_cur,1); mean(mt_pol_a_cur,1); ...
+            mt_val_cur(it_a_n,:); mt_pol_a_cur(it_a_n,:)]);
+        tb_valpol_iter.Properties.VariableNames = strcat('z', string((1:size(mt_val_cur,2))));
+        tb_valpol_iter.Properties.RowNames = {'mval', 'mkap', 'Hval', 'Hpol'};
+        disp(tb_valpol_iter);
+    end
+    
+    % Continuation Conditions:
+    % 1. if value function convergence criteria reached
+    % 2. if policy function variation over iterations is less than
+    % threshold
+    if (it_iter == (it_maxiter_val + 1))
+        bl_vfi_continue = false;
+    elseif ((it_iter == it_maxiter_val) || ...
+            (ar_val_diff_norm(it_iter) < fl_tol_val) || ...
+            (sum(ar_pol_diff_norm(max(1, it_iter-it_tol_pol_nochange):it_iter)) < fl_tol_pol))
+        % Fix to max, run again to save results if needed
+        it_iter = it_maxiter_val;
+        it_iter_last = it_iter;
+    end
+    
 end
-
-%% Outputs
-[mt_val, mt_pol] = deal(mt_val1, mt_pol1);
-if (support_map('bl_save_mat_vfi'))
-    % use broadcasting
-    ar_a_mby1 = reshape(ar_a, [length(ar_a), 1]);
-    ar_z_1byn = reshape(ar_z, [1, length(ar_z)]);
-    mt_cons = f_cons(ar_z_1byn, ar_a_mby1, mt_pol);
-    mt_incm = f_incm(ar_z_1byn, ar_a_mby1);
-%     mt_cons = cons_az(fl_w, fl_r, ar_a_mby1, ar_z_1byn, mt_pol);
-%     mt_incm = incm_az(fl_w, fl_r, ar_a_mby1, ar_z_1byn);
-end
-
-%% Flag
-if fl_diff <= fl_tol_val && it_iter > it_maxiter_val
-%     tolerance did not reach, iteration bound reached
-    flag = 1;
-elseif fl_diff > fl_tol_val && it_iter <= it_maxiter_val
-%     tolerance reached, iter bound did not reach
-    flag = 2;
-else
-%     both reached
-    flag = 0;
-end
-
 
 %% Timing Ends
-if (bl_time_vf_okz); toc; end
+if (bl_time); toc; end
 
 %% Profiling
 if (bl_profile)
     profile off
     profile viewer
-    st_profile_file = ['C:/Users/fan/ThaiForInfLuuRobFan/matlab/inf_okz/solve/_profile/vf_okz_interp_p' num2str(it_cm)];
-    profsave(profile('info'), st_profile_file);
+    st_file_name = [st_profile_prefix st_profile_name_main st_profile_suffix];
+    profsave(profile('info'), strcat(st_profile_path, st_file_name));
 end
 
-%% Graphing Final
-if (bl_graph_vf_okz)
-    vf_okz_grh(param_map, support_map, armt_map, mt_val, mt_pol_wkb, mt_pol_kap)
+%% Graphing, Saving to Mat, Table Generation etc.
+if (bl_post)
+    bl_input_override = true;
+    result_map = containers.Map('KeyType','char', 'ValueType','any');
+    result_map('mt_val') = mt_val;
+    result_map('mt_pol_a') = mt_pol_a;
+    result_map('ar_val_diff_norm') = ar_val_diff_norm(1:it_display_every:it_iter_last);
+    result_map('ar_pol_diff_norm') = ar_pol_diff_norm(1:it_display_every:it_iter_last);
+    result_map('ar_pol_perc_change') = ar_pol_perc_change(1:it_display_every:it_iter_last, :);
+    ff_az_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override)
 end
-
-%% Save Workspace in Mat File
-if (support_map('bl_save_mat_vfi'))
-    st_file_name = ['vf_' support_map('st_file_name')];
-    save(ff_sup_save_prep(support_map('st_path_folder'), st_file_name));
-end
-
 
 end
