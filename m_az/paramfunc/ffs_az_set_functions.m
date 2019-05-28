@@ -1,3 +1,8 @@
+%% 
+% *back to <https://fanwangecon.github.io Fan>'s
+% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository> 
+% Table of Content.*
+
 function [f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons] = ffs_az_set_functions(varargin)
 %% FFS_AZ_SET_FUNCTIONS setting model functions
 % define functions here to avoid copy paste mistakes

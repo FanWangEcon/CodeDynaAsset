@@ -1,17 +1,58 @@
-%% ff_vf_az solves the one asset one shock asset problem
-function [mt_val, mt_pol_a, tb_valpol_iter] = ff_az_vf(varargin)
-%% Parameters Defaults
+%% 
+% *back to <https://fanwangecon.github.io Fan>'s
+% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository> 
+% Table of Content.*
+
+function result_map = ff_az_vf(varargin)
+%% FF_AZ_VF solve infinite horizon exo shock + endo asset problem
+% This program solves the infinite horizon dynamic single asset and single
+% shock problem with loops. It is useful to have a version of code that is
+% looped for easy debugging. This is the standard dynamic exogenous
+% incomplete borrowing and savings problem. 
+%
+% @param param_map container parameter container
+%
+% @param support_map container support container
+%
+% @param armt_map container container with states, choices and shocks
+% grids that are inputs for grid based solution algorithm
+%
+% @param func_map container container with function handles for
+% consumption cash-on-hand etc.
+%
+% @return result_map container contains policy function matrix, value
+% function matrix, iteration results, and policy function, value function
+% and iteration results tables. 
+%
+% keys included in result_map:
+%
+% * mt_val matrix states_n by shock_n matrix of converged value function grid
+% * mt_pol_a matrix states_n by shock_n matrix of converged policy function grid
+% * ar_val_diff_norm array if bl_post = true it_iter_last by 1 val function
+% difference between iteration
+% * ar_pol_diff_norm array if bl_post = true it_iter_last by 1 policy
+% function difference between iterations
+% * mt_pol_perc_change matrix if bl_post = true it_iter_last by shock_n the
+% proportion of grid points at which policy function changed between
+% current and last iteration for each element of shock
+%
+% @example
+%
+
+%% Default
 % * it_param_set = 1: quick test
 % * it_param_set = 2: benchmark run
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
-it_param_set = 4;
+
+it_param_set = 3;
 bl_input_override = true;
 [param_map, support_map] = ffs_az_set_default_param(it_param_set);
 [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 default_params = {param_map support_map armt_map func_map};
 
-%% Update Defaults with Varargins
+%% Parse Parameters 1
+
 % if varargin only has param_map and support_map,
 params_len = length(varargin);
 [default_params{1:params_len}] = varargin{:};
@@ -20,14 +61,16 @@ support_map = [support_map; default_params{2}];
 if params_len >= 1 && params_len <= 2
     % If override param_map, re-generate armt and func if they are not
     % provided
-    [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, 1);
+    bl_input_override = true;
+    [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override);
 else
     % Override all
     armt_map = [armt_map; default_params{3}];
     func_map = [func_map; default_params{4}];
 end
 
-%% Get Values from Keys
+%% Parse Parameters 2
+
 % armt_map
 params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z'});
 [ar_a, mt_z_trans, ar_z] = params_group{:};
@@ -48,34 +91,48 @@ params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
     st_profile_prefix, st_profile_name_main, st_profile_suffix, ...
     bl_time, bl_display, it_display_every, bl_post] = params_group{:};
 
-%% Profiling start
+%% Initialize Output Matrixes
+
+mt_val_cur = zeros(length(ar_a),length(ar_z));
+mt_val = mt_val_cur - 1;
+mt_pol_a = zeros(length(ar_a),length(ar_z));
+mt_pol_a_cur = mt_pol_a - 1;
+
+%% Initialize Convergence Conditions
+
+bl_vfi_continue = true;
+it_iter = 0;
+ar_val_diff_norm = zeros([it_maxiter_val, 1]);
+ar_pol_diff_norm = zeros([it_maxiter_val, 1]);
+mt_pol_perc_change = zeros([it_maxiter_val, it_z_n]);
+
+%% Iterate Value Function
+% Loop solution with 4 nested loops
+%
+% # loop 1: over exogenous states
+% # loop 2: over endogenous states
+% # loop 3: over choices
+% # loop 4: add future utility, integration--loop over future shocks
+%
+
+% Start Profile
 if (bl_profile)
     close all;
     profile off;
     profile on;
 end
 
-%% Initialize value and policy function
-mt_val_cur = zeros(length(ar_a),length(ar_z));
-mt_val = mt_val_cur - 1;
-mt_pol_a = zeros(length(ar_a),length(ar_z));
-mt_pol_a_cur = mt_pol_a - 1;
+% Start Timer
+if (bl_time)
+    tic;
+end
 
-%% Initialize
-bl_vfi_continue = true;
-it_iter = 0;
-ar_val_diff_norm = zeros([it_maxiter_val, 1]);
-ar_pol_diff_norm = zeros([it_maxiter_val, 1]);
-ar_pol_perc_change = zeros([it_maxiter_val, it_z_n]);
-
-%% Timing Starts
-if (bl_time); tic; end
-
-%% Value Function Iteration
+% Value Function Iteration
 while bl_vfi_continue
     it_iter = it_iter + 1;
     
-    %% Loop solution with 4 nested loops
+    %% Solve Optimization Problem Current Iteration
+    
     % loop 1: over exogenous states
     for it_z_i = 1:length(ar_z)
         fl_z = ar_z(it_z_i);
@@ -120,12 +177,12 @@ while bl_vfi_continue
         end
     end
     
-    %% Tolerance and Continuation
+    %% Check Tolerance and Continuation
     
     % Difference across iterations
     ar_val_diff_norm(it_iter) = norm(mt_val - mt_val_cur);
     ar_pol_diff_norm(it_iter) = norm(mt_pol_a - mt_pol_a_cur);
-    ar_pol_perc_change(it_iter, :) = sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n);
+    mt_pol_perc_change(it_iter, :) = sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n);
     
     % Update
     mt_val_cur = mt_val;
@@ -138,7 +195,11 @@ while bl_vfi_continue
         tb_valpol_iter = array2table([mean(mt_val_cur,1); mean(mt_pol_a_cur,1); ...
             mt_val_cur(it_a_n,:); mt_pol_a_cur(it_a_n,:)]);
         tb_valpol_iter.Properties.VariableNames = strcat('z', string((1:size(mt_val_cur,2))));
-        tb_valpol_iter.Properties.RowNames = {'mval', 'mkap', 'Hval', 'Hpol'};
+        tb_valpol_iter.Properties.RowNames = {'mval', 'map', 'Hval', 'Hpol'};
+        disp('mval = mean(mt_val_cur,1), average value over a')
+        disp('map  = mean(mt_pol_a_cur,1), average choice over a')
+        disp('Hval = mt_val_cur(it_a_n,:), highest a state val')
+        disp('mval = mt_pol_a_cur(it_a_n,:), highest a state choice')
         disp(tb_valpol_iter);
     end
     
@@ -152,16 +213,18 @@ while bl_vfi_continue
             (ar_val_diff_norm(it_iter) < fl_tol_val) || ...
             (sum(ar_pol_diff_norm(max(1, it_iter-it_tol_pol_nochange):it_iter)) < fl_tol_pol))
         % Fix to max, run again to save results if needed
-        it_iter = it_maxiter_val;
         it_iter_last = it_iter;
+        it_iter = it_maxiter_val;        
     end
     
 end
 
-%% Timing Ends
-if (bl_time); toc; end
+% End Timer
+if (bl_time)
+    toc;
+end
 
-%% Profiling
+% End Profile
 if (bl_profile)
     profile off
     profile viewer
@@ -169,16 +232,17 @@ if (bl_profile)
     profsave(profile('info'), strcat(st_profile_path, st_file_name));
 end
 
-%% Graphing, Saving to Mat, Table Generation etc.
+%% Process Optimal Choices
+result_map = containers.Map('KeyType','char', 'ValueType','any');
+result_map('mt_val') = mt_val;
+result_map('mt_pol_a') = mt_pol_a;
+
 if (bl_post)
     bl_input_override = true;
-    result_map = containers.Map('KeyType','char', 'ValueType','any');
-    result_map('mt_val') = mt_val;
-    result_map('mt_pol_a') = mt_pol_a;
-    result_map('ar_val_diff_norm') = ar_val_diff_norm(1:it_display_every:it_iter_last);
-    result_map('ar_pol_diff_norm') = ar_pol_diff_norm(1:it_display_every:it_iter_last);
-    result_map('ar_pol_perc_change') = ar_pol_perc_change(1:it_display_every:it_iter_last, :);
-    ff_az_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override)
+    result_map('ar_val_diff_norm') = ar_val_diff_norm(1:it_iter_last);
+    result_map('ar_pol_diff_norm') = ar_pol_diff_norm(1:it_iter_last);
+    result_map('mt_pol_perc_change') = mt_pol_perc_change(1:it_iter_last, :);
+    result_map = ff_az_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
 end
 
 end
