@@ -1,4 +1,4 @@
-Exogenous incomplete borrowing and savings models. 
+Exogenous incomplete borrowing and savings models.
 
 <!-- Each self-contained folder includes all codes required to invoke each model.
 
@@ -27,9 +27,9 @@ Solving for the policy functions.
     - post processing: m \| html
     - post graphing: m \| html
 3. Support:
-    - set default parameters: [m](https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/ffs_az_set_default_param.m) \| html(https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_set_default_param.html)
-    - set functions: [m](https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/ffs_az_set_functions.m) \| html(https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_set_functions.html)
-    - generate states, choices, and shocks grids: [m](https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/ffs_az_get_funcgrid.m) \| html(https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_get_funcgrid.html)
+    - set default parameters: [m](https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/ffs_az_set_default_param.m) \| [html](https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_set_default_param.html)
+    - set functions: [m](https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/ffs_az_set_functions.m) \| [html](https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_set_functions.html)
+    - generate states, choices, and shocks grids: [m](https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/ffs_az_get_funcgrid.m) \| [html](https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_get_funcgrid.html)
 
 
 ## Endogenous Distributions
