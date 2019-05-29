@@ -38,6 +38,13 @@ function result_map = ff_az_vf(varargin)
 %
 % @example
 %
+% @include
+%
+% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/paramfunc/ffs_az_set_default_param.m ffs_az_set_default_param>
+% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/paramfunc/ffs_az_get_funcgrid.m ffs_az_get_funcgrid>
+% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solvepost/ff_az_vf_post.m ff_az_vf_post>
+%
+
 
 %% Default
 % * it_param_set = 1: quick test
@@ -45,7 +52,7 @@ function result_map = ff_az_vf(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 3;
+it_param_set = 2;
 bl_input_override = true;
 [param_map, support_map] = ffs_az_set_default_param(it_param_set);
 [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
@@ -233,6 +240,7 @@ if (bl_profile)
 end
 
 %% Process Optimal Choices
+
 result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
 result_map('mt_pol_a') = mt_pol_a;

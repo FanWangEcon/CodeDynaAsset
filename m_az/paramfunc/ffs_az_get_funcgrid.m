@@ -30,6 +30,12 @@ function [armt_map, func_map] = ffs_az_get_funcgrid(varargin)
 %    [param_map, support_map] = ffs_az_set_default_param(it_param_set);
 %    [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override);
 %
+% @include
+%
+% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/paramfunc/ffs_az_set_functions.m ffs_az_set_functions>
+% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/ffto_gen_tauchen_jhl.m ffto_gen_tauchen_jhl>
+% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/fft_gen_grid_loglin.m fft_gen_grid_loglin>
+%
 
 %% Default
 

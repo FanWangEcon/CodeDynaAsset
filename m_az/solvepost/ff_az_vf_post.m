@@ -1,8 +1,48 @@
-%% FF_AZ_VF_POST handles post ff_az_vf tabling, graphing, gen mat
-% While invoking ff_az_vf, if bl_post == true, proceed with below
-function [result_map] = ff_az_vf_post(varargin)
+%% 
+% *back to <https://fanwangecon.github.io Fan>'s
+% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository> 
+% Table of Content.*
 
-%% Parameters Defaults
+function [result_map] = ff_az_vf_post(varargin)
+%% FF_AZ_VF_POST post ff_az_vf graphs, tables, mats.
+% Given the solution form ff_az_vf, graphs, tables, mats. Graphing code is
+% separately in ff_az_vf_post_graph.m. Run this function directly with
+% randomly generates matrixes for graph/table testings.
+%
+% @param param_map container parameter container
+%
+% @param support_map container support container
+%
+% @param armt_map container container with states, choices and shocks
+% grids that are inputs for grid based solution algorithm
+%
+% @param func_map container container with function handles for
+% consumption cash-on-hand etc.
+%
+% @param result_map container contains policy function matrix, value
+% function matrix, iteration results
+%
+% @return result_map container add coh consumption and other matrixes to
+% result_map also add table versions of val pol and iter matries 
+%
+% @example
+%
+%    bl_input_override = true;
+%    result_map = containers.Map('KeyType','char', 'ValueType','any');
+%    result_map('mt_val') = mt_val;
+%    result_map('mt_pol_a') = mt_pol_a;
+%    result_map('ar_val_diff_norm') = ar_val_diff_norm(1:it_iter_last);
+%    result_map('ar_pol_diff_norm') = ar_pol_diff_norm(1:it_iter_last);
+%    result_map('mt_pol_perc_change') = mt_pol_perc_change(1:it_iter_last, :);
+%    result_map = ff_az_vf_post(param_map, support_map, armt_map, func_map, result_map,    bl_input_override);
+%
+% @include
+%
+% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solvepost/ff_az_vf_post_graph.m ff_az_vf_post_graph>
+%
+
+%% Default
+
 params_len = length(varargin);
 bl_input_override = 0;
 if (params_len == 6)
@@ -29,7 +69,7 @@ else
     close all;
     
     % internal invoke for testing
-    it_param_set = 2;
+    it_param_set = 4;
     bl_input_override = true;
     
     % Get Parameters
@@ -45,7 +85,7 @@ else
     
     % Set Defaults
     mt_val = f_util_standin(ar_z, ar_a');
-    mt_pol_a = zeros(size(mt_val)) + ar_a'*0.9;
+    mt_pol_a = zeros(size(mt_val)) + ar_a'*(cumsum(sort(ar_z))/sum(ar_z)*0.4 + 0.4);
     it_iter_max = min(it_maxiter_val, 50);
     ar_val_diff_norm = rand([it_iter_max, 1]);
     ar_pol_diff_norm = rand([it_iter_max, 1]);
@@ -58,6 +98,7 @@ else
 end
 
 %% Parse Parameter
+
 % support_map
 params_group = values(support_map, {'bl_display_final', 'it_display_final_rowmax', 'it_display_final_colmax'});
 [bl_display_final, it_display_final_rowmax, it_display_final_colmax] = params_group{:};
@@ -65,11 +106,13 @@ params_group = values(support_map, {'bl_graph', 'bl_graph_onebyones'});
 [bl_graph] = params_group{:};
 params_group = values(support_map, {'bl_mat', 'st_mat_path', 'st_mat_prefix', 'st_mat_name_main', 'st_mat_suffix'});
 [bl_mat, st_mat_path, st_mat_prefix, st_mat_name_main, st_mat_suffix] = params_group{:};
+
 % func_map
 params_group = values(func_map, {'f_inc', 'f_cons', 'f_coh'});
 [f_inc, f_cons, f_coh] = params_group{:};
 
-%% Consumption and Income Matrix
+%% Generate Consumption and Income Matrix
+
 mt_cons = f_cons(ar_z, ar_a', mt_pol_a);
 mt_incm = f_inc(ar_z, ar_a');
 mt_coh = f_coh(ar_z, ar_a');
@@ -77,14 +120,16 @@ result_map('mt_cons') = mt_cons;
 result_map('mt_incm') = mt_incm;
 result_map('mt_coh') = mt_coh;
 
-%% Saving workspace to mat
+%% Save Mat
+
 if (bl_mat)
     mkdir(support_map('st_mat_path'));
     st_file_name = [st_mat_prefix st_mat_name_main st_mat_suffix];
     save(strcat(st_mat_path, st_file_name));
 end
 
-%% Table Generation
+%% Display Val Pol Iter Table
+
 if (bl_display_final)
     
     % Display Value Function Iteration Step by Step REsults
@@ -151,9 +196,11 @@ if (bl_display_final)
     result_map('tb_pol_a') = tb_pol_a;
 end
 
-%% Graphing
+%% Generate and Save Graphs
+
 if (bl_graph)
-    ff_az_vf_post_graph(param_map, support_map, armt_map, result_map);
+    bl_input_override = true;
+    ff_az_vf_post_graph(param_map, support_map, armt_map, result_map, bl_input_override);
 end
 
 end

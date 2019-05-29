@@ -1,11 +1,80 @@
-function ff_az_vf_post_graph(param_map, support_map, armt_map, result_map)
-%% Parameters
-% armt_map
-params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_stationary', 'ar_z'});
-[ar_a, mt_z_trans, ar_stationary, ar_z] = params_group{:};
-% result_map
-params_group = values(result_map, {'mt_cons', 'mt_coh', 'mt_val', 'mt_pol_a'});
-[mt_cons, mt_coh, mt_val, mt_pol_a] = params_group{:};
+%% 
+% *back to <https://fanwangecon.github.io Fan>'s
+% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository> 
+% Table of Content.*
+
+function ff_az_vf_post_graph(varargin)
+%% FF_AZ_VF_POST_GRAPH genereate 3 graphs
+% Generates three graphs:
+%
+% # Value Function Graph
+% # Policy Function Consumption and Asset Choices, Level and log
+% # Consumption and Asset as Percentages
+%
+% Run this function directly with randomly generates matrixes for graphs
+% and tables.
+%
+% @param param_map container parameter container
+%
+% @param support_map container support container
+%
+% @param armt_map container container with states, choices and shocks
+% grids that are inputs for grid based solution algorithm
+%
+% @param result_map container contains policy function matrix, value
+% function matrix, iteration results; als coh consumption and other matrixes
+%
+% @example
+%
+%    ff_az_vf_post_graph(param_map, support_map, armt_map, result_map);
+%
+
+%% Default
+
+params_len = length(varargin);
+bl_input_override = 0;
+if (params_len == 5)
+    bl_input_override = varargin{5};
+end
+
+if (bl_input_override)
+    % if invoked from outside overrid fully
+    [param_map, support_map, armt_map, result_map, ~] = varargin{:};      
+else
+    clear all;
+    close all;
+    
+    % internal invoke for testing
+    it_param_set = 4;
+    bl_input_override = true;
+    
+    % Get Parameters
+    [param_map, support_map] = ffs_az_set_default_param(it_param_set);
+    [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
+    
+    % Generate Default val and policy matrixes
+    params_group = values(armt_map, {'ar_a', 'ar_z'});
+    [ar_a, ar_z] = params_group{:};
+    params_group = values(func_map, {'f_util_standin', 'f_cons', 'f_coh'});
+    [f_util_standin, f_cons, f_coh] = params_group{:};
+    
+    
+    
+    % Set Defaults
+    mt_val = f_util_standin(ar_z, ar_a');
+    mt_pol_a = zeros(size(mt_val)) + ar_a'*(cumsum(sort(ar_z))/sum(ar_z)*0.4 + 0.4);
+    mt_cons = f_cons(ar_z, ar_a', mt_pol_a);
+    mt_coh = f_coh(ar_z, ar_a');
+    
+    % Set Results Map
+    result_map = containers.Map('KeyType','char', 'ValueType','any');
+    result_map('mt_val') = mt_val;
+    result_map('mt_pol_a') = mt_pol_a;
+    result_map('mt_cons') = mt_cons;
+    result_map('mt_coh') = mt_coh;
+end
+
+%% Parse Parameters
 
 % param_map
 params_group = values(param_map, {'fl_b_bd', 'it_z_n'});
@@ -19,10 +88,19 @@ params_group = values(support_map, {'bl_img_save', 'st_img_path', 'st_img_prefix
 params_group = values(support_map, {'st_title_prefix'});
 [st_title_prefix] = params_group{:};
 
-%% How many zs to Graph
+% armt_map
+params_group = values(armt_map, {'ar_a', 'ar_z'});
+[ar_a, ar_z] = params_group{:};
+
+% result_map
+params_group = values(result_map, {'mt_cons', 'mt_coh', 'mt_val', 'mt_pol_a'});
+[mt_cons, mt_coh, mt_val, mt_pol_a] = params_group{:};
+
+% How many zs to Graph
 ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)) (it_z_n)]);
 
 %% Graphing Values
+
 if (bl_graph_val)
     
     if(~bl_graph_onebyones)
@@ -77,6 +155,7 @@ if (bl_graph_val)
 end
 
 %% Graphing Choice Levels
+
 if (bl_graph_pol_lvl)
     
     if(~bl_graph_onebyones)
@@ -84,6 +163,7 @@ if (bl_graph_pol_lvl)
     end
     
     for sub_j=1:1:4
+        
         if(sub_j==1 || sub_j == 3)
             mt_outcome = mt_pol_a;            
         end
@@ -103,13 +183,20 @@ if (bl_graph_pol_lvl)
         for i = ar_it_z_graph
             i_ctr = i_ctr + 1;
             ar_opti_curz = mt_outcome(:, i);
-            
+                        
             if(sub_j==1 || sub_j == 2)
                 ar_a_curz_use = ar_a';
                 ar_opti_curz_use = ar_opti_curz';
             elseif(sub_j==3 || sub_j == 4)
-                ar_a_curz_use = log(ar_a' - min(ar_a) + 1);
-                ar_opti_curz_use = log(ar_opti_curz' - min(ar_opti_curz) + 1);
+                ar_a_curz_use = log(ar_a' - fl_b_bd + 1);
+                if(sub_j==3)
+                    % borrow save
+                    ar_opti_curz_use = log(ar_opti_curz' - fl_b_bd + 1);
+                end
+                if(sub_j == 4)
+                    % consumption
+                    ar_opti_curz_use = log(ar_opti_curz' + 1);
+                end                
             end
             
             scatter(ar_a_curz_use, ar_opti_curz_use, 5, ...
@@ -168,6 +255,7 @@ if (bl_graph_pol_lvl)
 end
 
 %% Graphing Choice Percentages
+
 if (bl_graph_pol_pct)
     
     if(~bl_graph_onebyones)
@@ -176,7 +264,6 @@ if (bl_graph_pol_pct)
     
     for sub_j=1:1:2
         
-        mt_a = zeros(size(mt_pol_a)) + ar_a';
         mt_outcome = zeros(size(mt_pol_a));
         mt_it_borr_idx = (mt_pol_a < 0);
         
@@ -241,4 +328,5 @@ if (bl_graph_pol_pct)
     end
     
 end
+
 end
