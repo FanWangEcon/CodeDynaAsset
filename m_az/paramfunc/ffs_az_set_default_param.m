@@ -45,7 +45,7 @@ param_map('fl_z_sig') = 0.2;
 % Choice vector
 param_map('fl_b_bd') = 0; % borrow bound, = 0 if save only
 param_map('fl_a_min') = 0; % if there is minimum savings requirement
-param_map('fl_a_max') = 10;
+param_map('fl_a_max') = 50;
 param_map('bl_loglin') = false; % log lin threshold structure
 param_map('fl_loglin_threshold') = 1; % dense points before 1
 param_map('it_a_n') = 100;
@@ -77,7 +77,7 @@ support_map('it_display_every') = 5; % how often to print results
 support_map('bl_profile') = false;
 support_map('st_profile_path') = [st_matimg_path_root '/solve/profile/'];
 support_map('st_profile_prefix') = [''];
-support_map('st_profile_name_main') = ['default'];
+support_map('st_profile_name_main') = ['_default'];
 support_map('st_profile_suffix') = ['_p' num2str(it_subset)];
 
 support_map('bl_post') = false;
@@ -87,9 +87,9 @@ support_map('it_display_final_rowmax') = 100; % max row to print (states/iters)
 support_map('it_display_final_colmax') = 12; % max col to print (shocks)
 % Mat File Controls
 support_map('bl_mat') = false;
-support_map('st_mat_path') = [st_matimg_path_root '/solvepost/mat/'];
+support_map('st_mat_path') = [st_matimg_path_root '/solve/mat/'];
 support_map('st_mat_prefix') = [''];
-support_map('st_mat_name_main') = ['default'];
+support_map('st_mat_name_main') = ['_default'];
 support_map('st_mat_suffix') = ['_p' num2str(it_subset)];
 % Graphing Controls
 support_map('bl_graph') = false;
@@ -100,9 +100,9 @@ support_map('bl_graph_pol_pct') = true;
 % Image Saving Controls (given graphing)
 support_map('st_title_prefix') = '';
 support_map('bl_img_save') = false;
-support_map('st_img_path') = [st_matimg_path_root '/solvepost/img/'];
+support_map('st_img_path') = [st_matimg_path_root '/solve/img/'];
 support_map('st_img_prefix') = [''];
-support_map('st_img_name_main') = ['default'];
+support_map('st_img_name_main') = ['_default'];
 support_map('st_img_suffix') = ['_p' num2str(it_subset) '.png'];
 
 % Sub-function graphing controls

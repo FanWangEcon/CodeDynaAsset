@@ -3,12 +3,12 @@
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository> 
 % Table of Content.*
 
-function result_map = ff_az_vf(varargin)
-%% FF_AZ_VF solve infinite horizon exo shock + endo asset problem
+function result_map = ff_az_vf_vec(varargin)
+%% FF_AZ_VF_VEC solve infinite horizon exo shock + endo asset problem
 % This program solves the infinite horizon dynamic single asset and single
-% shock problem with loops. It is useful to have a version of code that is
-% looped for easy debugging. This is the standard dynamic exogenous
-% incomplete borrowing and savings problem. 
+% shock problem with vectorized codes.
+% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf.html
+% ff_az_vf> shows looped codes. The solution is the same.
 %
 % @param param_map container parameter container
 %
@@ -77,7 +77,7 @@ else
 end
 
 % append function name
-st_func_name = 'ff_az_vf';
+st_func_name = 'ff_az_vf_vec';
 support_map('st_profile_name_main') = [st_func_name support_map('st_profile_name_main')];
 support_map('st_mat_name_main') = [st_func_name support_map('st_mat_name_main')];
 support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')];
@@ -105,11 +105,13 @@ params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
     bl_time, bl_display, it_display_every, bl_post] = params_group{:};
 
 %% Initialize Output Matrixes
+% include mt_pol_idx which we did not have in looped code
 
 mt_val_cur = zeros(length(ar_a),length(ar_z));
 mt_val = mt_val_cur - 1;
 mt_pol_a = zeros(length(ar_a),length(ar_z));
 mt_pol_a_cur = mt_pol_a - 1;
+mt_pol_idx = zeros(length(ar_a),length(ar_z));
 
 %% Initialize Convergence Conditions
 
@@ -145,48 +147,45 @@ while bl_vfi_continue
     it_iter = it_iter + 1;
     
     %% Solve Optimization Problem Current Iteration
+    % Only this segment of code differs between ff_az_vf and ff_az_vf_vec
     
     % loop 1: over exogenous states
     for it_z_i = 1:length(ar_z)
-        fl_z = ar_z(it_z_i);
         
-        % loop 2: over endogenous states
-        for it_a_j = 1:length(ar_a)
-            fl_a = ar_a(it_a_j);
-            ar_val_cur = zeros(size(ar_a));
+        % Current Shock
+        fl_z = ar_z(it_z_i);
+
+        % Consumption
+        mt_c = f_cons(fl_z, ar_a, ar_a');
+        
+        % f(z'|z)
+        ar_z_trans_condi = mt_z_trans(it_z_i,:);
+
+        % EVAL current utility: N by N, f_util defined earlier
+        if (fl_crra == 1)
+            mt_utility = f_util_log(mt_c);
+            fl_u_neg_c = f_util_log(fl_c_min);            
+        else
+            mt_utility = f_util_crra(mt_c);
+            fl_u_neg_c = f_util_crra(fl_c_min);
             
-            % loop 3: over choices
-            for it_ap_k = 1:length(ar_a)
-                fl_ap = ar_a(it_ap_k);
-                fl_c = f_cons(fl_z, fl_a, fl_ap);
-%                 fl_c = fl_z*fl_wage + fl_a.*((1+fl_r_save).*(b>0) + (1+fl_r_borr).*(b<=0)) - fl_ap;
-                
-                % current utility
-                if (fl_crra == 1)
-                    ar_val_cur(it_ap_k) = f_util_log(fl_c);
-                    fl_u_neg_c = f_util_log(fl_c_min);
-                else
-                    ar_val_cur(it_ap_k) = f_util_crra(fl_c);
-                    fl_u_neg_c = f_util_crra(fl_c_min);
-                end
-                
-                % loop 4: add future utility, integration--loop over future shocks
-                for it_ap_q = 1:length(ar_z)
-                    ar_val_cur(it_ap_k) = ar_val_cur(it_ap_k) + fl_beta*mt_z_trans(it_z_i,it_ap_q)*mt_val_cur(it_ap_k,it_ap_q);
-                end
-                
-                % Replace if negative consumption
-                if fl_c <= 0
-                    ar_val_cur(it_ap_k) = fl_u_neg_c;
-                end
-                
-            end
-            
-            % maximization over loop 3 choices for loop 1+2 states
-            it_max_lin_idx = find(ar_val_cur == max(ar_val_cur));
-            mt_val(it_a_j,it_z_i) = ar_val_cur(it_max_lin_idx(1));
-            mt_pol_a(it_a_j,it_z_i) = ar_a(it_max_lin_idx(1));
-            
+        end
+
+        % EVAL EV((A',K'),Z'|Z) = V((A',K'),Z') x p(z'|z)', (N by Z) x (Z by 1) = N by 1
+        mt_evzp_condi_z = mt_val_cur * ar_z_trans_condi';
+        
+        % EVAL add on future utility, N by N + N by 1
+        mt_utility = mt_utility + fl_beta*mt_evzp_condi_z;
+        mt_utility(mt_c <= 0) = fl_u_neg_c;
+
+        % Optimization: remember matlab is column major, rows must be
+        % choices, columns must be states
+        % <https://en.wikipedia.org/wiki/Row-_and_column-major_order COLUMN-MAJOR>
+        [ar_opti_val1_z, ar_opti_idx_z] = max(mt_utility);
+        mt_val(:,it_z_i) = ar_opti_val1_z;
+        mt_pol_a(:,it_z_i) = ar_a(ar_opti_idx_z);
+        if (it_iter == (it_maxiter_val + 1))
+            mt_pol_idx(:,it_z_i) = ar_opti_idx_z;
         end
     end
     
