@@ -38,7 +38,7 @@ param_map = containers.Map('KeyType','char', 'ValueType','any');
 param_map('fl_crra') = 1.5;
 param_map('fl_beta') = 0.94;
 % Shock Parameters
-param_map('it_z_n') = 11;
+param_map('it_z_n') = 15;
 param_map('fl_z_mu') = 0;
 param_map('fl_z_rho') = 0.8;
 param_map('fl_z_sig') = 0.2;
@@ -48,7 +48,7 @@ param_map('fl_a_min') = 0; % if there is minimum savings requirement
 param_map('fl_a_max') = 50;
 param_map('bl_loglin') = false; % log lin threshold structure
 param_map('fl_loglin_threshold') = 1; % dense points before 1
-param_map('it_a_n') = 100;
+param_map('it_a_n') = 750;
 % Prices
 param_map('fl_w') = 1.28;
 param_map('fl_r_save') = 0.025;

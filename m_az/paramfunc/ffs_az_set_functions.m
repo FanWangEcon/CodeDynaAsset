@@ -54,7 +54,7 @@ f_util_log = @(c) log(c);
 f_util_crra = @(c) (((c).^(1-fl_crra)-1)./(1-fl_crra));
 % Production Function
 f_inc = @(z, b) (z*fl_w + b.*(fl_r_save).*(b>0) + b.*(fl_r_borr).*(b<=0)); % z already exp
-% Cash on Hand, b is principle and interest
+% Cash on Hand, b is principle
 f_coh = @(z, b) (z*fl_w + b.*(1+fl_r_save).*(b>0) + b.*(1+fl_r_borr).*(b<=0));
 % Simple Consumption b and k
 f_cons = @(z, b, bprime) (f_coh(z, b) - bprime);
