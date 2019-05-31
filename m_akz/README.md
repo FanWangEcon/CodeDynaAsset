@@ -1,0 +1,1 @@
+Model with cash-on-hand (o) and shock (z) as the two state variables and safe asset choice (a) and risky asset choice (k) as the choice variables. cash-on-hand is all possible cash-on-hand states that arise given the vector of (a) and (k) and (z) choices and shock. 

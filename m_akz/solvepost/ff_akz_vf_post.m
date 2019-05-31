@@ -3,10 +3,10 @@
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository> 
 % Table of Content.*
 
-function [result_map] = ff_az_vf_post(varargin)
-%% FF_AZ_VF_POST post ff_az_vf graphs, tables, mats.
-% Given the solution form ff_az_vf, graphs, tables, mats. Graphing code is
-% separately in ff_az_vf_post_graph.m. Run this function directly with
+function [result_map] = ff_akz_vf_post(varargin)
+%% FF_AKZ_VF_POST post ff_akz_vf graphs, tables, mats.
+% Given the solution form ff_akz_vf, graphs, tables, mats. Graphing code is
+% separately in ff_akz_vf_post_graph.m. Run this function directly with
 % randomly generates matrixes for graph/table testings.
 %
 % @param param_map container parameter container
@@ -31,16 +31,17 @@ function [result_map] = ff_az_vf_post(varargin)
 %    result_map = containers.Map('KeyType','char', 'ValueType','any');
 %    result_map('mt_val') = mt_val;
 %    result_map('mt_pol_a') = mt_pol_a;
+%    result_map('mt_pol_k') = mt_pol_k;
 %    result_map('ar_val_diff_norm') = ar_val_diff_norm(1:it_iter_last);
 %    result_map('ar_pol_diff_norm') = ar_pol_diff_norm(1:it_iter_last);
 %    result_map('mt_pol_perc_change') = mt_pol_perc_change(1:it_iter_last, :);
-%    result_map = ff_az_vf_post(param_map, support_map, armt_map, func_map, result_map,    bl_input_override);
+%    result_map = ff_akz_vf_post(param_map, support_map, armt_map, func_map, result_map,    bl_input_override);
 %
 % @include
 %
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solvepost/ff_az_vf_post_graph.m ff_az_vf_post_graph>
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/paramfunc/ffs_az_set_default_param.m ffs_az_set_default_param>
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/paramfunc/ffs_az_get_funcgrid.m ffs_az_get_funcgrid>
+% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solvepost/ff_akz_vf_post_graph.m ff_akz_vf_post_graph>
+% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ffs_akz_set_default_param.m ffs_akz_set_default_param>
+% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ffs_akz_get_funcgrid.m ffs_akz_get_funcgrid>
 %
 
 %% Default
@@ -55,16 +56,16 @@ if (bl_input_override)
     % if invoked from outside overrid fully
     [param_map, support_map, armt_map, func_map, result_map, ~] = varargin{:};
     
-    params_group = values(result_map, {'mt_val', 'mt_pol_a'});
-    [mt_val, mt_pol_a] = params_group{:};
+    params_group = values(result_map, {'mt_val', 'mt_pol_a', 'mt_pol_k'});
+    [mt_val, mt_pol_a, mt_pol_k] = params_group{:};
     params_group = values(result_map, {'ar_val_diff_norm', 'ar_pol_diff_norm', 'mt_pol_perc_change'});
     [ar_val_diff_norm, ar_pol_diff_norm, mt_pol_perc_change] = params_group{:};
     
     % Get Parameters
-    params_group = values(param_map, {'it_z_n', 'it_a_n'});
-    [it_z_n, it_a_n] = params_group{:};
-    params_group = values(armt_map, {'ar_a', 'ar_z'});
-    [ar_a, ar_z] = params_group{:};
+    params_group = values(param_map, {'it_z_n'});
+    [it_z_n] = params_group{:};
+    params_group = values(armt_map, {'ar_a_meshk', 'ar_k_mesha', 'ar_z', 'mt_coh', 'it_ameshk_n'});
+    [ar_a_meshk, ar_k_mesha, ar_z, mt_coh, it_ameshk_n] = params_group{:};
     
 else
     clear all;
@@ -75,19 +76,22 @@ else
     bl_input_override = true;
     
     % Get Parameters
-    [param_map, support_map] = ffs_az_set_default_param(it_param_set);
-    [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
+    [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
+    [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
     
     % Generate Default val and policy matrixes
-    params_group = values(param_map, {'it_maxiter_val', 'it_z_n', 'it_a_n'});
-    [it_maxiter_val, it_z_n, it_a_n] = params_group{:};
-    params_group = values(armt_map, {'ar_a', 'ar_z'});
-    [ar_a, ar_z] = params_group{:};
-    f_util_standin = func_map('f_util_standin');
+    params_group = values(param_map, {'it_maxiter_val', 'it_z_n'});
+    [it_maxiter_val, it_z_n] = params_group{:};    
+    params_group = values(armt_map, {'ar_a_meshk', 'ar_k_mesha', 'ar_z', 'mt_coh', 'it_ameshk_n'});
+    [ar_a_meshk, ar_k_mesha, ar_z, mt_coh, it_ameshk_n] = params_group{:};
+    params_group = values(func_map, {'f_util_standin', 'f_cons', 'f_coh'});
+    [f_util_standin, f_cons, f_coh] = params_group{:};    
     
     % Set Defaults
-    mt_val = f_util_standin(ar_z, ar_a');
-    mt_pol_a = zeros(size(mt_val)) + ar_a'*(cumsum(sort(ar_z))/sum(ar_z)*0.4 + 0.4);
+    mt_val = f_util_standin(ar_z, ar_a_meshk, ar_k_mesha);
+    mt_pol_aksum = mt_coh.*(cumsum(sort(ar_z))/sum(ar_z)*0.4 + 0.4);
+    mt_pol_a = mt_pol_aksum.*(0.7 - cumsum(sort(ar_z))/sum(ar_z)*0.3);
+    mt_pol_k = mt_pol_aksum - mt_pol_a;
     it_iter_max = min(it_maxiter_val, 50);
     ar_val_diff_norm = rand([it_iter_max, 1]);
     ar_pol_diff_norm = rand([it_iter_max, 1]);
@@ -97,6 +101,7 @@ else
     result_map = containers.Map('KeyType','char', 'ValueType','any');
     result_map('mt_val') = mt_val;
     result_map('mt_pol_a') = mt_pol_a;
+    result_map('mt_pol_k') = mt_pol_k;
 end
 
 %% Parse Parameter
@@ -115,12 +120,10 @@ params_group = values(func_map, {'f_inc', 'f_cons', 'f_coh'});
 
 %% Generate Consumption and Income Matrix
 
-mt_cons = f_cons(ar_z, ar_a', mt_pol_a);
-mt_incm = f_inc(ar_z, ar_a');
-mt_coh = f_coh(ar_z, ar_a');
+mt_cons = f_cons(mt_coh, mt_pol_a, mt_pol_k);
+mt_incm = f_inc(ar_z, ar_a_meshk, ar_k_mesha);
 result_map('mt_cons') = mt_cons;
 result_map('mt_incm') = mt_incm;
-result_map('mt_coh') = mt_coh;
 
 %% Save Mat
 
@@ -152,22 +155,22 @@ if (bl_display_final)
     tb_valpol_alliter.Properties.RowNames = cl_row_names;
     tb_valpol_alliter.Properties.VariableDescriptions{'valgap'} = 'norm(mt_val - mt_val_cur)';
     tb_valpol_alliter.Properties.VariableDescriptions{'polgap'} = 'norm(mt_pol_a - mt_pol_a_cur)';
-    tb_valpol_alliter.Properties.VariableDescriptions{'z1'} = 'z1 perc change: sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n)';
+    tb_valpol_alliter.Properties.VariableDescriptions{'z1'} = 'z1 perc change: sum((mt_pol_a ~= mt_pol_a_cur))/(it_ameshk_n)';
     
     disp('valgap = norm(mt_val - mt_val_cur)');
     disp('polgap = norm(mt_pol_a - mt_pol_a_cur)');
-    disp('z1 = z1 perc change: sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n)');   
+    disp('z1 = z1 perc change: sum((mt_pol_a ~= mt_pol_a_cur))/(it_ameshk_n)');   
     disp(tb_valpol_alliter);
     
     % Display Values by States
     % at most display 11 columns of shocks
     % at most display 50 rows for states
     % display first and last
-    if (it_a_n >= it_display_final_rowmax)
+    if (it_ameshk_n >= it_display_final_rowmax)
         ar_it_rows = (1:1:round(it_display_final_rowmax/2));
-        ar_it_rows = [ar_it_rows ((it_a_n)-round(it_display_final_rowmax/2)+1):1:(it_a_n)];
+        ar_it_rows = [ar_it_rows ((it_ameshk_n)-round(it_display_final_rowmax/2)+1):1:(it_ameshk_n)];
     else
-        ar_it_rows = 1:1:it_a_n;
+        ar_it_rows = 1:1:it_ameshk_n;
     end
     if (it_z_n >= it_display_final_colmax)
         ar_it_cols = (1:1:round(it_display_final_colmax/2));
@@ -180,14 +183,18 @@ if (bl_display_final)
     
     % Display Optimal Values
     tb_val = array2table(mt_val_print);
-    tb_val.Properties.RowNames = strcat('a', string(ar_it_rows), '=', string(ar_a(ar_it_rows)));
+    tb_val.Properties.RowNames = strcat('coh', string(ar_it_rows),...
+                                        ':k=', string(ar_a_meshk(ar_it_rows)'),...
+                                        ',b=', string(ar_k_mesha(ar_it_rows)'));
     tb_val.Properties.VariableNames = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));
     disp('tb_val');
     disp(tb_val);
     
     % Display Optimal Choices
     tb_pol_a = array2table(mt_pol_a_print);
-    tb_pol_a.Properties.RowNames = strcat('a', string(ar_it_rows), '=', string(ar_a(ar_it_rows)));
+    tb_pol_a.Properties.RowNames = strcat('coh', string(ar_it_rows),...
+                                        ':k=', string(ar_a_meshk(ar_it_rows)'),...
+                                        ',b=', string(ar_k_mesha(ar_it_rows)'));
     tb_pol_a.Properties.VariableNames = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));
     disp('tb_pol_a');
     disp(tb_pol_a);
@@ -202,7 +209,7 @@ end
 
 if (bl_graph)
     bl_input_override = true;
-    ff_az_vf_post_graph(param_map, support_map, armt_map, result_map, bl_input_override);
+    ff_akz_vf_post_graph(param_map, support_map, armt_map, result_map, bl_input_override);
 end
 
 end

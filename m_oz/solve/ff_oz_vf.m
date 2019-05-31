@@ -55,7 +55,7 @@ function result_map = ff_oz_vf(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 4;
+it_param_set = 1;
 bl_input_override = true;
 [param_map, support_map] = ffs_oz_set_default_param(it_param_set);
 [armt_map, func_map] = ffs_oz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
@@ -168,27 +168,27 @@ while bl_vfi_continue
                         
             % loop 3: over choices
             ar_val_cur = zeros(size(ar_a));
-            for it_ap_k = 1:length(ar_a)
-                fl_ap = ar_a(it_ap_k);
+            for it_cohp_k = 1:length(ar_a)
+                fl_ap = ar_a(it_cohp_k);
                 fl_c = f_cons(fl_coh, fl_ap);
                 
                 % current utility
                 if (fl_crra == 1)
-                    ar_val_cur(it_ap_k) = f_util_log(fl_c);
+                    ar_val_cur(it_cohp_k) = f_util_log(fl_c);
                     fl_u_neg_c = f_util_log(fl_c_min);
                 else
-                    ar_val_cur(it_ap_k) = f_util_crra(fl_c);
+                    ar_val_cur(it_cohp_k) = f_util_crra(fl_c);
                     fl_u_neg_c = f_util_crra(fl_c_min);
                 end
 
                 % loop 4: add future utility, integration--loop over future shocks
-                for it_ap_q = 1:length(ar_z)
-                    ar_val_cur(it_ap_k) = ar_val_cur(it_ap_k) + fl_beta*mt_z_trans(it_z_i, it_ap_q)*mt_val_cur(it_ap_k, it_ap_q);
+                for it_zp_q = 1:length(ar_z)
+                    ar_val_cur(it_cohp_k) = ar_val_cur(it_cohp_k) + fl_beta*mt_z_trans(it_z_i, it_zp_q)*mt_val_cur(it_cohp_k, it_zp_q);
                 end
                 
                 % Replace if negative consumption
                 if fl_c <= 0
-                    ar_val_cur(it_ap_k) = fl_u_neg_c;
+                    ar_val_cur(it_cohp_k) = fl_u_neg_c;
                 end
                 
             end
@@ -219,11 +219,11 @@ while bl_vfi_continue
         tb_valpol_iter = array2table([mean(mt_val_cur,1); mean(mt_pol_a_cur,1); ...
             mt_val_cur(it_a_n,:); mt_pol_a_cur(it_a_n,:)]);
         tb_valpol_iter.Properties.VariableNames = strcat('z', string((1:size(mt_val_cur,2))));
-        tb_valpol_iter.Properties.RowNames = {'mval', 'map', 'Hval', 'Hpol'};
+        tb_valpol_iter.Properties.RowNames = {'mval', 'map', 'Hval', 'Hap'};
         disp('mval = mean(mt_val_cur,1), average value over a')
         disp('map  = mean(mt_pol_a_cur,1), average choice over a')
         disp('Hval = mt_val_cur(it_a_n,:), highest a state val')
-        disp('mval = mt_pol_a_cur(it_a_n,:), highest a state choice')
+        disp('Hap = mt_pol_a_cur(it_a_n,:), highest a state choice')
         disp(tb_valpol_iter);
     end
     

@@ -3,8 +3,8 @@
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository> 
 % Table of Content.*
 
-function ff_az_vf_post_graph(varargin)
-%% FF_AZ_VF_POST_GRAPH genereate 3 graphs
+function ff_akz_vf_post_graph(varargin)
+%% FF_AKZ_VF_POST_GRAPH genereate 3 graphs
 % Generates three graphs:
 %
 % # Value Function Graph
@@ -26,7 +26,7 @@ function ff_az_vf_post_graph(varargin)
 %
 % @example
 %
-%    ff_az_vf_post_graph(param_map, support_map, armt_map, result_map);
+%    ff_akz_vf_post_graph(param_map, support_map, armt_map, result_map);
 %
 
 %% Default
@@ -49,36 +49,35 @@ else
     bl_input_override = true;
     
     % Get Parameters
-    [param_map, support_map] = ffs_az_set_default_param(it_param_set);
-    [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
-    
+    [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
+    [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
+
     % Generate Default val and policy matrixes
-    params_group = values(armt_map, {'ar_a', 'ar_z'});
-    [ar_a, ar_z] = params_group{:};
+    params_group = values(armt_map, {'ar_a_meshk', 'ar_k_mesha', 'ar_z', 'mt_coh'});
+    [ar_a_meshk, ar_k_mesha, ar_z, mt_coh] = params_group{:};
     params_group = values(func_map, {'f_util_standin', 'f_cons', 'f_coh'});
-    [f_util_standin, f_cons, f_coh] = params_group{:};
-    
-    
-    
+    [f_util_standin, f_cons, f_coh] = params_group{:};    
+        
     % Set Defaults
-    mt_val = f_util_standin(ar_z, ar_a');
-    mt_pol_a = zeros(size(mt_val)) + ar_a'*(cumsum(sort(ar_z))/sum(ar_z)*0.4 + 0.4);
-    mt_cons = f_cons(ar_z, ar_a', mt_pol_a);
-    mt_coh = f_coh(ar_z, ar_a');
+    mt_val = f_util_standin(ar_z, ar_a_meshk, ar_k_mesha);
+    mt_pol_aksum = mt_coh.*(cumsum(sort(ar_z))/sum(ar_z)*0.4 + 0.4);
+    mt_pol_a = mt_pol_aksum.*(0.7 - cumsum(sort(ar_z))/sum(ar_z)*0.3);
+    mt_pol_k = mt_pol_aksum - mt_pol_a;
+    mt_cons = f_cons(mt_coh, mt_pol_a, mt_pol_k);
     
     % Set Results Map
     result_map = containers.Map('KeyType','char', 'ValueType','any');
     result_map('mt_val') = mt_val;
     result_map('mt_pol_a') = mt_pol_a;
+    result_map('mt_pol_k') = mt_pol_k;
     result_map('mt_cons') = mt_cons;
-    result_map('mt_coh') = mt_coh;
 end
 
 %% Parse Parameters
 
 % param_map
-params_group = values(param_map, {'fl_b_bd', 'it_z_n'});
-[fl_b_bd, it_z_n] = params_group{:};
+params_group = values(param_map, {'fl_b_bd', 'it_z_n', 'fl_a_max'});
+[fl_b_bd, it_z_n, fl_a_max] = params_group{:};
 
 % support_map
 params_group = values(support_map, {'bl_graph_onebyones', 'bl_graph_val', 'bl_graph_pol_lvl', 'bl_graph_pol_pct'});
@@ -89,17 +88,20 @@ params_group = values(support_map, {'st_title_prefix'});
 [st_title_prefix] = params_group{:};
 
 % armt_map
-params_group = values(armt_map, {'ar_a', 'ar_z'});
-[ar_a, ar_z] = params_group{:};
+params_group = values(armt_map, {'ar_z', 'mt_coh'});
+[ar_z, mt_coh] = params_group{:};
 
 % result_map
-params_group = values(result_map, {'mt_cons', 'mt_coh', 'mt_val', 'mt_pol_a'});
-[mt_cons, mt_coh, mt_val, mt_pol_a] = params_group{:};
+params_group = values(result_map, {'mt_cons', 'mt_val', 'mt_pol_a', 'mt_pol_k'});
+[mt_cons, mt_val, mt_pol_a, mt_pol_k] = params_group{:};
 
 % How many zs to Graph
 ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)) (it_z_n)]);
 
 %% Graphing Values
+% when testing with random data using f_util_standin, shocks will not have
+% impacts on z, we will see that lower shocks tend to have slightly lower
+% coh values, but k,b,z effects on f_util_standin fully captured by coh. 
 
 if (bl_graph_val)
     
@@ -111,7 +113,7 @@ if (bl_graph_val)
         
         if(sub_j==1)
             mt_outcome = mt_val;
-            st_y_label = 'V(a, z)';
+            st_y_label = 'V(coh(a, k, z), z)';
         end
         
         if(~bl_graph_onebyones)
@@ -125,7 +127,7 @@ if (bl_graph_val)
         i_ctr = 0;
         for i = ar_it_z_graph
             i_ctr = i_ctr + 1;
-            scatter(ar_a, mt_outcome(:, i), 5, ...
+            scatter(mt_coh(:,i), mt_outcome(:, i), 5, ...
                 'MarkerEdgeColor', clr(i_ctr,:), ...
                 'MarkerFaceColor', clr(i_ctr,:));
         end
@@ -133,9 +135,9 @@ if (bl_graph_val)
         grid on;
         grid minor;
         legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
-        title([st_title_prefix 'Asset, Shocks, and Value/Utility'])
+        title([st_title_prefix 'COH, Shocks, and Value/Utility'])
         ylabel(st_y_label)
-        xlabel({'Asset State'})
+        xlabel({'Cash-on-Hand'})
         legend(legendCell(ar_it_z_graph), 'Location','southeast');
         
         xline0 = xline(0);
@@ -159,20 +161,23 @@ end
 if (bl_graph_pol_lvl)
     
     if(~bl_graph_onebyones)
-        figure('PaperPosition', [0 0 14 8]);
+        figure('PaperPosition', [0 0 21 8]);
     end
     
-    for sub_j=1:1:4
+    for sub_j=1:1:6
         
-        if(sub_j==1 || sub_j == 3)
-            mt_outcome = mt_pol_a;            
+        if(sub_j==1 || sub_j == 4)
+            mt_outcome = mt_pol_a;
         end
-        if(sub_j==2 || sub_j == 4)
+        if(sub_j==2 || sub_j == 5)
+            mt_outcome = mt_pol_k;
+        end
+        if(sub_j==3 || sub_j == 6)
             mt_outcome = mt_cons;            
         end
                 
         if(~bl_graph_onebyones)
-            subplot(2,2,sub_j)
+            subplot(2,3,sub_j)
         else
             figure('PaperPosition', [0 0 7 4]);
         end               
@@ -184,19 +189,25 @@ if (bl_graph_pol_lvl)
             i_ctr = i_ctr + 1;
             ar_opti_curz = mt_outcome(:, i);
                         
-            if(sub_j==1 || sub_j == 2)
-                ar_a_curz_use = ar_a';
+            if(sub_j==1 || sub_j == 2 || sub_j == 3)
+                
+                ar_a_curz_use = mt_coh(:,i)';
                 ar_opti_curz_use = ar_opti_curz';
-            elseif(sub_j==3 || sub_j == 4)
-                ar_a_curz_use = log(ar_a' - fl_b_bd + 1);
-                if(sub_j==3)
+                
+            elseif(sub_j == 4 || sub_j == 5 || sub_j == 6)
+                
+                ar_a_curz_use = log(mt_coh(:,i)' - fl_b_bd + 1);
+                
+                if(sub_j == 4)
                     % borrow save
                     ar_opti_curz_use = log(ar_opti_curz' - fl_b_bd + 1);
                 end
-                if(sub_j == 4)
-                    % consumption
+                
+                if(sub_j == 5 || sub_j == 6)
+                    % risky capital choice and consumption, both are >= 0
                     ar_opti_curz_use = log(ar_opti_curz' + 1);
-                end                
+                end
+                
             end
             
             scatter(ar_a_curz_use, ar_opti_curz_use, 5, ...
@@ -206,25 +217,33 @@ if (bl_graph_pol_lvl)
         
         if(sub_j==1)
             st_y_label = 'Savings/Borrowing';
-            st_x_label = 'Asset State';
+            st_x_label = 'Cash-on-Hand';
         end
         if(sub_j==2)
-            st_y_label = 'Consumption';
-            st_x_label = 'Asset State';
+            st_y_label = 'Riksy K investment';
+            st_x_label = 'Cash-on-Hand';
         end
         if(sub_j==3)
-            st_y_label = 'log(SaveBorr - borrbound + 1)';
-            st_x_label = 'log(AssetState - borrbound + 1)';
+            st_y_label = 'Consumption';
+            st_x_label = 'Cash-on-Hand';
         end
         if(sub_j==4)
+            st_y_label = 'log(SaveBorr - borrbound + 1)';
+            st_x_label = 'log(COH - borrbound + 1)';
+        end
+        if(sub_j==5)
+            st_y_label = 'log(Risky K + 1)';
+            st_x_label = 'log(COH - borrbound + 1)';
+        end
+        if(sub_j==6)
             st_y_label = 'log(Consumption + 1)';
-            st_x_label = 'log(AssetState - borrbound + 1)';
+            st_x_label = 'log(COH - borrbound + 1)';
         end
         
         
         grid on;
         legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
-        title([st_title_prefix 'Asset, Shocks and Choices (Levels)']);
+        title([st_title_prefix 'COH, Shocks and Choices (Levels)']);
         ylabel(st_y_label);
         xlabel(st_x_label);
         legend(legendCell(ar_it_z_graph), 'Location','northwest');
@@ -259,10 +278,10 @@ end
 if (bl_graph_pol_pct)
     
     if(~bl_graph_onebyones)
-        figure('PaperPosition', [0 0 14 4]);
+        figure('PaperPosition', [0 0 21 4]);
     end    
     
-    for sub_j=1:1:2
+    for sub_j=1:1:3
         
         mt_outcome = zeros(size(mt_pol_a));
         mt_it_borr_idx = (mt_pol_a < 0);
@@ -275,6 +294,14 @@ if (bl_graph_pol_pct)
             st_title = 'Asset Choice As Fraction';
         end
         if(sub_j==2)
+            %             If borrowing, how much is what is borrowing going to K?
+            %             If saving, how much is what is total savings in K?
+            mt_outcome(mt_it_borr_idx) = mt_pol_a(mt_it_borr_idx)./mt_pol_k(mt_it_borr_idx);
+            mt_outcome(~mt_it_borr_idx) = mt_pol_a(~mt_it_borr_idx)./mt_pol_k(~mt_it_borr_idx);
+            st_y_label = 'aprime/kprime';
+            st_legend_loc = 'northwest';            
+        end        
+        if(sub_j==3)
             mt_outcome(mt_it_borr_idx) = mt_cons(mt_it_borr_idx)./(mt_coh(mt_it_borr_idx) + mt_pol_a(mt_it_borr_idx));
             mt_outcome(~mt_it_borr_idx) = mt_cons(~mt_it_borr_idx)./mt_coh(~mt_it_borr_idx);
             st_y_label = 'c/(coh-aprime) if br; c/cashonhand if sv';
@@ -283,7 +310,7 @@ if (bl_graph_pol_pct)
         end
         
         if(~bl_graph_onebyones)
-            subplot(1,2,sub_j)
+            subplot(1,3,sub_j)
         else
             figure('PaperPosition', [0 0 7 4]);
         end
@@ -294,7 +321,7 @@ if (bl_graph_pol_pct)
         for i = ar_it_z_graph
             i_ctr = i_ctr + 1;
             ar_opti_curz = mt_outcome(:, i);
-            scatter(ar_a, ar_opti_curz, 5, ...
+            scatter(mt_coh(:,i), ar_opti_curz, 5, ...
                 'MarkerEdgeColor', clr(i_ctr,:), ...
                 'MarkerFaceColor', clr(i_ctr,:));
         end
@@ -302,7 +329,7 @@ if (bl_graph_pol_pct)
         legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
         title([st_title_prefix st_title])
         ylabel(st_y_label)
-        xlabel({'Asset State'})
+        xlabel({'Cash-on-Hand'})
         legend(legendCell(ar_it_z_graph), 'Location', st_legend_loc);
         %         xlim([min(ar_coh_curz)+1.5 15]);
         

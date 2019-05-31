@@ -8,7 +8,13 @@ function [param_map, support_map] = ffs_akz_set_default_param(varargin)
 % two groups of default parameters stored in container maps. Explicitly
 % solving for both a and k grids exponentially increase problem size, and
 % we can not have state and choice grids that are as tight as for the az
-% problem.
+% problem. Note that the defaults set it_a_n it_k_n both at 30 points.
+% These create 900 combination of choice points. But when we had the one
+% asset problem, we were able to use for benchmarkin 750 points for just a
+% by itself. I increase significantly it_an and it_k_n for the state
+% dimension reduced model. It is computationally very time consuming to
+% increase them more under the programing paradigm here where both a and k
+% choices are jointly considered in one problem.
 %
 % @param it_subset integer default parameter control subsetting. it_subset = 1 is
 % basic invoke quick test. it_subset = 2 is main invoke. it_subset = 3 is
@@ -37,34 +43,44 @@ default_params = {it_subset bl_display_defparam};
 %% Setting param_map container
 
 param_map = containers.Map('KeyType','char', 'ValueType','any');
+
 % Preferences
 param_map('fl_crra') = 1.5;
 param_map('fl_beta') = 0.94;
-% Shock Parameters
-param_map('it_z_n') = 15;
+
+% Production Function
+% Productivity Shock Parameters
+param_map('it_z_n') = 5;
 param_map('fl_z_mu') = 0;
 param_map('fl_z_rho') = 0.8;
 param_map('fl_z_sig') = 0.2;
+% CD Production Function Parameters
+param_map('fl_Amean') = 1;
+param_map('fl_alpha') = 0.36;
+param_map('fl_delta') = 0.08;
+
+% Prices
+% shock is on k, not on labor, fl_w is fixed wage income
+param_map('fl_w') = 1.28*0.3466; % min(z*w) from benchmark az model
+param_map('fl_r_save') = 0.025;
+param_map('fl_r_borr') = 0.025;
+% Minimum Consumption, utility lower bound (major impact parameter
+param_map('fl_c_min') = 0.001;
+
+% Asset Grids
 % Safe Financial Choice vector
 param_map('fl_b_bd') = 0; % borrow bound, = 0 if save only
 param_map('fl_a_min') = 0; % if there is minimum savings requirement
 param_map('fl_a_max') = 50;
 param_map('bl_loglin') = false; % log lin threshold structure
 param_map('fl_loglin_threshold') = 1; % dense points before 1
-param_map('it_a_n') = 30;
+param_map('it_a_n') = 20;
 % Risky Capital Asset Vector
 param_map('fl_k_min') = 0;
 param_map('fl_k_max') = 50;
 param_map('bl_k_loglin') = false;
 param_map('fl_k_loglin_threshold') = 1;
-param_map('it_k_n') = 30;
-% Prices
-% shock is on k, not on labor, fl_w is fixed wage income
-param_map('fl_w') = 1.28;
-param_map('fl_r_save') = 0.025;
-param_map('fl_r_borr') = 0.025;
-% Minimum Consumption, utility lower bound (major impact parameter
-param_map('fl_c_min') = 0.001;
+param_map('it_k_n') = 20;
 
 % Solution Accuracy
 param_map('it_maxiter_val') = 250;

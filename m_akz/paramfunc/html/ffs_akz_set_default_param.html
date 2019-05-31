@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>ffs_akz_set_default_param</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-05-29"><meta name="DC.source" content="ffs_akz_set_default_param.m"><style type="text/css">
+      --><title>ffs_akz_set_default_param</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-05-30"><meta name="DC.source" content="ffs_akz_set_default_param.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -67,7 +67,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
   </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">FFS_AKZ_SET_DEFAULT_PARAM setting model default parameters</a></li><li><a href="#3">Default</a></li><li><a href="#4">Setting param_map container</a></li><li><a href="#5">Setting support_map container</a></li><li><a href="#6">Subset Options</a></li><li><a href="#7">Display</a></li></ul></div><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><pre class="codeinput"><span class="keyword">function</span> [param_map, support_map] = ffs_akz_set_default_param(varargin)
-</pre><h2 id="2">FFS_AKZ_SET_DEFAULT_PARAM setting model default parameters</h2><p>two groups of default parameters stored in container maps. Explicitly solving for both a and k grids exponentially increase problem size, and we can not have state and choice grids that are as tight as for the az problem.</p><p>@param it_subset integer default parameter control subsetting. it_subset = 1 is basic invoke quick test. it_subset = 2 is main invoke. it_subset = 3 is profiling invoke. it_subset = 4 is matlab publish.</p><p>@param bl_display_defparam boolean local printing</p><p>@return param_map container parameters needed for solving the model</p><p>@return support_map container programming control parameters like to graph to print etc</p><p>@example</p><pre class="language-matlab">it_param_set = 1;
+</pre><h2 id="2">FFS_AKZ_SET_DEFAULT_PARAM setting model default parameters</h2><p>two groups of default parameters stored in container maps. Explicitly solving for both a and k grids exponentially increase problem size, and we can not have state and choice grids that are as tight as for the az problem. Note that the defaults set it_a_n it_k_n both at 30 points. These create 900 combination of choice points. But when we had the one asset problem, we were able to use for benchmarkin 750 points for just a by itself. I increase significantly it_an and it_k_n for the state dimension reduced model. It is computationally very time consuming to increase them more under the programing paradigm here where both a and k choices are jointly considered in one problem.</p><p>@param it_subset integer default parameter control subsetting. it_subset = 1 is basic invoke quick test. it_subset = 2 is main invoke. it_subset = 3 is profiling invoke. it_subset = 4 is matlab publish.</p><p>@param bl_display_defparam boolean local printing</p><p>@return param_map container parameters needed for solving the model</p><p>@return support_map container programming control parameters like to graph to print etc</p><p>@example</p><pre class="language-matlab">it_param_set = 1;
 [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
 </pre><h2 id="3">Default</h2><pre class="codeinput">it_subset = 0;
 bl_display_defparam = true;
@@ -75,14 +75,31 @@ default_params = {it_subset bl_display_defparam};
 [default_params{1:length(varargin)}] = varargin{:};
 [it_subset, bl_display_defparam] = default_params{:};
 </pre><h2 id="4">Setting param_map container</h2><pre class="codeinput">param_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
+
 <span class="comment">% Preferences</span>
 param_map(<span class="string">'fl_crra'</span>) = 1.5;
 param_map(<span class="string">'fl_beta'</span>) = 0.94;
-<span class="comment">% Shock Parameters</span>
+
+<span class="comment">% Production Function</span>
+<span class="comment">% Productivity Shock Parameters</span>
 param_map(<span class="string">'it_z_n'</span>) = 15;
 param_map(<span class="string">'fl_z_mu'</span>) = 0;
 param_map(<span class="string">'fl_z_rho'</span>) = 0.8;
 param_map(<span class="string">'fl_z_sig'</span>) = 0.2;
+<span class="comment">% CD Production Function Parameters</span>
+param_map(<span class="string">'fl_Amean'</span>) = 1;
+param_map(<span class="string">'fl_alpha'</span>) = 0.36;
+param_map(<span class="string">'fl_delta'</span>) = 0.08;
+
+<span class="comment">% Prices</span>
+<span class="comment">% shock is on k, not on labor, fl_w is fixed wage income</span>
+param_map(<span class="string">'fl_w'</span>) = 1.28;
+param_map(<span class="string">'fl_r_save'</span>) = 0.025;
+param_map(<span class="string">'fl_r_borr'</span>) = 0.025;
+<span class="comment">% Minimum Consumption, utility lower bound (major impact parameter</span>
+param_map(<span class="string">'fl_c_min'</span>) = 0.001;
+
+<span class="comment">% Asset Grids</span>
 <span class="comment">% Safe Financial Choice vector</span>
 param_map(<span class="string">'fl_b_bd'</span>) = 0; <span class="comment">% borrow bound, = 0 if save only</span>
 param_map(<span class="string">'fl_a_min'</span>) = 0; <span class="comment">% if there is minimum savings requirement</span>
@@ -96,12 +113,6 @@ param_map(<span class="string">'fl_k_max'</span>) = 50;
 param_map(<span class="string">'bl_k_loglin'</span>) = false;
 param_map(<span class="string">'fl_k_loglin_threshold'</span>) = 1;
 param_map(<span class="string">'it_k_n'</span>) = 30;
-<span class="comment">% Prices</span>
-param_map(<span class="string">'fl_w'</span>) = 1.28;
-param_map(<span class="string">'fl_r_save'</span>) = 0.025;
-param_map(<span class="string">'fl_r_borr'</span>) = 0.025;
-<span class="comment">% Minimum Consumption, utility lower bound (major impact parameter</span>
-param_map(<span class="string">'fl_c_min'</span>) = 0.001;
 
 <span class="comment">% Solution Accuracy</span>
 param_map(<span class="string">'it_maxiter_val'</span>) = 250;
@@ -209,35 +220,38 @@ support_map(<span class="string">'bl_display_funcgrids'</span>) = false;
 </pre><pre class="codeoutput">param_map
   Map with properties:
 
-        Count: 25
+        Count: 28
       KeyType: char
     ValueType: any
 
 pos = 1 ; key = bl_k_loglin ; val = false
 pos = 2 ; key = bl_loglin ; val = false
-pos = 3 ; key = fl_a_max ; val = 50
-pos = 4 ; key = fl_a_min ; val = 0
-pos = 5 ; key = fl_b_bd ; val = 0
-pos = 6 ; key = fl_beta ; val = 0.94
-pos = 7 ; key = fl_c_min ; val = 0.001
-pos = 8 ; key = fl_crra ; val = 1.5
-pos = 9 ; key = fl_k_loglin_threshold ; val = 1
-pos = 10 ; key = fl_k_max ; val = 50
-pos = 11 ; key = fl_k_min ; val = 0
-pos = 12 ; key = fl_loglin_threshold ; val = 1
-pos = 13 ; key = fl_r_borr ; val = 0.025
-pos = 14 ; key = fl_r_save ; val = 0.025
-pos = 15 ; key = fl_tol_pol ; val = 1e-05
-pos = 16 ; key = fl_tol_val ; val = 1e-05
-pos = 17 ; key = fl_w ; val = 1.28
-pos = 18 ; key = fl_z_mu ; val = 0
-pos = 19 ; key = fl_z_rho ; val = 0.8
-pos = 20 ; key = fl_z_sig ; val = 0.2
-pos = 21 ; key = it_a_n ; val = 30
-pos = 22 ; key = it_k_n ; val = 30
-pos = 23 ; key = it_maxiter_val ; val = 250
-pos = 24 ; key = it_tol_pol_nochange ; val = 25
-pos = 25 ; key = it_z_n ; val = 15
+pos = 3 ; key = fl_Amean ; val = 1
+pos = 4 ; key = fl_a_max ; val = 50
+pos = 5 ; key = fl_a_min ; val = 0
+pos = 6 ; key = fl_alpha ; val = 0.36
+pos = 7 ; key = fl_b_bd ; val = 0
+pos = 8 ; key = fl_beta ; val = 0.94
+pos = 9 ; key = fl_c_min ; val = 0.001
+pos = 10 ; key = fl_crra ; val = 1.5
+pos = 11 ; key = fl_delta ; val = 0.08
+pos = 12 ; key = fl_k_loglin_threshold ; val = 1
+pos = 13 ; key = fl_k_max ; val = 50
+pos = 14 ; key = fl_k_min ; val = 0
+pos = 15 ; key = fl_loglin_threshold ; val = 1
+pos = 16 ; key = fl_r_borr ; val = 0.025
+pos = 17 ; key = fl_r_save ; val = 0.025
+pos = 18 ; key = fl_tol_pol ; val = 1e-05
+pos = 19 ; key = fl_tol_val ; val = 1e-05
+pos = 20 ; key = fl_w ; val = 1.28
+pos = 21 ; key = fl_z_mu ; val = 0
+pos = 22 ; key = fl_z_rho ; val = 0.8
+pos = 23 ; key = fl_z_sig ; val = 0.2
+pos = 24 ; key = it_a_n ; val = 30
+pos = 25 ; key = it_k_n ; val = 30
+pos = 26 ; key = it_maxiter_val ; val = 250
+pos = 27 ; key = it_tol_pol_nochange ; val = 25
+pos = 28 ; key = it_z_n ; val = 15
 support_map
   Map with properties:
 
@@ -282,7 +296,7 @@ ans =
 
   Map with properties:
 
-        Count: 25
+        Count: 28
       KeyType: char
     ValueType: any
 
@@ -298,7 +312,13 @@ function [param_map, support_map] = ffs_akz_set_default_param(varargin)
 % two groups of default parameters stored in container maps. Explicitly
 % solving for both a and k grids exponentially increase problem size, and
 % we can not have state and choice grids that are as tight as for the az
-% problem. 
+% problem. Note that the defaults set it_a_n it_k_n both at 30 points.
+% These create 900 combination of choice points. But when we had the one
+% asset problem, we were able to use for benchmarkin 750 points for just a
+% by itself. I increase significantly it_an and it_k_n for the state
+% dimension reduced model. It is computationally very time consuming to
+% increase them more under the programing paradigm here where both a and k
+% choices are jointly considered in one problem.
 %
 % @param it_subset integer default parameter control subsetting. it_subset = 1 is
 % basic invoke quick test. it_subset = 2 is main invoke. it_subset = 3 is
@@ -327,14 +347,31 @@ default_params = {it_subset bl_display_defparam};
 %% Setting param_map container
 
 param_map = containers.Map('KeyType','char', 'ValueType','any');
+
 % Preferences
 param_map('fl_crra') = 1.5;
 param_map('fl_beta') = 0.94;
-% Shock Parameters
+
+% Production Function
+% Productivity Shock Parameters
 param_map('it_z_n') = 15;
 param_map('fl_z_mu') = 0;
 param_map('fl_z_rho') = 0.8;
 param_map('fl_z_sig') = 0.2;
+% CD Production Function Parameters
+param_map('fl_Amean') = 1;
+param_map('fl_alpha') = 0.36;
+param_map('fl_delta') = 0.08;
+
+% Prices
+% shock is on k, not on labor, fl_w is fixed wage income
+param_map('fl_w') = 1.28;
+param_map('fl_r_save') = 0.025;
+param_map('fl_r_borr') = 0.025;
+% Minimum Consumption, utility lower bound (major impact parameter
+param_map('fl_c_min') = 0.001;
+
+% Asset Grids
 % Safe Financial Choice vector
 param_map('fl_b_bd') = 0; % borrow bound, = 0 if save only
 param_map('fl_a_min') = 0; % if there is minimum savings requirement
@@ -345,15 +382,9 @@ param_map('it_a_n') = 30;
 % Risky Capital Asset Vector
 param_map('fl_k_min') = 0;
 param_map('fl_k_max') = 50;
-param_map('bl_k_loglin') = false; 
+param_map('bl_k_loglin') = false;
 param_map('fl_k_loglin_threshold') = 1;
 param_map('it_k_n') = 30;
-% Prices
-param_map('fl_w') = 1.28;
-param_map('fl_r_save') = 0.025;
-param_map('fl_r_borr') = 0.025;
-% Minimum Consumption, utility lower bound (major impact parameter
-param_map('fl_c_min') = 0.001;
 
 % Solution Accuracy
 param_map('it_maxiter_val') = 250;

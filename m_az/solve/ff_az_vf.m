@@ -52,7 +52,7 @@ function result_map = ff_az_vf(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 4;
+it_param_set = 1;
 bl_input_override = true;
 [param_map, support_map] = ffs_az_set_default_param(it_param_set);
 [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
@@ -170,8 +170,8 @@ while bl_vfi_continue
                 end
                 
                 % loop 4: add future utility, integration--loop over future shocks
-                for it_ap_q = 1:length(ar_z)
-                    ar_val_cur(it_ap_k) = ar_val_cur(it_ap_k) + fl_beta*mt_z_trans(it_z_i,it_ap_q)*mt_val_cur(it_ap_k,it_ap_q);
+                for it_az_q = 1:length(ar_z)
+                    ar_val_cur(it_ap_k) = ar_val_cur(it_ap_k) + fl_beta*mt_z_trans(it_z_i,it_az_q)*mt_val_cur(it_ap_k,it_az_q);
                 end
                 
                 % Replace if negative consumption
@@ -207,11 +207,11 @@ while bl_vfi_continue
         tb_valpol_iter = array2table([mean(mt_val_cur,1); mean(mt_pol_a_cur,1); ...
             mt_val_cur(it_a_n,:); mt_pol_a_cur(it_a_n,:)]);
         tb_valpol_iter.Properties.VariableNames = strcat('z', string((1:size(mt_val_cur,2))));
-        tb_valpol_iter.Properties.RowNames = {'mval', 'map', 'Hval', 'Hpol'};
+        tb_valpol_iter.Properties.RowNames = {'mval', 'map', 'Hval', 'Hap'};
         disp('mval = mean(mt_val_cur,1), average value over a')
         disp('map  = mean(mt_pol_a_cur,1), average choice over a')
         disp('Hval = mt_val_cur(it_a_n,:), highest a state val')
-        disp('mval = mt_pol_a_cur(it_a_n,:), highest a state choice')
+        disp('Hap = mt_pol_a_cur(it_a_n,:), highest a state choice')
         disp(tb_valpol_iter);
     end
     

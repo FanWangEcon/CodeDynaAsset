@@ -213,11 +213,11 @@ while bl_vfi_continue
         tb_valpol_iter = array2table([mean(mt_val_cur,1); mean(mt_pol_a_cur,1); ...
             mt_val_cur(it_a_n,:); mt_pol_a_cur(it_a_n,:)]);
         tb_valpol_iter.Properties.VariableNames = strcat('z', string((1:size(mt_val_cur,2))));
-        tb_valpol_iter.Properties.RowNames = {'mval', 'map', 'Hval', 'Hpol'};
+        tb_valpol_iter.Properties.RowNames = {'mval', 'map', 'Hval', 'Hap'};
         disp('mval = mean(mt_val_cur,1), average value over a')
         disp('map  = mean(mt_pol_a_cur,1), average choice over a')
         disp('Hval = mt_val_cur(it_a_n,:), highest a state val')
-        disp('mval = mt_pol_a_cur(it_a_n,:), highest a state choice')
+        disp('Hap = mt_pol_a_cur(it_a_n,:), highest a state choice')
         disp(tb_valpol_iter);
     end
     
@@ -255,6 +255,7 @@ end
 result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
 result_map('mt_pol_a') = mt_pol_a;
+result_map('mt_pol_idx') = mt_pol_idx;
 
 if (bl_post)
     bl_input_override = true;

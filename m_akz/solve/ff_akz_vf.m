@@ -3,12 +3,44 @@
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository> 
 % Table of Content.*
 
-function result_map = ff_az_vf(varargin)
-%% FF_AZ_VF solve infinite horizon exo shock + endo asset problem
-% This program solves the infinite horizon dynamic single asset and single
-% shock problem with loops. It is useful to have a version of code that is
-% looped for easy debugging. This is the standard dynamic exogenous
-% incomplete borrowing and savings problem. 
+function result_map = ff_akz_vf(varargin)
+%% FF_AKZ_VF solve infinite horizon exo shock + endo asset problem
+% This program solves the infinite horizon dynamic savings and risky
+% capital asset problem with some ar1 shock. The two assets could be a safe
+% bond and a risky stock if the risky asset has constant return to scale.
+% Alternatively, the risky asset could be a capital investment asset with
+% decreasing return to scale. There is risky component to the risky capital
+% investment, but one could also potentially resale a fraction of the risky
+% capital after depreciation, giving the household/investor/entrepreur a
+% safe minimum return to risky investment. The state variable is the
+% cash-on-hand, which is determined by risky and safe asset as well as the
+% shock jointly.
+%
+% This problem is dramatically more computationally intensive to solve
+% compared to the single asset problem, shown here:
+% <https://fanwangecon.github.io/CodeDynaAsset/m_oz/solve/html/ff_oz_vf.html
+% ff_oz_vf>. Here I show the looped solution. As before, as we expand the 
+% state and choices spaces to have a looped slow version of the code so
+% that one could debug and make sure the model works. 
+%
+% Vectorized, optimized vectorized versions of the code are shown here:
+% <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vec.html
+% ff_akz_vf_vec> and here:
+% <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vecsv.html
+% ff_akz_vf_vecsv>. These dramatically improve upon the speed, yet the
+% speed is still not as fast as we need to structurally estimate the model.
+% Structural estimation requires solving the model many many times,
+% especially if we want to be confident about local min vs global min.
+% Given these, I introduce a faster version of the two asset choice
+% problem where we reduce the choice dimension and separate the problem
+% into two stages. 
+%
+% The basic forms of the one and two asset problems have analytically
+% tractable mathmatical solutions, especially if one uses continuous time
+% formulations. The benefit of these grid based solution algorithm is that
+% we are able to add very flexible constraints to the problem or
+% incorporate additional discrete choices that make the underlying problem
+% non-continous and non-differentiable and mathamtically untractable. 
 %
 % @param param_map container parameter container
 %
@@ -40,9 +72,9 @@ function result_map = ff_az_vf(varargin)
 %
 % @include
 %
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/paramfunc/ffs_az_set_default_param.m ffs_az_set_default_param>
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/paramfunc/ffs_az_get_funcgrid.m ffs_az_get_funcgrid>
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solvepost/ff_az_vf_post.m ff_az_vf_post>
+% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ffs_akz_set_default_param.m ffs_akz_set_default_param>
+% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ffs_akz_get_funcgrid.m ffs_akz_get_funcgrid>
+% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solvepost/ff_akz_vf_post.m ff_akz_vf_post>
 %
 
 
@@ -52,10 +84,10 @@ function result_map = ff_az_vf(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 4;
+it_param_set = 2;
 bl_input_override = true;
-[param_map, support_map] = ffs_az_set_default_param(it_param_set);
-[armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
+[param_map, support_map] = ffs_akz_set_default_param(it_param_set);
+[armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 default_params = {param_map support_map armt_map func_map};
 
 %% Parse Parameters 1
@@ -69,7 +101,7 @@ if params_len >= 1 && params_len <= 2
     % If override param_map, re-generate armt and func if they are not
     % provided
     bl_input_override = true;
-    [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override);
+    [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override);
 else
     % Override all
     armt_map = [armt_map; default_params{3}];
@@ -77,7 +109,7 @@ else
 end
 
 % append function name
-st_func_name = 'ff_az_vf';
+st_func_name = 'ff_akz_vf';
 support_map('st_profile_name_main') = [st_func_name support_map('st_profile_name_main')];
 support_map('st_mat_name_main') = [st_func_name support_map('st_mat_name_main')];
 support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')];
@@ -87,6 +119,8 @@ support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')]
 % armt_map
 params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z'});
 [ar_a, mt_z_trans, ar_z] = params_group{:};
+params_group = values(armt_map, {'ar_a_meshk', 'ar_k_mesha', 'mt_coh', 'it_ameshk_n'});
+[ar_a_meshk, ar_k_mesha, mt_coh, it_ameshk_n] = params_group{:};
 % func_map
 params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons'});
 [f_util_log, f_util_crra, f_cons] = params_group{:};
@@ -106,10 +140,12 @@ params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
 
 %% Initialize Output Matrixes
 
-mt_val_cur = zeros(length(ar_a),length(ar_z));
+mt_val_cur = zeros(length(ar_a_meshk),length(ar_z));
 mt_val = mt_val_cur - 1;
-mt_pol_a = zeros(length(ar_a),length(ar_z));
+mt_pol_a = zeros(length(ar_a_meshk),length(ar_z));
 mt_pol_a_cur = mt_pol_a - 1;
+mt_pol_k = zeros(length(ar_a_meshk),length(ar_z));
+mt_pol_k_cur = mt_pol_k - 1;
 
 %% Initialize Convergence Conditions
 
@@ -148,43 +184,47 @@ while bl_vfi_continue
     
     % loop 1: over exogenous states
     for it_z_i = 1:length(ar_z)
-        fl_z = ar_z(it_z_i);
         
         % loop 2: over endogenous states
-        for it_a_j = 1:length(ar_a)
-            fl_a = ar_a(it_a_j);
-            ar_val_cur = zeros(size(ar_a));
+        for it_coh_j = 1:length(ar_a_meshk)
+            % Get cash-on-hand which include k,b,z
+            fl_coh = mt_coh(it_coh_j, it_z_i);
             
             % loop 3: over choices
-            for it_ap_k = 1:length(ar_a)
-                fl_ap = ar_a(it_ap_k);
-                fl_c = f_cons(fl_z, fl_a, fl_ap);
+            ar_val_cur = zeros(size(ar_a_meshk));
+            for it_cohp_k = 1:length(ar_a_meshk)
+                fl_ap = ar_a_meshk(it_cohp_k);
+                fl_kp = ar_k_mesha(it_cohp_k);
+                
+                % consumption
+                fl_c = f_cons(fl_coh, fl_ap, fl_kp);
                 
                 % current utility
                 if (fl_crra == 1)
-                    ar_val_cur(it_ap_k) = f_util_log(fl_c);
+                    ar_val_cur(it_cohp_k) = f_util_log(fl_c);
                     fl_u_neg_c = f_util_log(fl_c_min);
                 else
-                    ar_val_cur(it_ap_k) = f_util_crra(fl_c);
+                    ar_val_cur(it_cohp_k) = f_util_crra(fl_c);
                     fl_u_neg_c = f_util_crra(fl_c_min);
                 end
                 
                 % loop 4: add future utility, integration--loop over future shocks
-                for it_ap_q = 1:length(ar_z)
-                    ar_val_cur(it_ap_k) = ar_val_cur(it_ap_k) + fl_beta*mt_z_trans(it_z_i,it_ap_q)*mt_val_cur(it_ap_k,it_ap_q);
+                for it_zp_q = 1:length(ar_z)
+                    ar_val_cur(it_cohp_k) = ar_val_cur(it_cohp_k) + fl_beta*mt_z_trans(it_z_i,it_zp_q)*mt_val_cur(it_cohp_k,it_zp_q);
                 end
                 
                 % Replace if negative consumption
                 if fl_c <= 0
-                    ar_val_cur(it_ap_k) = fl_u_neg_c;
+                    ar_val_cur(it_cohp_k) = fl_u_neg_c;
                 end
                 
             end
             
             % maximization over loop 3 choices for loop 1+2 states
             it_max_lin_idx = find(ar_val_cur == max(ar_val_cur));
-            mt_val(it_a_j,it_z_i) = ar_val_cur(it_max_lin_idx(1));
-            mt_pol_a(it_a_j,it_z_i) = ar_a(it_max_lin_idx(1));
+            mt_val(it_coh_j,it_z_i) = ar_val_cur(it_max_lin_idx(1));
+            mt_pol_a(it_coh_j,it_z_i) = ar_a_meshk(it_max_lin_idx(1));
+            mt_pol_k(it_coh_j,it_z_i) = ar_k_mesha(it_max_lin_idx(1));
             
         end
     end
@@ -193,25 +233,34 @@ while bl_vfi_continue
     
     % Difference across iterations
     ar_val_diff_norm(it_iter) = norm(mt_val - mt_val_cur);
-    ar_pol_diff_norm(it_iter) = norm(mt_pol_a - mt_pol_a_cur);
-    mt_pol_perc_change(it_iter, :) = sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n);
+    ar_pol_diff_norm(it_iter) = norm(mt_pol_a - mt_pol_a_cur) + norm(mt_pol_k - mt_pol_k_cur);
+    ar_pol_a_perc_change = sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n);
+    ar_pol_k_perc_change = sum((mt_pol_k ~= mt_pol_k_cur))/(it_a_n);    
+    mt_pol_perc_change(it_iter, :) = mean([ar_pol_a_perc_change;ar_pol_k_perc_change]);
     
     % Update
     mt_val_cur = mt_val;
     mt_pol_a_cur = mt_pol_a;
+    mt_pol_k_cur = mt_pol_k;
     
     % Print Iteration Results
     if (bl_display && (rem(it_iter, it_display_every)==0))
         fprintf('VAL it_iter:%d, fl_diff:%d, fl_diff_pol:%d\n', ...
             it_iter, ar_val_diff_norm(it_iter), ar_pol_diff_norm(it_iter));
-        tb_valpol_iter = array2table([mean(mt_val_cur,1); mean(mt_pol_a_cur,1); ...
-            mt_val_cur(it_a_n,:); mt_pol_a_cur(it_a_n,:)]);
+        tb_valpol_iter = array2table([mean(mt_val_cur,1);...
+                                      mean(mt_pol_a_cur,1); ...
+                                      mean(mt_pol_k_cur,1); ...
+                                      mt_val_cur(it_a_n,:); ...
+                                      mt_pol_a_cur(it_a_n,:); ...
+                                      mt_pol_k_cur(it_a_n,:)]);
         tb_valpol_iter.Properties.VariableNames = strcat('z', string((1:size(mt_val_cur,2))));
-        tb_valpol_iter.Properties.RowNames = {'mval', 'map', 'Hval', 'Hpol'};
+        tb_valpol_iter.Properties.RowNames = {'mval', 'map', 'mak', 'Hval', 'Hap', 'Hak'};
         disp('mval = mean(mt_val_cur,1), average value over a')
         disp('map  = mean(mt_pol_a_cur,1), average choice over a')
+        disp('mkp  = mean(mt_pol_k_cur,1), average choice over k')
         disp('Hval = mt_val_cur(it_a_n,:), highest a state val')
-        disp('mval = mt_pol_a_cur(it_a_n,:), highest a state choice')
+        disp('Hap = mt_pol_a_cur(it_a_n,:), highest a state choice')
+        disp('mak = mt_pol_k_cur(it_a_n,:), highest k state choice')                
         disp(tb_valpol_iter);
     end
     
@@ -249,13 +298,14 @@ end
 result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
 result_map('mt_pol_a') = mt_pol_a;
+result_map('mt_pol_k') = mt_pol_k;
 
 if (bl_post)
     bl_input_override = true;
     result_map('ar_val_diff_norm') = ar_val_diff_norm(1:it_iter_last);
     result_map('ar_pol_diff_norm') = ar_pol_diff_norm(1:it_iter_last);
     result_map('mt_pol_perc_change') = mt_pol_perc_change(1:it_iter_last, :);
-    result_map = ff_az_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    result_map = ff_akz_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
 end
 
 end
