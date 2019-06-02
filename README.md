@@ -33,7 +33,7 @@ Using three algorithm that provide identical solutions:
 3. *bz* model [optimized vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solve/ff_az_vf_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/profile/ff_az_vf_vecsv_default_p3/file0.html)    
     * speed: **1.2** seconds
     * loops: 1 for VFI, 1 for shocks, vectorize remaining 3 loops, reuse u(c)
-    * reuse u(c) in cells, several speed improvements described [here](https://fanwangecon.github.io/M4Econ/)
+    * reuse u(c) in cells, speed improvements described [here](https://fanwangecon.github.io/M4Econ/)
 
 ## 1.2 Asset Distributions (BZ)
 
@@ -66,7 +66,7 @@ Solving for the asset distribution.
 
 ## 1.4 Cash-on-hand and One Shock (COH-Z)
 
-The problem could be posed slightly differently with the asset state variable as cash-on-hand. The codes are basically identical, and are shown here in this [folder](https://fanwangecon.github.io/CodeDynaAsset/m_oz). Speeds and outcomes are the same. This is useful for thinking about finding asset distributions.
+The problem could be posed slightly differently with the asset state variable as cash-on-hand. The codes are basically identical, and are shown here in this [folder](https://fanwangecon.github.io/CodeDynaAsset/m_oz). Speeds and outcomes are the same. This is useful for thinking about finding asset distributions. Additionally, part 2 model state space is all in terms of cash-on-hand.
 
 **Main Optimization Solution Files**:
 - *coh-z* model [looped solution](https://fanwangecon.github.io/CodeDynaAsset/m_oz/solve/html/ff_oz_vf.html), [vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_oz/solve/html/ff_oz_vf_vec.html), [optimized vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_oz/solve/html/ff_oz_vf_vecsv.html)
@@ -88,7 +88,7 @@ There are more analytical ways of solving the basic version of this problem. Her
 - In **2.2**, solve the problem in two stages
 - In **2.3**, two stage solution with interpolation
 
-## 2.1 Explicitly Solve for Safe and Risky Assets (BKZ)
+## 2.1 Solve concurrently for Safe and Risky Assets (BKZ)
 
 The *bkz* problem. Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html), for the benchmark simulation:
 
@@ -96,7 +96,7 @@ The *bkz* problem. Parameters can be adjusted [here](https://fanwangecon.github.
 - **45** aggregate savings grid points, **1035** combinations of safe and risky asset choices. Choice grids shown [here](https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html) at the end of the file. Note that the benchmark parameters for the *bz* model has *750* grid points of choices/states, the benchmark problem here is larger and hence takes more time.
 - **15** grid points for the AR1 shock
 
-1. *bkz* model [looped solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_akz_vf.m) \|
+1. *bkz* model [looped solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_akz_vf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/profile/ff_akz_vf_default_p3/file0.html)    
     * speed: **19891.3** seconds
     * loops: 1 for VFI, 1 for shocks, 1 for coh(b,k,z), 1 for (b',k') choices, 1 for future shocks
 2. *bkz* model [vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vec.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_akz_vf_vec.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vec.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/profile/ff_akz_vf_vec_default_p3/file0.html)    
@@ -105,9 +105,9 @@ The *bkz* problem. Parameters can be adjusted [here](https://fanwangecon.github.
 3. *bkz* model [optimized vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_akz_vf_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/profile/ff_akz_vf_vecsv_default_p3/file0.html)    
     * speed: **2.1** seconds
     * loops: 1 for VFI, 1 for shocks, vectorize remaining
-    * reuse u(c) in cells, several speed improvements described [here](https://fanwangecon.github.io/M4Econ/)
+    * reuse u(c) in cells, speed improvements described [here](https://fanwangecon.github.io/M4Econ/)
 
-## 2.2 Two-stage Solution, First Aggregate Savings (WKZ)
+## 2.2 Two Stage Solution (WKZ)
 
 The *wkz* problem, w=k'+b'. Takes significantly less time than *2.1*, produces identical results. Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html), for the benchmark simulation, same as *2.1*:
 
@@ -117,19 +117,19 @@ The *wkz* problem, w=k'+b'. Takes significantly less time than *2.1*, produces i
 
 1. *wkz* model [looped solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_akz_vf.m) \|
     * speed: **720.7** seconds (*72* times faster than *2.1*)
-    * Step One solve k*(w,z); Step Two solve w*(z,coh(b,k,z)) given k*(w,z)
+    * Step One solve k(w,z); Step Two solve w(z,coh(b,k,z)) given k(w,z)
     * loops: 1 for VFI, 1 for shocks, 1 for coh(b,k,z), 1 for w(z)=k'+b'
 2. *wkz* model [vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vec.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_akz_vf_vec.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vec.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/profile/ff_akz_vf_vec_default_p3/file0.html)    
     * speed: **4.1** seconds (*17* times faster than *2.1*)
-    * Step One solve k*(w,z); Step Two solve w*(z,coh(b,k,z)) given k*(w,z)
+    * Step One solve k(w,z); Step Two solve w(z,coh(b,k,z)) given k(w,z)
     * loops: 1 for VFI, 1 for shocks, vectorize remaining
 3. *wkz* model [optimized vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_akz_vf_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/profile/ff_akz_vf_vecsv_default_p3/file0.html)    
     * speed: **0.8** seconds (*2.6* times faster than *2.1*)
-    * Step One solve k*(w,z); Step Two solve w*(z,coh(b,k,z)) given k*(w,z)
+    * Step One solve k(w,z); Step Two solve w(z,coh(b,k,z)) given k(w,z)
     * loops: 1 for VFI, 1 for shocks, vectorize remaining
     * store u(c) in cells, update when k*(w,z) changes, several speed improvements described [here](https://fanwangecon.github.io/M4Econ/)
 
-## 2.3 Two-stage Solution, First Aggregate Savings (WKZ)
+## 2.3 Two Stage with Interpolation (WKZ)
 
 
 ## 2.4 Asset Distributions (BKZ)
