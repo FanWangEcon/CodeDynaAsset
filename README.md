@@ -47,26 +47,24 @@ Solving for the asset distribution.
     * functions: centrally define functions as function handles
 3. *az* model [generate states, choices, and shocks grids](https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_get_funcgrid.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/paramfunc/ffs_az_get_funcgrid.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_get_funcgrid.html)
     * func_map: container map containing all function handles
-    * armt_map: container map containing all key model input matrixes for endogenous and exogenous states and choices.
+    * armt_map: container map containing matrixes for states and choices.
 
 **Output Analysis**:
 1.  *az* model [solution results processing](https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_vf_post.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solvepost/ff_az_vf_post.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_vf_post.html)
-    * table: table showing value and policy function by states and shocks
-    * table: table showing iteration convergence criteria and percentage policy function change by shock
-    * graph: graph showing value function, policy functions with levels, logged levels and percentages
+    * table: value and policy function by states and shocks
+    * table: iteration convergence and percentage policy function change by shock
+    * graph: value + policy functions with levels, logged levels and percentages
     * mat: store all workspace matrixes, arrays, scalar values to matrixes
 2. *az* model [solution results graphing](https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_vf_post_graph.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solvepost/ff_az_vf_post_graph.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_vf_post_graph.html)
-    * graph: graph showing value function by asset and shock
-    * graph: graph showing consumption and asset choice levels
-    * graph: graph showing consumption and asset logged levels
-    * graph: graph showing consumption and asset as percentages of coh and assets
+    * graph: value function by asset and shock
+    * graph: consumption and asset choice levels
+    * graph: consumption and asset logged levels
+    * graph: consumption and asset as percentages of coh and assets
 
 
 ## 1.4 Cash-on-hand and One Shock (COH-Z)
 
-The problem could be posed slightly differently with the asset state variable as cash-on-hand. The codes are basically identical, and are shown here in this [folder](https://fanwangecon.github.io/CodeDynaAsset/m_oz)
-
-The files are almost identical to the earlier files, they are included here for completeness. Speeds are the same.
+The problem could be posed slightly differently with the asset state variable as cash-on-hand. The codes are basically identical, and are shown here in this [folder](https://fanwangecon.github.io/CodeDynaAsset/m_oz). The files are almost identical to the earlier files, they are included here for completeness. Speeds are the same.
 
 **Main Optimization Solution Files**:
 - *coh-z* model [looped solution](https://fanwangecon.github.io/CodeDynaAsset/m_oz/solve/html/ff_oz_vf.html), [vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_oz/solve/html/ff_oz_vf_vec.html), [optimized vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_oz/solve/html/ff_oz_vf_vecsv.html)
@@ -80,11 +78,9 @@ The files are almost identical to the earlier files, they are included here for 
 
 # 2. The Risky + Safe Asset Problem (AKZ)
 
-Two endogenous assets, one safe one risky. Risky asset could be stock or constant return to scale, or physical capital investment with depreciation and decreasing return to scale. Income is endogenous to risky investment choices and safe savings choices. Note that the utility function is CRRA, however, households do not have constant share of risky investment for any wealth (cash-on-hand) levels when risky asset has decreasing return to scale and when shock is highly persistent.
+Two endogenous assets, one safe one risky. Risky asset could be stock with constant return to scale, or physical capital investment with depreciation and decreasing return to scale. Note that the utility function is CRRA, however, households do not have constant share of risky investment for any wealth (cash-on-hand) levels when risky asset has decreasing return to scale and when shock is highly persistent.
 
-There are more analytical ways of solving the base version types of problems that would be potentially very quick. Here we stick to using this grid based solution algorithm which allows for some flexibility in having non-differentiable and non-continuous solution objective functions, allowing for the inclusion of arbitrary fixed costs and easy inclusion of additional discrete choices. The grid based solution algorithm now with 2 endogenous choices and states is dramatically more computationally intensive to solve at high accuracy. Here I provide three solution algorithms that parallel the three provided for the *az* model earlier.
-
-In this section, we explicitly solve for the two assets choices jointly. In section 3, I significantly increase the accuracy by solving the problem in two stages.
+There are more analytical ways of solving the basic version of this problem. Here we stick to using this grid based solution algorithm which allows for flexibly solving non-differentiable and non-continuous problems. The grid based solution algorithm now with 2 endogenous choices and states requires exponentially more computation time than the ak model. Here I provide three solution algorithms that parallel the three provided for the *az* model earlier. In this section, I explicitly solve for the two asset choices jointly. In section 3, I significantly increase the accuracy of the solution by solving the problem in two stages at very high speed.
 
 ## 2.1 Main Optimization Solution Files (AKZ)
 
@@ -120,17 +116,17 @@ Solving for the asset distribution.
 2. *akz* model [set functions](https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ffs_akz_set_functions.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html)
     * functions: centrally define functions as function handles
 3. *akz* model [generate states, choices, and shocks grids](https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ffs_akz_get_funcgrid.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html)
-    * func_map: container map containing all function handles
-    * armt_map: container map containing all key model input matrixes for endogenous and exogenous states and choices.
+    * func_map: container map containing function handles
+    * armt_map: container map containing matrixes for states and choices.
 
 **Output Analysis**:
 1.  *akz* model [solution results processing](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_vf_post.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solvepost/ff_akz_vf_post.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_vf_post.html)
-    * table: table showing value and policy function by states and shocks
-    * table: table showing iteration convergence criteria and percentage policy function change by shock
-    * graph: graph showing value function, policy functions with levels, logged levels and percentages
+    * table: value and policy function by states and shocks
+    * table: convergence and percentage policy function change by shock
+    * graph: value + policy functions with levels, logged levels and percentages
     * mat: store all workspace matrixes, arrays, scalar values to matrixes
 2. *akz* model [solution results graphing](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_vf_post_graph.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solvepost/ff_akz_vf_post_graph.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_vf_post_graph.html)
-    * graph: graph showing value function by asset and shock
-    * graph: graph showing consumption and asset choice levels
-    * graph: graph showing consumption and asset logged levels
-    * graph: graph showing consumption and asset as percentages of coh and assets
+    * graph: value function by asset and shock
+    * graph: consumption and asset choice levels
+    * graph: consumption and asset logged levels
+    * graph: consumption and asset as percentages of coh and assets
