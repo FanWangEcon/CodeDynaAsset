@@ -42,6 +42,10 @@ function result_map = ff_akz_vf(varargin)
 % incorporate additional discrete choices that make the underlying problem
 % non-continous and non-differentiable and mathamtically untractable. 
 %
+% The matlab looped code is no longer usable for this model. If one wants
+% to achieve some level of moderate accuracy, the solution time begins to
+% take many hours. 
+%
 % @param param_map container parameter container
 %
 % @param support_map container support container
@@ -84,7 +88,7 @@ function result_map = ff_akz_vf(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 2;
+it_param_set = 1;
 bl_input_override = true;
 [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
 [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
@@ -117,8 +121,8 @@ support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')]
 %% Parse Parameters 2
 
 % armt_map
-params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z'});
-[ar_a, mt_z_trans, ar_z] = params_group{:};
+params_group = values(armt_map, {'mt_z_trans', 'ar_z'});
+[ mt_z_trans, ar_z] = params_group{:};
 params_group = values(armt_map, {'ar_a_meshk', 'ar_k_mesha', 'mt_coh', 'it_ameshk_n'});
 [ar_a_meshk, ar_k_mesha, mt_coh, it_ameshk_n] = params_group{:};
 % func_map
@@ -126,8 +130,8 @@ params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons'});
 [f_util_log, f_util_crra, f_cons] = params_group{:};
 % param_map
 params_group = values(param_map, {'fl_r_save', 'fl_r_borr', 'fl_w',...
-    'it_a_n', 'it_z_n', 'fl_crra', 'fl_beta', 'fl_c_min'});
-[fl_r_save, fl_r_borr, fl_wage, it_a_n, it_z_n, fl_crra, fl_beta, fl_c_min] = params_group{:};
+    'it_z_n', 'fl_crra', 'fl_beta', 'fl_c_min'});
+[fl_r_save, fl_r_borr, fl_wage, it_z_n, fl_crra, fl_beta, fl_c_min] = params_group{:};
 params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol', 'it_tol_pol_nochange'});
 [it_maxiter_val, fl_tol_val, fl_tol_pol, it_tol_pol_nochange] = params_group{:};
 % support_map
@@ -234,8 +238,8 @@ while bl_vfi_continue
     % Difference across iterations
     ar_val_diff_norm(it_iter) = norm(mt_val - mt_val_cur);
     ar_pol_diff_norm(it_iter) = norm(mt_pol_a - mt_pol_a_cur) + norm(mt_pol_k - mt_pol_k_cur);
-    ar_pol_a_perc_change = sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n);
-    ar_pol_k_perc_change = sum((mt_pol_k ~= mt_pol_k_cur))/(it_a_n);    
+    ar_pol_a_perc_change = sum((mt_pol_a ~= mt_pol_a_cur))/(it_ameshk_n);
+    ar_pol_k_perc_change = sum((mt_pol_k ~= mt_pol_k_cur))/(it_ameshk_n);    
     mt_pol_perc_change(it_iter, :) = mean([ar_pol_a_perc_change;ar_pol_k_perc_change]);
     
     % Update
@@ -250,17 +254,17 @@ while bl_vfi_continue
         tb_valpol_iter = array2table([mean(mt_val_cur,1);...
                                       mean(mt_pol_a_cur,1); ...
                                       mean(mt_pol_k_cur,1); ...
-                                      mt_val_cur(it_a_n,:); ...
-                                      mt_pol_a_cur(it_a_n,:); ...
-                                      mt_pol_k_cur(it_a_n,:)]);
+                                      mt_val_cur(it_ameshk_n,:); ...
+                                      mt_pol_a_cur(it_ameshk_n,:); ...
+                                      mt_pol_k_cur(it_ameshk_n,:)]);
         tb_valpol_iter.Properties.VariableNames = strcat('z', string((1:size(mt_val_cur,2))));
         tb_valpol_iter.Properties.RowNames = {'mval', 'map', 'mak', 'Hval', 'Hap', 'Hak'};
         disp('mval = mean(mt_val_cur,1), average value over a')
         disp('map  = mean(mt_pol_a_cur,1), average choice over a')
         disp('mkp  = mean(mt_pol_k_cur,1), average choice over k')
-        disp('Hval = mt_val_cur(it_a_n,:), highest a state val')
-        disp('Hap = mt_pol_a_cur(it_a_n,:), highest a state choice')
-        disp('mak = mt_pol_k_cur(it_a_n,:), highest k state choice')                
+        disp('Hval = mt_val_cur(it_ameshk_n,:), highest a state val')
+        disp('Hap = mt_pol_a_cur(it_ameshk_n,:), highest a state choice')
+        disp('mak = mt_pol_k_cur(it_ameshk_n,:), highest k state choice')                
         disp(tb_valpol_iter);
     end
     

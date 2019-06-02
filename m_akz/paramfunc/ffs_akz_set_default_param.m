@@ -8,13 +8,35 @@ function [param_map, support_map] = ffs_akz_set_default_param(varargin)
 % two groups of default parameters stored in container maps. Explicitly
 % solving for both a and k grids exponentially increase problem size, and
 % we can not have state and choice grids that are as tight as for the az
-% problem. Note that the defaults set it_a_n it_k_n both at 30 points.
-% These create 900 combination of choice points. But when we had the one
-% asset problem, we were able to use for benchmarkin 750 points for just a
-% by itself. I increase significantly it_an and it_k_n for the state
-% dimension reduced model. It is computationally very time consuming to
-% increase them more under the programing paradigm here where both a and k
-% choices are jointly considered in one problem.
+% problem. Note that the defaults set it_w_n to have a far more limited
+% number of points. For each w, we allow for combinations of a and k
+% choices. Before, each aggregate savings choice only had one a associated
+% with it. 
+%
+% The biggest change from
+% <https://fanwangecon.github.io/CodeDynaAsset/m_oz/paramfunc/html/ffs_oz_set_default_param.html
+% ffs_oz_set_default_param> is that now we have two asset choices. Previous
+% we had the a grid for the cash-on-hand and z (az) model.
+%
+% Now a is w. There was only one asset before, so a was total
+% savings. Now w is total savings w = a' + k'. Define choice grid in terms
+% of the total savings, rather than a and k grids separately. If we define
+% a and k with min and max separately, we will have a choice combo max(a) +
+% max(k), this corresponds to one very high level of aggregate savings, but
+% we are implicitly only allowing for dividing a and k evenly when we
+% choose this. Implicitly, the higher the aggregate savings, the more
+% limited the a and k combinations becomes when we define a and k grids
+% separately. Geometrically, With aprime as the x-axis and kprime as the
+% y-axis of choices, we need to define choices in terms of diagnoals
+% (triangles) rather than vertical and horizontal lines (rectangles). See
+% this graphically at the end of this page:
+% <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html
+% ffs_akz_get_funcgrid> which shows the triangular choice grids.
+%
+% With our triangular shape, with w_n total saving grid points, we will
+% have : w_n*(w_n-1)/2 + w_n total grid of a and k jointly. Specifically,
+% with the benchmark grid of w_n = 45 points, we have (45-1)*45/2 + 45 =
+% 1035 total a and k joint grid points.
 %
 % @param it_subset integer default parameter control subsetting. it_subset = 1 is
 % basic invoke quick test. it_subset = 2 is main invoke. it_subset = 3 is
@@ -50,7 +72,7 @@ param_map('fl_beta') = 0.94;
 
 % Production Function
 % Productivity Shock Parameters
-param_map('it_z_n') = 5;
+param_map('it_z_n') = 15;
 param_map('fl_z_mu') = 0;
 param_map('fl_z_rho') = 0.8;
 param_map('fl_z_sig') = 0.2;
@@ -68,19 +90,19 @@ param_map('fl_r_borr') = 0.025;
 param_map('fl_c_min') = 0.001;
 
 % Asset Grids
-% Safe Financial Choice vector
+% Toal savings aggregate grid (see discussion on top). 35 points picked for
+
 param_map('fl_b_bd') = 0; % borrow bound, = 0 if save only
-param_map('fl_a_min') = 0; % if there is minimum savings requirement
-param_map('fl_a_max') = 50;
-param_map('bl_loglin') = false; % log lin threshold structure
-param_map('fl_loglin_threshold') = 1; % dense points before 1
-param_map('it_a_n') = 20;
+param_map('fl_w_min') = param_map('fl_b_bd'); % but b_bd overrides this
+param_map('fl_w_max') = 50;
+param_map('it_w_n') = 45;
 % Risky Capital Asset Vector
+% see graph below for how it looks graphically
+% in principle keep it_k_n the same as it_w_n to have equi-distance points
+% in triangle choice grid.
 param_map('fl_k_min') = 0;
-param_map('fl_k_max') = 50;
-param_map('bl_k_loglin') = false;
-param_map('fl_k_loglin_threshold') = 1;
-param_map('it_k_n') = 20;
+param_map('fl_k_max') = (param_map('fl_w_max') - param_map('fl_b_bd'));
+param_map('it_ak_n') = param_map('it_w_n'); % grid for a and k the same
 
 % Solution Accuracy
 param_map('it_maxiter_val') = 250;
@@ -146,8 +168,8 @@ support_map('bl_display_funcgrids') = false;
 if (ismember(it_subset, [1,2,3,4]))
     if (ismember(it_subset, [1]))
         % TEST quick
-        param_map('it_a_n') = 10;
-        param_map('it_k_n') = 10;
+        param_map('it_w_n') = 20;
+        param_map('it_k_n') = param_map('it_w_n');
         param_map('it_z_n') = 3;
         param_map('it_maxiter_val') = 50;
         param_map('it_tol_pol_nochange') = 1000;

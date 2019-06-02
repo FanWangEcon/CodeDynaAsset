@@ -76,8 +76,8 @@ end
 %% Parse Parameters
 
 % param_map
-params_group = values(param_map, {'fl_b_bd', 'it_z_n', 'fl_a_max'});
-[fl_b_bd, it_z_n, fl_a_max] = params_group{:};
+params_group = values(param_map, {'fl_b_bd', 'it_z_n'});
+[fl_b_bd, it_z_n] = params_group{:};
 
 % support_map
 params_group = values(support_map, {'bl_graph_onebyones', 'bl_graph_val', 'bl_graph_pol_lvl', 'bl_graph_pol_pct'});

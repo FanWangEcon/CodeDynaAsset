@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>ffs_akz_set_default_param</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-05-30"><meta name="DC.source" content="ffs_akz_set_default_param.m"><style type="text/css">
+      --><title>ffs_akz_set_default_param</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-01"><meta name="DC.source" content="ffs_akz_set_default_param.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -67,7 +67,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
   </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">FFS_AKZ_SET_DEFAULT_PARAM setting model default parameters</a></li><li><a href="#3">Default</a></li><li><a href="#4">Setting param_map container</a></li><li><a href="#5">Setting support_map container</a></li><li><a href="#6">Subset Options</a></li><li><a href="#7">Display</a></li></ul></div><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><pre class="codeinput"><span class="keyword">function</span> [param_map, support_map] = ffs_akz_set_default_param(varargin)
-</pre><h2 id="2">FFS_AKZ_SET_DEFAULT_PARAM setting model default parameters</h2><p>two groups of default parameters stored in container maps. Explicitly solving for both a and k grids exponentially increase problem size, and we can not have state and choice grids that are as tight as for the az problem. Note that the defaults set it_a_n it_k_n both at 30 points. These create 900 combination of choice points. But when we had the one asset problem, we were able to use for benchmarkin 750 points for just a by itself. I increase significantly it_an and it_k_n for the state dimension reduced model. It is computationally very time consuming to increase them more under the programing paradigm here where both a and k choices are jointly considered in one problem.</p><p>@param it_subset integer default parameter control subsetting. it_subset = 1 is basic invoke quick test. it_subset = 2 is main invoke. it_subset = 3 is profiling invoke. it_subset = 4 is matlab publish.</p><p>@param bl_display_defparam boolean local printing</p><p>@return param_map container parameters needed for solving the model</p><p>@return support_map container programming control parameters like to graph to print etc</p><p>@example</p><pre class="language-matlab">it_param_set = 1;
+</pre><h2 id="2">FFS_AKZ_SET_DEFAULT_PARAM setting model default parameters</h2><p>two groups of default parameters stored in container maps. Explicitly solving for both a and k grids exponentially increase problem size, and we can not have state and choice grids that are as tight as for the az problem. Note that the defaults set it_w_n to have a far more limited number of points. For each w, we allow for combinations of a and k choices. Before, each aggregate savings choice only had one a associated with it.</p><p>The biggest change from <a href="https://fanwangecon.github.io/CodeDynaAsset/m_oz/paramfunc/html/ffs_oz_set_default_param.html">ffs_oz_set_default_param</a> is that now we have two asset choices. Previous we had the a grid for the cash-on-hand and z (az) model.</p><p>Now a is w. There was only one asset before, so a was total savings. Now w is total savings w = a' + k'. Define choice grid in terms of the total savings, rather than a and k grids separately. If we define a and k with min and max separately, we will have a choice combo max(a) + max(k), this corresponds to one very high level of aggregate savings, but we are implicitly only allowing for dividing a and k evenly when we choose this. Implicitly, the higher the aggregate savings, the more limited the a and k combinations becomes when we define a and k grids separately. Geometrically, With aprime as the x-axis and kprime as the y-axis of choices, we need to define choices in terms of diagnoals (triangles) rather than vertical and horizontal lines (rectangles). See this graphically at the end of this page: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html">ffs_akz_get_funcgrid</a> which shows the triangular choice grids.</p><p>@param it_subset integer default parameter control subsetting. it_subset = 1 is basic invoke quick test. it_subset = 2 is main invoke. it_subset = 3 is profiling invoke. it_subset = 4 is matlab publish.</p><p>@param bl_display_defparam boolean local printing</p><p>@return param_map container parameters needed for solving the model</p><p>@return support_map container programming control parameters like to graph to print etc</p><p>@example</p><pre class="language-matlab">it_param_set = 1;
 [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
 </pre><h2 id="3">Default</h2><pre class="codeinput">it_subset = 0;
 bl_display_defparam = true;
@@ -93,26 +93,25 @@ param_map(<span class="string">'fl_delta'</span>) = 0.08;
 
 <span class="comment">% Prices</span>
 <span class="comment">% shock is on k, not on labor, fl_w is fixed wage income</span>
-param_map(<span class="string">'fl_w'</span>) = 1.28;
+param_map(<span class="string">'fl_w'</span>) = 1.28*0.3466; <span class="comment">% min(z*w) from benchmark az model</span>
 param_map(<span class="string">'fl_r_save'</span>) = 0.025;
 param_map(<span class="string">'fl_r_borr'</span>) = 0.025;
 <span class="comment">% Minimum Consumption, utility lower bound (major impact parameter</span>
 param_map(<span class="string">'fl_c_min'</span>) = 0.001;
 
 <span class="comment">% Asset Grids</span>
-<span class="comment">% Safe Financial Choice vector</span>
+<span class="comment">% Toal savings aggregate grid (see discussion on top)</span>
 param_map(<span class="string">'fl_b_bd'</span>) = 0; <span class="comment">% borrow bound, = 0 if save only</span>
-param_map(<span class="string">'fl_a_min'</span>) = 0; <span class="comment">% if there is minimum savings requirement</span>
-param_map(<span class="string">'fl_a_max'</span>) = 50;
-param_map(<span class="string">'bl_loglin'</span>) = false; <span class="comment">% log lin threshold structure</span>
-param_map(<span class="string">'fl_loglin_threshold'</span>) = 1; <span class="comment">% dense points before 1</span>
-param_map(<span class="string">'it_a_n'</span>) = 30;
+param_map(<span class="string">'fl_w_min'</span>) = param_map(<span class="string">'fl_b_bd'</span>); <span class="comment">% but b_bd overrides this</span>
+param_map(<span class="string">'fl_w_max'</span>) = 50;
+param_map(<span class="string">'it_w_n'</span>) = 75;
 <span class="comment">% Risky Capital Asset Vector</span>
+<span class="comment">% see graph below for how it looks graphically</span>
+<span class="comment">% in principle keep it_k_n the same as it_w_n to have equi-distance points</span>
+<span class="comment">% in triangle choice grid.</span>
 param_map(<span class="string">'fl_k_min'</span>) = 0;
-param_map(<span class="string">'fl_k_max'</span>) = 50;
-param_map(<span class="string">'bl_k_loglin'</span>) = false;
-param_map(<span class="string">'fl_k_loglin_threshold'</span>) = 1;
-param_map(<span class="string">'it_k_n'</span>) = 30;
+param_map(<span class="string">'fl_k_max'</span>) = (param_map(<span class="string">'fl_w_max'</span>) - param_map(<span class="string">'fl_b_bd'</span>));
+param_map(<span class="string">'it_ak_n'</span>) = param_map(<span class="string">'it_w_n'</span>); <span class="comment">% grid for a and k the same</span>
 
 <span class="comment">% Solution Accuracy</span>
 param_map(<span class="string">'it_maxiter_val'</span>) = 250;
@@ -166,8 +165,8 @@ support_map(<span class="string">'bl_display_funcgrids'</span>) = false;
 </pre><h2 id="6">Subset Options</h2><div><ol><li>it_subset = 1 is basic invoke quick test</li><li>it_subset = 2 is main invoke</li><li>it_subset = 3 is profiling invoke</li><li>it_subset = 4 is matlab publish.</li></ol></div><pre class="codeinput"><span class="keyword">if</span> (ismember(it_subset, [1,2,3,4]))
     <span class="keyword">if</span> (ismember(it_subset, [1]))
         <span class="comment">% TEST quick</span>
-        param_map(<span class="string">'it_a_n'</span>) = 10;
-        param_map(<span class="string">'it_k_n'</span>) = 10;
+        param_map(<span class="string">'it_w_n'</span>) = 20;
+        param_map(<span class="string">'it_k_n'</span>) = param_map(<span class="string">'it_w_n'</span>);
         param_map(<span class="string">'it_z_n'</span>) = 3;
         param_map(<span class="string">'it_maxiter_val'</span>) = 50;
         param_map(<span class="string">'it_tol_pol_nochange'</span>) = 1000;
@@ -220,38 +219,34 @@ support_map(<span class="string">'bl_display_funcgrids'</span>) = false;
 </pre><pre class="codeoutput">param_map
   Map with properties:
 
-        Count: 28
+        Count: 24
       KeyType: char
     ValueType: any
 
-pos = 1 ; key = bl_k_loglin ; val = false
-pos = 2 ; key = bl_loglin ; val = false
-pos = 3 ; key = fl_Amean ; val = 1
-pos = 4 ; key = fl_a_max ; val = 50
-pos = 5 ; key = fl_a_min ; val = 0
-pos = 6 ; key = fl_alpha ; val = 0.36
-pos = 7 ; key = fl_b_bd ; val = 0
-pos = 8 ; key = fl_beta ; val = 0.94
-pos = 9 ; key = fl_c_min ; val = 0.001
-pos = 10 ; key = fl_crra ; val = 1.5
-pos = 11 ; key = fl_delta ; val = 0.08
-pos = 12 ; key = fl_k_loglin_threshold ; val = 1
-pos = 13 ; key = fl_k_max ; val = 50
-pos = 14 ; key = fl_k_min ; val = 0
-pos = 15 ; key = fl_loglin_threshold ; val = 1
-pos = 16 ; key = fl_r_borr ; val = 0.025
-pos = 17 ; key = fl_r_save ; val = 0.025
-pos = 18 ; key = fl_tol_pol ; val = 1e-05
-pos = 19 ; key = fl_tol_val ; val = 1e-05
-pos = 20 ; key = fl_w ; val = 1.28
-pos = 21 ; key = fl_z_mu ; val = 0
-pos = 22 ; key = fl_z_rho ; val = 0.8
-pos = 23 ; key = fl_z_sig ; val = 0.2
-pos = 24 ; key = it_a_n ; val = 30
-pos = 25 ; key = it_k_n ; val = 30
-pos = 26 ; key = it_maxiter_val ; val = 250
-pos = 27 ; key = it_tol_pol_nochange ; val = 25
-pos = 28 ; key = it_z_n ; val = 15
+pos = 1 ; key = fl_Amean ; val = 1
+pos = 2 ; key = fl_alpha ; val = 0.36
+pos = 3 ; key = fl_b_bd ; val = 0
+pos = 4 ; key = fl_beta ; val = 0.94
+pos = 5 ; key = fl_c_min ; val = 0.001
+pos = 6 ; key = fl_crra ; val = 1.5
+pos = 7 ; key = fl_delta ; val = 0.08
+pos = 8 ; key = fl_k_max ; val = 50
+pos = 9 ; key = fl_k_min ; val = 0
+pos = 10 ; key = fl_r_borr ; val = 0.025
+pos = 11 ; key = fl_r_save ; val = 0.025
+pos = 12 ; key = fl_tol_pol ; val = 1e-05
+pos = 13 ; key = fl_tol_val ; val = 1e-05
+pos = 14 ; key = fl_w ; val = 0.44365
+pos = 15 ; key = fl_w_max ; val = 50
+pos = 16 ; key = fl_w_min ; val = 0
+pos = 17 ; key = fl_z_mu ; val = 0
+pos = 18 ; key = fl_z_rho ; val = 0.8
+pos = 19 ; key = fl_z_sig ; val = 0.2
+pos = 20 ; key = it_ak_n ; val = 75
+pos = 21 ; key = it_maxiter_val ; val = 250
+pos = 22 ; key = it_tol_pol_nochange ; val = 25
+pos = 23 ; key = it_w_n ; val = 75
+pos = 24 ; key = it_z_n ; val = 15
 support_map
   Map with properties:
 
@@ -296,7 +291,7 @@ ans =
 
   Map with properties:
 
-        Count: 28
+        Count: 24
       KeyType: char
     ValueType: any
 
@@ -312,13 +307,31 @@ function [param_map, support_map] = ffs_akz_set_default_param(varargin)
 % two groups of default parameters stored in container maps. Explicitly
 % solving for both a and k grids exponentially increase problem size, and
 % we can not have state and choice grids that are as tight as for the az
-% problem. Note that the defaults set it_a_n it_k_n both at 30 points.
-% These create 900 combination of choice points. But when we had the one
-% asset problem, we were able to use for benchmarkin 750 points for just a
-% by itself. I increase significantly it_an and it_k_n for the state
-% dimension reduced model. It is computationally very time consuming to
-% increase them more under the programing paradigm here where both a and k
-% choices are jointly considered in one problem.
+% problem. Note that the defaults set it_w_n to have a far more limited
+% number of points. For each w, we allow for combinations of a and k
+% choices. Before, each aggregate savings choice only had one a associated
+% with it. 
+%
+% The biggest change from
+% <https://fanwangecon.github.io/CodeDynaAsset/m_oz/paramfunc/html/ffs_oz_set_default_param.html
+% ffs_oz_set_default_param> is that now we have two asset choices. Previous
+% we had the a grid for the cash-on-hand and z (az) model.
+%
+% Now a is w. There was only one asset before, so a was total
+% savings. Now w is total savings w = a' + k'. Define choice grid in terms
+% of the total savings, rather than a and k grids separately. If we define
+% a and k with min and max separately, we will have a choice combo max(a) +
+% max(k), this corresponds to one very high level of aggregate savings, but
+% we are implicitly only allowing for dividing a and k evenly when we
+% choose this. Implicitly, the higher the aggregate savings, the more
+% limited the a and k combinations becomes when we define a and k grids
+% separately. Geometrically, With aprime as the x-axis and kprime as the
+% y-axis of choices, we need to define choices in terms of diagnoals
+% (triangles) rather than vertical and horizontal lines (rectangles). See
+% this graphically at the end of this page:
+% <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html
+% ffs_akz_get_funcgrid> which shows the triangular choice grids.
+%
 %
 % @param it_subset integer default parameter control subsetting. it_subset = 1 is
 % basic invoke quick test. it_subset = 2 is main invoke. it_subset = 3 is
@@ -365,26 +378,25 @@ param_map('fl_delta') = 0.08;
 
 % Prices
 % shock is on k, not on labor, fl_w is fixed wage income
-param_map('fl_w') = 1.28;
+param_map('fl_w') = 1.28*0.3466; % min(z*w) from benchmark az model
 param_map('fl_r_save') = 0.025;
 param_map('fl_r_borr') = 0.025;
 % Minimum Consumption, utility lower bound (major impact parameter
 param_map('fl_c_min') = 0.001;
 
 % Asset Grids
-% Safe Financial Choice vector
+% Toal savings aggregate grid (see discussion on top)
 param_map('fl_b_bd') = 0; % borrow bound, = 0 if save only
-param_map('fl_a_min') = 0; % if there is minimum savings requirement
-param_map('fl_a_max') = 50;
-param_map('bl_loglin') = false; % log lin threshold structure
-param_map('fl_loglin_threshold') = 1; % dense points before 1
-param_map('it_a_n') = 30;
+param_map('fl_w_min') = param_map('fl_b_bd'); % but b_bd overrides this
+param_map('fl_w_max') = 50;
+param_map('it_w_n') = 75;
 % Risky Capital Asset Vector
+% see graph below for how it looks graphically
+% in principle keep it_k_n the same as it_w_n to have equi-distance points
+% in triangle choice grid.
 param_map('fl_k_min') = 0;
-param_map('fl_k_max') = 50;
-param_map('bl_k_loglin') = false;
-param_map('fl_k_loglin_threshold') = 1;
-param_map('it_k_n') = 30;
+param_map('fl_k_max') = (param_map('fl_w_max') - param_map('fl_b_bd'));
+param_map('it_ak_n') = param_map('it_w_n'); % grid for a and k the same
 
 % Solution Accuracy
 param_map('it_maxiter_val') = 250;
@@ -450,8 +462,8 @@ support_map('bl_display_funcgrids') = false;
 if (ismember(it_subset, [1,2,3,4]))
     if (ismember(it_subset, [1]))
         % TEST quick
-        param_map('it_a_n') = 10;
-        param_map('it_k_n') = 10;
+        param_map('it_w_n') = 20;
+        param_map('it_k_n') = param_map('it_w_n');
         param_map('it_z_n') = 3;
         param_map('it_maxiter_val') = 50;
         param_map('it_tol_pol_nochange') = 1000;

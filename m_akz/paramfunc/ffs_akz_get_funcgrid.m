@@ -64,11 +64,11 @@ end
 params_group = values(param_map, {'it_z_n', 'fl_z_mu', 'fl_z_rho', 'fl_z_sig'});
 [it_z_n, fl_z_mu, fl_z_rho, fl_z_sig] = params_group{:};
 
-params_group = values(param_map, {'fl_b_bd', 'fl_a_min', 'fl_a_max', 'bl_loglin', 'fl_loglin_threshold', 'it_a_n'});
-[fl_b_bd, fl_a_min, fl_a_max, bl_loglin, fl_loglin_threshold, it_a_n] = params_group{:};
+params_group = values(param_map, {'fl_b_bd', 'fl_w_min', 'fl_w_max', 'it_w_n'});
+[fl_b_bd, fl_w_min, fl_w_max, it_w_n] = params_group{:};
 
-params_group = values(param_map, {'fl_k_min', 'fl_k_max', 'bl_k_loglin', 'fl_k_loglin_threshold', 'it_k_n'});
-[fl_k_min, fl_k_max, bl_k_loglin, fl_k_loglin_threshold, it_k_n] = params_group{:};
+params_group = values(param_map, {'fl_k_min', 'fl_k_max', 'it_ak_n'});
+[fl_k_min, fl_k_max, it_ak_n] = params_group{:};
 
 params_group = values(param_map, {'fl_crra', 'fl_c_min'});
 [fl_crra, fl_c_min] = params_group{:};
@@ -83,30 +83,29 @@ params_group = values(support_map, {'bl_graph_funcgrids', 'bl_display_funcgrids'
 [bl_graph_funcgrids, bl_display_funcgrids] = params_group{:};
 
 %% Get Asset and Choice Grid
-% Compared to the az model, we now need to generate the grid for a as well
-% as k, and mesh them together for the coh grid. 
+% This generate triangular choice structure. Household choose total
+% aggregate savings, and within that how much to put into risky capital and
+% how much to put into safe assets. See
+% <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html
+% ffs_akz_set_default_param> for details.
 
-if (bl_loglin)
-    % C:\Users\fan\M4Econ\asset\grid\ff_grid_loglin.m
-    ar_a = fft_gen_grid_loglin(it_a_n, fl_a_max, fl_b_bd, fl_loglin_threshold);
-else
-    ar_a = linspace(fl_b_bd, fl_a_max, it_a_n);
-    ar_a = [0 ar_a];
-    ar_a = sort(unique(ar_a));
-end
+ar_w = linspace(fl_w_min, fl_w_max, it_w_n);
+ar_k = linspace(fl_k_min, fl_k_max, it_ak_n);
 
-if (bl_k_loglin)
-    % C:\Users\fan\M4Econ\asset\grid\ff_grid_loglin.m
-    ar_k = fft_gen_grid_loglin(it_k_n, fl_k_max, fl_k_min, fl_k_loglin_threshold);
-else
-    ar_k = linspace(fl_k_min, fl_k_max, it_k_n);
-    ar_k = [0 ar_k];
-    ar_k = sort(unique(ar_k));
-end
+mt_a = ar_w - ar_k';
+mt_k = ar_w - mt_a;
 
-[mt_a, mt_k] = ndgrid(ar_a, ar_k);
-ar_a_meshk = mt_a(:);
-ar_k_mesha = mt_k(:);
+mt_bl_constrained = (mt_a < fl_b_bd); % this generates NAN, some NAN have -Inf Util
+mt_a_wth_na = mt_a;
+mt_k_wth_na = mt_k;
+mt_a_wth_na(mt_bl_constrained) = nan;
+mt_k_wth_na(mt_bl_constrained) = nan;
+
+ar_a_mw_wth_na = mt_a_wth_na(:);
+ar_k_mw_wth_na = mt_k_wth_na(:);
+
+ar_a_meshk = ar_a_mw_wth_na(~isnan(ar_a_mw_wth_na));
+ar_k_mesha = ar_k_mw_wth_na(~isnan(ar_k_mw_wth_na));
 
 %% Get Shock Grids
 
@@ -128,7 +127,7 @@ mt_coh = f_coh(ar_z, ar_a_meshk, ar_k_mesha);
 %% Store
 
 armt_map = containers.Map('KeyType','char', 'ValueType','any');
-armt_map('ar_a') = ar_a;
+armt_map('ar_w') = ar_w;
 armt_map('ar_k') = ar_k;
 armt_map('mt_z_trans') = mt_z_trans;
 armt_map('ar_stationary') = ar_stationary;
@@ -146,6 +145,36 @@ func_map('f_prod') = f_prod;
 func_map('f_inc') = f_inc;
 func_map('f_coh') = f_coh;
 func_map('f_cons') = f_cons;
+
+%% Graph
+
+if (bl_graph_funcgrids)
+
+    figure('PaperPosition', [0 0 7 4]);
+    hold on;
+
+    chart = plot(mt_a_wth_na, mt_k_wth_na, 'blue');
+
+    clr = jet(numel(chart));
+    for m = 1:numel(chart)
+       set(chart(m),'Color',clr(m,:))
+    end
+    if (length(ar_w) <= 100) 
+        scatter(ar_a_meshk, ar_k_mesha, 5, 'filled');
+    end
+    xline(0);
+    yline(0);
+
+    title('Choice Grids Conditional on k+a=w')
+    ylabel('Capital Choice')
+    xlabel({'Borrowing or Saving'})
+    legend2plot = fliplr([1 round(numel(chart)/3) round((2*numel(chart))/4)  numel(chart)]);
+    legendCell = cellstr(num2str(ar_w', 'k+a=%3.2f'));
+    legend(chart(legend2plot), legendCell(legend2plot), 'Location','northeast');
+
+    grid on;
+
+end
 
 %% Display
 
