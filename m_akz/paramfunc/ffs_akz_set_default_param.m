@@ -11,7 +11,7 @@ function [param_map, support_map] = ffs_akz_set_default_param(varargin)
 % problem. Note that the defaults set it_w_n to have a far more limited
 % number of points. For each w, we allow for combinations of a and k
 % choices. Before, each aggregate savings choice only had one a associated
-% with it. 
+% with it.
 %
 % The biggest change from
 % <https://fanwangecon.github.io/CodeDynaAsset/m_oz/paramfunc/html/ffs_oz_set_default_param.html
@@ -88,6 +88,7 @@ param_map('fl_r_save') = 0.025;
 param_map('fl_r_borr') = 0.025;
 % Minimum Consumption, utility lower bound (major impact parameter
 param_map('fl_c_min') = 0.001;
+param_map('fl_nan_replace') = -inf;
 
 % Asset Grids
 % Toal savings aggregate grid (see discussion on top). 35 points picked for
@@ -95,7 +96,7 @@ param_map('fl_c_min') = 0.001;
 param_map('fl_b_bd') = 0; % borrow bound, = 0 if save only
 param_map('fl_w_min') = param_map('fl_b_bd'); % but b_bd overrides this
 param_map('fl_w_max') = 50;
-param_map('it_w_n') = 45;
+param_map('it_w_n') = 50;
 % Risky Capital Asset Vector
 % see graph below for how it looks graphically
 % in principle keep it_k_n the same as it_w_n to have equi-distance points
@@ -156,6 +157,8 @@ support_map('st_img_suffix') = ['_p' num2str(it_subset) '.png'];
 % Sub-function graphing controls
 support_map('bl_graph_funcgrids') = false;
 support_map('bl_display_funcgrids') = false;
+support_map('bl_graph_evf') = false;
+support_map('bl_display_evf') = false;
 
 %% Subset Options
 %
@@ -180,7 +183,7 @@ if (ismember(it_subset, [1,2,3,4]))
         % Main Run
         support_map('bl_time') = true;
         support_map('bl_display') = true;
-        support_map('it_display_every') = 5;
+        support_map('it_display_every') = 1;
 
         support_map('bl_post') = true;
         support_map('bl_display_final') = true;

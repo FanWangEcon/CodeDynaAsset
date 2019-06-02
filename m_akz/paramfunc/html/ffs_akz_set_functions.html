@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>ffs_akz_set_functions</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-05-30"><meta name="DC.source" content="ffs_akz_set_functions.m"><style type="text/css">
+      --><title>ffs_akz_set_functions</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-02"><meta name="DC.source" content="ffs_akz_set_functions.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">FFS_AKZ_SET_FUNCTIONS setting model functions</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Equations</a></li></ul></div><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><pre class="codeinput"><span class="keyword">function</span> [f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons] = ffs_akz_set_functions(varargin)
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">FFS_AKZ_SET_FUNCTIONS setting model functions</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Equations Utility</a></li><li><a href="#6">Equations Production</a></li><li><a href="#7">Equations Income</a></li><li><a href="#8">Equations Cash-on-Hand</a></li><li><a href="#9">Equations Consumption</a></li><li><a href="#10">Equations Stand-in Fake Utility for Graphs</a></li></ul></div><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><pre class="codeinput"><span class="keyword">function</span> [f_util_log, f_util_crra, f_util_standin, f_prod, f_inc, f_coh, f_cons] = ffs_akz_set_functions(varargin)
 </pre><h2 id="2">FFS_AKZ_SET_FUNCTIONS setting model functions</h2><p>define functions here to avoid copy paste mistakes</p><p>@param fl_crra float crra utility</p><p>@param fl_c_min float minimum consumption</p><p>@param fl_Amean float mean productivity level</p><p>@param fl_alpha float Cobb-Douglas elasticity crs if = 1 and is risky financial investment like stocks, if decreasing return to scales, could be interpreted as risky physical capital investment.</p><p>@param fl_delta float risky capital depreciation if this is risky financial investment, deprecitation could be full, there is no additional return from risky financial investment except for its production function earnings. If we are looking are risky capital investment, there is a production function return, output. Then we can also sell the risky capital with some depreciation. fl_delta = 0.1 means 10 percent depreciation.</p><p>@param fl_r_save float savings interest rate</p><p>@param fl_r_borr float borrowing interest rate</p><p>@param fl_w float wage rate</p><p>@return f_util_log handle log utility</p><p>@return f_util_crra handle crra utility general</p><p>@return f_util_standin handle log utility with coh for testing graphing codes</p><p>@return f_inc income handle equation wage and interests</p><p>@return f_coh handle cash on hand equation given current period shock</p><p>@return f_cons handle consumption equation given coh and asset choice</p><p>@example</p><pre class="language-matlab">[f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons] = <span class="keyword">...</span>
      ffs_akz_set_functions(fl_crra, fl_c_min, fl_Amean, fl_alpha, fl_delta, <span class="keyword">...</span>
                            fl_r_save, fl_r_borr, fl_w);
@@ -77,28 +77,21 @@ default_params = {fl_crra fl_c_min <span class="keyword">...</span>
     fl_Amean fl_alpha fl_delta fl_r_save fl_r_borr fl_w};
 </pre><h2 id="4">Parse Parameters</h2><pre class="codeinput"><span class="comment">% numvarargs is the number of varagin inputted</span>
 [default_params{1:length(varargin)}] = varargin{:};
-[fl_crra, fl_c_min, fl_r_save, fl_r_borr, fl_w] = default_params{:};
-</pre><h2 id="5">Equations</h2><p>Note the consumption equation is a function of cash-on-hand, it is important to use cash-on-hand rather than b and k separately as the endogenous state variable. From the households' perspective, it is the cash-on-hand that matters.</p><pre class="codeinput"><span class="comment">% utility</span>
-f_util_log = @(c) log(c);
+[fl_crra, fl_c_min, <span class="keyword">...</span>
+    fl_Amean, fl_alpha, fl_delta, fl_r_save, fl_r_borr, fl_w] = default_params{:};
+</pre><h2 id="5">Equations Utility</h2><pre class="codeinput">f_util_log = @(c) log(c);
 f_util_crra = @(c) (((c).^(1-fl_crra)-1)./(1-fl_crra));
-<span class="comment">% production function, z already exp, possible decreasing return to scale.</span>
-<span class="comment">% if fl_alpha = 1, crs. That means we have a risky asset like stocks vs</span>
-<span class="comment">% safe asset like bond. If we have decrease return to scale, can be</span>
-<span class="comment">% interpreted as capital investments.</span>
-f_prod = @(z, k) ((fl_Amean.*(z)).*(k.^(fl_alpha)));
-<span class="comment">% Income equation now based on b = interest + principles, fl_w is fixed</span>
-<span class="comment">% wage, shock now on risky capital. Three sources of income, production</span>
-<span class="comment">% income minus depreciation, wage income (could be zero), also interest</span>
-<span class="comment">% income or interest costs dependong on borrowing or savings</span>
-f_inc = @(z, b, k) (f_prod(z, k) - (1-fl_delta)*k <span class="keyword">...</span>
-                    + fl_w <span class="keyword">...</span>
-                    + (b./(1+fl_r_save)).*fl_r_save.*(b&gt;0) + (b/(1+fl_r_borr)).*(fl_r_borr).*(b&lt;=0)); <span class="comment">% z already exp</span>
-<span class="comment">% Cash on Hand, b is principle and interest</span>
-f_coh = @(z, b, k) (f_prod(z, k) - (1-fl_delta)*k + fl_w + b);
-<span class="comment">% Simple Consumption given cash-on-hand</span>
-f_cons = @(coh, bprime, kprime) (coh - kprime - ((bprime./(1+fl_r_save)).*(bprime&gt;0)) - ((bprime./(1+fl_r_borr)).*(bprime&lt;=0)));
-<span class="comment">% Simple Consumption b and k</span>
-f_util_standin = @(z, b) f_util_log(f_coh(z,b,k).*(f_coh(z,b,k) &gt; 0) + <span class="keyword">...</span>
+</pre><h2 id="6">Equations Production</h2><p>production function, z already exp, possible decreasing return to scale. if fl_alpha = 1, crs. That means we have a risky asset like stocks vs safe asset like bond. If we have decrease return to scale, can be interpreted as capital investments.</p><pre class="codeinput">f_prod = @(z, k) ((fl_Amean.*(z)).*(k.^(fl_alpha)));
+</pre><h2 id="7">Equations Income</h2><p>Income equation now based on b = interest + principles, fl_w is fixed wage, shock now on risky capital. Three sources of income, production income minus depreciation, wage income (could be zero), also interest income or interest costs dependong on borrowing or savings</p><pre class="codeinput"><span class="comment">% f_inc = @(z, b, k) (f_prod(z, k) - (fl_delta)*k ...</span>
+<span class="comment">%                     + fl_w ...</span>
+<span class="comment">%                     + (b./(1+fl_r_save)).*fl_r_save.*(b&gt;0) + (b/(1+fl_r_borr)).*(fl_r_borr).*(b&lt;=0)); % z already exp</span>
+
+f_inc = @(z, b, k) (f_prod(z, k) - (fl_delta)*k <span class="keyword">...</span>
+                 + fl_w <span class="keyword">...</span>
+                 + b.*(fl_r_save).*(b&gt;0) + b.*(fl_r_borr).*(b&lt;=0)); <span class="comment">% z already exp</span>
+</pre><h2 id="8">Equations Cash-on-Hand</h2><p>Cash on Hand, b is principle and interest f_coh = @(z, b, k) (f_prod(z, k) + k*(1-fl_delta) + fl_w + b);</p><pre class="codeinput">f_coh = @(z, b, k) (z*fl_w + b.*(1+fl_r_save).*(b&gt;0) + b.*(1+fl_r_borr).*(b&lt;=0));
+</pre><h2 id="9">Equations Consumption</h2><p>Simple Consumption given cash-on-hand f_cons = @(coh, bprime, kprime) (coh - kprime - ((bprime./(1+fl_r_save)).*(bprime&gt;0)) - ((bprime./(1+fl_r_borr)).*(bprime&lt;=0)));</p><pre class="codeinput">f_cons = @(coh, bprime, kprime) (coh - kprime - bprime);
+</pre><h2 id="10">Equations Stand-in Fake Utility for Graphs</h2><p>Utility for graphing with random data, note that when we graph with coh as the state variable using this equation here, there is no effect of shock on utility, it is fully captured by the coh.</p><pre class="codeinput">f_util_standin = @(z, b, k) f_util_log(f_coh(z,b,k).*(f_coh(z,b,k) &gt; 0) + <span class="keyword">...</span>
                                     fl_c_min.*(f_coh(z,b,k) &lt;= 0));
 </pre><pre class="codeinput"><span class="keyword">end</span>
 </pre><pre class="codeoutput">
@@ -115,7 +108,7 @@ ans =
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository> 
 % Table of Content.*
 
-function [f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons] = ffs_akz_set_functions(varargin)
+function [f_util_log, f_util_crra, f_util_standin, f_prod, f_inc, f_coh, f_cons] = ffs_akz_set_functions(varargin)
 %% FFS_AKZ_SET_FUNCTIONS setting model functions
 % define functions here to avoid copy paste mistakes
 %
@@ -175,37 +168,54 @@ default_params = {fl_crra fl_c_min ...
 
 % numvarargs is the number of varagin inputted
 [default_params{1:length(varargin)}] = varargin{:};
-[fl_crra, fl_c_min, fl_r_save, fl_r_borr, fl_w] = default_params{:};
+[fl_crra, fl_c_min, ...
+    fl_Amean, fl_alpha, fl_delta, fl_r_save, fl_r_borr, fl_w] = default_params{:};
 
-%% Equations
-% Note the consumption equation is a function of cash-on-hand, it is
-% important to use cash-on-hand rather than b and k separately as the
-% endogenous state variable. From the households' perspective, it is the
-% cash-on-hand that matters.
+%% Equations Utility
 
-% utility
 f_util_log = @(c) log(c);
 f_util_crra = @(c) (((c).^(1-fl_crra)-1)./(1-fl_crra));
+
+%% Equations Production
 % production function, z already exp, possible decreasing return to scale.
 % if fl_alpha = 1, crs. That means we have a risky asset like stocks vs
 % safe asset like bond. If we have decrease return to scale, can be
 % interpreted as capital investments. 
+
 f_prod = @(z, k) ((fl_Amean.*(z)).*(k.^(fl_alpha)));
+
+%% Equations Income
 % Income equation now based on b = interest + principles, fl_w is fixed
 % wage, shock now on risky capital. Three sources of income, production
 % income minus depreciation, wage income (could be zero), also interest
 % income or interest costs dependong on borrowing or savings
-f_inc = @(z, b, k) (f_prod(z, k) - (1-fl_delta)*k ...
-                    + fl_w ...
-                    + (b./(1+fl_r_save)).*fl_r_save.*(b>0) + (b/(1+fl_r_borr)).*(fl_r_borr).*(b<=0)); % z already exp
+
+% f_inc = @(z, b, k) (f_prod(z, k) - (fl_delta)*k ...
+%                     + fl_w ...
+%                     + (b./(1+fl_r_save)).*fl_r_save.*(b>0) + (b/(1+fl_r_borr)).*(fl_r_borr).*(b<=0)); % z already exp
+                
+f_inc = @(z, b, k) (f_prod(z, k) - (fl_delta)*k ...
+                 + fl_w ...
+                 + b.*(fl_r_save).*(b>0) + b.*(fl_r_borr).*(b<=0)); % z already exp
+             
+%% Equations Cash-on-Hand             
 % Cash on Hand, b is principle and interest
-f_coh = @(z, b, k) (f_prod(z, k) - (1-fl_delta)*k + fl_w + b);
+% f_coh = @(z, b, k) (f_prod(z, k) + k*(1-fl_delta) + fl_w + b);
+f_coh = @(z, b, k) (z*fl_w + b.*(1+fl_r_save).*(b>0) + b.*(1+fl_r_borr).*(b<=0));
+
+%% Equations Consumption
 % Simple Consumption given cash-on-hand
-f_cons = @(coh, bprime, kprime) (coh - kprime - ((bprime./(1+fl_r_save)).*(bprime>0)) - ((bprime./(1+fl_r_borr)).*(bprime<=0)));
-% Simple Consumption b and k
-f_util_standin = @(z, b) f_util_log(f_coh(z,b,k).*(f_coh(z,b,k) > 0) + ...
+% f_cons = @(coh, bprime, kprime) (coh - kprime - ((bprime./(1+fl_r_save)).*(bprime>0)) - ((bprime./(1+fl_r_borr)).*(bprime<=0)));
+f_cons = @(coh, bprime, kprime) (coh - kprime - bprime);
+
+%% Equations Stand-in Fake Utility for Graphs
+% Utility for graphing with random data, note that when we graph with coh
+% as the state variable using this equation here, there is no effect of
+% shock on utility, it is fully captured by the coh. 
+f_util_standin = @(z, b, k) f_util_log(f_coh(z,b,k).*(f_coh(z,b,k) > 0) + ...
                                     fl_c_min.*(f_coh(z,b,k) <= 0));
-                                                                
+                                
+                                
 end
 
 ##### SOURCE END #####

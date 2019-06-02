@@ -53,7 +53,7 @@ function result_map = ff_akz_vf_vecsv(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 3;
+it_param_set = 4;
 bl_input_override = true;
 [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
 [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
@@ -202,7 +202,7 @@ while bl_vfi_continue
 
         % Optimization: remember matlab is column major, rows must be
         % choices, columns must be states
-        % <https://en.wikipedia.org/wiki/Row-_and_column-major_order COLUMN-MAJOR>
+        % <https://en.wikipedia.org/wiki/Row-_and_column-major_order COLUMN-MAJOR>  
         [ar_opti_val1_z, ar_opti_idx_z] = max(mt_utility);
         mt_val(:,it_z_i) = ar_opti_val1_z;
         mt_pol_a(:,it_z_i) = ar_a_meshk(ar_opti_idx_z);

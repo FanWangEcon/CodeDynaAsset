@@ -117,7 +117,7 @@ if (bl_graph_val)
         end
         
         if(~bl_graph_onebyones)
-            subplot(1,1,sub_j)        
+            subplot(1,1,sub_j)
         else
             figure('PaperPosition', [0 0 7 4]);
         end        

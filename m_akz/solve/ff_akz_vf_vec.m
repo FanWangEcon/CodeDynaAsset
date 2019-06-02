@@ -53,7 +53,7 @@ function result_map = ff_akz_vf_vec(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 3;
+it_param_set = 1;
 bl_input_override = true;
 [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
 [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override

@@ -180,6 +180,8 @@ if (bl_display_final)
     end
     mt_val_print = mt_val(ar_it_rows, ar_it_cols);
     mt_pol_a_print = mt_pol_a(ar_it_rows, ar_it_cols);
+    mt_pol_k_print = mt_pol_k(ar_it_rows, ar_it_cols);
+    mt_pol_w_print = mt_pol_a_print + mt_pol_k_print;
     
     % Display Optimal Values
     tb_val = array2table(mt_val_print);
@@ -190,7 +192,7 @@ if (bl_display_final)
     disp('tb_val');
     disp(tb_val);
     
-    % Display Optimal Choices
+    % Display Optimal Choices for a
     tb_pol_a = array2table(mt_pol_a_print);
     tb_pol_a.Properties.RowNames = strcat('coh', string(ar_it_rows),...
                                         ':k=', string(ar_a_meshk(ar_it_rows)'),...
@@ -198,7 +200,25 @@ if (bl_display_final)
     tb_pol_a.Properties.VariableNames = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));
     disp('tb_pol_a');
     disp(tb_pol_a);
-    
+
+    % Display Optimal Choices for k
+    tb_pol_k = array2table(mt_pol_k_print);
+    tb_pol_k.Properties.RowNames = strcat('coh', string(ar_it_rows),...
+                                        ':k=', string(ar_a_meshk(ar_it_rows)'),...
+                                        ',b=', string(ar_k_mesha(ar_it_rows)'));
+    tb_pol_k.Properties.VariableNames = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));
+    disp('tb_pol_k');
+    disp(tb_pol_k);
+
+    % Display Optimal Choices for k+a
+    tb_pol_w = array2table(mt_pol_w_print);
+    tb_pol_w.Properties.RowNames = strcat('coh', string(ar_it_rows),...
+                                        ':k=', string(ar_a_meshk(ar_it_rows)'),...
+                                        ',b=', string(ar_k_mesha(ar_it_rows)'));
+    tb_pol_w.Properties.VariableNames = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));
+    disp('tb_pol_w');
+    disp(tb_pol_w);
+        
     % Save to result map
     result_map('tb_valpol_alliter') = tb_valpol_alliter;
     result_map('tb_val') = tb_val;

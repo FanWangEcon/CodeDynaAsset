@@ -132,6 +132,9 @@ armt_map('ar_k') = ar_k;
 armt_map('mt_z_trans') = mt_z_trans;
 armt_map('ar_stationary') = ar_stationary;
 armt_map('ar_z') = ar_z;
+armt_map('mt_k_wth_na') = mt_k_wth_na;
+armt_map('ar_a_mw_wth_na') = ar_a_mw_wth_na;
+armt_map('ar_k_mw_wth_na') = ar_k_mw_wth_na;
 armt_map('ar_a_meshk') = ar_a_meshk;
 armt_map('ar_k_mesha') = ar_k_mesha;
 armt_map('it_ameshk_n') = length(ar_a_meshk);
@@ -184,15 +187,29 @@ if (bl_display_funcgrids)
     disp(size(ar_z));
     disp(ar_z);
 
+    disp('ar_w');
+    disp(size(ar_w));
+    disp(ar_w');    
+    
     disp('mt_z_trans');
     disp(size(mt_z_trans));
     disp(mt_z_trans');    
-    
+        
+    disp('mt_a_wth_na');
+    disp(size(mt_a_wth_na));
+%     summary(array2table(mt_a_wth_na));
+    disp(mt_a_wth_na);    
+
     disp('ar_a_meshk');
     disp(size(ar_a_meshk));
     summary(array2table(ar_a_meshk));
     disp(ar_a_meshk');    
 
+    disp('mt_k_wth_na');
+    disp(size(mt_k_wth_na));
+%     summary(array2table(mt_k_wth_na));
+    disp(mt_k_wth_na);    
+    
     disp('ar_k_mesha');
     disp(size(ar_k_mesha));
     summary(array2table(ar_k_mesha));
