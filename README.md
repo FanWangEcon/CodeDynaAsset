@@ -116,7 +116,7 @@ The *wkz* problem, w=k'+b'. Takes significantly less time than *2.1*, produces i
 - **15** grid points for the AR1 shock
 
 1. *wkz* model [2nd stage solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_evf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_wkz_evf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_evf.html)
-    * solving k(w,z) = argmax_{k'}(E(V(coh(k',b'=w-k'),z'|z,w))
+    * solving for k(w,z) = argmax_{k'}(E(V(coh(k',b'=w-k'),z')) given z and w.
 2. *wkz* model [looped solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_wkz_vf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/profile/ff_wkz_vf_default_p3/file0.html)    
     * speed: **720.7** seconds (*72* times faster than *2.1*)
     * Step One solve k(w,z); Step Two solve w(z,coh(b,k,z)) given k(w,z)
