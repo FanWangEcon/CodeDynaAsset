@@ -64,14 +64,14 @@ end
 params_group = values(param_map, {'it_z_n', 'fl_z_mu', 'fl_z_rho', 'fl_z_sig'});
 [it_z_n, fl_z_mu, fl_z_rho, fl_z_sig] = params_group{:};
 
-params_group = values(param_map, {'fl_b_bd', 'fl_w_min', 'fl_w_max', 'it_w_n'});
-[fl_b_bd, fl_w_min, fl_w_max, it_w_n] = params_group{:};
+params_group = values(param_map, {'fl_b_bd', 'fl_w_min', 'fl_w_max', 'it_w_n', 'it_coh_n'});
+[fl_b_bd, fl_w_min, fl_w_max, it_w_n, it_coh_n] = params_group{:};
 
 params_group = values(param_map, {'fl_k_min', 'fl_k_max', 'it_ak_n'});
 [fl_k_min, fl_k_max, it_ak_n] = params_group{:};
 
-params_group = values(param_map, {'fl_crra', 'fl_c_min'});
-[fl_crra, fl_c_min] = params_group{:};
+params_group = values(param_map, {'fl_crra', 'fl_c_min', 'it_c_interp_grid_gap'});
+[fl_crra, fl_c_min, it_c_interp_grid_gap] = params_group{:};
 
 params_group = values(param_map, {'fl_Amean', 'fl_alpha', 'fl_delta'});
 [fl_Amean, fl_alpha, fl_delta] = params_group{:};
@@ -116,13 +116,31 @@ ar_k_mesha = ar_k_mw_wth_na(~isnan(ar_k_mw_wth_na));
 [f_util_log, f_util_crra, f_util_standin, f_prod, f_inc, f_coh, f_cons] = ...
     ffs_akz_set_functions(fl_crra, fl_c_min, fl_Amean, fl_alpha, fl_delta, fl_r_save, fl_r_borr, fl_w);
 
-%% Generate Cash-on-Hand/State Grid
+%% Generate Cash-on-Hand/State Matrix
 % The endogenous state variable is cash-on-hand, it has it_z_n*it_a_n
 % number of points, covering all reachable points when ar_a is the choice
 % vector and ar_z is the shock vector. requires inputs from get Asset and
 % choice grids, get shock grids, and get equations above.
 
 mt_coh = f_coh(ar_z, ar_a_meshk, ar_k_mesha);
+
+
+%% IWKZ Interpolation Cash-on-hand Interpolation Grid
+% For the iwkz problems, we solve the problem along a grid of cash-on-hand
+% values, the interpolate to find v(k',b',z) at (k',b') choices. 
+
+fl_max_mt_coh = max(max(mt_coh));
+fl_min_mt_coh = min(min(mt_coh));
+ar_interp_coh_grid = linspace(fl_min_mt_coh, fl_max_mt_coh, it_coh_n);
+
+%% IWKZ Interpolation Consumption Grid
+% We also interpolate over consumption to speed the program up. We only
+% solve for u(c) at this grid for the iwkz problmes, and then interpolate
+% other c values. 
+
+fl_c_max = max(max(mt_coh)) - fl_b_bd;
+it_interp_c_grid_n = (fl_c_max-fl_c_min)/(it_c_interp_grid_gap);
+ar_interp_c_grid = linspace(fl_c_min, fl_c_max, it_interp_c_grid_n);
 
 %% Store
 
@@ -139,6 +157,8 @@ armt_map('ar_a_meshk') = ar_a_meshk;
 armt_map('ar_k_mesha') = ar_k_mesha;
 armt_map('it_ameshk_n') = length(ar_a_meshk);
 armt_map('mt_coh') = mt_coh;
+armt_map('ar_interp_coh_grid') = ar_interp_coh_grid;
+armt_map('ar_interp_c_grid') = ar_interp_c_grid;
 
 func_map = containers.Map('KeyType','char', 'ValueType','any');
 func_map('f_util_log') = f_util_log;
@@ -194,6 +214,14 @@ if (bl_display_funcgrids)
     disp('mt_z_trans');
     disp(size(mt_z_trans));
     disp(mt_z_trans');    
+    
+    disp('ar_interp_coh_grid');
+    disp(size(ar_interp_coh_grid));
+    summary(array2table(ar_interp_coh_grid'));
+    
+    disp('ar_interp_c_grid');
+    disp(size(ar_interp_c_grid));
+    summary(array2table(ar_interp_c_grid'));    
         
     disp('mt_a_wth_na');
     disp(size(mt_a_wth_na));

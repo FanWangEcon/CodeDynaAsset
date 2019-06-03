@@ -84,11 +84,11 @@ Two endogenous assets, one safe one risky. Risky asset could be stock with const
 
 There are more analytical ways of solving the basic version of this problem. Here we stick to using this grid based solution algorithm which allows for flexibly solving non-differentiable and non-continuous problems. The grid based solution algorithm now with 2 endogenous choices and states requires exponentially more computation time than the *bz* model. Here I provide three sets of solution algorithms at increasing speeds:
 
-- In **2.1**, solve the problem with the two asset choice explicitly
+- In **2.1**, solve the problem with the two asset choice concurrently
 - In **2.2**, solve the problem in two stages
 - In **2.3**, two stage solution with interpolation
 
-## 2.1 Concurrently Solution (BKZ)
+## 2.1 Concurrent Solution (BKZ)
 
 The *bkz* problem. Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html), for the benchmark simulation:
 

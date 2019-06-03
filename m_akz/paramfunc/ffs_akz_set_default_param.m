@@ -105,6 +105,13 @@ param_map('fl_k_min') = 0;
 param_map('fl_k_max') = (param_map('fl_w_max') - param_map('fl_b_bd'));
 param_map('it_ak_n') = param_map('it_w_n'); % grid for a and k the same
 
+% Interpolation
+% it_coh_p controls the number of coh points at which to solve the model
+% it_c_interp_grid_gap determines the gap between consumption terpolation
+% points. 
+param_map('it_coh_n') = 500;
+param_map('it_c_interp_grid_gap') = param_map('fl_c_min')/10;
+
 % Solution Accuracy
 param_map('it_maxiter_val') = 250;
 param_map('fl_tol_val') = 10^-5;

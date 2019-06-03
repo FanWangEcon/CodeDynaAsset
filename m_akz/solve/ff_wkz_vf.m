@@ -6,45 +6,12 @@
 function result_map = ff_wkz_vf(varargin)
 %% FF_WKZ_VF solve infinite horizon exo shock + endo asset problem
 % This program solves the infinite horizon dynamic savings and risky
-% capital asset problem with some ar1 shock. The two assets could be a safe
-% bond and a risky stock if the risky asset has constant return to scale.
-% Alternatively, the risky asset could be a capital investment asset with
-% decreasing return to scale. There is risky component to the risky capital
-% investment, but one could also potentially resale a fraction of the risky
-% capital after depreciation, giving the household/investor/entrepreur a
-% safe minimum return to risky investment. The state variable is the
-% cash-on-hand, which is determined by risky and safe asset as well as the
-% shock jointly.
-%
-% This problem is dramatically more computationally intensive to solve
-% compared to the single asset problem, shown here:
-% <https://fanwangecon.github.io/CodeDynaAsset/m_oz/solve/html/ff_oz_vf.html
-% ff_oz_vf>. Here I show the looped solution. As before, as we expand the 
-% state and choices spaces to have a looped slow version of the code so
-% that one could debug and make sure the model works. 
-%
-% Vectorized, optimized vectorized versions of the code are shown here:
-% <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vec.html
-% ff_akz_vf_vec> and here:
-% <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vecsv.html
-% ff_akz_vf_vecsv>. These dramatically improve upon the speed, yet the
-% speed is still not as fast as we need to structurally estimate the model.
-% Structural estimation requires solving the model many many times,
-% especially if we want to be confident about local min vs global min.
-% Given these, I introduce a faster version of the two asset choice
-% problem where we reduce the choice dimension and separate the problem
-% into two stages. 
-%
-% The basic forms of the one and two asset problems have analytically
-% tractable mathmatical solutions, especially if one uses continuous time
-% formulations. The benefit of these grid based solution algorithm is that
-% we are able to add very flexible constraints to the problem or
-% incorporate additional discrete choices that make the underlying problem
-% non-continous and non-differentiable and mathamtically untractable. 
-%
-% The matlab looped code is no longer usable for this model. If one wants
-% to achieve some level of moderate accuracy, the solution time begins to
-% take many hours. 
+% capital asset problem with some ar1 shock. This is the two step solution
+% version of
+% <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf.html
+% ff_akz_vf>. See
+% <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_evf.html
+% ff_wkz_evf> for details about the second stage. 
 %
 % @param param_map container parameter container
 %
@@ -88,7 +55,7 @@ function result_map = ff_wkz_vf(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 4;
+it_param_set = 1;
 bl_input_override = true;
 [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
 [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
