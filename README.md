@@ -93,7 +93,7 @@ There are more analytical ways of solving the basic version of this problem. Her
 The *bkz* problem. Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html), for the benchmark simulation:
 
 - savings problem with alternative safe and risky assets
-- **45** aggregate savings grid points, **1035** combinations of safe and risky asset choices. Choice grids shown [here](https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html) at the end of the file. Note that the benchmark parameters for the *bz* model has *750* grid points of choices/states, the benchmark problem here is larger and hence takes more time.
+- **50** aggregate savings grid points, **1274** combinations of safe and risky asset choices. Choice grids shown [here](https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html) at the end of the file. Note that the benchmark parameters for the *bz* model has *750* grid points of choices/states, the benchmark problem here is larger and hence takes more time.
 - **15** grid points for the AR1 shock
 
 1. *bkz* model [looped solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_akz_vf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/profile/ff_akz_vf_default_p3/file0.html)    
@@ -141,7 +141,7 @@ The *iwkz* problem, interpolated version of 2.2. Takes significantly less time t
 - **0.0001** consumption interpolation grid gap
 - **0.025** value function cash-on-hand interpolation grid gap
 
-1. Use again *wkz* [2nd stage solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_evf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_iwkz_evf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_evf.html)
+1. Use again *wkz* [2nd stage solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_evf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_wkz_evf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_evf.html)
     * solving for k(w,z) = argmax_{k'}(E(V(coh(k',b'=w-k'),z')) given z and w.
 2. *iwkz* model [looped solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_iwkz_vf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/profile/ff_iwkz_vf_default_p3/file0.html)    
     * speed: **2683.0** seconds (*4.4* times slower than *2.2*)
@@ -169,22 +169,22 @@ Solving for the asset distribution.
 All solution algorithms share the same support files.
 
 **Parameters and Function Definitions**:
-1. *bkz* model [set default parameters](https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ffs_akz_set_default_param.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html)
+1. *bkz+wkz+iwkz* model [set default parameters](https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ffs_akz_set_default_param.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html)
     * param_map: container map for carrying parameters across functions
     * support_map: container map for carrying programming instructions etc across functions
-2. *bkz* model [set functions](https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ffs_akz_set_functions.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html)
+2. *bkz+wkz+iwkz* model [set functions](https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ffs_akz_set_functions.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html)
     * functions: centrally define functions as function handles
-3. *bkz* model [generate states, choices, and shocks grids](https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ffs_akz_get_funcgrid.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html)
+3. *bkz+wkz+iwkz* model [generate states, choices, and shocks grids](https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ffs_akz_get_funcgrid.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html)
     * func_map: container map containing function handles
     * armt_map: container map containing matrixes for states and choices.
 
 **Output Analysis**:
-1.  *bkz* model [solution results processing](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_vf_post.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solvepost/ff_akz_vf_post.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_vf_post.html)
+1. *bkz+wkz+iwkz* model [solution results processing](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_vf_post.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solvepost/ff_akz_vf_post.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_vf_post.html)
     * table: value and policy function by states and shocks
     * table: convergence and percentage policy function change by shock
     * graph: value + policy functions with levels, logged levels and percentages
     * mat: store all workspace matrixes, arrays, scalar values to matrixes
-2. *bkz* model [solution results graphing](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_vf_post_graph.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solvepost/ff_akz_vf_post_graph.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_vf_post_graph.html)
+2. *bkz+wkz+iwkz* model [solution results graphing](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_vf_post_graph.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solvepost/ff_akz_vf_post_graph.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_vf_post_graph.html)
     * graph: value function by asset and shock
     * graph: consumption and asset choice levels
     * graph: consumption and asset logged levels
@@ -196,9 +196,9 @@ All solution algorithms share the same support files.
 We simulate the joint asset choice problem using the *optimized-vectorized* method for *iwkz* algorithm from *2.3*. Now we analyze model features by adjusting parameters.
 
 1. solution precision
-    * [adjust choice grid points](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_w_n.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_iwkz_vf_vecsv/test_precision/fsi_ikwz_vf_vecsv_w_n.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_w_n.html
-    * [adjust shock grid points](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_z_n.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_iwkz_vf_vecsv/test_precision/fsi_ikwz_vf_vecsv_z_n.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_z_n.html
+    * [adjust choice grid points](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_w_n.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_iwkz_vf_vecsv/test_precision/fsi_ikwz_vf_vecsv_w_n.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_w_n.html)
+    * [adjust shock grid points](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_z_n.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_iwkz_vf_vecsv/test_precision/fsi_ikwz_vf_vecsv_z_n.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_z_n.html)
     * [adjust cash-on-hand interpolation grid gap](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_coh_interp_grid_gap.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_iwkz_vf_vecsv/test_precision/fsi_ikwz_vf_vecsv_coh_interp_grid_gap.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_coh_interp_grid_gap.html
-    * [benchmark vs high-precision](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_main.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_iwkz_vf_vecsv/test_precision/fsi_ikwz_vf_vecsv_main.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_main.html
+    * [benchmark vs high-precision](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_main.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_iwkz_vf_vecsv/test_precision/fsi_ikwz_vf_vecsv_main.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_main.html)
 2. risky investment return
-    * [stock vs bond](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_prod/html/fsi_stock.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_iwkz_vf_vecsv/test_prod/fsi_stock.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_prod/html/fsi_stock.html
+    * [stock vs bond](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_prod/html/fsi_stock.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_iwkz_vf_vecsv/test_prod/fsi_stock.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_prod/html/fsi_stock.html)
