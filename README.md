@@ -133,13 +133,15 @@ The *wkz* problem, w=k'+b'. Takes significantly less time than *2.1*, produces i
 
 ## 2.3 Two Stage with Interpolation (iWKZ)
 
-The *iwkz* problem, interpolated version of 2.2. Takes significantly less time than *2.2* at larger choice grids, produces approximately identical results as *2.2*. Speed up achieved via interpolation as described [here](https://fanwangecon.github.io/M4Econ/). This algorithm's performs dramatically faster than the *wkz* model at denser grid points. In this section simulate with benchmark grid points so that results with interpolation can be compared to results in *2.2* and *2.1*. Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html), for the benchmark simulation, same as *2.1* nad *2.2*, but we need two additional measures of precision:
+The *iwkz* problem, interpolated version of 2.2. Takes significantly less time than *2.2* at larger choice grids, produces approximately identical results as *2.2*. This algorithm's performs dramatically faster than the *wkz* model at denser grid points. In this section simulate with benchmark grid points so that results with interpolation can be compared to results in *2.2* and *2.1*. Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html), for the benchmark simulation, same as *2.1* nad *2.2*, but we need two additional measures of precision:
 
 - savings problem with alternative safe and risky assets
 - **50** aggregate savings grid points, **1274** combinations of safe and risky asset choices.
 - **15** grid points for the AR1 shock
 - **0.0001** consumption interpolation grid gap
 - **0.025** value function cash-on-hand interpolation grid gap
+
+*Note*: the reason that *iKWZ* is faster then *2.2* is that when we increase aggregate savings grid points, we do not need to reduce the two interpolation grid gaps. COH is the endogenous state, and its size is determined by the *cash-on-hand interpolation grid gap*. The choice grid increases in size as we increase aggregate savings grid points, but since we are solving in two stages, the dimensionality of the problem increases proportionally (but not exponentially). The total number of safe and risky asset choice is determined by assuming equi-distance grid gap for aggregate savings as well as both risky and safe investments. Speed up achieved via interpolation as described [here](https://fanwangecon.github.io/M4Econ/). In section 2.6 below, I show how solution graphs change as we increase aggregate savings grid points, shock grid points, and reduce the interpolation gaps.
 
 1. Use again *wkz* [2nd stage solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_evf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_wkz_evf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_evf.html)
     * solving for k(w,z) = argmax_{k'}(E(V(coh(k',b'=w-k'),z')) given z and w.
@@ -160,7 +162,7 @@ The *iwkz* problem, interpolated version of 2.2. Takes significantly less time t
     * interpolate u(c), interpolate v(coh,z)
     * store u(c) in cells, update when k*(w,z) changes
 
-## 2.4 Asset Distributions (BKZ)
+## 2.4 Asset Distributions (BKZ + WKZ + iWKZ)
 
 Solving for the asset distribution.
 
@@ -198,7 +200,7 @@ We simulate the joint asset choice problem using the *optimized-vectorized* meth
 1. solution precision
     * [adjust choice grid points](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_w_n.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_iwkz_vf_vecsv/test_precision/fsi_ikwz_vf_vecsv_w_n.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_w_n.html)
     * [adjust shock grid points](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_z_n.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_iwkz_vf_vecsv/test_precision/fsi_ikwz_vf_vecsv_z_n.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_z_n.html)
-    * [adjust cash-on-hand interpolation grid gap](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_coh_interp_grid_gap.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_iwkz_vf_vecsv/test_precision/fsi_ikwz_vf_vecsv_coh_interp_grid_gap.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_coh_interp_grid_gap.html
+    * [adjust cash-on-hand interpolation grid gap](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_coh_interp_grid_gap.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_iwkz_vf_vecsv/test_precision/fsi_ikwz_vf_vecsv_coh_interp_grid_gap.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_coh_interp_grid_gap.html)
     * [benchmark vs high-precision](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_main.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_iwkz_vf_vecsv/test_precision/fsi_ikwz_vf_vecsv_main.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_main.html)
 2. risky investment return
     * [stock vs bond](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_prod/html/fsi_stock.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_iwkz_vf_vecsv/test_prod/fsi_stock.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_prod/html/fsi_stock.html)
