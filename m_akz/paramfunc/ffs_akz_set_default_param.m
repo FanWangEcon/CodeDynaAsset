@@ -76,6 +76,7 @@ param_map('it_z_n') = 15;
 param_map('fl_z_mu') = 0;
 param_map('fl_z_rho') = 0.8;
 param_map('fl_z_sig') = 0.2;
+
 % CD Production Function Parameters
 param_map('fl_Amean') = 1;
 param_map('fl_alpha') = 0.36;
@@ -86,17 +87,22 @@ param_map('fl_delta') = 0.08;
 param_map('fl_w') = 1.28*0.3466; % min(z*w) from benchmark az model
 param_map('fl_r_save') = 0.025;
 param_map('fl_r_borr') = 0.025;
-% Minimum Consumption, utility lower bound (major impact parameter
-param_map('fl_c_min') = 0.001;
+
+% Minimum Consumption, utility lower bound. The cmin parameter and
+% fl_nan_replace parameter have no effects on value function, just for
+% resetting invalid choice grid values. fl_nan_replace reset invalid k
+% choice given w. fl_c_min resets invalid consumption levels due to w
+% choices that are invalid. But this is the case when fl_w > 0.
+param_map('fl_c_min') = 0.0001;
 param_map('fl_nan_replace') = -inf;
 
 % Asset Grids
 % Toal savings aggregate grid (see discussion on top). 35 points picked for
-
 param_map('fl_b_bd') = 0; % borrow bound, = 0 if save only
 param_map('fl_w_min') = param_map('fl_b_bd'); % but b_bd overrides this
 param_map('fl_w_max') = 50;
 param_map('it_w_n') = 50;
+
 % Risky Capital Asset Vector
 % see graph below for how it looks graphically
 % in principle keep it_k_n the same as it_w_n to have equi-distance points
@@ -106,11 +112,14 @@ param_map('fl_k_max') = (param_map('fl_w_max') - param_map('fl_b_bd'));
 param_map('it_ak_n') = param_map('it_w_n'); % grid for a and k the same
 
 % Interpolation
-% it_coh_p controls the number of coh points at which to solve the model
+% fl_coh_interp_grid_gap controls the number of coh points at which to solve the model
 % it_c_interp_grid_gap determines the gap between consumption terpolation
-% points. 
-param_map('it_coh_n') = 500;
-param_map('it_c_interp_grid_gap') = param_map('fl_c_min')/10;
+% points. For consumption interpolation 10^-4 is extremely accurate, there
+% should be no perceptible differences in value and policy functions when the
+% it_c_interp_grid_gap <= 0.001 compared to actual evaluation
+param_map('fl_coh_interp_grid_gap') = 0.025;
+% param_map('it_coh_interp_n') = 500;
+param_map('it_c_interp_grid_gap') = 10^-4;
 
 % Solution Accuracy
 param_map('it_maxiter_val') = 250;
@@ -121,14 +130,18 @@ param_map('it_tol_pol_nochange') = 25; % number of iterations where policy does 
 %% Setting support_map container
 
 support_map = containers.Map('KeyType','char', 'ValueType','any');
+
 % root directory
 st_matimg_path_root = 'C:/Users/fan/CodeDynaAsset/m_akz/';
 support_map('st_matimg_path_root') = st_matimg_path_root;
+
 % timer
 support_map('bl_time') = true;
+
 % Print Controls
 support_map('bl_display') = true;
 support_map('it_display_every') = 5; % how often to print results
+
 % Profile Controls
 support_map('bl_profile') = false;
 support_map('st_profile_path') = [st_matimg_path_root '/solve/profile/'];
@@ -137,22 +150,26 @@ support_map('st_profile_name_main') = ['_default'];
 support_map('st_profile_suffix') = ['_p' num2str(it_subset)];
 
 support_map('bl_post') = false;
+
 % Final Print
 support_map('bl_display_final') = false; % print finalized results
 support_map('it_display_final_rowmax') = 100; % max row to print (states/iters)
 support_map('it_display_final_colmax') = 12; % max col to print (shocks)
+
 % Mat File Controls
 support_map('bl_mat') = false;
 support_map('st_mat_path') = [st_matimg_path_root '/solve/mat/'];
 support_map('st_mat_prefix') = [''];
 support_map('st_mat_name_main') = ['_default'];
 support_map('st_mat_suffix') = ['_p' num2str(it_subset)];
+
 % Graphing Controls
 support_map('bl_graph') = false;
 support_map('bl_graph_onebyones') = true;
 support_map('bl_graph_val') = true;
 support_map('bl_graph_pol_lvl') = true;
 support_map('bl_graph_pol_pct') = true;
+
 % Image Saving Controls (given graphing)
 support_map('st_title_prefix') = '';
 support_map('bl_img_save') = false;
@@ -190,7 +207,7 @@ if (ismember(it_subset, [1,2,3,4]))
         % Main Run
         support_map('bl_time') = true;
         support_map('bl_display') = true;
-        support_map('it_display_every') = 1;
+        support_map('it_display_every') = 5;
 
         support_map('bl_post') = true;
         support_map('bl_display_final') = true;

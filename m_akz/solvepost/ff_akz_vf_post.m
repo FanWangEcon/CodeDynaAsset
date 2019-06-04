@@ -64,8 +64,8 @@ if (bl_input_override)
     % Get Parameters
     params_group = values(param_map, {'it_z_n'});
     [it_z_n] = params_group{:};
-    params_group = values(armt_map, {'ar_a_meshk', 'ar_k_mesha', 'ar_z', 'mt_coh', 'it_ameshk_n'});
-    [ar_a_meshk, ar_k_mesha, ar_z, mt_coh, it_ameshk_n] = params_group{:};
+    params_group = values(armt_map, {'ar_a_meshk', 'ar_k_mesha', 'ar_z', 'mt_coh_wkb', 'it_ameshk_n'});
+    [ar_a_meshk, ar_k_mesha, ar_z, mt_coh_wkb, it_ameshk_n] = params_group{:};
     
 else
     clear all;
@@ -82,14 +82,14 @@ else
     % Generate Default val and policy matrixes
     params_group = values(param_map, {'it_maxiter_val', 'it_z_n'});
     [it_maxiter_val, it_z_n] = params_group{:};    
-    params_group = values(armt_map, {'ar_a_meshk', 'ar_k_mesha', 'ar_z', 'mt_coh', 'it_ameshk_n'});
-    [ar_a_meshk, ar_k_mesha, ar_z, mt_coh, it_ameshk_n] = params_group{:};
+    params_group = values(armt_map, {'ar_a_meshk', 'ar_k_mesha', 'ar_z', 'mt_coh_wkb', 'it_ameshk_n'});
+    [ar_a_meshk, ar_k_mesha, ar_z, mt_coh_wkb, it_ameshk_n] = params_group{:};
     params_group = values(func_map, {'f_util_standin', 'f_cons', 'f_coh'});
     [f_util_standin, f_cons, f_coh] = params_group{:};    
     
     % Set Defaults
     mt_val = f_util_standin(ar_z, ar_a_meshk, ar_k_mesha);
-    mt_pol_aksum = mt_coh.*(cumsum(sort(ar_z))/sum(ar_z)*0.4 + 0.4);
+    mt_pol_aksum = mt_coh_wkb.*(cumsum(sort(ar_z))/sum(ar_z)*0.4 + 0.4);
     mt_pol_a = mt_pol_aksum.*(0.7 - cumsum(sort(ar_z))/sum(ar_z)*0.3);
     mt_pol_k = mt_pol_aksum - mt_pol_a;
     it_iter_max = min(it_maxiter_val, 50);
@@ -120,7 +120,7 @@ params_group = values(func_map, {'f_inc', 'f_cons', 'f_coh'});
 
 %% Generate Consumption and Income Matrix
 
-mt_cons = f_cons(mt_coh, mt_pol_a, mt_pol_k);
+mt_cons = f_cons(mt_coh_wkb, mt_pol_a, mt_pol_k);
 mt_incm = f_inc(ar_z, ar_a_meshk, ar_k_mesha);
 result_map('mt_cons') = mt_cons;
 result_map('mt_incm') = mt_incm;

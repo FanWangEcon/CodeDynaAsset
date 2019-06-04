@@ -80,7 +80,7 @@ The problem could be posed slightly differently with the asset state variable as
 
 # 2. The Risky + Safe Asset Problem
 
-Two endogenous assets, one safe one risky. Risky asset could be stock with constant return to scale, or physical capital investment with depreciation and decreasing return to scale. Note that the utility function is CRRA, however, households do not have constant share of risky investment for any wealth (cash-on-hand) levels when risky asset has decreasing return to scale and when shock is highly persistent.
+Two endogenous assets, one safe one risky. Risky asset could be stocks with constant return to scale, or physical capital investment with depreciation and decreasing return to scale. Note that the utility function is CRRA, however, households do not have constant share of risky investment for any wealth (cash-on-hand) levels when risky asset has decreasing return to scale and when shock is persistent.
 
 There are more analytical ways of solving the basic version of this problem. Here we stick to using this grid based solution algorithm which allows for flexibly solving non-differentiable and non-continuous problems. The grid based solution algorithm now with 2 endogenous choices and states requires exponentially more computation time than the *bz* model. Here I provide three sets of solution algorithms at increasing speeds:
 
@@ -97,13 +97,13 @@ The *bkz* problem. Parameters can be adjusted [here](https://fanwangecon.github.
 - **15** grid points for the AR1 shock
 
 1. *bkz* model [looped solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_akz_vf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/profile/ff_akz_vf_default_p3/file0.html)    
-    * speed: **19891.3** seconds
+    * speed: **32764.7** seconds
     * loops: 1 for VFI, 1 for shocks, 1 for coh(b,k,z), 1 for (b',k') choices, 1 for future shocks
 2. *bkz* model [vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vec.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_akz_vf_vec.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vec.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/profile/ff_akz_vf_vec_default_p3/file0.html)    
-    * speed: **71.5** seconds
+    * speed: **92.6** seconds
     * loops: 1 for VFI, 1 for shocks, vectorize remaining
 3. *bkz* model [optimized vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_akz_vf_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/profile/ff_akz_vf_vecsv_default_p3/file0.html)    
-    * speed: **2.1** seconds
+    * speed: **2.5** seconds
     * loops: 1 for VFI, 1 for shocks, vectorize remaining
     * reuse u(c) in cells, speed improvements described [here](https://fanwangecon.github.io/M4Econ/)
 
@@ -118,21 +118,47 @@ The *wkz* problem, w=k'+b'. Takes significantly less time than *2.1*, produces i
 1. *wkz* model [2nd stage solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_evf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_wkz_evf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_evf.html)
     * solving for k(w,z) = argmax_{k'}(E(V(coh(k',b'=w-k'),z')) given z and w.
 2. *wkz* model [looped solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_wkz_vf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/profile/ff_wkz_vf_default_p3/file0.html)    
-    * speed: **720.7** seconds (*72* times faster than *2.1*)
+    * speed: **606.3** seconds (*54* times faster than *2.1*)
     * Step One solve k(w,z); Step Two solve w(z,coh(b,k,z)) given k(w,z)
     * loops: 1 for VFI, 1 for shocks, 1 for coh(b,k,z), 1 for w(z)=k'+b'
 3. *wkz* model [vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf_vec.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_wkz_vf_vec.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf_vec.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/profile/ff_wkz_vf_vec_default_p3/file0.html)    
-    * speed: **4.1** seconds (*17* times faster than *2.1*)
+    * speed: **3.1** seconds (*30* times faster than *2.1*)
     * Step One solve k(w,z); Step Two solve w(z,coh(b,k,z)) given k(w,z)
     * loops: 1 for VFI, 1 for shocks, vectorize remaining
 4. *wkz* model [optimized vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_wkz_vf_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/profile/ff_wkz_vf_vecsv_default_p3/file0.html)    
-    * speed: **0.8** seconds (*2.6* times faster than *2.1*)
+    * speed: **0.6** seconds (*4* times faster than *2.1*)
     * Step One solve k(w,z); Step Two solve w(z,coh(b,k,z)) given k(w,z)
     * loops: 1 for VFI, 1 for shocks, vectorize remaining
     * store u(c) in cells, update when k*(w,z) changes, speed improvements described [here](https://fanwangecon.github.io/M4Econ/)
 
 ## 2.3 Two Stage with Interpolation (iWKZ)
 
+The *iwkz* problem, interpolated version of 2.2. Takes significantly less time than *2.2* at larger choice grids, produces approximately identical results as *2.2*. Speed up achieved via interpolation as described [here](https://fanwangecon.github.io/M4Econ/). This algorithm's performs dramatically faster than the *wkz* model at denser grid points. In this section simulate with benchmark grid points so that results with interpolation can be compared to results in *2.2* and *2.1*. Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html), for the benchmark simulation, same as *2.1* nad *2.2*, but we need two additional measures of precision:
+
+- savings problem with alternative safe and risky assets
+- **50** aggregate savings grid points, **1274** combinations of safe and risky asset choices.
+- **15** grid points for the AR1 shock
+- **0.0001** consumption interpolation grid gap
+- **0.025** value function cash-on-hand interpolation grid gap
+
+1. Use again *wkz* [2nd stage solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_evf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_iwkz_evf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_evf.html)
+    * solving for k(w,z) = argmax_{k'}(E(V(coh(k',b'=w-k'),z')) given z and w.
+2. *iwkz* model [looped solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_iwkz_vf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/profile/ff_iwkz_vf_default_p3/file0.html)    
+    * speed: **2683.0** seconds (*4.4* times slower than *2.2*)
+    * Step One solve k(w,z); Step Two solve w(z,coh(b,k,z)) given k(w,z)
+    * loops: 1 for VFI, 1 for shocks, 1 for coh(b,k,z), 1 for w(z)=k'+b'    
+    * interpolate u(c), interpolate v(coh,z)
+3. *iwkz* model [vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf_vec.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_iwkz_vf_vec.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf_vec.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/profile/ff_iwkz_vf_vec_default_p3/file0.html)    
+    * speed: **2.2** seconds (*1.4* times faster than *2.2*)
+    * Step One solve k(w,z); Step Two solve w(z,coh(b,k,z)) given k(w,z)
+    * loops: 1 for VFI, 1 for shocks, vectorize remaining
+    * interpolate u(c), interpolate v(coh,z)
+4. *iwkz* model [optimized vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_iwkz_vf_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/profile/ff_iwkz_vf_vecsv_default_p3/file0.html)    
+    * speed: **1.0** seconds (much faster at denser grid)
+    * Step One solve k(w,z); Step Two solve w(z,coh(b,k,z)) given k(w,z)
+    * loops: 1 for VFI, 1 for shocks, vectorize remaining
+    * interpolate u(c), interpolate v(coh,z)
+    * store u(c) in cells, update when k*(w,z) changes
 
 ## 2.4 Asset Distributions (BKZ)
 
@@ -163,3 +189,16 @@ All solution algorithms share the same support files.
     * graph: consumption and asset choice levels
     * graph: consumption and asset logged levels
     * graph: consumption and asset as percentages of coh and assets
+
+
+## 2.6 The Risky + Safe Asset Problem Testing
+
+We simulate the joint asset choice problem using the *optimized-vectorized* method for *iwkz* algorithm from *2.3*. Now we analyze model features by adjusting parameters.
+
+1. solution precision
+    * [adjust choice grid points](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_w_n.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_iwkz_vf_vecsv/test_precision/fsi_ikwz_vf_vecsv_w_n.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_w_n.html
+    * [adjust shock grid points](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_z_n.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_iwkz_vf_vecsv/test_precision/fsi_ikwz_vf_vecsv_z_n.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_z_n.html
+    * [adjust cash-on-hand interpolation grid gap](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_coh_interp_grid_gap.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_iwkz_vf_vecsv/test_precision/fsi_ikwz_vf_vecsv_coh_interp_grid_gap.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_coh_interp_grid_gap.html
+    * [benchmark vs high-precision](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_main.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_iwkz_vf_vecsv/test_precision/fsi_ikwz_vf_vecsv_main.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_main.html
+2. risky investment return
+    * [stock vs bond](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_prod/html/fsi_stock.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_iwkz_vf_vecsv/test_prod/fsi_stock.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_prod/html/fsi_stock.html

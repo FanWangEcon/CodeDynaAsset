@@ -53,17 +53,17 @@ else
     [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 
     % Generate Default val and policy matrixes
-    params_group = values(armt_map, {'ar_a_meshk', 'ar_k_mesha', 'ar_z', 'mt_coh'});
-    [ar_a_meshk, ar_k_mesha, ar_z, mt_coh] = params_group{:};
+    params_group = values(armt_map, {'ar_a_meshk', 'ar_k_mesha', 'ar_z', 'mt_coh_wkb'});
+    [ar_a_meshk, ar_k_mesha, ar_z, mt_coh_wkb] = params_group{:};
     params_group = values(func_map, {'f_util_standin', 'f_cons', 'f_coh'});
     [f_util_standin, f_cons, f_coh] = params_group{:};    
         
     % Set Defaults
     mt_val = f_util_standin(ar_z, ar_a_meshk, ar_k_mesha);
-    mt_pol_aksum = mt_coh.*(cumsum(sort(ar_z))/sum(ar_z)*0.4 + 0.4);
+    mt_pol_aksum = mt_coh_wkb.*(cumsum(sort(ar_z))/sum(ar_z)*0.4 + 0.4);
     mt_pol_a = mt_pol_aksum.*(0.7 - cumsum(sort(ar_z))/sum(ar_z)*0.3);
     mt_pol_k = mt_pol_aksum - mt_pol_a;
-    mt_cons = f_cons(mt_coh, mt_pol_a, mt_pol_k);
+    mt_cons = f_cons(mt_coh_wkb, mt_pol_a, mt_pol_k);
     
     % Set Results Map
     result_map = containers.Map('KeyType','char', 'ValueType','any');
@@ -76,8 +76,8 @@ end
 %% Parse Parameters
 
 % param_map
-params_group = values(param_map, {'fl_b_bd', 'it_z_n'});
-[fl_b_bd, it_z_n] = params_group{:};
+params_group = values(param_map, {'fl_b_bd', 'it_z_n', 'fl_w_max'});
+[fl_b_bd, it_z_n, fl_w_max] = params_group{:};
 
 % support_map
 params_group = values(support_map, {'bl_graph_onebyones', 'bl_graph_val', 'bl_graph_pol_lvl', 'bl_graph_pol_pct'});
@@ -88,8 +88,8 @@ params_group = values(support_map, {'st_title_prefix'});
 [st_title_prefix] = params_group{:};
 
 % armt_map
-params_group = values(armt_map, {'ar_z', 'mt_coh'});
-[ar_z, mt_coh] = params_group{:};
+params_group = values(armt_map, {'ar_z', 'mt_coh_wkb'});
+[ar_z, mt_coh_wkb] = params_group{:};
 
 % result_map
 params_group = values(result_map, {'mt_cons', 'mt_val', 'mt_pol_a', 'mt_pol_k'});
@@ -127,23 +127,30 @@ if (bl_graph_val)
         i_ctr = 0;
         for i = ar_it_z_graph
             i_ctr = i_ctr + 1;
-            scatter(mt_coh(:,i), mt_outcome(:, i), 5, ...
+            ar_x = mt_coh_wkb(:,i);
+            ar_y = mt_outcome(:, i);
+            scatter(ar_x, ar_y, 5, ...
                 'MarkerEdgeColor', clr(i_ctr,:), ...
                 'MarkerFaceColor', clr(i_ctr,:));
         end
         
         grid on;
-        grid minor;
-        legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
+        grid minor;        
         title([st_title_prefix 'COH, Shocks, and Value/Utility'])
         ylabel(st_y_label)
         xlabel({'Cash-on-Hand'})
-        legend(legendCell(ar_it_z_graph), 'Location','southeast');
+        
+        legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
+        xlinemax = xline(fl_w_max);
+        xlinemax.Color = 'b';
+        xlinemax.LineWidth = 1.5;
+        legendCell{length(legendCell) + 1} = 'max-agg-save';
+        legend(legendCell([ar_it_z_graph length(legendCell)]), 'Location','southeast');
         
         xline0 = xline(0);
         xline0.HandleVisibility = 'off';
         yline0 = yline(0);
-        yline0.HandleVisibility = 'off';
+        yline0.HandleVisibility = 'off';        
         
     end
     
@@ -191,12 +198,14 @@ if (bl_graph_pol_lvl)
                         
             if(sub_j==1 || sub_j == 2 || sub_j == 3)
                 
-                ar_a_curz_use = mt_coh(:,i)';
-                ar_opti_curz_use = ar_opti_curz';
+                ar_a_curz_use = mt_coh_wkb(:,i)';
+                ar_opti_curz_use = ar_opti_curz';                
+                fl_w_max_line = fl_w_max;
                 
             elseif(sub_j == 4 || sub_j == 5 || sub_j == 6)
                 
-                ar_a_curz_use = log(mt_coh(:,i)' - fl_b_bd + 1);
+                ar_a_curz_use = log(mt_coh_wkb(:,i)' - fl_b_bd + 1);
+                fl_w_max_line = log(fl_w_max  - fl_b_bd + 1);
                 
                 if(sub_j == 4)
                     % borrow save
@@ -210,7 +219,10 @@ if (bl_graph_pol_lvl)
                 
             end
             
-            scatter(ar_a_curz_use, ar_opti_curz_use, 5, ...
+            ar_x = ar_a_curz_use;
+            ar_y = ar_opti_curz_use;
+            
+            scatter(ar_x, ar_y, 5, ...
                 'MarkerEdgeColor', clr(i_ctr,:), ...
                 'MarkerFaceColor', clr(i_ctr,:));
         end
@@ -242,11 +254,17 @@ if (bl_graph_pol_lvl)
         
         
         grid on;
-        legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
+        
         title([st_title_prefix 'COH, Shocks and Choices (Levels)']);
         ylabel(st_y_label);
         xlabel(st_x_label);
-        legend(legendCell(ar_it_z_graph), 'Location','northwest');
+        
+        legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
+        xlinemax = xline(fl_w_max_line);
+        xlinemax.Color = 'b';
+        xlinemax.LineWidth = 1.5;
+        legendCell{length(legendCell) + 1} = 'max-agg-save';
+        legend(legendCell([ar_it_z_graph length(legendCell)]), 'Location','northwest');
         
         hline = refline([1 0]);
         hline.Color = 'k';
@@ -288,7 +306,7 @@ if (bl_graph_pol_pct)
         
         if(sub_j==1)
             mt_outcome(mt_it_borr_idx) = -mt_pol_a(mt_it_borr_idx)./fl_b_bd;
-            mt_outcome(~mt_it_borr_idx) = mt_pol_a(~mt_it_borr_idx)./mt_coh(~mt_it_borr_idx);
+            mt_outcome(~mt_it_borr_idx) = mt_pol_a(~mt_it_borr_idx)./mt_coh_wkb(~mt_it_borr_idx);
             st_y_label = 'aprime/borrbound if br; aprime/cashonhand if sv';
             st_legend_loc = 'southeast';
             st_title = 'Asset Choice As Fraction';
@@ -302,8 +320,8 @@ if (bl_graph_pol_pct)
             st_legend_loc = 'northwest';            
         end        
         if(sub_j==3)
-            mt_outcome(mt_it_borr_idx) = mt_cons(mt_it_borr_idx)./(mt_coh(mt_it_borr_idx) + mt_pol_a(mt_it_borr_idx));
-            mt_outcome(~mt_it_borr_idx) = mt_cons(~mt_it_borr_idx)./mt_coh(~mt_it_borr_idx);
+            mt_outcome(mt_it_borr_idx) = mt_cons(mt_it_borr_idx)./(mt_coh_wkb(mt_it_borr_idx) + mt_pol_a(mt_it_borr_idx));
+            mt_outcome(~mt_it_borr_idx) = mt_cons(~mt_it_borr_idx)./mt_coh_wkb(~mt_it_borr_idx);
             st_y_label = 'c/(coh-aprime) if br; c/cashonhand if sv';
             st_legend_loc = 'northeast';
             st_title = 'Consumption Choice As Fraction';
@@ -321,16 +339,28 @@ if (bl_graph_pol_pct)
         for i = ar_it_z_graph
             i_ctr = i_ctr + 1;
             ar_opti_curz = mt_outcome(:, i);
-            scatter(mt_coh(:,i), ar_opti_curz, 5, ...
-                'MarkerEdgeColor', clr(i_ctr,:), ...
-                'MarkerFaceColor', clr(i_ctr,:));
+            
+            ar_x = mt_coh_wkb(:,i);
+            ar_y = ar_opti_curz;
+            
+            scatter(ar_x, ar_y, 5, ...
+                    'MarkerEdgeColor', clr(i_ctr,:), ...
+                    'MarkerFaceColor', clr(i_ctr,:));
         end
         grid on;
-        legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
+        
+        
         title([st_title_prefix st_title])
         ylabel(st_y_label)
         xlabel({'Cash-on-Hand'})
-        legend(legendCell(ar_it_z_graph), 'Location', st_legend_loc);
+        
+        legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
+        xlinemax = xline(fl_w_max);
+        xlinemax.Color = 'b';
+        xlinemax.LineWidth = 1.5;
+        legendCell{length(legendCell) + 1} = 'max-agg-save';
+        legend(legendCell([ar_it_z_graph length(legendCell)]), 'Location', st_legend_loc);
+        
         %         xlim([min(ar_coh_curz)+1.5 15]);
         
         xline0 = xline(0);

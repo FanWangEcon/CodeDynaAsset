@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>ffs_akz_set_default_param</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-02"><meta name="DC.source" content="ffs_akz_set_default_param.m"><style type="text/css">
+      --><title>ffs_akz_set_default_param</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-03"><meta name="DC.source" content="ffs_akz_set_default_param.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -86,6 +86,7 @@ param_map(<span class="string">'it_z_n'</span>) = 15;
 param_map(<span class="string">'fl_z_mu'</span>) = 0;
 param_map(<span class="string">'fl_z_rho'</span>) = 0.8;
 param_map(<span class="string">'fl_z_sig'</span>) = 0.2;
+
 <span class="comment">% CD Production Function Parameters</span>
 param_map(<span class="string">'fl_Amean'</span>) = 1;
 param_map(<span class="string">'fl_alpha'</span>) = 0.36;
@@ -96,17 +97,22 @@ param_map(<span class="string">'fl_delta'</span>) = 0.08;
 param_map(<span class="string">'fl_w'</span>) = 1.28*0.3466; <span class="comment">% min(z*w) from benchmark az model</span>
 param_map(<span class="string">'fl_r_save'</span>) = 0.025;
 param_map(<span class="string">'fl_r_borr'</span>) = 0.025;
-<span class="comment">% Minimum Consumption, utility lower bound (major impact parameter</span>
-param_map(<span class="string">'fl_c_min'</span>) = 0.001;
+
+<span class="comment">% Minimum Consumption, utility lower bound. The cmin parameter and</span>
+<span class="comment">% fl_nan_replace parameter have no effects on value function, just for</span>
+<span class="comment">% resetting invalid choice grid values. fl_nan_replace reset invalid k</span>
+<span class="comment">% choice given w. fl_c_min resets invalid consumption levels due to w</span>
+<span class="comment">% choices that are invalid. But this is the case when fl_w &gt; 0.</span>
+param_map(<span class="string">'fl_c_min'</span>) = 0.0001;
 param_map(<span class="string">'fl_nan_replace'</span>) = -inf;
 
 <span class="comment">% Asset Grids</span>
 <span class="comment">% Toal savings aggregate grid (see discussion on top). 35 points picked for</span>
-
 param_map(<span class="string">'fl_b_bd'</span>) = 0; <span class="comment">% borrow bound, = 0 if save only</span>
 param_map(<span class="string">'fl_w_min'</span>) = param_map(<span class="string">'fl_b_bd'</span>); <span class="comment">% but b_bd overrides this</span>
 param_map(<span class="string">'fl_w_max'</span>) = 50;
 param_map(<span class="string">'it_w_n'</span>) = 50;
+
 <span class="comment">% Risky Capital Asset Vector</span>
 <span class="comment">% see graph below for how it looks graphically</span>
 <span class="comment">% in principle keep it_k_n the same as it_w_n to have equi-distance points</span>
@@ -116,11 +122,14 @@ param_map(<span class="string">'fl_k_max'</span>) = (param_map(<span class="stri
 param_map(<span class="string">'it_ak_n'</span>) = param_map(<span class="string">'it_w_n'</span>); <span class="comment">% grid for a and k the same</span>
 
 <span class="comment">% Interpolation</span>
-<span class="comment">% it_coh_p controls the number of coh points at which to solve the model</span>
+<span class="comment">% fl_coh_interp_grid_gap controls the number of coh points at which to solve the model</span>
 <span class="comment">% it_c_interp_grid_gap determines the gap between consumption terpolation</span>
-<span class="comment">% points.</span>
-param_map(<span class="string">'it_coh_n'</span>) = 500;
-param_map(<span class="string">'it_c_interp_grid_gap'</span>) = 10^-3;
+<span class="comment">% points. For consumption interpolation 10^-4 is extremely accurate, there</span>
+<span class="comment">% should be no perceptible differences in value and policy functions when the</span>
+<span class="comment">% it_c_interp_grid_gap &lt;= 0.001 compared to actual evaluation</span>
+param_map(<span class="string">'fl_coh_interp_grid_gap'</span>) = 0.025;
+<span class="comment">% param_map('it_coh_interp_n') = 500;</span>
+param_map(<span class="string">'it_c_interp_grid_gap'</span>) = 10^-4;
 
 <span class="comment">% Solution Accuracy</span>
 param_map(<span class="string">'it_maxiter_val'</span>) = 250;
@@ -128,14 +137,18 @@ param_map(<span class="string">'fl_tol_val'</span>) = 10^-5;
 param_map(<span class="string">'fl_tol_pol'</span>) = 10^-5;
 param_map(<span class="string">'it_tol_pol_nochange'</span>) = 25; <span class="comment">% number of iterations where policy does not change</span>
 </pre><h2 id="5">Setting support_map container</h2><pre class="codeinput">support_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
+
 <span class="comment">% root directory</span>
 st_matimg_path_root = <span class="string">'C:/Users/fan/CodeDynaAsset/m_akz/'</span>;
 support_map(<span class="string">'st_matimg_path_root'</span>) = st_matimg_path_root;
+
 <span class="comment">% timer</span>
 support_map(<span class="string">'bl_time'</span>) = true;
+
 <span class="comment">% Print Controls</span>
 support_map(<span class="string">'bl_display'</span>) = true;
 support_map(<span class="string">'it_display_every'</span>) = 5; <span class="comment">% how often to print results</span>
+
 <span class="comment">% Profile Controls</span>
 support_map(<span class="string">'bl_profile'</span>) = false;
 support_map(<span class="string">'st_profile_path'</span>) = [st_matimg_path_root <span class="string">'/solve/profile/'</span>];
@@ -144,22 +157,26 @@ support_map(<span class="string">'st_profile_name_main'</span>) = [<span class="
 support_map(<span class="string">'st_profile_suffix'</span>) = [<span class="string">'_p'</span> num2str(it_subset)];
 
 support_map(<span class="string">'bl_post'</span>) = false;
+
 <span class="comment">% Final Print</span>
 support_map(<span class="string">'bl_display_final'</span>) = false; <span class="comment">% print finalized results</span>
 support_map(<span class="string">'it_display_final_rowmax'</span>) = 100; <span class="comment">% max row to print (states/iters)</span>
 support_map(<span class="string">'it_display_final_colmax'</span>) = 12; <span class="comment">% max col to print (shocks)</span>
+
 <span class="comment">% Mat File Controls</span>
 support_map(<span class="string">'bl_mat'</span>) = false;
 support_map(<span class="string">'st_mat_path'</span>) = [st_matimg_path_root <span class="string">'/solve/mat/'</span>];
 support_map(<span class="string">'st_mat_prefix'</span>) = [<span class="string">''</span>];
 support_map(<span class="string">'st_mat_name_main'</span>) = [<span class="string">'_default'</span>];
 support_map(<span class="string">'st_mat_suffix'</span>) = [<span class="string">'_p'</span> num2str(it_subset)];
+
 <span class="comment">% Graphing Controls</span>
 support_map(<span class="string">'bl_graph'</span>) = false;
 support_map(<span class="string">'bl_graph_onebyones'</span>) = true;
 support_map(<span class="string">'bl_graph_val'</span>) = true;
 support_map(<span class="string">'bl_graph_pol_lvl'</span>) = true;
 support_map(<span class="string">'bl_graph_pol_pct'</span>) = true;
+
 <span class="comment">% Image Saving Controls (given graphing)</span>
 support_map(<span class="string">'st_title_prefix'</span>) = <span class="string">''</span>;
 support_map(<span class="string">'bl_img_save'</span>) = false;
@@ -188,7 +205,7 @@ support_map(<span class="string">'bl_display_evf'</span>) = false;
         <span class="comment">% Main Run</span>
         support_map(<span class="string">'bl_time'</span>) = true;
         support_map(<span class="string">'bl_display'</span>) = true;
-        support_map(<span class="string">'it_display_every'</span>) = 1;
+        support_map(<span class="string">'it_display_every'</span>) = 5;
 
         support_map(<span class="string">'bl_post'</span>) = true;
         support_map(<span class="string">'bl_display_final'</span>) = true;
@@ -238,7 +255,7 @@ pos = 1 ; key = fl_Amean ; val = 1
 pos = 2 ; key = fl_alpha ; val = 0.36
 pos = 3 ; key = fl_b_bd ; val = 0
 pos = 4 ; key = fl_beta ; val = 0.94
-pos = 5 ; key = fl_c_min ; val = 0.001
+pos = 5 ; key = fl_c_min ; val = 0.0001
 pos = 6 ; key = fl_crra ; val = 1.5
 pos = 7 ; key = fl_delta ; val = 0.08
 pos = 8 ; key = fl_k_max ; val = 50
@@ -255,8 +272,8 @@ pos = 18 ; key = fl_z_mu ; val = 0
 pos = 19 ; key = fl_z_rho ; val = 0.8
 pos = 20 ; key = fl_z_sig ; val = 0.2
 pos = 21 ; key = it_ak_n ; val = 50
-pos = 22 ; key = it_c_interp_grid_gap ; val = 0.001
-pos = 23 ; key = it_coh_n ; val = 500
+pos = 22 ; key = it_c_interp_grid_gap ; val = 0.0001
+pos = 23 ; key = fl_coh_interp_grid_gap ; val = 0.025
 pos = 24 ; key = it_maxiter_val ; val = 250
 pos = 25 ; key = it_tol_pol_nochange ; val = 25
 pos = 26 ; key = it_w_n ; val = 50
@@ -391,6 +408,7 @@ param_map('it_z_n') = 15;
 param_map('fl_z_mu') = 0;
 param_map('fl_z_rho') = 0.8;
 param_map('fl_z_sig') = 0.2;
+
 % CD Production Function Parameters
 param_map('fl_Amean') = 1;
 param_map('fl_alpha') = 0.36;
@@ -401,17 +419,22 @@ param_map('fl_delta') = 0.08;
 param_map('fl_w') = 1.28*0.3466; % min(z*w) from benchmark az model
 param_map('fl_r_save') = 0.025;
 param_map('fl_r_borr') = 0.025;
-% Minimum Consumption, utility lower bound (major impact parameter
-param_map('fl_c_min') = 0.001;
+
+% Minimum Consumption, utility lower bound. The cmin parameter and
+% fl_nan_replace parameter have no effects on value function, just for
+% resetting invalid choice grid values. fl_nan_replace reset invalid k
+% choice given w. fl_c_min resets invalid consumption levels due to w
+% choices that are invalid. But this is the case when fl_w > 0.
+param_map('fl_c_min') = 0.0001;
 param_map('fl_nan_replace') = -inf;
 
 % Asset Grids
 % Toal savings aggregate grid (see discussion on top). 35 points picked for
-
 param_map('fl_b_bd') = 0; % borrow bound, = 0 if save only
 param_map('fl_w_min') = param_map('fl_b_bd'); % but b_bd overrides this
 param_map('fl_w_max') = 50;
 param_map('it_w_n') = 50;
+
 % Risky Capital Asset Vector
 % see graph below for how it looks graphically
 % in principle keep it_k_n the same as it_w_n to have equi-distance points
@@ -421,11 +444,14 @@ param_map('fl_k_max') = (param_map('fl_w_max') - param_map('fl_b_bd'));
 param_map('it_ak_n') = param_map('it_w_n'); % grid for a and k the same
 
 % Interpolation
-% it_coh_p controls the number of coh points at which to solve the model
+% fl_coh_interp_grid_gap controls the number of coh points at which to solve the model
 % it_c_interp_grid_gap determines the gap between consumption terpolation
-% points. 
-param_map('it_coh_n') = 500;
-param_map('it_c_interp_grid_gap') = 10^-3;
+% points. For consumption interpolation 10^-4 is extremely accurate, there
+% should be no perceptible differences in value and policy functions when the
+% it_c_interp_grid_gap <= 0.001 compared to actual evaluation
+param_map('fl_coh_interp_grid_gap') = 0.025;
+% param_map('it_coh_interp_n') = 500;
+param_map('it_c_interp_grid_gap') = 10^-4;
 
 % Solution Accuracy
 param_map('it_maxiter_val') = 250;
@@ -436,14 +462,18 @@ param_map('it_tol_pol_nochange') = 25; % number of iterations where policy does 
 %% Setting support_map container
 
 support_map = containers.Map('KeyType','char', 'ValueType','any');
+
 % root directory
 st_matimg_path_root = 'C:/Users/fan/CodeDynaAsset/m_akz/';
 support_map('st_matimg_path_root') = st_matimg_path_root;
+
 % timer
 support_map('bl_time') = true;
+
 % Print Controls
 support_map('bl_display') = true;
 support_map('it_display_every') = 5; % how often to print results
+
 % Profile Controls
 support_map('bl_profile') = false;
 support_map('st_profile_path') = [st_matimg_path_root '/solve/profile/'];
@@ -452,22 +482,26 @@ support_map('st_profile_name_main') = ['_default'];
 support_map('st_profile_suffix') = ['_p' num2str(it_subset)];
 
 support_map('bl_post') = false;
+
 % Final Print
 support_map('bl_display_final') = false; % print finalized results
 support_map('it_display_final_rowmax') = 100; % max row to print (states/iters)
 support_map('it_display_final_colmax') = 12; % max col to print (shocks)
+
 % Mat File Controls
 support_map('bl_mat') = false;
 support_map('st_mat_path') = [st_matimg_path_root '/solve/mat/'];
 support_map('st_mat_prefix') = [''];
 support_map('st_mat_name_main') = ['_default'];
 support_map('st_mat_suffix') = ['_p' num2str(it_subset)];
+
 % Graphing Controls
 support_map('bl_graph') = false;
 support_map('bl_graph_onebyones') = true;
 support_map('bl_graph_val') = true;
 support_map('bl_graph_pol_lvl') = true;
 support_map('bl_graph_pol_pct') = true;
+
 % Image Saving Controls (given graphing)
 support_map('st_title_prefix') = '';
 support_map('bl_img_save') = false;
@@ -505,7 +539,7 @@ if (ismember(it_subset, [1,2,3,4]))
         % Main Run
         support_map('bl_time') = true;
         support_map('bl_display') = true;
-        support_map('it_display_every') = 1;
+        support_map('it_display_every') = 5;
 
         support_map('bl_post') = true;
         support_map('bl_display_final') = true;

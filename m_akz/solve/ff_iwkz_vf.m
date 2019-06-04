@@ -55,9 +55,18 @@ function result_map = ff_iwkz_vf(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 1;
+it_param_set = 4;
 bl_input_override = true;
 [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
+
+% parameters can be set inside ffs_akz_set_default_param or updated here
+param_map('it_w_n') = 50;
+param_map('it_ak_n') = param_map('it_w_n');
+param_map('it_z_n') = 15;
+param_map('fl_coh_interp_grid_gap') = 0.025;
+param_map('it_c_interp_grid_gap') = 10^-4;
+
+% get armt and func map
 [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 default_params = {param_map support_map armt_map func_map};
 
@@ -90,20 +99,24 @@ support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')]
 % armt_map
 params_group = values(armt_map, {'ar_w', 'ar_z'});
 [ar_w, ar_z] = params_group{:};
-params_group = values(armt_map, {'ar_interp_c_grid', 'ar_interp_coh_grid'});
-[ar_interp_c_grid, ar_interp_coh_grid] = params_group{:};
+params_group = values(armt_map, {'ar_interp_c_grid', 'ar_interp_coh_grid', ...
+    'mt_interp_coh_grid_mesh_z', 'mt_z_mesh_coh_interp_grid'});
+[ar_interp_c_grid, ar_interp_coh_grid, ...
+    mt_interp_coh_grid_mesh_z, mt_z_mesh_coh_interp_grid] = params_group{:};
+params_group = values(armt_map, {'mt_coh_wkb', 'mt_z_mesh_coh_wkb'});
+[mt_coh_wkb, mt_z_mesh_coh_wkb] = params_group{:};
 
-params_group = values(armt_map, {'ar_a_meshk', 'ar_k_mesha', 'mt_coh', 'it_ameshk_n'});
-[ar_a_meshk, ar_k_mesha, mt_coh, it_ameshk_n] = params_group{:};
 % func_map
 params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons'});
 [f_util_log, f_util_crra, f_cons] = params_group{:};
+
 % param_map
 params_group = values(param_map, {'fl_r_save', 'fl_r_borr', 'fl_w',...
     'it_z_n', 'fl_crra', 'fl_beta', 'fl_c_min'});
 [fl_r_save, fl_r_borr, fl_wage, it_z_n, fl_crra, fl_beta, fl_c_min] = params_group{:};
 params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol', 'it_tol_pol_nochange'});
 [it_maxiter_val, fl_tol_val, fl_tol_pol, it_tol_pol_nochange] = params_group{:};
+
 % support_map
 params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
     'st_profile_prefix', 'st_profile_name_main', 'st_profile_suffix',...
@@ -114,11 +127,11 @@ params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
 
 %% Initialize Output Matrixes
 
-mt_val_cur = zeros(length(ar_a_meshk),length(ar_z));
+mt_val_cur = zeros(length(ar_interp_coh_grid),length(ar_z));
 mt_val = mt_val_cur - 1;
-mt_pol_a = zeros(length(ar_a_meshk),length(ar_z));
+mt_pol_a = zeros(length(ar_interp_coh_grid),length(ar_z));
 mt_pol_a_cur = mt_pol_a - 1;
-mt_pol_k = zeros(length(ar_a_meshk),length(ar_z));
+mt_pol_k = zeros(length(ar_interp_coh_grid),length(ar_z));
 mt_pol_k_cur = mt_pol_k - 1;
 
 %% Initialize Convergence Conditions
@@ -130,9 +143,9 @@ ar_pol_diff_norm = zeros([it_maxiter_val, 1]);
 mt_pol_perc_change = zeros([it_maxiter_val, it_z_n]);
 
 %% Pre-calculate u(c)
-% linear Interpolation, see
+% Interpolation, see
 % <https://fanwangecon.github.io/M4Econ/support/speed/partupdate/fs_u_c_partrepeat_main.html
-% fs_u_c_partrepeat_main> for why linear was picked.
+% fs_u_c_partrepeat_main> for why interpolate over u(c)
 
 % Evaluate
 if (fl_crra == 1)
@@ -142,10 +155,10 @@ else
     ar_interp_u_of_c_grid = f_util_crra(ar_interp_c_grid);
     fl_u_neg_c = f_util_crra(fl_c_min);
 end
-ar_interp_u_of_c_grid(ar_interp_u_of_c_grid <= fl_c_min) = fl_u_neg_c;
+ar_interp_u_of_c_grid(ar_interp_c_grid <= fl_c_min) = fl_u_neg_c;
 
 % Get Interpolant
-f_grid_interpolant_spln = griddedInterpolant(ar_interp_c_grid, ar_interp_u_of_c_grid, 'linear');
+f_grid_interpolant_spln = griddedInterpolant(ar_interp_c_grid, ar_interp_u_of_c_grid, 'spline');
 
 %% Iterate Value Function
 % Loop solution with 4 nested loops
@@ -175,26 +188,31 @@ while bl_vfi_continue
     %% Solve Second Stage Problem k*(w,z)
     % This is the key difference between this function and
     % <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html
-    % ffs_akz_set_functions> which solves the two stages jointly
+    % ffs_akz_set_functions> which solves the two stages jointly    
+    % Interpolation first, because solution coh grid is not the same as all
+    % points reachable by k and b choices given w. 
+    
+    f_grid_interpolant_value = griddedInterpolant(...
+        mt_z_mesh_coh_interp_grid', mt_interp_coh_grid_mesh_z', mt_val_cur', 'linear');
+    mt_val_wkb_interpolated = f_grid_interpolant_value(mt_z_mesh_coh_wkb, mt_coh_wkb);
     
     bl_input_override = true;
     [mt_ev_condi_z_max, ~, mt_ev_condi_z_max_kp, mt_ev_condi_z_max_bp] = ...
-        ff_wkz_evf(mt_val_cur, param_map, support_map, armt_map, bl_input_override);
+        ff_wkz_evf(mt_val_wkb_interpolated, param_map, support_map, armt_map, bl_input_override);
     
     %% Solve First Stage Problem w*(z) given k*(w,z)
     % loop 1: over exogenous states
     for it_z_i = 1:length(ar_z)
         
         % Get 2nd Stage Arrays
-        ar_coh_z = mt_coh(:,it_z_i);
         ar_ev_condi_z_max_z = mt_ev_condi_z_max(:, it_z_i);        
         ar_w_kstar_z = mt_ev_condi_z_max_kp(:, it_z_i);
         ar_w_astar_z = mt_ev_condi_z_max_bp(:, it_z_i);        
         
         % loop 2: over endogenous states
-        for it_coh_j = 1:length(ar_a_meshk)
+        for it_coh_interp_j = 1:length(ar_interp_coh_grid)
             % Get cash-on-hand which include k,b,z
-            fl_coh = mt_coh(it_coh_j, it_z_i);
+            fl_coh = mt_interp_coh_grid_mesh_z(it_coh_interp_j, it_z_i);
             
             % loop 3: over choices, only w vector
             % we choose w(z), know from ff_wkz_evf k*(w,z), b*=w-k*
@@ -220,9 +238,9 @@ while bl_vfi_continue
             
             % maximization over loop 3 choices for loop 1+2 states
             it_max_lin_idx = find(ar_val_cur == max(ar_val_cur));
-            mt_val(it_coh_j,it_z_i) = ar_val_cur(it_max_lin_idx(1));
-            mt_pol_a(it_coh_j,it_z_i) = ar_w_astar_z(it_max_lin_idx(1));
-            mt_pol_k(it_coh_j,it_z_i) = ar_w_kstar_z(it_max_lin_idx(1));
+            mt_val(it_coh_interp_j,it_z_i) = ar_val_cur(it_max_lin_idx(1));
+            mt_pol_a(it_coh_interp_j,it_z_i) = ar_w_astar_z(it_max_lin_idx(1));
+            mt_pol_k(it_coh_interp_j,it_z_i) = ar_w_kstar_z(it_max_lin_idx(1));
             
         end
     end
@@ -232,8 +250,8 @@ while bl_vfi_continue
     % Difference across iterations
     ar_val_diff_norm(it_iter) = norm(mt_val - mt_val_cur);
     ar_pol_diff_norm(it_iter) = norm(mt_pol_a - mt_pol_a_cur) + norm(mt_pol_k - mt_pol_k_cur);
-    ar_pol_a_perc_change = sum((mt_pol_a ~= mt_pol_a_cur))/(it_ameshk_n);
-    ar_pol_k_perc_change = sum((mt_pol_k ~= mt_pol_k_cur))/(it_ameshk_n);    
+    ar_pol_a_perc_change = sum((mt_pol_a ~= mt_pol_a_cur))/length(ar_interp_coh_grid);
+    ar_pol_k_perc_change = sum((mt_pol_k ~= mt_pol_k_cur))/length(ar_interp_coh_grid);
     mt_pol_perc_change(it_iter, :) = mean([ar_pol_a_perc_change;ar_pol_k_perc_change]);
     
     % Update
@@ -248,17 +266,17 @@ while bl_vfi_continue
         tb_valpol_iter = array2table([mean(mt_val_cur,1);...
                                       mean(mt_pol_a_cur,1); ...
                                       mean(mt_pol_k_cur,1); ...
-                                      mt_val_cur(it_ameshk_n,:); ...
-                                      mt_pol_a_cur(it_ameshk_n,:); ...
-                                      mt_pol_k_cur(it_ameshk_n,:)]);
+                                      mt_val_cur(length(ar_interp_coh_grid),:); ...
+                                      mt_pol_a_cur(length(ar_interp_coh_grid),:); ...
+                                      mt_pol_k_cur(length(ar_interp_coh_grid),:)]);
         tb_valpol_iter.Properties.VariableNames = strcat('z', string((1:size(mt_val_cur,2))));
         tb_valpol_iter.Properties.RowNames = {'mval', 'map', 'mak', 'Hval', 'Hap', 'Hak'};
         disp('mval = mean(mt_val_cur,1), average value over a')
         disp('map  = mean(mt_pol_a_cur,1), average choice over a')
         disp('mkp  = mean(mt_pol_k_cur,1), average choice over k')
-        disp('Hval = mt_val_cur(it_ameshk_n,:), highest a state val')
-        disp('Hap = mt_pol_a_cur(it_ameshk_n,:), highest a state choice')
-        disp('mak = mt_pol_k_cur(it_ameshk_n,:), highest k state choice')                
+        disp('Hval = mt_val_cur(ar_interp_coh_grid,:), highest a state val')
+        disp('Hap = mt_pol_a_cur(ar_interp_coh_grid,:), highest a state choice')
+        disp('mak = mt_pol_k_cur(ar_interp_coh_grid,:), highest k state choice')                
         disp(tb_valpol_iter);
     end
     
@@ -303,6 +321,14 @@ if (bl_post)
     result_map('ar_val_diff_norm') = ar_val_diff_norm(1:it_iter_last);
     result_map('ar_pol_diff_norm') = ar_pol_diff_norm(1:it_iter_last);
     result_map('mt_pol_perc_change') = mt_pol_perc_change(1:it_iter_last, :);
+    
+    % graphing based on coh_wkb, but that does not match optimal choice
+    % matrixes for graphs. 
+    armt_map('mt_coh_wkb') = mt_interp_coh_grid_mesh_z;
+    armt_map('it_ameshk_n') = length(ar_interp_coh_grid);
+    armt_map('ar_a_meshk') = mt_interp_coh_grid_mesh_z(:,1);
+    armt_map('ar_k_mesha') = zeros(size(mt_interp_coh_grid_mesh_z(:,1)) + 0);
+    
     result_map = ff_akz_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
 end
 

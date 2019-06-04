@@ -54,9 +54,15 @@ function result_map = ff_wkz_vf_vec(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 2;
+it_param_set = 4;
 bl_input_override = true;
 [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
+
+% parameters can be set inside ffs_akz_set_default_param or updated here
+param_map('it_w_n') = 50;
+param_map('it_z_n') = 15;
+
+% get armt and func map
 [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 default_params = {param_map support_map armt_map func_map};
 
@@ -89,8 +95,8 @@ support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')]
 % armt_map
 params_group = values(armt_map, {'ar_w', 'ar_z'});
 [ ar_w, ar_z] = params_group{:};
-params_group = values(armt_map, {'ar_a_meshk', 'ar_k_mesha', 'mt_coh', 'it_ameshk_n'});
-[ar_a_meshk, ar_k_mesha, mt_coh, it_ameshk_n] = params_group{:};
+params_group = values(armt_map, {'ar_a_meshk', 'ar_k_mesha', 'mt_coh_wkb', 'it_ameshk_n'});
+[ar_a_meshk, ar_k_mesha, mt_coh_wkb, it_ameshk_n] = params_group{:};
 % func_map
 params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons'});
 [f_util_log, f_util_crra, f_cons] = params_group{:};
@@ -166,7 +172,7 @@ while bl_vfi_continue
     for it_z_i = 1:length(ar_z)
 
         % Get 2nd Stage Arrays
-        ar_coh_z = mt_coh(:,it_z_i);
+        ar_coh_z = mt_coh_wkb(:,it_z_i);
         ar_ev_condi_z_max_z = mt_ev_condi_z_max(:, it_z_i);        
         ar_w_kstar_z = mt_ev_condi_z_max_kp(:, it_z_i);
         ar_w_astar_z = mt_ev_condi_z_max_bp(:, it_z_i);

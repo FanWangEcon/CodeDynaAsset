@@ -1,6 +1,6 @@
-%% 
+%%
 % *back to <https://fanwangecon.github.io Fan>'s
-% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository> 
+% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
 function [f_util_log, f_util_crra, f_util_standin, f_prod, f_inc, f_coh, f_cons] = ffs_akz_set_functions(varargin)
@@ -15,7 +15,7 @@ function [f_util_log, f_util_crra, f_util_standin, f_prod, f_inc, f_coh, f_cons]
 %
 % @param fl_alpha float Cobb-Douglas elasticity crs if = 1 and is risky
 % financial investment like stocks, if decreasing return to scales, could
-% be interpreted as risky physical capital investment. 
+% be interpreted as risky physical capital investment.
 %
 % @param fl_delta float risky capital depreciation if this is risky
 % financial investment, deprecitation could be full, there is no additional
@@ -23,7 +23,7 @@ function [f_util_log, f_util_crra, f_util_standin, f_prod, f_inc, f_coh, f_cons]
 % earnings. If we are looking are risky capital investment, there is a
 % production function return, output. Then we can also sell the risky
 % capital with some depreciation. fl_delta = 0.1 means 10 percent
-% depreciation. 
+% depreciation.
 %
 % @param fl_r_save float savings interest rate
 %
@@ -52,7 +52,7 @@ function [f_util_log, f_util_crra, f_util_standin, f_prod, f_inc, f_coh, f_cons]
 
 %% Default
 
-[fl_crra, fl_c_min] = deal(1, 0.001);
+[fl_crra, fl_c_min] = deal(1.5, 0.001);
 [fl_Amean, fl_alpha, fl_delta] = deal(1, 0.36, 0.08);
 [fl_r_save, fl_r_borr, fl_w] = deal(0.02, 0.02, 1.23);
 default_params = {fl_crra fl_c_min ...
@@ -75,7 +75,7 @@ f_util_crra = @(c) (((c).^(1-fl_crra)-1)./(1-fl_crra));
 % production function, z already exp, possible decreasing return to scale.
 % if fl_alpha = 1, crs. That means we have a risky asset like stocks vs
 % safe asset like bond. If we have decrease return to scale, can be
-% interpreted as capital investments. 
+% interpreted as capital investments.
 
 f_prod = @(z, k) ((fl_Amean.*(z)).*(k.^(fl_alpha)));
 
@@ -88,15 +88,18 @@ f_prod = @(z, k) ((fl_Amean.*(z)).*(k.^(fl_alpha)));
 % f_inc = @(z, b, k) (f_prod(z, k) - (fl_delta)*k ...
 %                     + fl_w ...
 %                     + (b./(1+fl_r_save)).*fl_r_save.*(b>0) + (b/(1+fl_r_borr)).*(fl_r_borr).*(b<=0)); % z already exp
-                
+
 f_inc = @(z, b, k) (f_prod(z, k) - (fl_delta)*k ...
                      + fl_w ...
                      + b.*(fl_r_save).*(b>0) + b.*(fl_r_borr).*(b<=0)); % z already exp
-             
-%% Equations Cash-on-Hand             
-% Cash on Hand, b is principle and interest
+
+%% Equations Cash-on-Hand
+% Cash on Hand, b is principle and interest. Very important to include fl_w in
+% the COH equation, with fl_w > 0, there will be an income floor, lowest coh
+% that we will solve for will not be 0. with fl_w > 0, the c_min parameter is
+% only there to reset invalid choice grid values, have no effects on value func.
 % f_coh = @(z, b, k) (f_prod(z, k) + k*(1-fl_delta) + fl_w + b);
-f_coh = @(z, b, k) (f_prod(z, k) + k*(1-fl_delta) + b.*(1+fl_r_save).*(b>0) + b.*(1+fl_r_borr).*(b<=0));
+f_coh = @(z, b, k) (f_prod(z, k) + k*(1-fl_delta) + fl_w + b.*(1+fl_r_save).*(b>0) + b.*(1+fl_r_borr).*(b<=0));
 
 %% Equations Consumption
 % Simple Consumption given cash-on-hand
@@ -106,9 +109,9 @@ f_cons = @(coh, bprime, kprime) (coh - kprime - bprime);
 %% Equations Stand-in Fake Utility for Graphs
 % Utility for graphing with random data, note that when we graph with coh
 % as the state variable using this equation here, there is no effect of
-% shock on utility, it is fully captured by the coh. 
+% shock on utility, it is fully captured by the coh.
 f_util_standin = @(z, b, k) f_util_log(f_coh(z,b,k).*(f_coh(z,b,k) > 0) + ...
                                     fl_c_min.*(f_coh(z,b,k) <= 0));
-                                
-                                
+
+
 end
