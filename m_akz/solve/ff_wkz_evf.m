@@ -74,6 +74,7 @@ else
     [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
     support_map('bl_graph_evf') = true;
     support_map('bl_display_evf') = true;
+        
     [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
     
     % Generating Defaults
@@ -141,13 +142,13 @@ mt_ev_condi_z_max_idx = reshape(ar_ev_condi_z_max_idx, [it_mt_bp_coln, it_z_n]);
 if(bl_display_evf)
     disp('mt_ev_condi_z_full: J by IxM');
     disp(size(mt_ev_condi_z_full));
-    disp(mt_ev_condi_z_full);
+%     disp(mt_ev_condi_z_full);
     disp('mt_ev_condi_z_max: I by M');
     disp(size(mt_ev_condi_z_max));
     summary(array2table(mt_ev_condi_z_max));
     disp('mt_ev_condi_z_max_idx: I by M');
     disp(size(mt_ev_condi_z_max_idx));
-    disp(mt_ev_condi_z_max_idx);
+%     disp(mt_ev_condi_z_max_idx);
 end
 
 %% Reindex K' and B' Choices for each State at the Optimal *w'=k'+b'* choice
@@ -159,7 +160,7 @@ mt_ev_condi_z_max_idx = mt_ev_condi_z_max_idx + ar_add_grid';
 if(bl_display_evf)
     disp('mt_ev_condi_z_max_idx: I by M');
     disp(size(mt_ev_condi_z_max_idx));
-    disp(mt_ev_condi_z_max_idx(1:it_mt_bp_coln,:));
+%     disp(mt_ev_condi_z_max_idx(1:it_mt_bp_coln,:));
 end
 mt_ev_condi_z_max_kp = reshape(ar_k_mw_wth_na(mt_ev_condi_z_max_idx(:)), [it_mt_bp_coln, it_z_n]);
 mt_ev_condi_z_max_bp = reshape(ar_a_mw_wth_na(mt_ev_condi_z_max_idx(:)), [it_mt_bp_coln, it_z_n]);
@@ -171,6 +172,8 @@ if(bl_display_evf)
     disp(size(mt_ev_condi_z_max_bp));
     summary(array2table(mt_ev_condi_z_max_bp));
 end
+
+%% Generate Optimal K' and B' on w(coh) percentage grid from w level grid
 
 %% Graph
 
