@@ -87,7 +87,7 @@ if params_len >= 1 && params_len <= 2
     % If override param_map, re-generate armt and func if they are not
     % provided
     bl_input_override = true;
-    [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override);
+    [armt_map, func_map] = ffs_ipwkz_get_funcgrid(param_map, support_map, bl_input_override);
 else
     % Override all
     armt_map = [armt_map; default_params{3}];
