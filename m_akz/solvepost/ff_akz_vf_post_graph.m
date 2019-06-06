@@ -127,7 +127,7 @@ if (bl_graph_val)
         i_ctr = 0;
         for i = ar_it_z_graph
             i_ctr = i_ctr + 1;
-            ar_x = mt_coh_wkb(:,i);
+            ar_x = mt_coh_wkb(:, i);
             ar_y = mt_outcome(:, i);
             scatter(ar_x, ar_y, 5, ...
                 'MarkerEdgeColor', clr(i_ctr,:), ...
@@ -228,7 +228,7 @@ if (bl_graph_pol_lvl)
         end
         
         if(sub_j==1)
-            st_y_label = 'Savings/Borrowing';
+            st_y_label = 'Safe Savings/Borrowing';
             st_x_label = 'Cash-on-Hand';
         end
         if(sub_j==2)
@@ -296,10 +296,10 @@ end
 if (bl_graph_pol_pct)
     
     if(~bl_graph_onebyones)
-        figure('PaperPosition', [0 0 21 4]);
+        figure('PaperPosition', [0 0 14 8]);
     end    
     
-    for sub_j=1:1:3
+    for sub_j=1:1:4
         
         mt_outcome = zeros(size(mt_pol_a));
         mt_it_borr_idx = (mt_pol_a < 0);
@@ -309,17 +309,24 @@ if (bl_graph_pol_pct)
             mt_outcome(~mt_it_borr_idx) = mt_pol_a(~mt_it_borr_idx)./mt_coh_wkb(~mt_it_borr_idx);
             st_y_label = 'aprime/borrbound if br; aprime/cashonhand if sv';
             st_legend_loc = 'southeast';
-            st_title = 'Asset Choice As Fraction';
+            st_title = 'Safe Savings As Fraction';
         end
         if(sub_j==2)
+            mt_outcome(mt_it_borr_idx) = mt_pol_k(mt_it_borr_idx)./(mt_coh_wkb(mt_it_borr_idx) + mt_pol_a(mt_it_borr_idx));
+            mt_outcome(~mt_it_borr_idx) = mt_pol_k(~mt_it_borr_idx)./mt_coh_wkb(~mt_it_borr_idx);
+            st_y_label = 'kprime/(coh-aprime) if br; k/cashonhand if sv';            
+            st_legend_loc = 'southeast';
+            st_title = 'Risky Investment as Fraction';
+        end        
+        if(sub_j==3)
             %             If borrowing, how much is what is borrowing going to K?
             %             If saving, how much is what is total savings in K?
             mt_outcome(mt_it_borr_idx) = mt_pol_a(mt_it_borr_idx)./mt_pol_k(mt_it_borr_idx);
             mt_outcome(~mt_it_borr_idx) = mt_pol_a(~mt_it_borr_idx)./mt_pol_k(~mt_it_borr_idx);
             st_y_label = 'aprime/kprime';
-            st_legend_loc = 'northwest';            
-        end        
-        if(sub_j==3)
+            st_legend_loc = 'northwest';
+        end
+        if(sub_j==4)
             mt_outcome(mt_it_borr_idx) = mt_cons(mt_it_borr_idx)./(mt_coh_wkb(mt_it_borr_idx) + mt_pol_a(mt_it_borr_idx));
             mt_outcome(~mt_it_borr_idx) = mt_cons(~mt_it_borr_idx)./mt_coh_wkb(~mt_it_borr_idx);
             st_y_label = 'c/(coh-aprime) if br; c/cashonhand if sv';
@@ -328,7 +335,7 @@ if (bl_graph_pol_pct)
         end
         
         if(~bl_graph_onebyones)
-            subplot(1,3,sub_j)
+            subplot(2,2,sub_j)
         else
             figure('PaperPosition', [0 0 7 4]);
         end

@@ -117,7 +117,7 @@ param_map('it_ak_n') = param_map('it_w_n'); % grid for a and k the same
 % points. For consumption interpolation 10^-4 is extremely accurate, there
 % should be no perceptible differences in value and policy functions when the
 % it_c_interp_grid_gap <= 0.001 compared to actual evaluation
-param_map('fl_coh_interp_grid_gap') = 0.025;
+param_map('fl_coh_interp_grid_gap') = 0.1;
 % param_map('it_coh_interp_n') = 500;
 param_map('it_c_interp_grid_gap') = 10^-4;
 
@@ -199,6 +199,8 @@ if (ismember(it_subset, [1,2,3,4]))
         param_map('it_k_n') = param_map('it_w_n');
         param_map('it_z_n') = 3;
         param_map('it_maxiter_val') = 50;
+        param_map('fl_coh_interp_grid_gap') = 0.25;
+        param_map('it_c_interp_grid_gap') = 0.001;
         param_map('it_tol_pol_nochange') = 1000;
         support_map('bl_display') = true;
         support_map('it_display_every') = 1;

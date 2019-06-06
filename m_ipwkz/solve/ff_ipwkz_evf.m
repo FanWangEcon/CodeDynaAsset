@@ -37,8 +37,8 @@ function [mt_ev_condi_z_max, mt_ev_condi_z_max_idx, mt_ev_condi_z_max_kp, mt_ev_
 % choices, which index maximized conditional on z and w integrating over
 % z'/
 %
-% @return mt_ev_condi_z_max_kp matrix choice_w_n by shock_n the k' choice
-% at max_{k'}(E(V(coh(k',b'=w-k'),z'|z,w))
+% @return mt_ev_condi_z_max_kp matrix choice_w_level_n by shock_n the k'
+% choice at max_{k'}(E(V(coh(k',b'=w-k'),z'|z,w))
 %
 % @return mt_ev_condi_z_max_bp matrix choice_w_n by shock_n the b'=w-k'
 % choice at max_{k'}(E(V(coh(k',b'=w-k'),z'|z,w))
@@ -71,11 +71,11 @@ else
     [param_map, support_map] = ffs_ipwkz_set_default_param(it_param_set);
     
     support_map('bl_graph_evf') = true;
-    support_map('bl_display_evf') = true; 
-
+    support_map('bl_display_evf') = true;
+    
     param_map('it_ak_perc_n') = 250;
     param_map('fl_w_interp_grid_gap') = (param_map('fl_w_max')-param_map('fl_b_bd'))/param_map('it_ak_perc_n');
-        
+    
     [armt_map, func_map] = ffs_ipwkz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
     
     % Generating Defaults
@@ -83,12 +83,14 @@ else
     [ar_a_meshk, ar_k_mesha, ar_z] = params_group{:};
     params_group = values(func_map, {'f_util_standin'});
     [f_util_standin] = params_group{:};
-    mt_val = f_util_standin(ar_z, ar_a_meshk, ar_k_mesha);    
+    mt_val = f_util_standin(ar_z, ar_a_meshk, ar_k_mesha);
 end
 
 %% Parse Parameters
-params_group = values(armt_map, {'mt_z_trans', 'ar_z', 'ar_w_level', 'ar_k_mesha', 'ar_a_meshk', 'mt_k'});
-[mt_z_trans, ar_z, ar_w_level, ar_k_mesha, ar_a_meshk, mt_k] = params_group{:};
+params_group = values(armt_map, {'mt_z_trans', 'ar_z',...
+    'ar_w_level', 'ar_k_mesha', 'ar_a_meshk', 'mt_k'});
+[mt_z_trans, ar_z, ar_w_level, ...
+    ar_k_mesha, ar_a_meshk, mt_k] = params_group{:};
 params_group = values(param_map, {'it_z_n', 'fl_nan_replace', 'fl_b_bd'});
 [it_z_n, fl_nan_replace, fl_b_bd] = params_group{:};
 params_group = values(support_map, {'bl_graph_onebyones','bl_display_evf', 'bl_graph_evf'});
@@ -109,7 +111,7 @@ st_img_name_main = [st_func_name st_img_name_main];
 % <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/paramfunc/html/ffs_ipwkz_set_functions.html
 % ffs_ipwkz_set_functions> code where we loop over current z, and for each
 % current z, grab out a particular row from the mt_z_trans that corresponds
-% to a current shock's transition into all future states. 
+% to a current shock's transition into all future states.
 %
 % here, each column of mt_val corresponds to a state z, think of that as
 % future state z. The input mt_val is *V(coh, z)*, we need to integrate to
@@ -138,13 +140,13 @@ mt_ev_condi_z_max_idx = reshape(ar_ev_condi_z_max_idx, [it_mt_bp_coln, it_z_n]);
 if(bl_display_evf)
     disp('mt_ev_condi_z_full: J by IxM');
     disp(size(mt_ev_condi_z_full));
-%     disp(mt_ev_condi_z_full);
+    %     disp(mt_ev_condi_z_full);
     disp('mt_ev_condi_z_max: I by M');
     disp(size(mt_ev_condi_z_max));
     summary(array2table(mt_ev_condi_z_max));
     disp('mt_ev_condi_z_max_idx: I by M');
     disp(size(mt_ev_condi_z_max_idx));
-%     disp(mt_ev_condi_z_max_idx);
+    %     disp(mt_ev_condi_z_max_idx);
 end
 
 %% Reindex K' and B' Choices for each State at the Optimal *w'=k'+b'* choice
@@ -156,11 +158,11 @@ mt_ev_condi_z_max_idx = mt_ev_condi_z_max_idx + ar_add_grid';
 if(bl_display_evf)
     disp('mt_ev_condi_z_max_idx: I by M');
     disp(size(mt_ev_condi_z_max_idx));
-%     disp(mt_ev_condi_z_max_idx(1:it_mt_bp_coln,:));
+    %     disp(mt_ev_condi_z_max_idx(1:it_mt_bp_coln,:));
 end
 mt_ev_condi_z_max_kp = reshape(ar_k_mesha(mt_ev_condi_z_max_idx), [it_mt_bp_coln, it_z_n]);
 mt_ev_condi_z_max_bp = reshape(ar_a_meshk(mt_ev_condi_z_max_idx), [it_mt_bp_coln, it_z_n]);
-if(bl_display_evf) 
+if(bl_display_evf)
     disp('mt_ev_condi_z_max_kp: I by M');
     disp(size(mt_ev_condi_z_max_kp));
     summary(array2table(mt_ev_condi_z_max_kp));
@@ -213,8 +215,8 @@ if (bl_graph_evf)
         
         ylabel('Next Period Value');
         xlabel({'Index of Cash-on-Hand Discrete Point'...
-                'Each Segment is a w=k+b; within segment increasing k'...
-                'EV and V identical if shock is fully persistent'});
+            'Each Segment is a w=k+b; within segment increasing k'...
+            'EV and V identical if shock is fully persistent'});
         grid on;
         grid minor;
     end
@@ -231,7 +233,63 @@ if (bl_graph_evf)
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
     
-    %% Graph 2, max(EV), color regions, borrow save
+    %% Graph 2, max(EV)
+    
+    if(~bl_graph_onebyones)
+        figure('PaperPosition', [0 0 7 4]);
+    end
+    
+    for sub_j=1:1:1
+        
+        if(sub_j==1)
+            mt_outcome = mt_ev_condi_z_max;
+            st_y_label = 'max_{k''}(E(V(coh(k'',b''=w-k''),z''|z,w))';
+        end
+        
+        if(~bl_graph_onebyones)
+            subplot(1,1,sub_j)
+        else
+            figure('PaperPosition', [0 0 7 4]);
+        end
+        hold on;
+        
+        ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)) (it_z_n)]);
+        clr = jet(length(ar_it_z_graph));
+        i_ctr = 0;
+        for i = ar_it_z_graph
+            i_ctr = i_ctr + 1;
+            ar_x = ar_w_level;
+            ar_y = mt_outcome(:, i);
+            scatter(ar_x, ar_y, 5, ...
+                'MarkerEdgeColor', clr(i_ctr,:), ...
+                'MarkerFaceColor', clr(i_ctr,:));
+        end
+        
+        grid on;
+        grid minor;
+        title(['2nd Stage Exp Value at Optimal K given W=K''+B'''])
+        ylabel(st_y_label)
+        xlabel({'Aggregate Savings'})
+        
+        legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
+        legendCell{length(legendCell) + 1} = 'max-agg-save';
+        legend(legendCell([ar_it_z_graph length(legendCell)]), 'Location','southeast');
+        
+        xline0 = xline(0);
+        xline0.HandleVisibility = 'off';
+        yline0 = yline(0);
+        yline0.HandleVisibility = 'off';
+        
+    end
+    
+    % save file
+    if (bl_img_save)
+        mkdir(support_map('st_img_path'));
+        st_file_name = [st_img_prefix st_img_name_main '_maxev' st_img_suffix];
+        saveas(gcf, strcat(st_img_path, st_file_name));
+    end
+    
+    %% Graph 3, at max(EV) optimal choice category, color regions, borrow save
     
     % Borrow Vs Save
     [ar_z_mw, ar_w_mz] = meshgrid(ar_z, ar_w_level);
@@ -270,11 +328,11 @@ if (bl_graph_evf)
     % save file
     if (bl_img_save)
         mkdir(support_map('st_img_path'));
-        st_file_name = [st_img_prefix st_img_name_main '_maxev' st_img_suffix];
+        st_file_name = [st_img_prefix st_img_name_main '_maxbrsv' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
     
-    %% Graph 3, Optimal K' and B' Levels
+    %% Graph 4, Optimal K' and B' Levels
     
     [~, ar_w_mz] = meshgrid(ar_z, ar_w_level);
     for sub_j=1:1:4

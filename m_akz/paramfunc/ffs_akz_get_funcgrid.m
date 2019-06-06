@@ -26,7 +26,9 @@ function [armt_map, func_map] = ffs_akz_get_funcgrid(varargin)
 % within certain loops. Default is 0.
 %
 % @return armt_map container container with states, choices and shocks
-% grids that are inputs for grid based solution algorithm
+% grids that are inputs for grid based solution algorithm. keys included in
+% armt_map are described below for each group of vectors when they are
+% stored into armt_map.
 %
 % @return func_map container container with function handles for
 % consumption cash-on-hand etc.

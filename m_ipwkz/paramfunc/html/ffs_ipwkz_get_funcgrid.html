@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>ffs_ipwkz_get_funcgrid</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-04"><meta name="DC.source" content="ffs_ipwkz_get_funcgrid.m"><style type="text/css">
+      --><title>ffs_ipwkz_get_funcgrid</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-05"><meta name="DC.source" content="ffs_ipwkz_get_funcgrid.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">FFS_IPWKZ_GET_FUNCGRID get funcs, params, states choices shocks grids</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Generate Asset and Choice Grid for 2nd stage Problem</a></li><li><a href="#6">Get Shock Grids</a></li><li><a href="#7">Get Equations</a></li><li><a href="#8">Generate Cash-on-Hand/State Matrix</a></li><li><a href="#9">Generate 1st Stage States: Interpolation Cash-on-hand Interpolation Grid</a></li><li><a href="#10">Generate 1st Stage Choices: Interpolation Cash-on-hand Interpolation Grid</a></li><li><a href="#11">Generate Interpolation Consumption Grid</a></li><li><a href="#12">Store</a></li><li><a href="#13">Graph</a></li><li><a href="#15">Graph 1: a and k choice grid graphs</a></li><li><a href="#16">Graph 2: coh by shock</a></li><li><a href="#17">Graph 3: 2nd stage coh reached by k' b' choices by index</a></li><li><a href="#18">Graph 4: 2nd stage coh reached by k' b' choices  by coh</a></li><li><a href="#19">Graph 5: 1st State Aggregate Savings Choices by COH interpolation grids</a></li><li><a href="#21">Display</a></li></ul></div><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><pre class="codeinput"><span class="keyword">function</span> [armt_map, func_map] = ffs_ipwkz_get_funcgrid(varargin)
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">FFS_IPWKZ_GET_FUNCGRID get funcs, params, states choices shocks grids</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Generate Asset and Choice Grid for 2nd stage Problem</a></li><li><a href="#6">Get Shock Grids</a></li><li><a href="#7">Get Equations</a></li><li><a href="#8">Generate Cash-on-Hand/State Matrix</a></li><li><a href="#9">Generate 1st Stage States: Interpolation Cash-on-hand Interpolation Grid</a></li><li><a href="#10">Generate 1st Stage Choices: Interpolation Cash-on-hand Interpolation Grid</a></li><li><a href="#11">Generate Interpolation Consumption Grid</a></li><li><a href="#12">Initialize armt_map to store, state, choice, shock matrixes</a></li><li><a href="#13">Store armt_map (1): 2nd Stage Problem Arrays and Matrixes</a></li><li><a href="#14">Store armt_map (2): First Stage Aggregate Savings</a></li><li><a href="#15">Store armt_map (3): First Stage Consumption and Cash-on-Hand Grids</a></li><li><a href="#16">Store armt_map (4): Shock Grids</a></li><li><a href="#17">Store Function Map</a></li><li><a href="#18">Graph</a></li><li><a href="#20">Graph 1: a and k choice grid graphs</a></li><li><a href="#21">Graph 2: coh by shock</a></li><li><a href="#22">Graph 3: 2nd stage coh reached by k' b' choices by index</a></li><li><a href="#23">Graph 4: 2nd stage coh reached by k' b' choices  by coh</a></li><li><a href="#24">Graph 5: 1st State Aggregate Savings Choices by COH interpolation grids</a></li><li><a href="#26">Display</a></li></ul></div><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><pre class="codeinput"><span class="keyword">function</span> [armt_map, func_map] = ffs_ipwkz_get_funcgrid(varargin)
 </pre><h2 id="2">FFS_IPWKZ_GET_FUNCGRID get funcs, params, states choices shocks grids</h2><p>centralized gateway for retrieving parameters, and solution grids and functions. Similar to <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html">ffs_akz_get_funcgrid</a> function.</p><p>The graphs below show the difference between percentage choice grid and level choice grid. See comments by graphs below for explanations of differences between the choice grids here and choice grids in the ffs_akz_get_funcgrid function.</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param bl_input_override boolean if true varargin contained param_map and support_map fully overrides local default. Local default is not invoked. This could be important for speed if this function is getting invoked within certain loops. Default is 0.</p><p>@return armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@return func_map container container with function handles for consumption cash-on-hand etc.</p><p>@example</p><pre>  it_param_set = 2;
   bl_input_override = true;
   [param_map, support_map] = ffs_ipwkz_set_default_param(it_param_set);
@@ -84,7 +84,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
     support_map(<span class="string">'bl_display_funcgrids'</span>) = true;
 
     <span class="comment">% to be able to visually see choice grid points</span>
-    param_map(<span class="string">'fl_b_bd'</span>) = -10;
+    param_map(<span class="string">'fl_b_bd'</span>) = 0;
     param_map(<span class="string">'fl_w_min'</span>) = param_map(<span class="string">'fl_b_bd'</span>);
     param_map(<span class="string">'it_w_perc_n'</span>) = 25;
     param_map(<span class="string">'it_ak_perc_n'</span>) = 45;
@@ -159,38 +159,36 @@ fl_min_mt_coh = min(min(mt_coh_wkb));
 it_coh_interp_n = (fl_max_mt_coh-fl_min_mt_coh)/(fl_coh_interp_grid_gap);
 ar_interp_coh_grid = linspace(fl_min_mt_coh, fl_max_mt_coh, it_coh_interp_n);
 [mt_interp_coh_grid_mesh_z, mt_z_mesh_coh_interp_grid] = ndgrid(ar_interp_coh_grid, ar_z);
-</pre><h2 id="10">Generate 1st Stage Choices: Interpolation Cash-on-hand Interpolation Grid</h2><p>previously, our ar_w was the first stage choice grid, the grid was the same for all coh levels. Now, for each coh level, there is a different ar_w. ar_interp_coh_grid is (1 by ar_interp_coh_grid) and ar_w_perc is ( 1 by it_w_perc_n). Conditional on z, each choice matrix is (it_w_perc_n by ar_interp_coh_grid). Here we are pre-computing the choice matrix. This could be a large matrix if the choice grid is large. This is the matrix of aggregate savings choices</p><pre class="codeinput">mt_w_by_interp_coh_interp_grid = ((ar_interp_coh_grid-fl_min_mt_coh)'*ar_w_perc)' + fl_min_mt_coh;
+</pre><h2 id="10">Generate 1st Stage Choices: Interpolation Cash-on-hand Interpolation Grid</h2><p>previously, our ar_w was the first stage choice grid, the grid was the same for all coh levels. Now, for each coh level, there is a different ar_w. ar_interp_coh_grid is (1 by ar_interp_coh_grid) and ar_w_perc is ( 1 by it_w_perc_n). Conditional on z, each choice matrix is (it_w_perc_n by ar_interp_coh_grid). Here we are pre-computing the choice matrix. This could be a large matrix if the choice grid is large. This is the matrix of aggregate savings choices</p><pre class="codeinput"><span class="keyword">if</span> (fl_min_mt_coh &lt; 0 )
+    <span class="comment">% borrowing bound is below zero</span>
+    mt_w_by_interp_coh_interp_grid = ((ar_interp_coh_grid-fl_min_mt_coh)'*ar_w_perc)' + fl_min_mt_coh;
+<span class="keyword">else</span>
+    <span class="comment">% savings only</span>
+    mt_w_by_interp_coh_interp_grid = ((ar_interp_coh_grid)'*ar_w_perc)';
+<span class="keyword">end</span>
 </pre><h2 id="11">Generate Interpolation Consumption Grid</h2><p>We also interpolate over consumption to speed the program up. We only solve for u(c) at this grid for the iwkz problmes, and then interpolate other c values.</p><pre class="codeinput">fl_c_max = max(max(mt_coh_wkb)) - fl_b_bd;
 it_interp_c_grid_n = (fl_c_max-fl_c_min)/(it_c_interp_grid_gap);
 ar_interp_c_grid = linspace(fl_c_min, fl_c_max, it_interp_c_grid_n);
-</pre><h2 id="12">Store</h2><pre class="codeinput">armt_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
-
-<span class="comment">% 2nd stage choices</span>
-armt_map(<span class="string">'ar_ak_perc'</span>) = ar_ak_perc;
+</pre><h2 id="12">Initialize armt_map to store, state, choice, shock matrixes</h2><pre class="codeinput">armt_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
+armtdesc_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
+</pre><h2 id="13">Store armt_map (1): 2nd Stage Problem Arrays and Matrixes</h2><pre class="codeinput">armt_map(<span class="string">'ar_ak_perc'</span>) = ar_ak_perc;
 armt_map(<span class="string">'mt_k'</span>) = mt_k;
 armt_map(<span class="string">'ar_a_meshk'</span>) = ar_a_meshk;
 armt_map(<span class="string">'ar_k_mesha'</span>) = ar_k_mesha;
 armt_map(<span class="string">'it_ameshk_n'</span>) = length(ar_a_meshk);
 armt_map(<span class="string">'mt_coh_wkb'</span>) = mt_coh_wkb;
 armt_map(<span class="string">'mt_z_mesh_coh_wkb'</span>) = mt_z_mesh_coh_wkb;
-
-<span class="comment">% 1st stage aggregate savings</span>
-armt_map(<span class="string">'ar_w_perc'</span>) = ar_w_perc;
+</pre><h2 id="14">Store armt_map (2): First Stage Aggregate Savings</h2><p>w = k' + b', w is aggregate Savings%</p><div><ol><li><b>ar_w_perc</b> 1st stage, percentage w choice given coh, at each coh level the number of choice points is the same for this problem with percentage grid points.</li><li><b>ar_w_level</b> 2nd stage, level of w over which we solve the optimal percentage k' choices. Need to generate interpolant based on this so that we know optimal k* given ar_w_perc(coh) in the 1st stage</li><li><b>mt_w_by_interp_coh_interp_grid</b> 1st stage, generate w(coh, percent), meaning the level of w given coh and the percentage grid of ar_w_perc. Mesh this with the coh grid, Rows here correspond to percentage of w choices, columns correspond to cash-on-hand. The columns of cash-on-hand is determined by ar_interp_coh_grid, because we solve the 1st stage problem at that coh grid.</li></ol></div><pre class="codeinput">armt_map(<span class="string">'ar_w_perc'</span>) = ar_w_perc;
 armt_map(<span class="string">'ar_w_level'</span>) = ar_w_level;
 armt_map(<span class="string">'mt_w_by_interp_coh_interp_grid'</span>) = mt_w_by_interp_coh_interp_grid;
-
-<span class="comment">% 1st stage consumption coh</span>
-armt_map(<span class="string">'ar_interp_c_grid'</span>) = ar_interp_c_grid;
+</pre><h2 id="15">Store armt_map (3): First Stage Consumption and Cash-on-Hand Grids</h2><pre class="codeinput">armt_map(<span class="string">'ar_interp_c_grid'</span>) = ar_interp_c_grid;
 armt_map(<span class="string">'ar_interp_coh_grid'</span>) = ar_interp_coh_grid;
 armt_map(<span class="string">'mt_interp_coh_grid_mesh_z'</span>) = mt_interp_coh_grid_mesh_z;
 armt_map(<span class="string">'mt_z_mesh_coh_interp_grid'</span>) = mt_z_mesh_coh_interp_grid;
-
-<span class="comment">% Shocks</span>
-armt_map(<span class="string">'mt_z_trans'</span>) = mt_z_trans;
+</pre><h2 id="16">Store armt_map (4): Shock Grids</h2><pre class="codeinput">armt_map(<span class="string">'mt_z_trans'</span>) = mt_z_trans;
 armt_map(<span class="string">'ar_stationary'</span>) = ar_stationary;
 armt_map(<span class="string">'ar_z'</span>) = ar_z;
-
-func_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
+</pre><h2 id="17">Store Function Map</h2><pre class="codeinput">func_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
 func_map(<span class="string">'f_util_log'</span>) = f_util_log;
 func_map(<span class="string">'f_util_crra'</span>) = f_util_crra;
 func_map(<span class="string">'f_util_standin'</span>) = f_util_standin;
@@ -198,8 +196,8 @@ func_map(<span class="string">'f_prod'</span>) = f_prod;
 func_map(<span class="string">'f_inc'</span>) = f_inc;
 func_map(<span class="string">'f_coh'</span>) = f_coh;
 func_map(<span class="string">'f_cons'</span>) = f_cons;
-</pre><h2 id="13">Graph</h2><pre class="codeinput"><span class="keyword">if</span> (bl_graph_funcgrids)
-</pre><h2 id="15">Graph 1: a and k choice grid graphs</h2><p>compare the figure here to the same figure in <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html">ffs_akz_get_funcgrid</a>. there the grid points are on an even grid, half of the grid points have NA. for the grid here, the grid points get denser as we get closer to low w = k'+b' levels. This is what is different visually about percentage points based choice grid for the 2nd stage problem.</p><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
+</pre><h2 id="18">Graph</h2><pre class="codeinput"><span class="keyword">if</span> (bl_graph_funcgrids)
+</pre><h2 id="20">Graph 1: a and k choice grid graphs</h2><p>compare the figure here to the same figure in <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html">ffs_akz_get_funcgrid</a>. there the grid points are on an even grid, half of the grid points have NA. for the grid here, the grid points get denser as we get closer to low w = k'+b' levels. This is what is different visually about percentage points based choice grid for the 2nd stage problem.</p><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
     hold <span class="string">on</span>;
 
     chart = plot(mt_a, mt_k, <span class="string">'blue'</span>);
@@ -223,7 +221,7 @@ func_map(<span class="string">'f_cons'</span>) = f_cons;
     legend(chart(legend2plot), legendCell(legend2plot), <span class="string">'Location'</span>,<span class="string">'northeast'</span>);
 
     grid <span class="string">on</span>;
-</pre><img vspace="5" hspace="5" src="ffs_ipwkz_get_funcgrid_01.png" alt=""> <h2 id="16">Graph 2: coh by shock</h2><p>compare the figure here to the same figure in <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html">ffs_akz_get_funcgrid</a>. there the grid points are on an even grid. Visually, one could see that the blue/red line segments here are always the same length, but in the ffs_akz_get_funcgrid figure, they are increasingly longer as we move towards the right. They are even because the number of percentage points available is constant regardless of w = k' + b' levels. But previously, the number of grid points available is increasing as w increases since choice grid is based on levels.</p><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
+</pre><img vspace="5" hspace="5" src="ffs_ipwkz_get_funcgrid_01.png" alt=""> <h2 id="21">Graph 2: coh by shock</h2><p>compare the figure here to the same figure in <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html">ffs_akz_get_funcgrid</a>. there the grid points are on an even grid. Visually, one could see that the blue/red line segments here are always the same length, but in the ffs_akz_get_funcgrid figure, they are increasingly longer as we move towards the right. They are even because the number of percentage points available is constant regardless of w = k' + b' levels. But previously, the number of grid points available is increasing as w increases since choice grid is based on levels.</p><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
     chart = plot(mt_coh_wkb);
     clr = jet(numel(chart));
     <span class="keyword">for</span> m = 1:numel(chart)
@@ -243,7 +241,7 @@ func_map(<span class="string">'f_cons'</span>) = f_cons;
     legend(chart(legend2plot), legendCell(legend2plot), <span class="string">'Location'</span>,<span class="string">'southeast'</span>);
 
     grid <span class="string">on</span>;
-</pre><img vspace="5" hspace="5" src="ffs_ipwkz_get_funcgrid_02.png" alt=""> <h2 id="17">Graph 3: 2nd stage coh reached by k' b' choices by index</h2><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
+</pre><img vspace="5" hspace="5" src="ffs_ipwkz_get_funcgrid_02.png" alt=""> <h2 id="22">Graph 3: 2nd stage coh reached by k' b' choices by index</h2><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
     ar_coh_kpzgrid_unique = unique(sort(mt_coh_wkb(:)));
     scatter(1:length(ar_coh_kpzgrid_unique), ar_coh_kpzgrid_unique);
     xline(0);
@@ -252,7 +250,7 @@ func_map(<span class="string">'f_cons'</span>) = f_cons;
     ylabel(<span class="string">'Cash-on-Hand'</span>);
     xlabel({<span class="string">'Index of Cash-on-Hand Discrete Point'</span>});
     grid <span class="string">on</span>;
-</pre><img vspace="5" hspace="5" src="ffs_ipwkz_get_funcgrid_03.png" alt=""> <h2 id="18">Graph 4: 2nd stage coh reached by k' b' choices  by coh</h2><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
+</pre><img vspace="5" hspace="5" src="ffs_ipwkz_get_funcgrid_03.png" alt=""> <h2 id="23">Graph 4: 2nd stage coh reached by k' b' choices  by coh</h2><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
     ar_coh_kpzgrid_unique = unique(sort(mt_coh_wkb(:)));
     scatter(ar_coh_kpzgrid_unique, ar_coh_kpzgrid_unique, <span class="string">'.'</span>);
     xline(0);
@@ -261,7 +259,7 @@ func_map(<span class="string">'f_cons'</span>) = f_cons;
     ylabel(<span class="string">'Cash-on-Hand'</span>);
     xlabel({<span class="string">'Cash-on-Hand'</span>});
     grid <span class="string">on</span>;
-</pre><img vspace="5" hspace="5" src="ffs_ipwkz_get_funcgrid_04.png" alt=""> <h2 id="19">Graph 5: 1st State Aggregate Savings Choices by COH interpolation grids</h2><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
+</pre><img vspace="5" hspace="5" src="ffs_ipwkz_get_funcgrid_04.png" alt=""> <h2 id="24">Graph 5: 1st State Aggregate Savings Choices by COH interpolation grids</h2><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
     hold <span class="string">on</span>;
 
     chart = plot(ar_interp_coh_grid, mt_w_by_interp_coh_interp_grid');
@@ -290,7 +288,7 @@ func_map(<span class="string">'f_cons'</span>) = f_cons;
 
     grid <span class="string">on</span>;
 </pre><img vspace="5" hspace="5" src="ffs_ipwkz_get_funcgrid_05.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
-</pre><h2 id="21">Display</h2><pre class="codeinput"><span class="keyword">if</span> (bl_display_funcgrids)
+</pre><h2 id="26">Display</h2><pre class="codeinput"><span class="keyword">if</span> (bl_display_funcgrids)
 
     disp(<span class="string">'ar_z'</span>);
     disp(size(ar_z));
@@ -368,41 +366,36 @@ func_map(<span class="string">'f_cons'</span>) = f_cons;
     2.5670
 
 ar_w_level
-     1    30
+     1    25
 
-  -10.0000
-   -7.9310
-   -5.8621
-   -3.7931
-   -1.7241
-    0.3448
-    2.4138
-    4.4828
-    6.5517
-    8.6207
-   10.6897
-   12.7586
-   14.8276
-   16.8966
-   18.9655
-   21.0345
-   23.1034
-   25.1724
-   27.2414
-   29.3103
-   31.3793
-   33.4483
-   35.5172
-   37.5862
-   39.6552
-   41.7241
-   43.7931
-   45.8621
-   47.9310
+         0
+    2.0833
+    4.1667
+    6.2500
+    8.3333
+   10.4167
+   12.5000
+   14.5833
+   16.6667
+   18.7500
+   20.8333
+   22.9167
+   25.0000
+   27.0833
+   29.1667
+   31.2500
+   33.3333
+   35.4167
+   37.5000
+   39.5833
+   41.6667
+   43.7500
+   45.8333
+   47.9167
    50.0000
 
 mt_w_by_interp_coh_interp_grid
-    25    33
+    25    28
 
 mt_z_trans
     15    15
@@ -462,317 +455,317 @@ mt_z_trans
     0.2602
 
 ar_interp_coh_grid
-     1    33
+     1    28
 
 
 Variables:
 
-    Var1: 33&times;1 double
+    Var1: 28&times;1 double
 
         Values:
 
-            Min       -9.8064
-            Median     23.735
+            Min       0.44365
+            Median      28.86
             Max        57.277
 
 ar_interp_c_grid
-           1      672771
+           1      572770
 
 
 Variables:
 
-    Var1: 672771&times;1 double
+    Var1: 572770&times;1 double
 
         Values:
 
             Min       0.0001
-            Median    33.639
-            Max       67.277
+            Median    28.639
+            Max       57.277
 
 mt_interp_coh_grid_mesh_z
-    33    15
+    28    15
 
 
 Variables:
 
-    mt_interp_coh_grid_mesh_z1: 33&times;1 double
+    mt_interp_coh_grid_mesh_z1: 28&times;1 double
 
         Values:
 
-            Min                 -9.8064           
-            Median               23.735           
+            Min                 0.44365           
+            Median                28.86           
             Max                  57.277           
 
-    mt_interp_coh_grid_mesh_z2: 33&times;1 double
+    mt_interp_coh_grid_mesh_z2: 28&times;1 double
 
         Values:
 
-            Min                 -9.8064           
-            Median               23.735           
+            Min                 0.44365           
+            Median                28.86           
             Max                  57.277           
 
-    mt_interp_coh_grid_mesh_z3: 33&times;1 double
+    mt_interp_coh_grid_mesh_z3: 28&times;1 double
 
         Values:
 
-            Min                 -9.8064           
-            Median               23.735           
+            Min                 0.44365           
+            Median                28.86           
             Max                  57.277           
 
-    mt_interp_coh_grid_mesh_z4: 33&times;1 double
+    mt_interp_coh_grid_mesh_z4: 28&times;1 double
 
         Values:
 
-            Min                 -9.8064           
-            Median               23.735           
+            Min                 0.44365           
+            Median                28.86           
             Max                  57.277           
 
-    mt_interp_coh_grid_mesh_z5: 33&times;1 double
+    mt_interp_coh_grid_mesh_z5: 28&times;1 double
 
         Values:
 
-            Min                 -9.8064           
-            Median               23.735           
+            Min                 0.44365           
+            Median                28.86           
             Max                  57.277           
 
-    mt_interp_coh_grid_mesh_z6: 33&times;1 double
+    mt_interp_coh_grid_mesh_z6: 28&times;1 double
 
         Values:
 
-            Min                 -9.8064           
-            Median               23.735           
+            Min                 0.44365           
+            Median                28.86           
             Max                  57.277           
 
-    mt_interp_coh_grid_mesh_z7: 33&times;1 double
+    mt_interp_coh_grid_mesh_z7: 28&times;1 double
 
         Values:
 
-            Min                 -9.8064           
-            Median               23.735           
+            Min                 0.44365           
+            Median                28.86           
             Max                  57.277           
 
-    mt_interp_coh_grid_mesh_z8: 33&times;1 double
+    mt_interp_coh_grid_mesh_z8: 28&times;1 double
 
         Values:
 
-            Min                 -9.8064           
-            Median               23.735           
+            Min                 0.44365           
+            Median                28.86           
             Max                  57.277           
 
-    mt_interp_coh_grid_mesh_z9: 33&times;1 double
+    mt_interp_coh_grid_mesh_z9: 28&times;1 double
 
         Values:
 
-            Min                 -9.8064           
-            Median               23.735           
+            Min                 0.44365           
+            Median                28.86           
             Max                  57.277           
 
-    mt_interp_coh_grid_mesh_z10: 33&times;1 double
+    mt_interp_coh_grid_mesh_z10: 28&times;1 double
 
         Values:
 
-            Min                  -9.8064           
-            Median                23.735           
+            Min                  0.44365           
+            Median                 28.86           
             Max                   57.277           
 
-    mt_interp_coh_grid_mesh_z11: 33&times;1 double
+    mt_interp_coh_grid_mesh_z11: 28&times;1 double
 
         Values:
 
-            Min                  -9.8064           
-            Median                23.735           
+            Min                  0.44365           
+            Median                 28.86           
             Max                   57.277           
 
-    mt_interp_coh_grid_mesh_z12: 33&times;1 double
+    mt_interp_coh_grid_mesh_z12: 28&times;1 double
 
         Values:
 
-            Min                  -9.8064           
-            Median                23.735           
+            Min                  0.44365           
+            Median                 28.86           
             Max                   57.277           
 
-    mt_interp_coh_grid_mesh_z13: 33&times;1 double
+    mt_interp_coh_grid_mesh_z13: 28&times;1 double
 
         Values:
 
-            Min                  -9.8064           
-            Median                23.735           
+            Min                  0.44365           
+            Median                 28.86           
             Max                   57.277           
 
-    mt_interp_coh_grid_mesh_z14: 33&times;1 double
+    mt_interp_coh_grid_mesh_z14: 28&times;1 double
 
         Values:
 
-            Min                  -9.8064           
-            Median                23.735           
+            Min                  0.44365           
+            Median                 28.86           
             Max                   57.277           
 
-    mt_interp_coh_grid_mesh_z15: 33&times;1 double
+    mt_interp_coh_grid_mesh_z15: 28&times;1 double
 
         Values:
 
-            Min                  -9.8064           
-            Median                23.735           
+            Min                  0.44365           
+            Median                 28.86           
             Max                   57.277           
 
 mt_a
-    45    30
+    45    25
 
 ar_a_meshk
-        1350           1
+        1125           1
 
 
 Variables:
 
-    ar_a_meshk: 1350&times;1 double
-
-        Values:
-
-            Min             -10   
-            Median       1.0031   
-            Max              50   
-
-mt_k
-    45    30
-
-ar_k_mesha
-        1350           1
-
-
-Variables:
-
-    ar_k_mesha: 1350&times;1 double
+    ar_a_meshk: 1125&times;1 double
 
         Values:
 
             Min               0   
-            Median       11.003   
-            Max              60   
+            Median       9.0909   
+            Max              50   
 
-mt_coh
-        1350          15
+mt_k
+    45    25
+
+ar_k_mesha
+        1125           1
 
 
 Variables:
 
-    mt_coh_wkb1: 1350&times;1 double
+    ar_k_mesha: 1125&times;1 double
 
         Values:
 
-            Min          -9.8064   
-            Median        20.106   
-            Max           51.939   
+            Min               0   
+            Median       9.0909   
+            Max              50   
 
-    mt_coh_wkb2: 1350&times;1 double
+mt_coh
+        1125          15
 
-        Values:
 
-            Min          -9.8064   
-            Median        20.188   
-            Max           51.999   
+Variables:
 
-    mt_coh_wkb3: 1350&times;1 double
+    mt_coh_wkb1: 1125&times;1 double
 
         Values:
 
-            Min          -9.8064   
-            Median        20.302   
-            Max           52.071   
+            Min          0.44365   
+            Median        25.619   
+            Max           51.938   
 
-    mt_coh_wkb4: 1350&times;1 double
-
-        Values:
-
-            Min          -9.8064   
-            Median        20.472   
-            Max           52.173   
-
-    mt_coh_wkb5: 1350&times;1 double
+    mt_coh_wkb2: 1125&times;1 double
 
         Values:
 
-            Min          -9.8064   
-            Median        20.673   
-            Max            52.29   
+            Min          0.44365   
+            Median        25.751   
+            Max           51.994   
 
-    mt_coh_wkb6: 1350&times;1 double
-
-        Values:
-
-            Min          -9.8064   
-            Median        20.911   
-            Max           52.443   
-
-    mt_coh_wkb7: 1350&times;1 double
+    mt_coh_wkb3: 1125&times;1 double
 
         Values:
 
-            Min          -9.8064   
-            Median        21.192   
-            Max           52.629   
+            Min          0.44365   
+            Median        25.904   
+            Max           52.076   
 
-    mt_coh_wkb8: 1350&times;1 double
+    mt_coh_wkb4: 1125&times;1 double
 
         Values:
 
-            Min          -9.8064   
-            Median        21.525   
+            Min          0.44365   
+            Median        26.069   
+            Max           52.172   
+
+    mt_coh_wkb5: 1125&times;1 double
+
+        Values:
+
+            Min          0.44365   
+            Median        26.248   
+            Max           52.292   
+
+    mt_coh_wkb6: 1125&times;1 double
+
+        Values:
+
+            Min          0.44365   
+            Median        26.487   
+            Max            52.44   
+
+    mt_coh_wkb7: 1125&times;1 double
+
+        Values:
+
+            Min          0.44365   
+            Median        26.734   
+            Max           52.628   
+
+    mt_coh_wkb8: 1125&times;1 double
+
+        Values:
+
+            Min          0.44365   
+            Median        27.032   
             Max           52.863   
 
-    mt_coh_wkb9: 1350&times;1 double
+    mt_coh_wkb9: 1125&times;1 double
 
         Values:
 
-            Min          -9.8064   
-            Median        21.675   
-            Max           53.156   
+            Min          0.44365   
+            Median        27.357   
+            Max           53.157   
 
-    mt_coh_wkb10: 1350&times;1 double
+    mt_coh_wkb10: 1125&times;1 double
 
         Values:
 
-            Min          -9.8064    
-            Median        21.858    
+            Min          0.44365    
+            Median        27.759    
             Max           53.522    
 
-    mt_coh_wkb11: 1350&times;1 double
+    mt_coh_wkb11: 1125&times;1 double
 
         Values:
 
-            Min          -9.8064    
-            Median        22.169    
+            Min          0.44365    
+            Median        28.234    
             Max            53.98    
 
-    mt_coh_wkb12: 1350&times;1 double
+    mt_coh_wkb12: 1125&times;1 double
 
         Values:
 
-            Min          -9.8064    
-            Median        22.741    
-            Max           54.552    
+            Min          0.44365    
+            Median        28.831    
+            Max           54.551    
 
-    mt_coh_wkb13: 1350&times;1 double
+    mt_coh_wkb13: 1125&times;1 double
 
         Values:
 
-            Min          -9.8064    
-            Median        23.456    
+            Min          0.44365    
+            Median        29.525    
             Max           55.267    
 
-    mt_coh_wkb14: 1350&times;1 double
+    mt_coh_wkb14: 1125&times;1 double
 
         Values:
 
-            Min          -9.8064    
-            Median        24.349    
+            Min          0.44365    
+            Median        30.213    
             Max            56.16    
 
-    mt_coh_wkb15: 1350&times;1 double
+    mt_coh_wkb15: 1125&times;1 double
 
         Values:
 
-            Min          -9.8064    
-            Median        25.441    
+            Min          0.44365    
+            Median        30.923    
             Max           57.277    
 
 pos = 1 ; key = f_coh ; val = @(z,b,k)(f_prod(z,k)+k*(1-fl_delta)+fl_w+b.*(1+fl_r_save).*(b&gt;0)+b.*(1+fl_r_borr).*(b&lt;=0))
@@ -809,7 +802,7 @@ function [armt_map, func_map] = ffs_ipwkz_get_funcgrid(varargin)
 % The graphs below show the difference between percentage choice grid and
 % level choice grid. See comments by graphs below for explanations of
 % differences between the choice grids here and choice grids in the
-% ffs_akz_get_funcgrid function. 
+% ffs_akz_get_funcgrid function.
 %
 % @param param_map container parameter container
 %
@@ -854,13 +847,13 @@ else
     [param_map, support_map] = ffs_ipwkz_set_default_param();
     support_map('bl_graph_funcgrids') = true;
     support_map('bl_display_funcgrids') = true;
-    
-    % to be able to visually see choice grid points 
-    param_map('fl_b_bd') = -10;
+
+    % to be able to visually see choice grid points
+    param_map('fl_b_bd') = 0;
     param_map('fl_w_min') = param_map('fl_b_bd');
     param_map('it_w_perc_n') = 25;
-    param_map('it_ak_perc_n') = 45;    
-    param_map('fl_w_interp_grid_gap') = 2; 
+    param_map('it_ak_perc_n') = 45;
+    param_map('fl_w_interp_grid_gap') = 2;
     param_map('fl_coh_interp_grid_gap') = 2;
     default_maps = {param_map, support_map};
 
@@ -918,12 +911,12 @@ ar_ak_perc = linspace(0, 1, it_ak_perc_n);
 % (ar_k_max') is it_w_interp_n by 1, and (ar_ak_perc) is 1 by it_ak_perc_n
 % mt_k is a it_w_interp_n by it_ak_perc_n matrix of choice points of k'
 % conditional on w, each column is a different w, each row for each col a
-% different k' value. 
+% different k' value.
 mt_k = (ar_k_max'*ar_ak_perc)';
 mt_a = (ar_w_level - mt_k);
 
 % can not have choice that are beyond feasible bound given the percentage
-% structure here. 
+% structure here.
 mt_bl_constrained = (mt_a < fl_b_bd);
 if (sum(mt_bl_constrained) > 0 )
     error('at %s second stage choice points, percentage choice exceed bounds, can not happen',...
@@ -972,7 +965,14 @@ ar_interp_coh_grid = linspace(fl_min_mt_coh, fl_max_mt_coh, it_coh_interp_n);
 % of aggregate savings choices
 %
 
-mt_w_by_interp_coh_interp_grid = ((ar_interp_coh_grid-fl_min_mt_coh)'*ar_w_perc)' + fl_min_mt_coh;
+if (fl_min_mt_coh < 0 )
+    % borrowing bound is below zero
+    mt_w_by_interp_coh_interp_grid = ((ar_interp_coh_grid-fl_min_mt_coh)'*ar_w_perc)' + fl_min_mt_coh;
+else
+    % savings only
+    mt_w_by_interp_coh_interp_grid = ((ar_interp_coh_grid)'*ar_w_perc)';
+end
+
 
 %% Generate Interpolation Consumption Grid
 % We also interpolate over consumption to speed the program up. We only
@@ -983,11 +983,12 @@ fl_c_max = max(max(mt_coh_wkb)) - fl_b_bd;
 it_interp_c_grid_n = (fl_c_max-fl_c_min)/(it_c_interp_grid_gap);
 ar_interp_c_grid = linspace(fl_c_min, fl_c_max, it_interp_c_grid_n);
 
-%% Store
+%% Initialize armt_map to store, state, choice, shock matrixes
 
 armt_map = containers.Map('KeyType','char', 'ValueType','any');
+armtdesc_map = containers.Map('KeyType','char', 'ValueType','any');
 
-% 2nd stage choices
+%% Store armt_map (1): 2nd Stage Problem Arrays and Matrixes
 armt_map('ar_ak_perc') = ar_ak_perc;
 armt_map('mt_k') = mt_k;
 armt_map('ar_a_meshk') = ar_a_meshk;
@@ -996,22 +997,40 @@ armt_map('it_ameshk_n') = length(ar_a_meshk);
 armt_map('mt_coh_wkb') = mt_coh_wkb;
 armt_map('mt_z_mesh_coh_wkb') = mt_z_mesh_coh_wkb;
 
-% 1st stage aggregate savings
+%% Store armt_map (2): First Stage Aggregate Savings
+% w = k' + b', w is aggregate Savings%
+%
+% # *ar_w_perc* 1st stage, percentage w choice given coh, at each coh
+% level the number of choice points is the same for this problem with
+% percentage grid points. 
+% # *ar_w_level* 2nd stage, level of w over which we solve the optimal
+% percentage k' choices. Need to generate interpolant based on this so that
+% we know optimal k* given ar_w_perc(coh) in the 1st stage
+% # *mt_w_by_interp_coh_interp_grid* 1st stage, generate w(coh, percent),
+% meaning the level of w given coh and the percentage grid of ar_w_perc.
+% Mesh this with the coh grid, Rows here correspond to percentage of w
+% choices, columns correspond to cash-on-hand. The columns of cash-on-hand
+% is determined by ar_interp_coh_grid, because we solve the 1st stage
+% problem at that coh grid. 
+%
+
 armt_map('ar_w_perc') = ar_w_perc;
 armt_map('ar_w_level') = ar_w_level;
 armt_map('mt_w_by_interp_coh_interp_grid') = mt_w_by_interp_coh_interp_grid;
 
-% 1st stage consumption coh
+%% Store armt_map (3): First Stage Consumption and Cash-on-Hand Grids
+
 armt_map('ar_interp_c_grid') = ar_interp_c_grid;
 armt_map('ar_interp_coh_grid') = ar_interp_coh_grid;
 armt_map('mt_interp_coh_grid_mesh_z') = mt_interp_coh_grid_mesh_z;
 armt_map('mt_z_mesh_coh_interp_grid') = mt_z_mesh_coh_interp_grid;
 
-% Shocks
+%% Store armt_map (4): Shock Grids
 armt_map('mt_z_trans') = mt_z_trans;
 armt_map('ar_stationary') = ar_stationary;
 armt_map('ar_z') = ar_z;
 
+%% Store Function Map
 func_map = containers.Map('KeyType','char', 'ValueType','any');
 func_map('f_util_log') = f_util_log;
 func_map('f_util_crra') = f_util_crra;
@@ -1032,8 +1051,8 @@ if (bl_graph_funcgrids)
     % half of the grid points have NA. for the grid here, the grid points
     % get denser as we get closer to low w = k'+b' levels. This is what is
     % different visually about percentage points based choice grid for the
-    % 2nd stage problem. 
-    
+    % 2nd stage problem.
+
     figure('PaperPosition', [0 0 7 4]);
     hold on;
 
@@ -1069,9 +1088,9 @@ if (bl_graph_funcgrids)
     % because the number of percentage points available is constant
     % regardless of w = k' + b' levels. But previously, the number of grid
     % points available is increasing as w increases since choice grid is
-    % based on levels. 
+    % based on levels.
     %
-    
+
     figure('PaperPosition', [0 0 7 4]);
     chart = plot(mt_coh_wkb);
     clr = jet(numel(chart));
@@ -1092,22 +1111,22 @@ if (bl_graph_funcgrids)
     legend(chart(legend2plot), legendCell(legend2plot), 'Location','southeast');
 
     grid on;
-    
+
 
     %% Graph 3: 2nd stage coh reached by k' b' choices by index
-    
+
     figure('PaperPosition', [0 0 7 4]);
     ar_coh_kpzgrid_unique = unique(sort(mt_coh_wkb(:)));
     scatter(1:length(ar_coh_kpzgrid_unique), ar_coh_kpzgrid_unique);
     xline(0);
-    yline(0);    
+    yline(0);
     title('Cash-on-Hand given w(k+b),k,z');
     ylabel('Cash-on-Hand');
     xlabel({'Index of Cash-on-Hand Discrete Point'});
     grid on;
 
     %% Graph 4: 2nd stage coh reached by k' b' choices  by coh
-    
+
     figure('PaperPosition', [0 0 7 4]);
     ar_coh_kpzgrid_unique = unique(sort(mt_coh_wkb(:)));
     scatter(ar_coh_kpzgrid_unique, ar_coh_kpzgrid_unique, '.');
@@ -1117,14 +1136,14 @@ if (bl_graph_funcgrids)
     ylabel('Cash-on-Hand');
     xlabel({'Cash-on-Hand'});
     grid on;
-    
+
     %% Graph 5: 1st State Aggregate Savings Choices by COH interpolation grids
-    
+
     figure('PaperPosition', [0 0 7 4]);
     hold on;
-    
+
     chart = plot(ar_interp_coh_grid, mt_w_by_interp_coh_interp_grid');
-    
+
     clr = jet(numel(chart));
     for m = 1:numel(chart)
        set(chart(m),'Color',clr(m,:))
@@ -1133,12 +1152,12 @@ if (bl_graph_funcgrids)
         [~, mt_interp_coh_grid_mesh_w_perc] = ndgrid(ar_w_perc, ar_interp_coh_grid);
         scatter(mt_interp_coh_grid_mesh_w_perc(:), mt_w_by_interp_coh_interp_grid(:), 3, 'filled', ...
                 'MarkerEdgeColor', 'b', 'MarkerFaceColor', 'b');
-    end    
+    end
     xline0 = xline(0);
     xline0.HandleVisibility = 'off';
     yline0 = yline(0);
     yline0.HandleVisibility = 'off';
-    
+
     title('Aggregate Savings Grid Given Cash-on-Hand');
     ylabel('1st Stage Aggregate Savings Choices');
     xlabel({'Cash-on-Hand Levels (Interpolation Points)'});
@@ -1162,7 +1181,7 @@ if (bl_display_funcgrids)
     disp('ar_w_level');
     disp(size(ar_w_level));
     disp(ar_w_level');
-    
+
     disp('mt_w_by_interp_coh_interp_grid');
     disp(size(mt_w_by_interp_coh_interp_grid));
 

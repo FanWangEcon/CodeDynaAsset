@@ -79,7 +79,6 @@ param_map('fl_b_bd') = 0; % borrow bound, = 0 if save only
 param_map('fl_w_min') = param_map('fl_b_bd'); % but b_bd overrides this
 param_map('fl_w_max') = 50;
 param_map('it_w_perc_n') = 50;
-param_map('fl_w_interp_grid_gap') = 0.25;
 
 % Risky Capital Asset Vector
 % see graph below for how it looks graphically
@@ -98,9 +97,15 @@ param_map('it_ak_perc_n') = param_map('it_w_perc_n'); % grid for a and k the sam
 % should be no perceptible differences in value and policy functions when the
 % it_c_interp_grid_gap <= 0.001 compared to actual evaluation. Also include
 % now fl_w_interp_grid_gap above, which is for interpolation over w. 
-param_map('fl_coh_interp_grid_gap') = 0.025;
+param_map('fl_coh_interp_grid_gap') = 0.1;
 % param_map('it_coh_interp_n') = 500;
 param_map('it_c_interp_grid_gap') = 10^-4;
+% Interpolation gap second stage w
+% previously only it_w_n, now two grids control w it_w_perc_n for 2nd stage
+% fl_w_interp_grid_gap for first stage, make them the same length for
+% default.
+param_map('fl_w_interp_grid_gap') = 0.1;
+% param_map('fl_w_interp_grid_gap') = (param_map('fl_w_max') - param_map('fl_w_min'))/param_map('it_w_perc_n');
 
 % Solution Accuracy
 param_map('it_maxiter_val') = 250;
@@ -176,9 +181,14 @@ support_map('bl_display_evf') = false;
 if (ismember(it_subset, [1,2,3,4]))
     if (ismember(it_subset, [1]))
         % TEST quick
-        param_map('it_w_n') = 20;
-        param_map('it_k_n') = param_map('it_w_n');
+        param_map('it_w_perc_n') = 20;
+        param_map('it_ak_perc_n') = param_map('it_w_perc_n');        
         param_map('it_z_n') = 3;
+        
+        param_map('fl_coh_interp_grid_gap') = 0.25;
+        param_map('it_c_interp_grid_gap') = 0.001;
+        param_map('fl_w_interp_grid_gap') = 1;
+
         param_map('it_maxiter_val') = 50;
         param_map('it_tol_pol_nochange') = 1000;
         support_map('bl_display') = true;

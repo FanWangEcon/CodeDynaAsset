@@ -43,6 +43,7 @@ function result_map = ff_iwkz_vf(varargin)
 %
 % @include
 %
+% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ff_wkz_evf.m ff_wkz_evf>
 % * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ffs_akz_set_default_param.m ffs_akz_set_default_param>
 % * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ffs_akz_get_funcgrid.m ffs_akz_get_funcgrid>
 % * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solvepost/ff_akz_vf_post.m ff_akz_vf_post>
@@ -55,16 +56,9 @@ function result_map = ff_iwkz_vf(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 4;
+it_param_set = 1;
 bl_input_override = true;
 [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
-
-% parameters can be set inside ffs_akz_set_default_param or updated here
-param_map('it_w_n') = 50;
-param_map('it_ak_n') = param_map('it_w_n');
-param_map('it_z_n') = 15;
-param_map('fl_coh_interp_grid_gap') = 0.025;
-param_map('it_c_interp_grid_gap') = 10^-4;
 
 % get armt and func map
 [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
@@ -185,17 +179,26 @@ end
 while bl_vfi_continue
     it_iter = it_iter + 1;
     
+    %% Interpolate (1) reacahble v(coh(k(w,z),b(w,z),z),z) given v(coh, z)
+    % v(coh,z) solved on ar_interp_coh_grid, ar_z grids, see
+    % ffs_iwkz_get_funcgrid.m. Generate interpolant based on that, Then
+    % interpolate for the coh reachable levels given the k(w,z) percentage
+    % choice grids in the second stage of the problem
+
+    % Generate Interpolant for v(coh,z)
+    f_grid_interpolant_value = griddedInterpolant(...
+        mt_z_mesh_coh_interp_grid', mt_interp_coh_grid_mesh_z', mt_val_cur', 'linear');
+    
+    % Interpoalte for v(coh(k(w,z),b(w,z),z),z)
+    mt_val_wkb_interpolated = f_grid_interpolant_value(mt_z_mesh_coh_wkb, mt_coh_wkb);
+    
     %% Solve Second Stage Problem k*(w,z)
     % This is the key difference between this function and
     % <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html
     % ffs_akz_set_functions> which solves the two stages jointly    
     % Interpolation first, because solution coh grid is not the same as all
     % points reachable by k and b choices given w. 
-    
-    f_grid_interpolant_value = griddedInterpolant(...
-        mt_z_mesh_coh_interp_grid', mt_interp_coh_grid_mesh_z', mt_val_cur', 'linear');
-    mt_val_wkb_interpolated = f_grid_interpolant_value(mt_z_mesh_coh_wkb, mt_coh_wkb);
-    
+        
     bl_input_override = true;
     [mt_ev_condi_z_max, ~, mt_ev_condi_z_max_kp, mt_ev_condi_z_max_bp] = ...
         ff_wkz_evf(mt_val_wkb_interpolated, param_map, support_map, armt_map, bl_input_override);
@@ -227,6 +230,8 @@ while bl_vfi_continue
                 % loop 4: add future utility, integration already done in
                 % ff_wkz_evf
                 fl_ev_condi_z_max_z = ar_ev_condi_z_max_z(it_cohp_k);
+                
+                % Interpolate (2)
                 ar_val_cur(it_cohp_k) = f_grid_interpolant_spln(fl_c) + fl_beta*fl_ev_condi_z_max_z;
                 
                 % Replace if negative consumption
