@@ -134,15 +134,23 @@ The *wkz* problem, w=k'+b'. Takes significantly less time than *2.1*, produces i
 
 ## 2.3 Two Stage with Interpolation (iWKZ)
 
-The *iwkz* problem, interpolated version of 2.2. Takes significantly less time than *2.2* at larger choice grids, produces approximately identical results as *2.2*. Simulations below are at the same grid points as *2.2* and *2.1* for comparison, but at these low accuracy grid points, *iwkz* is not necessarily faster than *2.2*. Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html), for the benchmark simulation, same as *2.1* nad *2.2*, but we introduce two additional measures of precision:
+### 2.3.a Algorithm Description
+
+The *iwkz* problem, interpolated version of 2.2. Takes significantly less time than *2.2* at larger choice grids, produces approximately identical results as *2.2*. Simulations below are at the same grid points as *2.2* and *2.1* for comparison, but at these low accuracy grid points, *iwkz* is not necessarily faster than *2.2*.
+
+The reason that *iKWZ* is faster then *2.2* is that when we increase aggregate savings grid points, we do not need to reduce the two interpolation grid gaps. COH is the endogenous state, and its size is determined by the *cash-on-hand interpolation grid gap*. The choice grid increases in size as we increase aggregate savings grid points, but since we are solving in two stages, the dimensionality of the problem increases proportionally (but not exponentially). The total number of safe and risky asset choice is determined by assuming equi-distance grid gap for aggregate savings as well as both risky and safe investments. Speed up achieved via interpolation as described [here](https://fanwangecon.github.io/M4Econ/).
+
+In section 2.6 below, I show how solution results change for *iwkz* as we increase aggregate savings grid points, shock grid points, reduce the interpolation gaps, or change production function parameters from decreasing to constant return to scale.
+
+### 2.3.b Algorithm Implementation
+
+Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html), for the benchmark simulation, same as *2.1* nad *2.2*, but we introduce two additional measures of precision:
 
 - savings problem with alternative safe and risky assets
 - **50** aggregate savings grid points, **1274** combinations of safe and risky asset choices.
 - **15** grid points for the AR1 shock
 - **0.0001** consumption interpolation grid gap
 - **0.1** value function cash-on-hand interpolation grid gap
-
-*Note*: the reason that *iKWZ* is faster then *2.2* is that when we increase aggregate savings grid points, we do not need to reduce the two interpolation grid gaps. COH is the endogenous state, and its size is determined by the *cash-on-hand interpolation grid gap*. The choice grid increases in size as we increase aggregate savings grid points, but since we are solving in two stages, the dimensionality of the problem increases proportionally (but not exponentially). The total number of safe and risky asset choice is determined by assuming equi-distance grid gap for aggregate savings as well as both risky and safe investments. Speed up achieved via interpolation as described [here](https://fanwangecon.github.io/M4Econ/). In section 2.6 below, I show how solution graphs change as we increase aggregate savings grid points, shock grid points, and reduce the interpolation gaps.
 
 1. Use again *wkz* [2nd stage solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_evf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_wkz_evf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_evf.html)
     * solving for k(w,z) = argmax_{k'}(E(V(coh(k',b'=w-k'),z')) given z and w.
@@ -204,21 +212,38 @@ We simulate the joint asset choice problem using the *optimized-vectorized* meth
     * [adjust cash-on-hand interpolation grid gap](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_coh_interp_grid_gap.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_iwkz_vf_vecsv/test_precision/fsi_ikwz_vf_vecsv_coh_interp_grid_gap.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_coh_interp_grid_gap.html)
     * [benchmark vs high-precision](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_main.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_iwkz_vf_vecsv/test_precision/fsi_ikwz_vf_vecsv_main.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_precision/html/fsi_ikwz_vf_vecsv_main.html)
 2. *iwkz* model risky investment return
-    * [stock vs bond](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_prod/html/fsi_stock.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_iwkz_vf_vecsv/test_prod/fsi_stock.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_prod/html/fsi_stock.html)
-
+    * [decreasing (physical investment) return to scale shift minimum income](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_prod/html/fsi_ipkwz_vf_vecsv_drs_ymin.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_iwkz_vf_vecsv/test_prod/fsi_ipkwz_vf_vecsv_drs_ymin.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_prod/html/fsi_ipkwz_vf_vecsv_drs_ymin.html)
+    * [constant (financial investment) return to scale shift minimum income](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_prod/html/fsi_ikwz_vf_vecsv_crs_ymin.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_iwkz_vf_vecsv/test_prod/fsi_ikwz_vf_vecsv_crs_ymin.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_prod/html/fsi_ikwz_vf_vecsv_crs_ymin.html)
+    * [constant (financial investment) return to scale iid vs ar1 shocks](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_prod/html/fsi_ipwkz_vf_vecsv_crs.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_iwkz_vf_vecsv/test_prod/fsi_ipwkz_vf_vecsv_crs.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_prod/html/fsi_ipwkz_vf_vecsv_crs.html)
+m_akz/test/ff_iwkz_vf_vecsv/test_prod/html/fsi_ikwz_vf_vecsv_crs_ymin.html
 
 # 3. The Risky + Safe Asset Problem (Part 2)
 
 In Section 2, we solved the two asset problem in levels. Here, the same model is solved, but using an alternative algorithm. Now the model is solved in percentages. Households choose the percentage of cash-on-hand to allocate to aggregate savings, and then given that the percentage of total savings to allocate to safe vs risky asset.
 
-In the levels solution above, households at different state space points face the same choice set, but almost half of the choice points are not invalid because they would lead to negative consumption today. Solving the problem in percentages allow all households to have the same choice grid in terms of percentage levels. This potentially offers much more precise solutions under some model parameters combinations. For example, for the constant-return-to-scale risky investment, we know analytically optimal choices should be percentages based.
+In the levels solution above, households at different state space points face the same choice set, but almost half of the choice points are invalid because they would lead to negative consumption today. Solving the problem in percentages allow all households to have the same choice grid in terms of percentage levels. This potentially offers much more precise solutions under some model parameters combinations. One could compare testing results from *2.6* above and *3.4* below, or compare the results in *3.1*, *2.2* and *2.1*. The *3.1* results are able to compare especially lower cash-on-hand level optimal choices much more precisely.
 
-Additionally, the levels based grid solution might lead to degenerate steady state asset distributions. This is because at low levels of cash-on-hand, if the risky asset's lowest level of choice is invalid, then an individual is stuck in that state. A subset of state space points become absorbing states. For households starting at higher levels of cash-on-hand, there is non-zero probability that they move towards these absorbing states due to bad shocks. With enough iteration, the distribution becomes potentially degenerate. The percentage grid problem does not have this problem, at all levels of cash-on-hand there is non-zero risky asset investment available. This means that households that reach lower levels of cash-on-hand can rise back to higher wealth levels through investments.
+Additionally, the levels based grid solution might lead to degenerate steady state asset distributions. This is because at low levels of cash-on-hand, if the risky asset's lowest level of choice is invalid, then an individual is stuck in that state. A subset of state space points become absorbing states potentially. For households starting at higher levels of cash-on-hand, there is non-zero probability that they move towards these absorbing states due to bad shocks. With enough iteration, the distribution becomes potentially degenerate. The percentage grid problem does not have this issue, at all levels of cash-on-hand there is non-zero risky asset investment available. This means that households that reach lower levels of cash-on-hand can rise back to higher wealth levels through investments.
 
 
 ## 3.1 Two Stage Percentage Interpolation (ipWKZ)
 
-This is the *ipWKZ* problem: *i* stands for interpolation, *p* stands for percentage, *wk* stand for two stage w=k'+b' first then k' given w. Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/paramfunc/html/ffs_ipwkz_set_default_param.html), for the benchmark simulation, same as *2.3*, but we introduce several additional measures of precision:
+### 3.1.a Algorithm Description
+
+This is the *ipWKZ* problem: *i* stands for interpolation, *p* stands for percentage, *wk* stand for two stage w=k'+b' first then k' given w.
+
+For the *ipWKZ* model, while there is still very substantial gains from the looped to the vectorized algorithm implementation, the speed improvements from moving to the efficient-vectorized implementation is much less substantial. For the small benchmark grids, the speed is actually slower when we use the efficient-vectorized implementation.
+
+We have three sets of interpolations now:
+- **interpolate 1**: As before, we interpolate over u(c).
+- **interpolate 2**: As before, interpolation of the value function over cash-on-hand and shocks is needed because the solution grid for cash-on-hand in the first stage is not the same as the reachable cash-on-hand levels given percentage second stage choices.
+- **interpolate 3**: In addition to before, interpolation of the optimal 2nd stage risky investment choice over aggregate savings and shocks is needed because the 2nd stage solution grid for aggregate-savings in the second stage is the not the same as the percentage based first stage aggregate-savings choices. The second interpolation makes the efficiency gain from reusing u(c) through cells when k*(w,z) does not change much less substantial.
+
+In section 3.4 below, I show how solution results change for *ipwkz* as we increase aggregate savings grid points, shock grid points, reduce the interpolation gaps, or change production function parameters from decreasing to constant return to scale.
+
+### 3.1.b Algorithm Implementation
+
+Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/paramfunc/html/ffs_ipwkz_set_default_param.html), for the benchmark simulation, same as *2.3*, but we introduce several additional measures of precision:
 
 - savings problem with alternative safe and risky assets
 - **50** aggregate savings percentage points, **50** risky asset percentage points
@@ -230,7 +255,7 @@ This is the *ipWKZ* problem: *i* stands for interpolation, *p* stands for percen
 1. Use again *ipwkz* [2nd stage solution](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/html/ff_ipwkz_evf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/solve/ff_ipwkz_evf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/html/ff_ipwkz_evf.html)
     * solving for kperc(w,z) = argmax_{kperc'}(E(V(coh(kperc',b'=w-w*kperc'),z')) given z and w.
 2. *ipwkz* model [looped solution](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/html/ff_ipwkz_vf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/solve/ff_ipwkz_vf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/html/ff_ipwkz_vf.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/profile/ff_ipwkz_vf_default_p3/file0.html)    
-    * speed: **2683.0** seconds (*4.4* times slower than *2.2*)
+    * speed: **1448.3** seconds
     * Step One solve kperc(w,z); Step Two solve wperc(z,coh(b,k,z)) given kperc(w,z)
     * loops: 1 for VFI, 1 for shocks, 1 for coh(b,k,z), 1 for wperc(z)=kperc'+b'    
     * interpolate u(c), interpolate v(coh,z), interpolate EV(w,z)
@@ -240,7 +265,7 @@ This is the *ipWKZ* problem: *i* stands for interpolation, *p* stands for percen
     * loops: 1 for VFI, 1 for shocks, vectorize remaining
     * interpolate u(c), interpolate v(coh,z), interpolate EV(w,z)
 4. *ipwkz* model [optimized vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/html/ff_ipwkz_vf_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/solve/ff_ipwkz_vf_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/html/ff_ipwkz_vf_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/profile/ff_ipwkz_vf_vecsv_default_p3/file0.html)    
-    * speed: **1.6** seconds (much faster at denser grid)
+    * speed: **2.4** seconds (much faster at denser grid)
     * Step One solve kperc(w,z); Step Two solve wperc(z,coh(b,k,z)) given kperc(w,z)
     * loops: 1 for VFI, 1 for shocks, vectorize remaining
     * interpolate u(c), interpolate v(coh,z), interpolate EV(w,z)
@@ -290,4 +315,6 @@ We simulate the joint asset choice problem using the *optimized-vectorized* meth
     * [adjust cash-on-hand interpolation grid gap](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_vf_vecsv/test_precision/html/fsi_ipwkz_vf_vecsv_coh_interp_grid_gap.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/test/ff_ipwkz_vf_vecsv/test_precision/fsi_ipwkz_vf_vecsv_coh_interp_grid_gap.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_vf_vecsv/test_precision/html/fsi_ipwkz_vf_vecsv_coh_interp_grid_gap.html)
     * [benchmark vs high-precision](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_vf_vecsv/test_precision/html/fsi_ipwkz_vf_vecsv_main.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/test/ff_ipwkz_vf_vecsv/test_precision/fsi_ipwkz_vf_vecsv_main.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_vf_vecsv/test_precision/html/fsi_ipwkz_vf_vecsv_main.html)
 3. *ipwkz* model risky investment return
-    * [stock vs bond](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_vf_vecsv/test_prod/html/fsi_ipwkz_vf_vecsv_stock.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/test/ff_ipwkz_vf_vecsv/test_prod/fsi_ipwkz_vf_vecsv_stock.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_vf_vecsv/test_prod/html/fsi_ipwkz_vf_vecsv_stock.html)
+    * [decreasing (financial investment) return to scale shift minimum income](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_vf_vecsv/test_prod/html/fsi_ipkwz_vf_vecsv_drs_ymin.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/test/ff_ipwkz_vf_vecsv/test_prod/fsi_ipkwz_vf_vecsv_drs_ymin.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_vf_vecsv/test_prod/html/fsi_ipkwz_vf_vecsv_drs_ymin.html)
+    * [constant (financial investment) return to scale shift minimum income](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_vf_vecsv/test_prod/html/fsi_ikwz_vf_vecsv_crs_ymin.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/test/ff_ipwkz_vf_vecsv/test_prod/fsi_ikwz_vf_vecsv_crs_ymin.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_vf_vecsv/test_prod/html/fsi_ikwz_vf_vecsv_crs_ymin.html)
+    * [constant (financial investment) return to scale iid vs ar1 shocks](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_vf_vecsv/test_prod/html/fsi_ipwkz_vf_vecsv_crs.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/test/ff_ipwkz_vf_vecsv/test_prod/fsi_ipwkz_vf_vecsv_crs.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_vf_vecsv/test_prod/html/fsi_ipwkz_vf_vecsv_crs.html)

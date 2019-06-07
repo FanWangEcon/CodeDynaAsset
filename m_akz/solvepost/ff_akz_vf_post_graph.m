@@ -331,14 +331,14 @@ if (bl_graph_pol_pct)
             st_title_suffix = ' (x=log(coh))';
         end
             
-        if(sub_j==1 || sub_j == 4)
+        if(sub_j==1 || sub_j == 5)
             mt_outcome(mt_it_borr_idx) = -mt_pol_a(mt_it_borr_idx)./fl_b_bd;
             mt_outcome(~mt_it_borr_idx) = mt_pol_a(~mt_it_borr_idx)./mt_coh_wkb(~mt_it_borr_idx);
             st_y_label = 'aprime/borrbound if br; aprime/cashonhand if sv';
             st_legend_loc = 'southeast';
             st_title = 'Save/Borrow % of Borrow Limit or COH';
         end
-        if(sub_j==2 || sub_j == 5)
+        if(sub_j==2 || sub_j == 6)
             mt_outcome(mt_it_borr_idx) = mt_pol_k(mt_it_borr_idx)./(mt_coh_wkb(mt_it_borr_idx) + mt_pol_a(mt_it_borr_idx));
             mt_outcome(~mt_it_borr_idx) = mt_pol_k(~mt_it_borr_idx)./mt_coh_wkb(~mt_it_borr_idx);
             st_y_label = 'kprime/(coh-aprime) if br; k/cashonhand if sv';            
@@ -415,12 +415,12 @@ if (bl_graph_pol_pct)
         yline0 = yline(0);        
         yline0.HandleVisibility = 'off';
 
-        if (sub_j~=4)
+        if (ismember(sub_j, [1,2,3,5,6,7]))
             yline0 = yline(1);
             yline0.HandleVisibility = 'off';
         end
 
-        if (sub_j==1)
+        if (ismember(sub_j, [1,5]))
             yline0 = yline(-1);
             yline0.HandleVisibility = 'off';
         end

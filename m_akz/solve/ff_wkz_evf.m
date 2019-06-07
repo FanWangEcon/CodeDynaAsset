@@ -237,7 +237,63 @@ if (bl_graph_evf)
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
     
-    %% Graph 2, max(EV), color regions, borrow save
+    %% Graph 2, max(EV)
+    
+    if(~bl_graph_onebyones)
+        figure('PaperPosition', [0 0 7 4]);
+    end
+    
+    for sub_j=1:1:1
+        
+        if(sub_j==1)
+            mt_outcome = mt_ev_condi_z_max;
+            st_y_label = 'max_{k''}(E(V(coh(k'',b''=w-k''),z''|z,w))';
+        end
+        
+        if(~bl_graph_onebyones)
+            subplot(1,1,sub_j)
+        else
+            figure('PaperPosition', [0 0 7 4]);
+        end
+        hold on;
+        
+        ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)) (it_z_n)]);
+        clr = jet(length(ar_it_z_graph));
+        i_ctr = 0;
+        for i = ar_it_z_graph
+            i_ctr = i_ctr + 1;
+            ar_x = ar_w;
+            ar_y = mt_outcome(:, i);
+            scatter(ar_x, ar_y, 5, ...
+                'MarkerEdgeColor', clr(i_ctr,:), ...
+                'MarkerFaceColor', clr(i_ctr,:));
+        end
+        
+        grid on;
+        grid minor;
+        title(['2nd Stage Exp Value at Optimal K given W=K''+B'''])
+        ylabel(st_y_label)
+        xlabel({'Aggregate Savings'})
+        
+        legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
+        legendCell{length(legendCell) + 1} = 'max-agg-save';
+        legend(legendCell([ar_it_z_graph length(legendCell)]), 'Location','southeast');
+        
+        xline0 = xline(0);
+        xline0.HandleVisibility = 'off';
+        yline0 = yline(0);
+        yline0.HandleVisibility = 'off';
+        
+    end
+    
+    % save file
+    if (bl_img_save)
+        mkdir(support_map('st_img_path'));
+        st_file_name = [st_img_prefix st_img_name_main '_maxev' st_img_suffix];
+        saveas(gcf, strcat(st_img_path, st_file_name));
+    end
+    
+    %% Graph 3, max(EV), color regions, borrow save
     
     % Borrow Vs Save
     [ar_z_mw, ar_w_mz] = meshgrid(ar_z, ar_w);
@@ -276,11 +332,11 @@ if (bl_graph_evf)
     % save file
     if (bl_img_save)
         mkdir(support_map('st_img_path'));
-        st_file_name = [st_img_prefix st_img_name_main '_maxev' st_img_suffix];
+        st_file_name = [st_img_prefix st_img_name_main '_maxbrsv' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
     
-    %% Graph 3, Optimal K' and B' Levels
+    %% Graph 4, Optimal K' and B' Levels
     
     [~, ar_w_mz] = meshgrid(ar_z, ar_w);
     for sub_j=1:1:4

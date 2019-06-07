@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>ff_wkz_evf</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-04"><meta name="DC.source" content="ff_wkz_evf.m"><style type="text/css">
+      --><title>ff_wkz_evf</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-06"><meta name="DC.source" content="ff_wkz_evf.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">FF_WKZ_EVF solves the k' vs b' problem given aggregate savings</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Integrate <b>E(V(coh(k',b'), z')|z, w)</b></a></li><li><a href="#6">Reshape <b>E(V(coh,z'|z,w))</b> to allow for maxing</a></li><li><a href="#7">Maximize <b>max_{k'}(E(V(coh(k',b'=w-k'),z'|z,w))</b> optimal value and index</a></li><li><a href="#8">Reindex K' and B' Choices for each State at the Optimal <b>w'=k'+b'</b> choice</a></li><li><a href="#9">Graph</a></li><li><a href="#11">Graph 1, V and EV</a></li><li><a href="#12">Graph 2, max(EV), color regions, borrow save</a></li><li><a href="#13">Graph 3, Optimal K' and B' Levels</a></li></ul></div><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><pre class="codeinput"><span class="keyword">function</span> [mt_ev_condi_z_max, mt_ev_condi_z_max_idx, mt_ev_condi_z_max_kp, mt_ev_condi_z_max_bp] = ff_wkz_evf(varargin)
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">FF_WKZ_EVF solves the k' vs b' problem given aggregate savings</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Integrate <b>E(V(coh(k',b'), z')|z, w)</b></a></li><li><a href="#6">Reshape <b>E(V(coh,z'|z,w))</b> to allow for maxing</a></li><li><a href="#7">Maximize <b>max_{k'}(E(V(coh(k',b'=w-k'),z'|z,w))</b> optimal value and index</a></li><li><a href="#8">Reindex K' and B' Choices for each State at the Optimal <b>w'=k'+b'</b> choice</a></li><li><a href="#9">Generate Optimal K' and B' on w(coh) percentage grid from w level grid</a></li><li><a href="#10">Graph</a></li><li><a href="#12">Graph 1, V and EV</a></li><li><a href="#13">Graph 2, max(EV)</a></li><li><a href="#14">Graph 3, max(EV), color regions, borrow save</a></li><li><a href="#15">Graph 4, Optimal K' and B' Levels</a></li></ul></div><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><pre class="codeinput"><span class="keyword">function</span> [mt_ev_condi_z_max, mt_ev_condi_z_max_idx, mt_ev_condi_z_max_kp, mt_ev_condi_z_max_bp] = ff_wkz_evf(varargin)
 </pre><h2 id="2">FF_WKZ_EVF solves the k' vs b' problem given aggregate savings</h2><p>Rather than solving the two asset problem in one shot. We can separate the problem into two stages. This is the second stage of the problem. Here we find the optimal k' choice given w=k'+b'. max_{k'}(E(V(coh(k',b'=w-k'),z'|z,w)) is the maximization problem. Conditional on shock and w. Note that this problem is not conditional on cash-on-hand today, but conditional on w. We do not need to know the cash-on-hand in the current period to find the optimal k' choice conditional on w.</p><p>This means we can solve for the optimal relative allocation of risky and safe asset conditional on total savings. Note that we still need the value function <b>mt_val</b>, which is required to find EV.</p><p>@param mt_val matrix state_n ((I-1)*J/2+I) by shock_n. This is the value matrix each row is a feasible reachable state given the choice vectors/matrix and each column is a shock state.</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@return mt_ev_condi_z_max matrix choice_w_n by shock_n max_{k'}(E(V(coh(k',b'=w-k'),z'|z,w)) conditional on z and w, at the optimal k' choice (w=k'+b') what is the expected utility? This is the value result from the 2nd stage problem. Note the result integrates over z'.</p><p>@return mt_ev_condi_z_max_idx matrix choice_w_n by shock_n this is the argmax from max_{k'}(E(V(coh(k',b'=w-k'),z'|z,w)). Given the vector of k' choices, which index maximized conditional on z and w integrating over z'/</p><p>@return mt_ev_condi_z_max_kp matrix choice_w_n by shock_n the k' choice at max_{k'}(E(V(coh(k',b'=w-k'),z'|z,w))</p><p>@return mt_ev_condi_z_max_bp matrix choice_w_n by shock_n the b'=w-k' choice at max_{k'}(E(V(coh(k',b'=w-k'),z'|z,w))</p><p>@example</p><p>@include</p><div><ul><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ffs_akz_set_default_param.m">ffs_akz_set_default_param</a></li><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ffs_akz_get_funcgrid.m">ffs_akz_get_funcgrid</a></li></ul></div><h2 id="3">Default</h2><pre class="codeinput">params_len = length(varargin);
 bl_input_override = 0;
 <span class="keyword">if</span> (params_len == 5)
@@ -663,8 +663,8 @@ Variables:
             Median             3.5714         
             Max                28.571         
 
-</pre><h2 id="9">Graph</h2><pre class="codeinput"><span class="keyword">if</span> (bl_graph_evf)
-</pre><h2 id="11">Graph 1, V and EV</h2><pre class="codeinput">    <span class="keyword">if</span> (~bl_graph_onebyones)
+</pre><h2 id="9">Generate Optimal K' and B' on w(coh) percentage grid from w level grid</h2><h2 id="10">Graph</h2><pre class="codeinput"><span class="keyword">if</span> (bl_graph_evf)
+</pre><h2 id="12">Graph 1, V and EV</h2><pre class="codeinput">    <span class="keyword">if</span> (~bl_graph_onebyones)
         figure(<span class="string">'PaperPosition'</span>, [0 0 14 4]);
         hold <span class="string">on</span>;
     <span class="keyword">end</span>
@@ -720,7 +720,61 @@ Variables:
         st_file_name = [st_img_prefix st_img_name_main <span class="string">'_vev'</span> st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     <span class="keyword">end</span>
-</pre><img vspace="5" hspace="5" src="ff_wkz_evf_01.png" alt=""> <img vspace="5" hspace="5" src="ff_wkz_evf_02.png" alt=""> <h2 id="12">Graph 2, max(EV), color regions, borrow save</h2><pre class="codeinput">    <span class="comment">% Borrow Vs Save</span>
+</pre><img vspace="5" hspace="5" src="ff_wkz_evf_01.png" alt=""> <img vspace="5" hspace="5" src="ff_wkz_evf_02.png" alt=""> <h2 id="13">Graph 2, max(EV)</h2><pre class="codeinput">    <span class="keyword">if</span>(~bl_graph_onebyones)
+        figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
+    <span class="keyword">end</span>
+
+    <span class="keyword">for</span> sub_j=1:1:1
+
+        <span class="keyword">if</span>(sub_j==1)
+            mt_outcome = mt_ev_condi_z_max;
+            st_y_label = <span class="string">'max_{k''}(E(V(coh(k'',b''=w-k''),z''|z,w))'</span>;
+        <span class="keyword">end</span>
+
+        <span class="keyword">if</span>(~bl_graph_onebyones)
+            subplot(1,1,sub_j)
+        <span class="keyword">else</span>
+            figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
+        <span class="keyword">end</span>
+        hold <span class="string">on</span>;
+
+        ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)) (it_z_n)]);
+        clr = jet(length(ar_it_z_graph));
+        i_ctr = 0;
+        <span class="keyword">for</span> i = ar_it_z_graph
+            i_ctr = i_ctr + 1;
+            ar_x = ar_w;
+            ar_y = mt_outcome(:, i);
+            scatter(ar_x, ar_y, 5, <span class="keyword">...</span>
+                <span class="string">'MarkerEdgeColor'</span>, clr(i_ctr,:), <span class="keyword">...</span>
+                <span class="string">'MarkerFaceColor'</span>, clr(i_ctr,:));
+        <span class="keyword">end</span>
+
+        grid <span class="string">on</span>;
+        grid <span class="string">minor</span>;
+        title([<span class="string">'2nd Stage Exp Value at Optimal K given W=K''+B'''</span>])
+        ylabel(st_y_label)
+        xlabel({<span class="string">'Aggregate Savings'</span>})
+
+        legendCell = cellstr(num2str(ar_z', <span class="string">'shock=%3.2f'</span>));
+        legendCell{length(legendCell) + 1} = <span class="string">'max-agg-save'</span>;
+        legend(legendCell([ar_it_z_graph length(legendCell)]), <span class="string">'Location'</span>,<span class="string">'southeast'</span>);
+
+        xline0 = xline(0);
+        xline0.HandleVisibility = <span class="string">'off'</span>;
+        yline0 = yline(0);
+        yline0.HandleVisibility = <span class="string">'off'</span>;
+
+    <span class="keyword">end</span>
+
+    <span class="comment">% save file</span>
+    <span class="keyword">if</span> (bl_img_save)
+        mkdir(support_map(<span class="string">'st_img_path'</span>));
+        st_file_name = [st_img_prefix st_img_name_main <span class="string">'_maxev'</span> st_img_suffix];
+        saveas(gcf, strcat(st_img_path, st_file_name));
+    <span class="keyword">end</span>
+</pre><pre class="codeoutput">Warning: Ignoring extra legend entries. 
+</pre><img vspace="5" hspace="5" src="ff_wkz_evf_03.png" alt=""> <h2 id="14">Graph 3, max(EV), color regions, borrow save</h2><pre class="codeinput">    <span class="comment">% Borrow Vs Save</span>
     [ar_z_mw, ar_w_mz] = meshgrid(ar_z, ar_w);
     mt_it_borr_idx = (mt_ev_condi_z_max_bp &lt; 0);
     mt_it_riskyhalf_idx = ((mt_ev_condi_z_max_kp./mt_ev_condi_z_max_bp) &gt; 0.5);
@@ -757,10 +811,10 @@ Variables:
     <span class="comment">% save file</span>
     <span class="keyword">if</span> (bl_img_save)
         mkdir(support_map(<span class="string">'st_img_path'</span>));
-        st_file_name = [st_img_prefix st_img_name_main <span class="string">'_maxev'</span> st_img_suffix];
+        st_file_name = [st_img_prefix st_img_name_main <span class="string">'_maxbrsv'</span> st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     <span class="keyword">end</span>
-</pre><img vspace="5" hspace="5" src="ff_wkz_evf_03.png" alt=""> <h2 id="13">Graph 3, Optimal K' and B' Levels</h2><pre class="codeinput">    [~, ar_w_mz] = meshgrid(ar_z, ar_w);
+</pre><img vspace="5" hspace="5" src="ff_wkz_evf_04.png" alt=""> <h2 id="15">Graph 4, Optimal K' and B' Levels</h2><pre class="codeinput">    [~, ar_w_mz] = meshgrid(ar_z, ar_w);
     <span class="keyword">for</span> sub_j=1:1:4
 
         <span class="keyword">if</span> (bl_graph_onebyones)
@@ -862,7 +916,7 @@ Variables:
         st_file_name = [st_img_prefix st_img_name_main <span class="string">'_wkbopti'</span> st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     <span class="keyword">end</span>
-</pre><img vspace="5" hspace="5" src="ff_wkz_evf_04.png" alt=""> <img vspace="5" hspace="5" src="ff_wkz_evf_05.png" alt=""> <img vspace="5" hspace="5" src="ff_wkz_evf_06.png" alt=""> <img vspace="5" hspace="5" src="ff_wkz_evf_07.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="ff_wkz_evf_05.png" alt=""> <img vspace="5" hspace="5" src="ff_wkz_evf_06.png" alt=""> <img vspace="5" hspace="5" src="ff_wkz_evf_07.png" alt=""> <img vspace="5" hspace="5" src="ff_wkz_evf_08.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
 </pre><pre class="codeinput"><span class="keyword">end</span>
 </pre><pre class="codeoutput">
 ans =
@@ -1203,6 +1257,8 @@ if(bl_display_evf)
     summary(array2table(mt_ev_condi_z_max_bp));
 end
 
+%% Generate Optimal K' and B' on w(coh) percentage grid from w level grid
+
 %% Graph
 
 if (bl_graph_evf)
@@ -1265,7 +1321,63 @@ if (bl_graph_evf)
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
     
-    %% Graph 2, max(EV), color regions, borrow save
+    %% Graph 2, max(EV)
+    
+    if(~bl_graph_onebyones)
+        figure('PaperPosition', [0 0 7 4]);
+    end
+    
+    for sub_j=1:1:1
+        
+        if(sub_j==1)
+            mt_outcome = mt_ev_condi_z_max;
+            st_y_label = 'max_{k''}(E(V(coh(k'',b''=w-k''),z''|z,w))';
+        end
+        
+        if(~bl_graph_onebyones)
+            subplot(1,1,sub_j)
+        else
+            figure('PaperPosition', [0 0 7 4]);
+        end
+        hold on;
+        
+        ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)) (it_z_n)]);
+        clr = jet(length(ar_it_z_graph));
+        i_ctr = 0;
+        for i = ar_it_z_graph
+            i_ctr = i_ctr + 1;
+            ar_x = ar_w;
+            ar_y = mt_outcome(:, i);
+            scatter(ar_x, ar_y, 5, ...
+                'MarkerEdgeColor', clr(i_ctr,:), ...
+                'MarkerFaceColor', clr(i_ctr,:));
+        end
+        
+        grid on;
+        grid minor;
+        title(['2nd Stage Exp Value at Optimal K given W=K''+B'''])
+        ylabel(st_y_label)
+        xlabel({'Aggregate Savings'})
+        
+        legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
+        legendCell{length(legendCell) + 1} = 'max-agg-save';
+        legend(legendCell([ar_it_z_graph length(legendCell)]), 'Location','southeast');
+        
+        xline0 = xline(0);
+        xline0.HandleVisibility = 'off';
+        yline0 = yline(0);
+        yline0.HandleVisibility = 'off';
+        
+    end
+    
+    % save file
+    if (bl_img_save)
+        mkdir(support_map('st_img_path'));
+        st_file_name = [st_img_prefix st_img_name_main '_maxev' st_img_suffix];
+        saveas(gcf, strcat(st_img_path, st_file_name));
+    end
+    
+    %% Graph 3, max(EV), color regions, borrow save
     
     % Borrow Vs Save
     [ar_z_mw, ar_w_mz] = meshgrid(ar_z, ar_w);
@@ -1304,11 +1416,11 @@ if (bl_graph_evf)
     % save file
     if (bl_img_save)
         mkdir(support_map('st_img_path'));
-        st_file_name = [st_img_prefix st_img_name_main '_maxev' st_img_suffix];
+        st_file_name = [st_img_prefix st_img_name_main '_maxbrsv' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
     
-    %% Graph 3, Optimal K' and B' Levels
+    %% Graph 4, Optimal K' and B' Levels
     
     [~, ar_w_mz] = meshgrid(ar_z, ar_w);
     for sub_j=1:1:4
