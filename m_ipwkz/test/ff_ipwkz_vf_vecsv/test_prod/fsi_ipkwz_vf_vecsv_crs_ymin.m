@@ -2,7 +2,7 @@
 
 close all
 
-ar_fl_y_min = [0, 0.20, 0.40];
+ar_fl_y_min = [0, 0.20, 1];
 % ar_it_w_n = [25, 50];
 
 for fl_y_min = ar_fl_y_min

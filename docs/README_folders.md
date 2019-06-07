@@ -12,7 +12,7 @@ Functions are written with default parameters and are directly callable:
 # Folder Structures
 
 ## Folders:
-- *m_*: folders starting with *m_* include files for different models. Names correspond to model names below. The *m_akz* folder contains codes for the *akz*, *wkz* and *iwkz* models.
+- *m_*: folders starting with *m_* include files for different models. Names correspond to model names below. The *m_akz* folder contains codes for the *bkz*, *wkz* and *iwkz* models. Letters *a* and *b* are used interchangeably. On the webpage, models are called *bz* and *bkz*, these models are *az* and *akz* for folders and function names.
 - *tools*: tools folder contains some shared tools across models
 
 ## Subfolders

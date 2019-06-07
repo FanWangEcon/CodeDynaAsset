@@ -2,7 +2,7 @@
 
 close all
 
-ar_fl_y_min = [0, 0.20, 0.40];
+ar_fl_y_min = [0, 0.20, 1];
 % ar_it_w_n = [25, 50];
 
 for fl_y_min = ar_fl_y_min
@@ -34,7 +34,7 @@ for fl_y_min = ar_fl_y_min
     % param_map('it_maxiter_val') = 2;
 
     % Turn on 2nd stage graphs
-    support_map('bl_graph_evf') = false;
+    support_map('bl_graph_evf') = true;
     support_map('bl_display_evf') = false;
 
     % Production Function Parameters

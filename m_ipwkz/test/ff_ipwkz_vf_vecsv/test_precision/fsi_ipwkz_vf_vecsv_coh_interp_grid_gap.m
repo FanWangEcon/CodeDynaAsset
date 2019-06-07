@@ -4,7 +4,7 @@
 
 close all
 
-ar_fl_coh_interp_grid_gap = [0.2, 0.1, 0.01];
+ar_fl_coh_interp_grid_gap = [0.2, 0.025, 0.01];
 % ar_it_w_n = [25, 50];
 
 for fl_coh_interp_grid_gap = ar_fl_coh_interp_grid_gap

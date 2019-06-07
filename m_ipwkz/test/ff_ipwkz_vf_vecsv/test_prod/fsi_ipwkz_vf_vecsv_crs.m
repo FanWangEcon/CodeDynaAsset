@@ -27,7 +27,7 @@ param_map('it_c_interp_grid_gap') = 10^-4;
 % param_map('it_maxiter_val') = 2;
 
 % Turn on 2nd stage graphs
-support_map('bl_graph_evf') = false;
+support_map('bl_graph_evf') = true;
 support_map('bl_display_evf') = false;
 
 % Production Function Parameters
@@ -66,6 +66,10 @@ param_map('it_z_n') = 15;
 param_map('fl_coh_interp_grid_gap') = 0.01;
 param_map('fl_w_interp_grid_gap') = 0.01;
 param_map('it_c_interp_grid_gap') = 10^-4;
+
+% Turn on 2nd stage graphs
+support_map('bl_graph_evf') = true;
+support_map('bl_display_evf') = false;
 
 % Production Function Parameters
 % note shock is log normal
