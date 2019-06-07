@@ -66,7 +66,8 @@ param_map('it_tol_pol_nochange') = 25; % number of iterations where policy does 
 
 support_map = containers.Map('KeyType','char', 'ValueType','any');
 % root directory
-st_matimg_path_root = 'C:/Users/fan/CodeDynaAsset/m_az/';
+[st_root_path] = preamble();
+st_matimg_path_root = [st_root_path '/m_az/'];
 support_map('st_matimg_path_root') = st_matimg_path_root;
 % timer
 support_map('bl_time') = true;

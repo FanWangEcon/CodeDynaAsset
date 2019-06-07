@@ -60,7 +60,7 @@ function result_map = ff_ipwkz_vf(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 1;
+it_param_set = 4;
 bl_input_override = true;
 [param_map, support_map] = ffs_ipwkz_set_default_param(it_param_set);
 
@@ -254,11 +254,7 @@ while bl_vfi_continue
                 
                 % consumption
                 fl_c = f_cons(fl_coh, fl_w_astar_interp_z, fl_w_kstar_interp_z);
-                                
-                % loop 4: add future utility, integration already done in
-                % ff_wkz_evf
-                fl_ev_condi_z_max_z = ar_ev_condi_z_max_z(it_cohp_k);
-                
+                                               
                 % Interpolate (3) EV(k*(ar_w_perc),Z)
                 fl_ev_condi_z_max_interp_z = f_interpolante_ev_condi_z_max_z(fl_w_level_perc_z);
                 

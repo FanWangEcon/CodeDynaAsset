@@ -1,3 +1,6 @@
+function [st_root_path] = preamble()
 % Remote Path
-rmpath(genpath('C:/Users/fan/CodeDynaAsset/'))
-addpath(genpath('C:/Users/fan/CodeDynaAsset/'))
+st_root_path = 'C:/Users/fan/CodeDynaAsset/';
+rmpath(genpath(st_root_path))
+addpath(genpath(st_root_path))
+end

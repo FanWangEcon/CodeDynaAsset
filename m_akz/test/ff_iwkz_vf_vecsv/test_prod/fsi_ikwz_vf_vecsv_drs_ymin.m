@@ -1,0 +1,45 @@
+%% Tests the IKWZ_VF_VECSV Algorithm with varyin w (fl_y_min)
+
+close all
+
+ar_fl_y_min = [0, 0.05, 0.15];
+% ar_it_w_n = [25, 50];
+
+for fl_y_min = ar_fl_y_min
+
+    %% Simulate with current ar_it_w
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp(['fl_y_min = ' num2str(fl_y_min)]);
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('');
+    disp('');
+    disp('');
+    disp('');
+
+    it_param_set = 4;
+    [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
+
+    % Simulation Accuracy
+    param_map('it_w_n') = 500;
+    param_map('it_ak_n') = param_map('it_w_n');
+    param_map('it_z_n') = 11;
+    param_map('fl_coh_interp_grid_gap') = 0.0125;
+    param_map('it_c_interp_grid_gap') = 10^-4;
+
+    % Production Function Parameters
+    % note shock is log normal
+    param_map('fl_w') = fl_y_min;
+
+    % Display Parameters
+    support_map('bl_display') = false;
+    support_map('bl_display_final') = true;
+    support_map('bl_time') = true;
+    % support_map('bl_profile') = false;
+
+
+    % Call Program
+    ff_iwkz_vf_vecsv(param_map, support_map);
+
+end

@@ -54,7 +54,7 @@ function result_map = ff_ipwkz_vf_vecsv(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 4;
+it_param_set = 2;
 bl_input_override = true;
 [param_map, support_map] = ffs_ipwkz_set_default_param(it_param_set);
 
@@ -131,10 +131,10 @@ params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol', 
 % support_map
 params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
     'st_profile_prefix', 'st_profile_name_main', 'st_profile_suffix',...
-    'bl_time', 'bl_display', 'it_display_every', 'bl_post'});
+    'bl_time', 'bl_graph_evf', 'bl_display', 'it_display_every', 'bl_post'});
 [bl_profile, st_profile_path, ...
     st_profile_prefix, st_profile_name_main, st_profile_suffix, ...
-    bl_time, bl_display, it_display_every, bl_post] = params_group{:};
+    bl_time, bl_graph_evf, bl_display, it_display_every, bl_post] = params_group{:};
 
 %% Initialize Output Matrixes
 
@@ -180,7 +180,7 @@ end
 ar_interp_u_of_c_grid(ar_interp_c_grid <= fl_c_min) = fl_u_neg_c;
 
 % Get Interpolant
-f_grid_interpolant_spln = griddedInterpolant(ar_interp_c_grid, ar_interp_u_of_c_grid, 'spline');
+f_grid_interpolant_spln = griddedInterpolant(ar_interp_c_grid, ar_interp_u_of_c_grid, 'spline', 'nearest');
 
 %% Iterate Value Function
 % Loop solution with 4 nested loops
@@ -216,7 +216,7 @@ while bl_vfi_continue
 
     % Generate Interpolant for v(coh,z)
     f_grid_interpolant_value = griddedInterpolant(...
-        mt_z_mesh_coh_interp_grid', mt_interp_coh_grid_mesh_z', mt_val_cur', 'linear');
+        mt_z_mesh_coh_interp_grid', mt_interp_coh_grid_mesh_z', mt_val_cur', 'linear', 'nearest');
     
     % Interpoalte for v(coh(k(w,z),b(w,z),z),z)
     mt_val_wkb_interpolated = f_grid_interpolant_value(mt_z_mesh_coh_wkb, mt_coh_wkb);
@@ -227,7 +227,10 @@ while bl_vfi_continue
     % ffs_akz_set_functions> which solves the two stages jointly    
     % Interpolation first, because solution coh grid is not the same as all
     % points reachable by k and b choices given w. 
-            
+    support_map('bl_graph_evf') = false;
+    if (it_iter == (it_maxiter_val + 1))
+        support_map('bl_graph_evf') = bl_graph_evf;
+    end
     bl_input_override = true;
     [mt_ev_condi_z_max, ~, mt_ev_condi_z_max_kp, ~] = ...
         ff_ipwkz_evf(mt_val_wkb_interpolated, param_map, support_map, armt_map, bl_input_override);       
@@ -243,7 +246,7 @@ while bl_vfi_continue
         % each coh level, we have a different vector of w levels, but the same
         % vector of percentage ws. So we need to interpolate to get the optimal
         % k* and b* choices at each percentage level of w. 
-        f_interpolante_w_level_kstar_z = griddedInterpolant(ar_w_level, mt_ev_condi_z_max_kp(:, it_z_i)', 'linear');
+        f_interpolante_w_level_kstar_z = griddedInterpolant(ar_w_level, mt_ev_condi_z_max_kp(:, it_z_i)', 'linear', 'nearest');
         
         % Interpolate (2), shift from w_level to w_perc
         mt_w_kstar_interp_z = f_interpolante_w_level_kstar_z(mt_w_by_interp_coh_interp_grid);
@@ -259,10 +262,9 @@ while bl_vfi_continue
         % ffs_akz_set_functions> the mt_c here is much smaller the same
         % number of columns (states) as in the ffs_akz_set_functions file,
         % but the number of rows equal to ar_w length.            
-        ar_one = mt_interp_coh_grid_mesh_w_perc(mt_w_kstar_diff_idx);
-        ar_two = mt_w_astar_interp_z(mt_w_kstar_diff_idx);
-        ar_three = mt_w_kstar_interp_z(mt_w_kstar_diff_idx);
-        ar_c = f_cons(ar_one, ar_two, ar_three);
+        ar_c = f_cons(mt_interp_coh_grid_mesh_w_perc(mt_w_kstar_diff_idx), ...
+                      mt_w_astar_interp_z(mt_w_kstar_diff_idx), ...
+                      mt_w_kstar_interp_z(mt_w_kstar_diff_idx));
                 
         % EVAL current utility: N by N, f_util defined earlier
         ar_utility_update = f_grid_interpolant_spln(ar_c);
@@ -276,7 +278,7 @@ while bl_vfi_continue
         cl_w_kstar_interp_z{it_z_i} = mt_w_kstar_interp_z;            
                 
         % Generate Interpolant for (3) EV(k*(ar_w_perc),Z)
-        f_interpolante_ev_condi_z_max_z = griddedInterpolant(ar_w_level, mt_ev_condi_z_max(:, it_z_i)', 'linear');               
+        f_interpolante_ev_condi_z_max_z = griddedInterpolant(ar_w_level, mt_ev_condi_z_max(:, it_z_i)', 'linear', 'nearest');
         % Interpolate (3), EVAL add on future utility, N by N + N by N
         mt_ev_condi_z_max_interp_z = f_interpolante_ev_condi_z_max_z(mt_w_by_interp_coh_interp_grid);
         mt_utility = cl_u_c_store{it_z_i} + fl_beta*mt_ev_condi_z_max_interp_z;

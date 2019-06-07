@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>ff_akz_vf_post_graph</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-01"><meta name="DC.source" content="ff_akz_vf_post_graph.m"><style type="text/css">
+      --><title>ff_akz_vf_post_graph</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-06"><meta name="DC.source" content="ff_akz_vf_post_graph.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -89,17 +89,17 @@ bl_input_override = 0;
     [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override); <span class="comment">% 1 for override</span>
 
     <span class="comment">% Generate Default val and policy matrixes</span>
-    params_group = values(armt_map, {<span class="string">'ar_a_meshk'</span>, <span class="string">'ar_k_mesha'</span>, <span class="string">'ar_z'</span>, <span class="string">'mt_coh'</span>});
-    [ar_a_meshk, ar_k_mesha, ar_z, mt_coh] = params_group{:};
+    params_group = values(armt_map, {<span class="string">'ar_a_meshk'</span>, <span class="string">'ar_k_mesha'</span>, <span class="string">'ar_z'</span>, <span class="string">'mt_coh_wkb'</span>});
+    [ar_a_meshk, ar_k_mesha, ar_z, mt_coh_wkb] = params_group{:};
     params_group = values(func_map, {<span class="string">'f_util_standin'</span>, <span class="string">'f_cons'</span>, <span class="string">'f_coh'</span>});
     [f_util_standin, f_cons, f_coh] = params_group{:};
 
     <span class="comment">% Set Defaults</span>
     mt_val = f_util_standin(ar_z, ar_a_meshk, ar_k_mesha);
-    mt_pol_aksum = mt_coh.*(cumsum(sort(ar_z))/sum(ar_z)*0.4 + 0.4);
+    mt_pol_aksum = mt_coh_wkb.*(cumsum(sort(ar_z))/sum(ar_z)*0.4 + 0.4);
     mt_pol_a = mt_pol_aksum.*(0.7 - cumsum(sort(ar_z))/sum(ar_z)*0.3);
     mt_pol_k = mt_pol_aksum - mt_pol_a;
-    mt_cons = f_cons(mt_coh, mt_pol_a, mt_pol_k);
+    mt_cons = f_cons(mt_coh_wkb, mt_pol_a, mt_pol_k);
 
     <span class="comment">% Set Results Map</span>
     result_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
@@ -109,8 +109,8 @@ bl_input_override = 0;
     result_map(<span class="string">'mt_cons'</span>) = mt_cons;
 <span class="keyword">end</span>
 </pre><h2 id="4">Parse Parameters</h2><pre class="codeinput"><span class="comment">% param_map</span>
-params_group = values(param_map, {<span class="string">'fl_b_bd'</span>, <span class="string">'it_z_n'</span>});
-[fl_b_bd, it_z_n] = params_group{:};
+params_group = values(param_map, {<span class="string">'fl_b_bd'</span>, <span class="string">'it_z_n'</span>, <span class="string">'fl_w_max'</span>});
+[fl_b_bd, it_z_n, fl_w_max] = params_group{:};
 
 <span class="comment">% support_map</span>
 params_group = values(support_map, {<span class="string">'bl_graph_onebyones'</span>, <span class="string">'bl_graph_val'</span>, <span class="string">'bl_graph_pol_lvl'</span>, <span class="string">'bl_graph_pol_pct'</span>});
@@ -121,8 +121,8 @@ params_group = values(support_map, {<span class="string">'st_title_prefix'</span
 [st_title_prefix] = params_group{:};
 
 <span class="comment">% armt_map</span>
-params_group = values(armt_map, {<span class="string">'ar_z'</span>, <span class="string">'mt_coh'</span>});
-[ar_z, mt_coh] = params_group{:};
+params_group = values(armt_map, {<span class="string">'ar_z'</span>, <span class="string">'mt_coh_wkb'</span>});
+[ar_z, mt_coh_wkb] = params_group{:};
 
 <span class="comment">% result_map</span>
 params_group = values(result_map, {<span class="string">'mt_cons'</span>, <span class="string">'mt_val'</span>, <span class="string">'mt_pol_a'</span>, <span class="string">'mt_pol_k'</span>});
@@ -133,39 +133,57 @@ ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)
 </pre><h2 id="5">Graphing Values</h2><p>when testing with random data using f_util_standin, shocks will not have impacts on z, we will see that lower shocks tend to have slightly lower coh values, but k,b,z effects on f_util_standin fully captured by coh.</p><pre class="codeinput"><span class="keyword">if</span> (bl_graph_val)
 
     <span class="keyword">if</span>(~bl_graph_onebyones)
-        figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
+        figure(<span class="string">'PaperPosition'</span>, [0 0 14 4]);
     <span class="keyword">end</span>
 
-    <span class="keyword">for</span> sub_j=1:1:1
-
-        <span class="keyword">if</span>(sub_j==1)
-            mt_outcome = mt_val;
-            st_y_label = <span class="string">'V(coh(a, k, z), z)'</span>;
-        <span class="keyword">end</span>
+    <span class="keyword">for</span> sub_j=1:1:2
 
         <span class="keyword">if</span>(~bl_graph_onebyones)
-            subplot(1,1,sub_j)
+            subplot(1,2,sub_j)
         <span class="keyword">else</span>
             figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
         <span class="keyword">end</span>
         hold <span class="string">on</span>;
 
+        mt_outcome = mt_val;
+        st_y_label = <span class="string">'V(coh(a, k, z), z)'</span>;
+
         clr = jet(length(ar_it_z_graph));
         i_ctr = 0;
         <span class="keyword">for</span> i = ar_it_z_graph
             i_ctr = i_ctr + 1;
-            scatter(mt_coh(:,i), mt_outcome(:, i), 5, <span class="keyword">...</span>
+
+            <span class="keyword">if</span> (sub_j == 1)
+                ar_x = mt_coh_wkb(:, i);
+            <span class="keyword">else</span>
+                ar_x = log(mt_coh_wkb(:,i)' - fl_b_bd + 1);
+            <span class="keyword">end</span>
+
+            ar_y = mt_outcome(:, i);
+            scatter(ar_x, ar_y, 5, <span class="keyword">...</span>
                 <span class="string">'MarkerEdgeColor'</span>, clr(i_ctr,:), <span class="keyword">...</span>
                 <span class="string">'MarkerFaceColor'</span>, clr(i_ctr,:));
         <span class="keyword">end</span>
 
         grid <span class="string">on</span>;
         grid <span class="string">minor</span>;
-        legendCell = cellstr(num2str(ar_z', <span class="string">'shock=%3.2f'</span>));
-        title([st_title_prefix <span class="string">'COH, Shocks, and Value/Utility'</span>])
+        title([st_title_prefix <span class="string">'V(coh(k,b,z),z)'</span>])
         ylabel(st_y_label)
-        xlabel({<span class="string">'Cash-on-Hand'</span>})
-        legend(legendCell(ar_it_z_graph), <span class="string">'Location'</span>,<span class="string">'southeast'</span>);
+
+        <span class="keyword">if</span> (sub_j == 1)
+            xlinemax = xline(fl_w_max);
+            xlabel({<span class="string">'cash-on-hand'</span>})
+        <span class="keyword">else</span>
+            xlinemax = xline(log(fl_w_max - fl_b_bd + 1));
+            xlabel({<span class="string">'log(COH - borrbound + 1)'</span>})
+        <span class="keyword">end</span>
+
+
+        legendCell = cellstr(num2str(ar_z', <span class="string">'shock=%3.2f'</span>));
+        xlinemax.Color = <span class="string">'b'</span>;
+        xlinemax.LineWidth = 1.5;
+        legendCell{length(legendCell) + 1} = <span class="string">'max-agg-save'</span>;
+        legend(legendCell([ar_it_z_graph length(legendCell)]), <span class="string">'Location'</span>,<span class="string">'southeast'</span>);
 
         xline0 = xline(0);
         xline0.HandleVisibility = <span class="string">'off'</span>;
@@ -182,13 +200,16 @@ ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)
     <span class="keyword">end</span>
 
 <span class="keyword">end</span>
-</pre><img vspace="5" hspace="5" src="ff_akz_vf_post_graph_01.png" alt=""> <h2 id="6">Graphing Choice Levels</h2><pre class="codeinput"><span class="keyword">if</span> (bl_graph_pol_lvl)
+</pre><img vspace="5" hspace="5" src="ff_akz_vf_post_graph_01.png" alt=""> <img vspace="5" hspace="5" src="ff_akz_vf_post_graph_02.png" alt=""> <h2 id="6">Graphing Choice Levels</h2><pre class="codeinput"><span class="keyword">if</span> (bl_graph_pol_lvl)
 
     <span class="keyword">if</span>(~bl_graph_onebyones)
         figure(<span class="string">'PaperPosition'</span>, [0 0 21 8]);
+        ar_sub_j = 1:1:6;
+    <span class="keyword">else</span>
+        ar_sub_j = [1 4 2 5 3 6];
     <span class="keyword">end</span>
 
-    <span class="keyword">for</span> sub_j=1:1:6
+    <span class="keyword">for</span> sub_j = ar_sub_j
 
         <span class="keyword">if</span>(sub_j==1 || sub_j == 4)
             mt_outcome = mt_pol_a;
@@ -215,12 +236,14 @@ ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)
 
             <span class="keyword">if</span>(sub_j==1 || sub_j == 2 || sub_j == 3)
 
-                ar_a_curz_use = mt_coh(:,i)';
+                ar_a_curz_use = mt_coh_wkb(:,i)';
                 ar_opti_curz_use = ar_opti_curz';
+                fl_w_max_line = fl_w_max;
 
             <span class="keyword">elseif</span>(sub_j == 4 || sub_j == 5 || sub_j == 6)
 
-                ar_a_curz_use = log(mt_coh(:,i)' - fl_b_bd + 1);
+                ar_a_curz_use = log(mt_coh_wkb(:,i)' - fl_b_bd + 1);
+                fl_w_max_line = log(fl_w_max  - fl_b_bd + 1);
 
                 <span class="keyword">if</span>(sub_j == 4)
                     <span class="comment">% borrow save</span>
@@ -234,17 +257,20 @@ ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)
 
             <span class="keyword">end</span>
 
-            scatter(ar_a_curz_use, ar_opti_curz_use, 5, <span class="keyword">...</span>
+            ar_x = ar_a_curz_use;
+            ar_y = ar_opti_curz_use;
+
+            scatter(ar_x, ar_y, 5, <span class="keyword">...</span>
                 <span class="string">'MarkerEdgeColor'</span>, clr(i_ctr,:), <span class="keyword">...</span>
                 <span class="string">'MarkerFaceColor'</span>, clr(i_ctr,:));
         <span class="keyword">end</span>
 
         <span class="keyword">if</span>(sub_j==1)
-            st_y_label = <span class="string">'Savings/Borrowing'</span>;
+            st_y_label = <span class="string">'Safe Savings/Borrowing'</span>;
             st_x_label = <span class="string">'Cash-on-Hand'</span>;
         <span class="keyword">end</span>
         <span class="keyword">if</span>(sub_j==2)
-            st_y_label = <span class="string">'Riksy K investment'</span>;
+            st_y_label = <span class="string">'Risky K investment'</span>;
             st_x_label = <span class="string">'Cash-on-Hand'</span>;
         <span class="keyword">end</span>
         <span class="keyword">if</span>(sub_j==3)
@@ -266,11 +292,17 @@ ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)
 
 
         grid <span class="string">on</span>;
-        legendCell = cellstr(num2str(ar_z', <span class="string">'shock=%3.2f'</span>));
-        title([st_title_prefix <span class="string">'COH, Shocks and Choices (Levels)'</span>]);
+
+        title([st_title_prefix st_y_label]);
         ylabel(st_y_label);
         xlabel(st_x_label);
-        legend(legendCell(ar_it_z_graph), <span class="string">'Location'</span>,<span class="string">'northwest'</span>);
+
+        legendCell = cellstr(num2str(ar_z', <span class="string">'shock=%3.2f'</span>));
+        xlinemax = xline(fl_w_max_line);
+        xlinemax.Color = <span class="string">'b'</span>;
+        xlinemax.LineWidth = 1.5;
+        legendCell{length(legendCell) + 1} = <span class="string">'max-agg-save'</span>;
+        legend(legendCell([ar_it_z_graph length(legendCell)]), <span class="string">'Location'</span>,<span class="string">'northwest'</span>);
 
         hline = refline([1 0]);
         hline.Color = <span class="string">'k'</span>;
@@ -296,42 +328,63 @@ ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)
     <span class="keyword">end</span>
 
 <span class="keyword">end</span>
-</pre><img vspace="5" hspace="5" src="ff_akz_vf_post_graph_02.png" alt=""> <img vspace="5" hspace="5" src="ff_akz_vf_post_graph_03.png" alt=""> <img vspace="5" hspace="5" src="ff_akz_vf_post_graph_04.png" alt=""> <img vspace="5" hspace="5" src="ff_akz_vf_post_graph_05.png" alt=""> <img vspace="5" hspace="5" src="ff_akz_vf_post_graph_06.png" alt=""> <img vspace="5" hspace="5" src="ff_akz_vf_post_graph_07.png" alt=""> <h2 id="7">Graphing Choice Percentages</h2><pre class="codeinput"><span class="keyword">if</span> (bl_graph_pol_pct)
+</pre><img vspace="5" hspace="5" src="ff_akz_vf_post_graph_03.png" alt=""> <img vspace="5" hspace="5" src="ff_akz_vf_post_graph_04.png" alt=""> <img vspace="5" hspace="5" src="ff_akz_vf_post_graph_05.png" alt=""> <img vspace="5" hspace="5" src="ff_akz_vf_post_graph_06.png" alt=""> <img vspace="5" hspace="5" src="ff_akz_vf_post_graph_07.png" alt=""> <img vspace="5" hspace="5" src="ff_akz_vf_post_graph_08.png" alt=""> <h2 id="7">Graphing Choice Percentages</h2><pre class="codeinput"><span class="keyword">if</span> (bl_graph_pol_pct)
 
     <span class="keyword">if</span>(~bl_graph_onebyones)
-        figure(<span class="string">'PaperPosition'</span>, [0 0 21 4]);
+        figure(<span class="string">'PaperPosition'</span>, [0 0 24 8]);
+        ar_sub_j = 1:1:8;
+    <span class="keyword">else</span>
+        ar_sub_j = [1 5 2 6 3 7 4 8];
     <span class="keyword">end</span>
 
-    <span class="keyword">for</span> sub_j=1:1:3
+    <span class="keyword">for</span> sub_j = ar_sub_j
 
         mt_outcome = zeros(size(mt_pol_a));
         mt_it_borr_idx = (mt_pol_a &lt; 0);
 
-        <span class="keyword">if</span>(sub_j==1)
+        <span class="keyword">if</span> (ismember(sub_j, [1,2,3,4]))
+            bl_log_coh = 0;
+            st_sv_suffix = <span class="string">'_xcoh'</span>;
+            st_title_suffix = <span class="string">' (x=coh)'</span>;
+        <span class="keyword">else</span>
+            bl_log_coh = 1;
+            st_sv_suffix = <span class="string">'_logxcoh'</span>;
+            st_title_suffix = <span class="string">' (x=log(coh))'</span>;
+        <span class="keyword">end</span>
+
+        <span class="keyword">if</span>(sub_j==1 || sub_j == 4)
             mt_outcome(mt_it_borr_idx) = -mt_pol_a(mt_it_borr_idx)./fl_b_bd;
-            mt_outcome(~mt_it_borr_idx) = mt_pol_a(~mt_it_borr_idx)./mt_coh(~mt_it_borr_idx);
+            mt_outcome(~mt_it_borr_idx) = mt_pol_a(~mt_it_borr_idx)./mt_coh_wkb(~mt_it_borr_idx);
             st_y_label = <span class="string">'aprime/borrbound if br; aprime/cashonhand if sv'</span>;
             st_legend_loc = <span class="string">'southeast'</span>;
-            st_title = <span class="string">'Asset Choice As Fraction'</span>;
+            st_title = <span class="string">'Save/Borrow % of Borrow Limit or COH'</span>;
         <span class="keyword">end</span>
-        <span class="keyword">if</span>(sub_j==2)
+        <span class="keyword">if</span>(sub_j==2 || sub_j == 5)
+            mt_outcome(mt_it_borr_idx) = mt_pol_k(mt_it_borr_idx)./(mt_coh_wkb(mt_it_borr_idx) + mt_pol_a(mt_it_borr_idx));
+            mt_outcome(~mt_it_borr_idx) = mt_pol_k(~mt_it_borr_idx)./mt_coh_wkb(~mt_it_borr_idx);
+            st_y_label = <span class="string">'kprime/(coh-aprime) if br; k/cashonhand if sv'</span>;
+            st_legend_loc = <span class="string">'southeast'</span>;
+            st_title = <span class="string">'Risky Investment % of coh + borrow'</span>;
+        <span class="keyword">end</span>
+        <span class="keyword">if</span>(sub_j==3 || sub_j == 7)
             <span class="comment">%             If borrowing, how much is what is borrowing going to K?</span>
             <span class="comment">%             If saving, how much is what is total savings in K?</span>
             mt_outcome(mt_it_borr_idx) = mt_pol_a(mt_it_borr_idx)./mt_pol_k(mt_it_borr_idx);
             mt_outcome(~mt_it_borr_idx) = mt_pol_a(~mt_it_borr_idx)./mt_pol_k(~mt_it_borr_idx);
             st_y_label = <span class="string">'aprime/kprime'</span>;
             st_legend_loc = <span class="string">'northwest'</span>;
+            st_title = <span class="string">'safe borr/save divide risky k'</span>;
         <span class="keyword">end</span>
-        <span class="keyword">if</span>(sub_j==3)
-            mt_outcome(mt_it_borr_idx) = mt_cons(mt_it_borr_idx)./(mt_coh(mt_it_borr_idx) + mt_pol_a(mt_it_borr_idx));
-            mt_outcome(~mt_it_borr_idx) = mt_cons(~mt_it_borr_idx)./mt_coh(~mt_it_borr_idx);
+        <span class="keyword">if</span>(sub_j==4 || sub_j == 8)
+            mt_outcome(mt_it_borr_idx) = mt_cons(mt_it_borr_idx)./(mt_coh_wkb(mt_it_borr_idx) + mt_pol_a(mt_it_borr_idx));
+            mt_outcome(~mt_it_borr_idx) = mt_cons(~mt_it_borr_idx)./mt_coh_wkb(~mt_it_borr_idx);
             st_y_label = <span class="string">'c/(coh-aprime) if br; c/cashonhand if sv'</span>;
             st_legend_loc = <span class="string">'northeast'</span>;
-            st_title = <span class="string">'Consumption Choice As Fraction'</span>;
+            st_title = <span class="string">'Consumption Choice % of coh + borrow'</span>;
         <span class="keyword">end</span>
 
         <span class="keyword">if</span>(~bl_graph_onebyones)
-            subplot(1,3,sub_j)
+            subplot(2,4,sub_j)
         <span class="keyword">else</span>
             figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
         <span class="keyword">end</span>
@@ -342,25 +395,53 @@ ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)
         <span class="keyword">for</span> i = ar_it_z_graph
             i_ctr = i_ctr + 1;
             ar_opti_curz = mt_outcome(:, i);
-            scatter(mt_coh(:,i), ar_opti_curz, 5, <span class="keyword">...</span>
-                <span class="string">'MarkerEdgeColor'</span>, clr(i_ctr,:), <span class="keyword">...</span>
-                <span class="string">'MarkerFaceColor'</span>, clr(i_ctr,:));
+
+            <span class="keyword">if</span> (bl_log_coh == 0)
+                ar_x = mt_coh_wkb(:,i);
+            <span class="keyword">else</span>
+                ar_x = log(mt_coh_wkb(:,i)' - fl_b_bd + 1);
+            <span class="keyword">end</span>
+
+            ar_y = ar_opti_curz;
+
+            scatter(ar_x, ar_y, 5, <span class="keyword">...</span>
+                    <span class="string">'MarkerEdgeColor'</span>, clr(i_ctr,:), <span class="keyword">...</span>
+                    <span class="string">'MarkerFaceColor'</span>, clr(i_ctr,:));
         <span class="keyword">end</span>
         grid <span class="string">on</span>;
-        legendCell = cellstr(num2str(ar_z', <span class="string">'shock=%3.2f'</span>));
-        title([st_title_prefix st_title])
+
+        title([st_title_prefix st_title st_title_suffix])
         ylabel(st_y_label)
-        xlabel({<span class="string">'Cash-on-Hand'</span>})
-        legend(legendCell(ar_it_z_graph), <span class="string">'Location'</span>, st_legend_loc);
-        <span class="comment">%         xlim([min(ar_coh_curz)+1.5 15]);</span>
+
+
+        legendCell = cellstr(num2str(ar_z', <span class="string">'shock=%3.2f'</span>));
+
+        <span class="keyword">if</span> (bl_log_coh == 0)
+            xlinemax = xline(fl_w_max);
+            xlabel({<span class="string">'cash-on-hand'</span>})
+        <span class="keyword">else</span>
+            xlinemax = xline(log(fl_w_max - fl_b_bd + 1));
+            xlabel({<span class="string">'log(COH - borrbound + 1)'</span>})
+        <span class="keyword">end</span>
+
+        xlinemax.Color = <span class="string">'b'</span>;
+        xlinemax.LineWidth = 1.5;
+        legendCell{length(legendCell) + 1} = <span class="string">'max-agg-save'</span>;
+        legend(legendCell([ar_it_z_graph length(legendCell)]), <span class="string">'Location'</span>, st_legend_loc);
+
+        <span class="comment">% xlim([min(ar_coh_curz)+1.5 15]);</span>
 
         xline0 = xline(0);
         xline0.HandleVisibility = <span class="string">'off'</span>;
         yline0 = yline(0);
         yline0.HandleVisibility = <span class="string">'off'</span>;
-        yline0 = yline(1);
-        yline0.HandleVisibility = <span class="string">'off'</span>;
-        <span class="keyword">if</span>(sub_j==1)
+
+        <span class="keyword">if</span> (sub_j~=4)
+            yline0 = yline(1);
+            yline0.HandleVisibility = <span class="string">'off'</span>;
+        <span class="keyword">end</span>
+
+        <span class="keyword">if</span> (sub_j==1)
             yline0 = yline(-1);
             yline0.HandleVisibility = <span class="string">'off'</span>;
         <span class="keyword">end</span>
@@ -371,12 +452,13 @@ ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)
     <span class="comment">% save file</span>
     <span class="keyword">if</span> (bl_img_save)
         mkdir(support_map(<span class="string">'st_img_path'</span>));
-        st_file_name = [st_img_prefix st_img_name_main <span class="string">'_pol_pct'</span> st_img_suffix];
+        st_file_name = [st_img_prefix st_img_name_main <span class="string">'_pol_pct'</span> st_sv_suffix st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     <span class="keyword">end</span>
 
+
 <span class="keyword">end</span>
-</pre><img vspace="5" hspace="5" src="ff_akz_vf_post_graph_08.png" alt=""> <img vspace="5" hspace="5" src="ff_akz_vf_post_graph_09.png" alt=""> <img vspace="5" hspace="5" src="ff_akz_vf_post_graph_10.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="ff_akz_vf_post_graph_09.png" alt=""> <img vspace="5" hspace="5" src="ff_akz_vf_post_graph_10.png" alt=""> <img vspace="5" hspace="5" src="ff_akz_vf_post_graph_11.png" alt=""> <img vspace="5" hspace="5" src="ff_akz_vf_post_graph_12.png" alt=""> <img vspace="5" hspace="5" src="ff_akz_vf_post_graph_13.png" alt=""> <img vspace="5" hspace="5" src="ff_akz_vf_post_graph_14.png" alt=""> <img vspace="5" hspace="5" src="ff_akz_vf_post_graph_15.png" alt=""> <img vspace="5" hspace="5" src="ff_akz_vf_post_graph_16.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% 
@@ -434,17 +516,17 @@ else
     [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 
     % Generate Default val and policy matrixes
-    params_group = values(armt_map, {'ar_a_meshk', 'ar_k_mesha', 'ar_z', 'mt_coh'});
-    [ar_a_meshk, ar_k_mesha, ar_z, mt_coh] = params_group{:};
+    params_group = values(armt_map, {'ar_a_meshk', 'ar_k_mesha', 'ar_z', 'mt_coh_wkb'});
+    [ar_a_meshk, ar_k_mesha, ar_z, mt_coh_wkb] = params_group{:};
     params_group = values(func_map, {'f_util_standin', 'f_cons', 'f_coh'});
     [f_util_standin, f_cons, f_coh] = params_group{:};    
         
     % Set Defaults
     mt_val = f_util_standin(ar_z, ar_a_meshk, ar_k_mesha);
-    mt_pol_aksum = mt_coh.*(cumsum(sort(ar_z))/sum(ar_z)*0.4 + 0.4);
+    mt_pol_aksum = mt_coh_wkb.*(cumsum(sort(ar_z))/sum(ar_z)*0.4 + 0.4);
     mt_pol_a = mt_pol_aksum.*(0.7 - cumsum(sort(ar_z))/sum(ar_z)*0.3);
     mt_pol_k = mt_pol_aksum - mt_pol_a;
-    mt_cons = f_cons(mt_coh, mt_pol_a, mt_pol_k);
+    mt_cons = f_cons(mt_coh_wkb, mt_pol_a, mt_pol_k);
     
     % Set Results Map
     result_map = containers.Map('KeyType','char', 'ValueType','any');
@@ -457,8 +539,8 @@ end
 %% Parse Parameters
 
 % param_map
-params_group = values(param_map, {'fl_b_bd', 'it_z_n'});
-[fl_b_bd, it_z_n] = params_group{:};
+params_group = values(param_map, {'fl_b_bd', 'it_z_n', 'fl_w_max'});
+[fl_b_bd, it_z_n, fl_w_max] = params_group{:};
 
 % support_map
 params_group = values(support_map, {'bl_graph_onebyones', 'bl_graph_val', 'bl_graph_pol_lvl', 'bl_graph_pol_pct'});
@@ -469,8 +551,8 @@ params_group = values(support_map, {'st_title_prefix'});
 [st_title_prefix] = params_group{:};
 
 % armt_map
-params_group = values(armt_map, {'ar_z', 'mt_coh'});
-[ar_z, mt_coh] = params_group{:};
+params_group = values(armt_map, {'ar_z', 'mt_coh_wkb'});
+[ar_z, mt_coh_wkb] = params_group{:};
 
 % result_map
 params_group = values(result_map, {'mt_cons', 'mt_val', 'mt_pol_a', 'mt_pol_k'});
@@ -487,44 +569,62 @@ ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)
 if (bl_graph_val)
     
     if(~bl_graph_onebyones)
-        figure('PaperPosition', [0 0 7 4]);
+        figure('PaperPosition', [0 0 14 4]);
     end    
     
-    for sub_j=1:1:1
-        
-        if(sub_j==1)
-            mt_outcome = mt_val;
-            st_y_label = 'V(coh(a, k, z), z)';
-        end
+    for sub_j=1:1:2
         
         if(~bl_graph_onebyones)
-            subplot(1,1,sub_j)        
+            subplot(1,2,sub_j)
         else
             figure('PaperPosition', [0 0 7 4]);
         end        
         hold on;
+                
+        mt_outcome = mt_val;
+        st_y_label = 'V(coh(a, k, z), z)';        
         
         clr = jet(length(ar_it_z_graph));
         i_ctr = 0;
         for i = ar_it_z_graph
             i_ctr = i_ctr + 1;
-            scatter(mt_coh(:,i), mt_outcome(:, i), 5, ...
+            
+            if (sub_j == 1)
+                ar_x = mt_coh_wkb(:, i);
+            else
+                ar_x = log(mt_coh_wkb(:,i)' - fl_b_bd + 1);
+            end
+            
+            ar_y = mt_outcome(:, i);
+            scatter(ar_x, ar_y, 5, ...
                 'MarkerEdgeColor', clr(i_ctr,:), ...
                 'MarkerFaceColor', clr(i_ctr,:));
         end
         
         grid on;
-        grid minor;
-        legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
-        title([st_title_prefix 'COH, Shocks, and Value/Utility'])
+        grid minor;        
+        title([st_title_prefix 'V(coh(k,b,z),z)'])
         ylabel(st_y_label)
-        xlabel({'Cash-on-Hand'})
-        legend(legendCell(ar_it_z_graph), 'Location','southeast');
+        
+        if (sub_j == 1)
+            xlinemax = xline(fl_w_max);
+            xlabel({'cash-on-hand'})
+        else
+            xlinemax = xline(log(fl_w_max - fl_b_bd + 1));
+            xlabel({'log(COH - borrbound + 1)'})
+        end
+
+        
+        legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
+        xlinemax.Color = 'b';
+        xlinemax.LineWidth = 1.5;
+        legendCell{length(legendCell) + 1} = 'max-agg-save';
+        legend(legendCell([ar_it_z_graph length(legendCell)]), 'Location','southeast');
         
         xline0 = xline(0);
         xline0.HandleVisibility = 'off';
         yline0 = yline(0);
-        yline0.HandleVisibility = 'off';
+        yline0.HandleVisibility = 'off';        
         
     end
     
@@ -543,9 +643,12 @@ if (bl_graph_pol_lvl)
     
     if(~bl_graph_onebyones)
         figure('PaperPosition', [0 0 21 8]);
+        ar_sub_j = 1:1:6;
+    else
+        ar_sub_j = [1 4 2 5 3 6];
     end
     
-    for sub_j=1:1:6
+    for sub_j = ar_sub_j
         
         if(sub_j==1 || sub_j == 4)
             mt_outcome = mt_pol_a;
@@ -572,12 +675,14 @@ if (bl_graph_pol_lvl)
                         
             if(sub_j==1 || sub_j == 2 || sub_j == 3)
                 
-                ar_a_curz_use = mt_coh(:,i)';
-                ar_opti_curz_use = ar_opti_curz';
+                ar_a_curz_use = mt_coh_wkb(:,i)';
+                ar_opti_curz_use = ar_opti_curz';                
+                fl_w_max_line = fl_w_max;
                 
             elseif(sub_j == 4 || sub_j == 5 || sub_j == 6)
                 
-                ar_a_curz_use = log(mt_coh(:,i)' - fl_b_bd + 1);
+                ar_a_curz_use = log(mt_coh_wkb(:,i)' - fl_b_bd + 1);
+                fl_w_max_line = log(fl_w_max  - fl_b_bd + 1);
                 
                 if(sub_j == 4)
                     % borrow save
@@ -591,17 +696,20 @@ if (bl_graph_pol_lvl)
                 
             end
             
-            scatter(ar_a_curz_use, ar_opti_curz_use, 5, ...
+            ar_x = ar_a_curz_use;
+            ar_y = ar_opti_curz_use;
+            
+            scatter(ar_x, ar_y, 5, ...
                 'MarkerEdgeColor', clr(i_ctr,:), ...
                 'MarkerFaceColor', clr(i_ctr,:));
         end
         
-        if(sub_j==1)
-            st_y_label = 'Savings/Borrowing';
+        if(sub_j==1)            
+            st_y_label = 'Safe Savings/Borrowing';
             st_x_label = 'Cash-on-Hand';
         end
         if(sub_j==2)
-            st_y_label = 'Riksy K investment';
+            st_y_label = 'Risky K investment';
             st_x_label = 'Cash-on-Hand';
         end
         if(sub_j==3)
@@ -623,11 +731,17 @@ if (bl_graph_pol_lvl)
         
         
         grid on;
-        legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
-        title([st_title_prefix 'COH, Shocks and Choices (Levels)']);
+        
+        title([st_title_prefix st_y_label]);
         ylabel(st_y_label);
         xlabel(st_x_label);
-        legend(legendCell(ar_it_z_graph), 'Location','northwest');
+        
+        legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
+        xlinemax = xline(fl_w_max_line);
+        xlinemax.Color = 'b';
+        xlinemax.LineWidth = 1.5;
+        legendCell{length(legendCell) + 1} = 'max-agg-save';
+        legend(legendCell([ar_it_z_graph length(legendCell)]), 'Location','northwest');
         
         hline = refline([1 0]);
         hline.Color = 'k';
@@ -657,83 +771,133 @@ end
 %% Graphing Choice Percentages
 
 if (bl_graph_pol_pct)
-    
+
     if(~bl_graph_onebyones)
-        figure('PaperPosition', [0 0 21 4]);
-    end    
-    
-    for sub_j=1:1:3
-        
+        figure('PaperPosition', [0 0 24 8]);
+        ar_sub_j = 1:1:8;
+    else
+        ar_sub_j = [1 5 2 6 3 7 4 8];
+    end
+
+    for sub_j = ar_sub_j
+
         mt_outcome = zeros(size(mt_pol_a));
         mt_it_borr_idx = (mt_pol_a < 0);
         
-        if(sub_j==1)
+        if (ismember(sub_j, [1,2,3,4]))
+            bl_log_coh = 0;
+            st_sv_suffix = '_xcoh';
+            st_title_suffix = ' (x=coh)';
+        else
+            bl_log_coh = 1;
+            st_sv_suffix = '_logxcoh';
+            st_title_suffix = ' (x=log(coh))';
+        end
+            
+        if(sub_j==1 || sub_j == 4)
             mt_outcome(mt_it_borr_idx) = -mt_pol_a(mt_it_borr_idx)./fl_b_bd;
-            mt_outcome(~mt_it_borr_idx) = mt_pol_a(~mt_it_borr_idx)./mt_coh(~mt_it_borr_idx);
+            mt_outcome(~mt_it_borr_idx) = mt_pol_a(~mt_it_borr_idx)./mt_coh_wkb(~mt_it_borr_idx);
             st_y_label = 'aprime/borrbound if br; aprime/cashonhand if sv';
             st_legend_loc = 'southeast';
-            st_title = 'Asset Choice As Fraction';
+            st_title = 'Save/Borrow % of Borrow Limit or COH';
         end
-        if(sub_j==2)
+        if(sub_j==2 || sub_j == 5)
+            mt_outcome(mt_it_borr_idx) = mt_pol_k(mt_it_borr_idx)./(mt_coh_wkb(mt_it_borr_idx) + mt_pol_a(mt_it_borr_idx));
+            mt_outcome(~mt_it_borr_idx) = mt_pol_k(~mt_it_borr_idx)./mt_coh_wkb(~mt_it_borr_idx);
+            st_y_label = 'kprime/(coh-aprime) if br; k/cashonhand if sv';            
+            st_legend_loc = 'southeast';
+            st_title = 'Risky Investment % of coh + borrow';
+        end        
+        if(sub_j==3 || sub_j == 7)
             %             If borrowing, how much is what is borrowing going to K?
             %             If saving, how much is what is total savings in K?
             mt_outcome(mt_it_borr_idx) = mt_pol_a(mt_it_borr_idx)./mt_pol_k(mt_it_borr_idx);
             mt_outcome(~mt_it_borr_idx) = mt_pol_a(~mt_it_borr_idx)./mt_pol_k(~mt_it_borr_idx);
             st_y_label = 'aprime/kprime';
-            st_legend_loc = 'northwest';            
-        end        
-        if(sub_j==3)
-            mt_outcome(mt_it_borr_idx) = mt_cons(mt_it_borr_idx)./(mt_coh(mt_it_borr_idx) + mt_pol_a(mt_it_borr_idx));
-            mt_outcome(~mt_it_borr_idx) = mt_cons(~mt_it_borr_idx)./mt_coh(~mt_it_borr_idx);
+            st_legend_loc = 'northwest';
+            st_title = 'safe borr/save divide risky k';
+        end
+        if(sub_j==4 || sub_j == 8)
+            mt_outcome(mt_it_borr_idx) = mt_cons(mt_it_borr_idx)./(mt_coh_wkb(mt_it_borr_idx) + mt_pol_a(mt_it_borr_idx));
+            mt_outcome(~mt_it_borr_idx) = mt_cons(~mt_it_borr_idx)./mt_coh_wkb(~mt_it_borr_idx);
             st_y_label = 'c/(coh-aprime) if br; c/cashonhand if sv';
             st_legend_loc = 'northeast';
-            st_title = 'Consumption Choice As Fraction';
+            st_title = 'Consumption Choice % of coh + borrow';
         end
-        
+
         if(~bl_graph_onebyones)
-            subplot(1,3,sub_j)
+            subplot(2,4,sub_j)
         else
             figure('PaperPosition', [0 0 7 4]);
         end
         hold on;
-        
+
         clr = jet(length(ar_it_z_graph));
         i_ctr = 0;
         for i = ar_it_z_graph
             i_ctr = i_ctr + 1;
             ar_opti_curz = mt_outcome(:, i);
-            scatter(mt_coh(:,i), ar_opti_curz, 5, ...
-                'MarkerEdgeColor', clr(i_ctr,:), ...
-                'MarkerFaceColor', clr(i_ctr,:));
+
+            if (bl_log_coh == 0)
+                ar_x = mt_coh_wkb(:,i);
+            else
+                ar_x = log(mt_coh_wkb(:,i)' - fl_b_bd + 1);
+            end
+
+            ar_y = ar_opti_curz;
+
+            scatter(ar_x, ar_y, 5, ...
+                    'MarkerEdgeColor', clr(i_ctr,:), ...
+                    'MarkerFaceColor', clr(i_ctr,:));
         end
-        grid on;
-        legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
-        title([st_title_prefix st_title])
+        grid on;        
+
+        title([st_title_prefix st_title st_title_suffix])
         ylabel(st_y_label)
-        xlabel({'Cash-on-Hand'})
-        legend(legendCell(ar_it_z_graph), 'Location', st_legend_loc);
-        %         xlim([min(ar_coh_curz)+1.5 15]);
         
+
+        legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
+        
+        if (bl_log_coh == 0)
+            xlinemax = xline(fl_w_max);
+            xlabel({'cash-on-hand'})
+        else
+            xlinemax = xline(log(fl_w_max - fl_b_bd + 1));
+            xlabel({'log(COH - borrbound + 1)'})
+        end
+        
+        xlinemax.Color = 'b';
+        xlinemax.LineWidth = 1.5;
+        legendCell{length(legendCell) + 1} = 'max-agg-save';
+        legend(legendCell([ar_it_z_graph length(legendCell)]), 'Location', st_legend_loc);
+
+        % xlim([min(ar_coh_curz)+1.5 15]);
+
         xline0 = xline(0);
         xline0.HandleVisibility = 'off';
-        yline0 = yline(0);
+        yline0 = yline(0);        
         yline0.HandleVisibility = 'off';
-        yline0 = yline(1);
-        yline0.HandleVisibility = 'off';
-        if(sub_j==1)
+
+        if (sub_j~=4)
+            yline0 = yline(1);
+            yline0.HandleVisibility = 'off';
+        end
+
+        if (sub_j==1)
             yline0 = yline(-1);
             yline0.HandleVisibility = 'off';
         end
         grid on;
         grid minor;
     end
-    
+
     % save file
     if (bl_img_save)
         mkdir(support_map('st_img_path'));
-        st_file_name = [st_img_prefix st_img_name_main '_pol_pct' st_img_suffix];
+        st_file_name = [st_img_prefix st_img_name_main '_pol_pct' st_sv_suffix st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));        
     end
+
     
 end
 

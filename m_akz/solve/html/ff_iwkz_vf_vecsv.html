@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>ff_iwkz_vf_vecsv</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-05"><meta name="DC.source" content="ff_iwkz_vf_vecsv.m"><style type="text/css">
+      --><title>ff_iwkz_vf_vecsv</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-06"><meta name="DC.source" content="ff_iwkz_vf_vecsv.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -126,10 +126,10 @@ params_group = values(param_map, {<span class="string">'it_maxiter_val'</span>, 
 <span class="comment">% support_map</span>
 params_group = values(support_map, {<span class="string">'bl_profile'</span>, <span class="string">'st_profile_path'</span>, <span class="keyword">...</span>
     <span class="string">'st_profile_prefix'</span>, <span class="string">'st_profile_name_main'</span>, <span class="string">'st_profile_suffix'</span>,<span class="keyword">...</span>
-    <span class="string">'bl_time'</span>, <span class="string">'bl_display'</span>, <span class="string">'it_display_every'</span>, <span class="string">'bl_post'</span>});
+    <span class="string">'bl_time'</span>, <span class="string">'bl_graph_evf'</span>, <span class="string">'bl_display'</span>, <span class="string">'it_display_every'</span>, <span class="string">'bl_post'</span>});
 [bl_profile, st_profile_path, <span class="keyword">...</span>
     st_profile_prefix, st_profile_name_main, st_profile_suffix, <span class="keyword">...</span>
-    bl_time, bl_display, it_display_every, bl_post] = params_group{:};
+    bl_time, bl_graph_evf, bl_display, it_display_every, bl_post] = params_group{:};
 </pre><h2 id="6">Initialize Output Matrixes</h2><pre class="codeinput">mt_val_cur = zeros(length(ar_interp_coh_grid),length(ar_z));
 mt_val = mt_val_cur - 1;
 mt_pol_a = zeros(length(ar_interp_coh_grid),length(ar_z));
@@ -185,7 +185,11 @@ f_grid_interpolant_spln = griddedInterpolant(ar_interp_c_grid, ar_interp_u_of_c_
 
     <span class="comment">% Interpoalte for v(coh(k(w,z),b(w,z),z),z)</span>
     mt_val_wkb_interpolated = f_grid_interpolant_value(mt_z_mesh_coh_wkb, mt_coh_wkb);
-</pre><h2 id="12">Solve Second Stage Problem k*(w,z)</h2><p>This is the key difference between this function and <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html">ffs_akz_set_functions</a> which solves the two stages jointly Interpolation first, because solution coh grid is not the same as all points reachable by k and b choices given w.</p><pre class="codeinput">    bl_input_override = true;
+</pre><h2 id="12">Solve Second Stage Problem k*(w,z)</h2><p>This is the key difference between this function and <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html">ffs_akz_set_functions</a> which solves the two stages jointly Interpolation first, because solution coh grid is not the same as all points reachable by k and b choices given w.</p><pre class="codeinput">    support_map(<span class="string">'bl_graph_evf'</span>) = false;
+    <span class="keyword">if</span> (it_iter == (it_maxiter_val + 1))
+        support_map(<span class="string">'bl_graph_evf'</span>) = bl_graph_evf;
+    <span class="keyword">end</span>
+    bl_input_override = true;
     [mt_ev_condi_z_max, ~, mt_ev_condi_z_max_kp, mt_ev_condi_z_max_bp] = <span class="keyword">...</span>
         ff_wkz_evf(mt_val_wkb_interpolated, param_map, support_map, armt_map, bl_input_override);
 </pre><h2 id="13">Find which k choice differ across iterations?</h2><pre class="codeinput">    mt_w_kstar_diff_idx = (mt_ev_condi_z_max_kp_cur ~= mt_ev_condi_z_max_kp);
@@ -681,7 +685,7 @@ mak = mt_pol_k_cur(it_ameshk_n,:), highest k state choice
     st_file_name = [st_profile_prefix st_profile_name_main st_profile_suffix];
     profsave(profile(<span class="string">'info'</span>), strcat(st_profile_path, st_file_name));
 <span class="keyword">end</span>
-</pre><pre class="codeoutput">Elapsed time is 3.711263 seconds.
+</pre><pre class="codeoutput">Elapsed time is 13.034668 seconds.
 </pre><h2 id="17">Process Optimal Choices</h2><pre class="codeinput">result_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
 result_map(<span class="string">'mt_val'</span>) = mt_val;
 result_map(<span class="string">'mt_pol_a'</span>) = mt_pol_a;
@@ -1230,7 +1234,7 @@ tb_pol_w
     coh567:k=57.1769,b=0          50            50           50           50            50            50            50            50            50            50            50           50  
     coh568:k=57.2772,b=0          50            50           50           50            50            50            50            50            50            50            50           50  
 
-</pre><img vspace="5" hspace="5" src="ff_iwkz_vf_vecsv_01.png" alt=""> <img vspace="5" hspace="5" src="ff_iwkz_vf_vecsv_02.png" alt=""> <img vspace="5" hspace="5" src="ff_iwkz_vf_vecsv_03.png" alt=""> <img vspace="5" hspace="5" src="ff_iwkz_vf_vecsv_04.png" alt=""> <img vspace="5" hspace="5" src="ff_iwkz_vf_vecsv_05.png" alt=""> <img vspace="5" hspace="5" src="ff_iwkz_vf_vecsv_06.png" alt=""> <img vspace="5" hspace="5" src="ff_iwkz_vf_vecsv_07.png" alt=""> <img vspace="5" hspace="5" src="ff_iwkz_vf_vecsv_08.png" alt=""> <img vspace="5" hspace="5" src="ff_iwkz_vf_vecsv_09.png" alt=""> <img vspace="5" hspace="5" src="ff_iwkz_vf_vecsv_10.png" alt=""> <img vspace="5" hspace="5" src="ff_iwkz_vf_vecsv_11.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="ff_iwkz_vf_vecsv_01.png" alt=""> <img vspace="5" hspace="5" src="ff_iwkz_vf_vecsv_02.png" alt=""> <img vspace="5" hspace="5" src="ff_iwkz_vf_vecsv_03.png" alt=""> <img vspace="5" hspace="5" src="ff_iwkz_vf_vecsv_04.png" alt=""> <img vspace="5" hspace="5" src="ff_iwkz_vf_vecsv_05.png" alt=""> <img vspace="5" hspace="5" src="ff_iwkz_vf_vecsv_06.png" alt=""> <img vspace="5" hspace="5" src="ff_iwkz_vf_vecsv_07.png" alt=""> <img vspace="5" hspace="5" src="ff_iwkz_vf_vecsv_08.png" alt=""> <img vspace="5" hspace="5" src="ff_iwkz_vf_vecsv_09.png" alt=""> <img vspace="5" hspace="5" src="ff_iwkz_vf_vecsv_10.png" alt=""> <img vspace="5" hspace="5" src="ff_iwkz_vf_vecsv_11.png" alt=""> <img vspace="5" hspace="5" src="ff_iwkz_vf_vecsv_12.png" alt=""> <img vspace="5" hspace="5" src="ff_iwkz_vf_vecsv_13.png" alt=""> <img vspace="5" hspace="5" src="ff_iwkz_vf_vecsv_14.png" alt=""> <img vspace="5" hspace="5" src="ff_iwkz_vf_vecsv_15.png" alt=""> <img vspace="5" hspace="5" src="ff_iwkz_vf_vecsv_16.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
 </pre><pre class="codeoutput">
 ans = 
 
@@ -1362,10 +1366,10 @@ params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol', 
 % support_map
 params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
     'st_profile_prefix', 'st_profile_name_main', 'st_profile_suffix',...
-    'bl_time', 'bl_display', 'it_display_every', 'bl_post'});
+    'bl_time', 'bl_graph_evf', 'bl_display', 'it_display_every', 'bl_post'});
 [bl_profile, st_profile_path, ...
     st_profile_prefix, st_profile_name_main, st_profile_suffix, ...
-    bl_time, bl_display, it_display_every, bl_post] = params_group{:};
+    bl_time, bl_graph_evf, bl_display, it_display_every, bl_post] = params_group{:};
 
 %% Initialize Output Matrixes
 
@@ -1457,7 +1461,10 @@ while bl_vfi_continue
     % ffs_akz_set_functions> which solves the two stages jointly    
     % Interpolation first, because solution coh grid is not the same as all
     % points reachable by k and b choices given w. 
-    
+    support_map('bl_graph_evf') = false;
+    if (it_iter == (it_maxiter_val + 1))
+        support_map('bl_graph_evf') = bl_graph_evf;
+    end
     bl_input_override = true;
     [mt_ev_condi_z_max, ~, mt_ev_condi_z_max_kp, mt_ev_condi_z_max_bp] = ...
         ff_wkz_evf(mt_val_wkb_interpolated, param_map, support_map, armt_map, bl_input_override);

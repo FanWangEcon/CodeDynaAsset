@@ -66,7 +66,7 @@ param_map('fl_r_borr') = 0.025;
 % resetting invalid choice grid values. fl_nan_replace reset invalid k
 % choice given w. fl_c_min resets invalid consumption levels due to w
 % choices that are invalid. But this is the case when fl_w > 0.
-param_map('fl_c_min') = 0.0001;
+param_map('fl_c_min') = 0.001;
 param_map('fl_nan_replace') = -inf;
 
 % Asset Grids
@@ -118,7 +118,8 @@ param_map('it_tol_pol_nochange') = 25; % number of iterations where policy does 
 support_map = containers.Map('KeyType','char', 'ValueType','any');
 
 % root directory
-st_matimg_path_root = 'C:/Users/fan/CodeDynaAsset/m_ipwkz/';
+[st_root_path] = preamble();
+st_matimg_path_root = [st_root_path '/m_ipwkz/'];
 support_map('st_matimg_path_root') = st_matimg_path_root;
 
 % timer

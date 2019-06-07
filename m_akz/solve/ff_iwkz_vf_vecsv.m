@@ -53,7 +53,7 @@ function result_map = ff_iwkz_vf_vecsv(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 4;
+it_param_set = 2;
 bl_input_override = true;
 [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
 
@@ -118,10 +118,10 @@ params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol', 
 % support_map
 params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
     'st_profile_prefix', 'st_profile_name_main', 'st_profile_suffix',...
-    'bl_time', 'bl_display', 'it_display_every', 'bl_post'});
+    'bl_time', 'bl_graph_evf', 'bl_display', 'it_display_every', 'bl_post'});
 [bl_profile, st_profile_path, ...
     st_profile_prefix, st_profile_name_main, st_profile_suffix, ...
-    bl_time, bl_display, it_display_every, bl_post] = params_group{:};
+    bl_time, bl_graph_evf, bl_display, it_display_every, bl_post] = params_group{:};
 
 %% Initialize Output Matrixes
 
@@ -213,7 +213,10 @@ while bl_vfi_continue
     % ffs_akz_set_functions> which solves the two stages jointly    
     % Interpolation first, because solution coh grid is not the same as all
     % points reachable by k and b choices given w. 
-    
+    support_map('bl_graph_evf') = false;
+    if (it_iter == (it_maxiter_val + 1))
+        support_map('bl_graph_evf') = bl_graph_evf;
+    end
     bl_input_override = true;
     [mt_ev_condi_z_max, ~, mt_ev_condi_z_max_kp, mt_ev_condi_z_max_bp] = ...
         ff_wkz_evf(mt_val_wkb_interpolated, param_map, support_map, armt_map, bl_input_override);

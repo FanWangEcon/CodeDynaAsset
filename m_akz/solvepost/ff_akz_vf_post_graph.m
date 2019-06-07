@@ -106,28 +106,32 @@ ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)
 if (bl_graph_val)
     
     if(~bl_graph_onebyones)
-        figure('PaperPosition', [0 0 7 4]);
+        figure('PaperPosition', [0 0 14 4]);
     end    
     
-    for sub_j=1:1:1
-        
-        if(sub_j==1)
-            mt_outcome = mt_val;
-            st_y_label = 'V(coh(a, k, z), z)';
-        end
+    for sub_j=1:1:2
         
         if(~bl_graph_onebyones)
-            subplot(1,1,sub_j)
+            subplot(1,2,sub_j)
         else
             figure('PaperPosition', [0 0 7 4]);
         end        
         hold on;
+                
+        mt_outcome = mt_val;
+        st_y_label = 'V(coh(a, k, z), z)';        
         
         clr = jet(length(ar_it_z_graph));
         i_ctr = 0;
         for i = ar_it_z_graph
             i_ctr = i_ctr + 1;
-            ar_x = mt_coh_wkb(:, i);
+            
+            if (sub_j == 1)
+                ar_x = mt_coh_wkb(:, i);
+            else
+                ar_x = log(mt_coh_wkb(:,i)' - fl_b_bd + 1);
+            end
+            
             ar_y = mt_outcome(:, i);
             scatter(ar_x, ar_y, 5, ...
                 'MarkerEdgeColor', clr(i_ctr,:), ...
@@ -136,12 +140,19 @@ if (bl_graph_val)
         
         grid on;
         grid minor;        
-        title([st_title_prefix 'COH, Shocks, and Value/Utility'])
+        title([st_title_prefix 'V(coh(k,b,z),z)'])
         ylabel(st_y_label)
-        xlabel({'Cash-on-Hand'})
+        
+        if (sub_j == 1)
+            xlinemax = xline(fl_w_max);
+            xlabel({'cash-on-hand'})
+        else
+            xlinemax = xline(log(fl_w_max - fl_b_bd + 1));
+            xlabel({'log(COH - borrbound + 1)'})
+        end
+
         
         legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
-        xlinemax = xline(fl_w_max);
         xlinemax.Color = 'b';
         xlinemax.LineWidth = 1.5;
         legendCell{length(legendCell) + 1} = 'max-agg-save';
@@ -169,9 +180,12 @@ if (bl_graph_pol_lvl)
     
     if(~bl_graph_onebyones)
         figure('PaperPosition', [0 0 21 8]);
+        ar_sub_j = 1:1:6;
+    else
+        ar_sub_j = [1 4 2 5 3 6];
     end
     
-    for sub_j=1:1:6
+    for sub_j = ar_sub_j
         
         if(sub_j==1 || sub_j == 4)
             mt_outcome = mt_pol_a;
@@ -227,12 +241,12 @@ if (bl_graph_pol_lvl)
                 'MarkerFaceColor', clr(i_ctr,:));
         end
         
-        if(sub_j==1)
+        if(sub_j==1)            
             st_y_label = 'Safe Savings/Borrowing';
             st_x_label = 'Cash-on-Hand';
         end
         if(sub_j==2)
-            st_y_label = 'Riksy K investment';
+            st_y_label = 'Risky K investment';
             st_x_label = 'Cash-on-Hand';
         end
         if(sub_j==3)
@@ -255,7 +269,7 @@ if (bl_graph_pol_lvl)
         
         grid on;
         
-        title([st_title_prefix 'COH, Shocks and Choices (Levels)']);
+        title([st_title_prefix st_y_label]);
         ylabel(st_y_label);
         xlabel(st_x_label);
         
@@ -294,102 +308,133 @@ end
 %% Graphing Choice Percentages
 
 if (bl_graph_pol_pct)
-    
+
     if(~bl_graph_onebyones)
-        figure('PaperPosition', [0 0 14 8]);
-    end    
-    
-    for sub_j=1:1:4
-        
+        figure('PaperPosition', [0 0 24 8]);
+        ar_sub_j = 1:1:8;
+    else
+        ar_sub_j = [1 5 2 6 3 7 4 8];
+    end
+
+    for sub_j = ar_sub_j
+
         mt_outcome = zeros(size(mt_pol_a));
         mt_it_borr_idx = (mt_pol_a < 0);
         
-        if(sub_j==1)
+        if (ismember(sub_j, [1,2,3,4]))
+            bl_log_coh = 0;
+            st_sv_suffix = '_xcoh';
+            st_title_suffix = ' (x=coh)';
+        else
+            bl_log_coh = 1;
+            st_sv_suffix = '_logxcoh';
+            st_title_suffix = ' (x=log(coh))';
+        end
+            
+        if(sub_j==1 || sub_j == 4)
             mt_outcome(mt_it_borr_idx) = -mt_pol_a(mt_it_borr_idx)./fl_b_bd;
             mt_outcome(~mt_it_borr_idx) = mt_pol_a(~mt_it_borr_idx)./mt_coh_wkb(~mt_it_borr_idx);
             st_y_label = 'aprime/borrbound if br; aprime/cashonhand if sv';
             st_legend_loc = 'southeast';
-            st_title = 'Safe Savings As Fraction';
+            st_title = 'Save/Borrow % of Borrow Limit or COH';
         end
-        if(sub_j==2)
+        if(sub_j==2 || sub_j == 5)
             mt_outcome(mt_it_borr_idx) = mt_pol_k(mt_it_borr_idx)./(mt_coh_wkb(mt_it_borr_idx) + mt_pol_a(mt_it_borr_idx));
             mt_outcome(~mt_it_borr_idx) = mt_pol_k(~mt_it_borr_idx)./mt_coh_wkb(~mt_it_borr_idx);
             st_y_label = 'kprime/(coh-aprime) if br; k/cashonhand if sv';            
             st_legend_loc = 'southeast';
-            st_title = 'Risky Investment as Fraction';
+            st_title = 'Risky Investment % of coh + borrow';
         end        
-        if(sub_j==3)
+        if(sub_j==3 || sub_j == 7)
             %             If borrowing, how much is what is borrowing going to K?
             %             If saving, how much is what is total savings in K?
             mt_outcome(mt_it_borr_idx) = mt_pol_a(mt_it_borr_idx)./mt_pol_k(mt_it_borr_idx);
             mt_outcome(~mt_it_borr_idx) = mt_pol_a(~mt_it_borr_idx)./mt_pol_k(~mt_it_borr_idx);
             st_y_label = 'aprime/kprime';
             st_legend_loc = 'northwest';
+            st_title = 'safe borr/save divide risky k';
         end
-        if(sub_j==4)
+        if(sub_j==4 || sub_j == 8)
             mt_outcome(mt_it_borr_idx) = mt_cons(mt_it_borr_idx)./(mt_coh_wkb(mt_it_borr_idx) + mt_pol_a(mt_it_borr_idx));
             mt_outcome(~mt_it_borr_idx) = mt_cons(~mt_it_borr_idx)./mt_coh_wkb(~mt_it_borr_idx);
             st_y_label = 'c/(coh-aprime) if br; c/cashonhand if sv';
             st_legend_loc = 'northeast';
-            st_title = 'Consumption Choice As Fraction';
+            st_title = 'Consumption Choice % of coh + borrow';
         end
-        
+
         if(~bl_graph_onebyones)
-            subplot(2,2,sub_j)
+            subplot(2,4,sub_j)
         else
             figure('PaperPosition', [0 0 7 4]);
         end
         hold on;
-        
+
         clr = jet(length(ar_it_z_graph));
         i_ctr = 0;
         for i = ar_it_z_graph
             i_ctr = i_ctr + 1;
             ar_opti_curz = mt_outcome(:, i);
-            
-            ar_x = mt_coh_wkb(:,i);
+
+            if (bl_log_coh == 0)
+                ar_x = mt_coh_wkb(:,i);
+            else
+                ar_x = log(mt_coh_wkb(:,i)' - fl_b_bd + 1);
+            end
+
             ar_y = ar_opti_curz;
-            
+
             scatter(ar_x, ar_y, 5, ...
                     'MarkerEdgeColor', clr(i_ctr,:), ...
                     'MarkerFaceColor', clr(i_ctr,:));
         end
-        grid on;
-        
-        
-        title([st_title_prefix st_title])
+        grid on;        
+
+        title([st_title_prefix st_title st_title_suffix])
         ylabel(st_y_label)
-        xlabel({'Cash-on-Hand'})
         
+
         legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
-        xlinemax = xline(fl_w_max);
+        
+        if (bl_log_coh == 0)
+            xlinemax = xline(fl_w_max);
+            xlabel({'cash-on-hand'})
+        else
+            xlinemax = xline(log(fl_w_max - fl_b_bd + 1));
+            xlabel({'log(COH - borrbound + 1)'})
+        end
+        
         xlinemax.Color = 'b';
         xlinemax.LineWidth = 1.5;
         legendCell{length(legendCell) + 1} = 'max-agg-save';
         legend(legendCell([ar_it_z_graph length(legendCell)]), 'Location', st_legend_loc);
-        
-        %         xlim([min(ar_coh_curz)+1.5 15]);
-        
+
+        % xlim([min(ar_coh_curz)+1.5 15]);
+
         xline0 = xline(0);
         xline0.HandleVisibility = 'off';
-        yline0 = yline(0);
+        yline0 = yline(0);        
         yline0.HandleVisibility = 'off';
-        yline0 = yline(1);
-        yline0.HandleVisibility = 'off';
-        if(sub_j==1)
+
+        if (sub_j~=4)
+            yline0 = yline(1);
+            yline0.HandleVisibility = 'off';
+        end
+
+        if (sub_j==1)
             yline0 = yline(-1);
             yline0.HandleVisibility = 'off';
         end
         grid on;
         grid minor;
     end
-    
+
     % save file
     if (bl_img_save)
         mkdir(support_map('st_img_path'));
-        st_file_name = [st_img_prefix st_img_name_main '_pol_pct' st_img_suffix];
+        st_file_name = [st_img_prefix st_img_name_main '_pol_pct' st_sv_suffix st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));        
     end
+
     
 end
 
