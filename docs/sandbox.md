@@ -1,3 +1,5 @@
+
+
 ## What is the effect of minimum income on optimal choices?
 
 Given minimum income, when aggregate savings is equal to 0 next period cash-on-hand is not zero
@@ -13,4 +15,4 @@ However, if future minimum
 
 As we increase Y_min, I think at the lowest lowest levels of Y_min marginal utility so high, today and tomorrow at the worst stage, the additional gainsand losses from risky investment is not worth it?
 
-As Y_min increases, at the lowest COH_Y_min, household choose k' only. 
+As Y_min increases, at the lowest COH_Y_min, household choose k' only.
