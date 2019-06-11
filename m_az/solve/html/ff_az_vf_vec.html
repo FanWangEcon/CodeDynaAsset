@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>ff_az_vf_vec</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-05-29"><meta name="DC.source" content="ff_az_vf_vec.m"><style type="text/css">
+      --><title>ff_az_vf_vec</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-10"><meta name="DC.source" content="ff_az_vf_vec.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -100,11 +100,11 @@ params_group = values(armt_map, {<span class="string">'ar_a'</span>, <span class
 params_group = values(func_map, {<span class="string">'f_util_log'</span>, <span class="string">'f_util_crra'</span>, <span class="string">'f_cons'</span>});
 [f_util_log, f_util_crra, f_cons] = params_group{:};
 <span class="comment">% param_map</span>
-params_group = values(param_map, {<span class="string">'fl_r_save'</span>, <span class="string">'fl_r_borr'</span>, <span class="string">'fl_w'</span>,<span class="keyword">...</span>
-    <span class="string">'it_a_n'</span>, <span class="string">'it_z_n'</span>, <span class="string">'fl_crra'</span>, <span class="string">'fl_beta'</span>, <span class="string">'fl_c_min'</span>});
-[fl_r_save, fl_r_borr, fl_wage, it_a_n, it_z_n, fl_crra, fl_beta, fl_c_min] = params_group{:};
+params_group = values(param_map, {<span class="string">'it_a_n'</span>, <span class="string">'it_z_n'</span>, <span class="string">'fl_crra'</span>, <span class="string">'fl_beta'</span>, <span class="string">'fl_nan_replace'</span>});
+[it_a_n, it_z_n, fl_crra, fl_beta, fl_nan_replace] = params_group{:};
 params_group = values(param_map, {<span class="string">'it_maxiter_val'</span>, <span class="string">'fl_tol_val'</span>, <span class="string">'fl_tol_pol'</span>, <span class="string">'it_tol_pol_nochange'</span>});
 [it_maxiter_val, fl_tol_val, fl_tol_pol, it_tol_pol_nochange] = params_group{:};
+
 <span class="comment">% support_map</span>
 params_group = values(support_map, {<span class="string">'bl_profile'</span>, <span class="string">'st_profile_path'</span>, <span class="keyword">...</span>
     <span class="string">'st_profile_prefix'</span>, <span class="string">'st_profile_name_main'</span>, <span class="string">'st_profile_suffix'</span>,<span class="keyword">...</span>
@@ -152,10 +152,8 @@ mt_pol_perc_change = zeros([it_maxiter_val, it_z_n]);
         <span class="comment">% EVAL current utility: N by N, f_util defined earlier</span>
         <span class="keyword">if</span> (fl_crra == 1)
             mt_utility = f_util_log(mt_c);
-            fl_u_neg_c = f_util_log(fl_c_min);
         <span class="keyword">else</span>
             mt_utility = f_util_crra(mt_c);
-            fl_u_neg_c = f_util_crra(fl_c_min);
         <span class="keyword">end</span>
 
         <span class="comment">% f(z'|z)</span>
@@ -166,7 +164,7 @@ mt_pol_perc_change = zeros([it_maxiter_val, it_z_n]);
 
         <span class="comment">% EVAL add on future utility, N by N + N by 1</span>
         mt_utility = mt_utility + fl_beta*mt_evzp_condi_z;
-        mt_utility(mt_c &lt;= fl_c_min) = fl_u_neg_c;
+        mt_utility(mt_c &lt;= 0) = fl_nan_replace;
 
         <span class="comment">% Optimization: remember matlab is column major, rows must be</span>
         <span class="comment">% choices, columns must be states</span>
@@ -194,11 +192,11 @@ mt_pol_perc_change = zeros([it_maxiter_val, it_z_n]);
         tb_valpol_iter = array2table([mean(mt_val_cur,1); mean(mt_pol_a_cur,1); <span class="keyword">...</span>
             mt_val_cur(it_a_n,:); mt_pol_a_cur(it_a_n,:)]);
         tb_valpol_iter.Properties.VariableNames = strcat(<span class="string">'z'</span>, string((1:size(mt_val_cur,2))));
-        tb_valpol_iter.Properties.RowNames = {<span class="string">'mval'</span>, <span class="string">'map'</span>, <span class="string">'Hval'</span>, <span class="string">'Hpol'</span>};
+        tb_valpol_iter.Properties.RowNames = {<span class="string">'mval'</span>, <span class="string">'map'</span>, <span class="string">'Hval'</span>, <span class="string">'Hap'</span>};
         disp(<span class="string">'mval = mean(mt_val_cur,1), average value over a'</span>)
         disp(<span class="string">'map  = mean(mt_pol_a_cur,1), average choice over a'</span>)
         disp(<span class="string">'Hval = mt_val_cur(it_a_n,:), highest a state val'</span>)
-        disp(<span class="string">'mval = mt_pol_a_cur(it_a_n,:), highest a state choice'</span>)
+        disp(<span class="string">'Hap = mt_pol_a_cur(it_a_n,:), highest a state choice'</span>)
         disp(tb_valpol_iter);
     <span class="keyword">end</span>
 
@@ -219,274 +217,274 @@ mt_pol_perc_change = zeros([it_maxiter_val, it_z_n]);
 mval = mean(mt_val_cur,1), average value over a
 map  = mean(mt_pol_a_cur,1), average choice over a
 Hval = mt_val_cur(it_a_n,:), highest a state val
-mval = mt_pol_a_cur(it_a_n,:), highest a state choice
+Hap = mt_pol_a_cur(it_a_n,:), highest a state choice
               z1        z2        z3        z4        z5        z6        z7        z8        z9       z10       z11       z12       z13       z14       z15  
             ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
 
     mval    4.6193    4.6624    4.7098    4.7601    4.8129    4.8677    4.9248     4.984    5.0455    5.1091     5.175     5.243    5.3128    5.3833    5.4524
     map     19.751    19.762    19.773    19.786    19.805    19.831    19.865    19.909    19.964    20.033     20.12    20.226    20.356    20.519    20.727
     Hval    6.2456    6.2521    6.2596     6.268    6.2772    6.2873    6.2984    6.3106    6.3239    6.3385    6.3544    6.3717    6.3904    6.4103    6.4307
-    Hpol     39.72     39.72     39.72    39.786    39.786    39.786    39.853    39.853     39.92    39.987    40.053    40.187     40.32    40.454    40.654
+    Hap      39.72     39.72     39.72    39.786    39.786    39.786    39.853    39.853     39.92    39.987    40.053    40.187     40.32    40.454    40.654
 
 </pre><pre class="codeoutput">VAL it_iter:10, fl_diff:3.805861e+01, fl_diff_pol:3.274953e+01
 mval = mean(mt_val_cur,1), average value over a
 map  = mean(mt_pol_a_cur,1), average choice over a
 Hval = mt_val_cur(it_a_n,:), highest a state val
-mval = mt_pol_a_cur(it_a_n,:), highest a state choice
+Hap = mt_pol_a_cur(it_a_n,:), highest a state choice
               z1        z2        z3        z4        z5        z6        z7        z8        z9       z10       z11       z12       z13       z14       z15  
             ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
 
     mval    6.4633     6.546    6.6375    6.7347    6.8362    6.9418    7.0512    7.1646    7.2821    7.4038    7.5297    7.6596    7.7928    7.9272    8.0584
     map     22.016    22.037    22.062    22.093    22.132     22.18    22.241    22.317    22.408    22.519    22.654    22.815     23.01    23.244    23.531
     Hval     9.375    9.3947    9.4171    9.4416    9.4681    9.4967    9.5274    9.5604    9.5958    9.6339    9.6747    9.7184    9.7648    9.8133    9.8622
-    Hpol    44.459    44.459    44.459    44.526    44.593    44.593     44.66    44.726     44.86    44.927     45.06     45.26    45.461    45.661    45.928
+    Hap     44.459    44.459    44.459    44.526    44.593    44.593     44.66    44.726     44.86    44.927     45.06     45.26    45.461    45.661    45.928
 
 </pre><pre class="codeoutput">VAL it_iter:15, fl_diff:2.147250e+01, fl_diff_pol:1.305473e+01
 mval = mean(mt_val_cur,1), average value over a
 map  = mean(mt_pol_a_cur,1), average choice over a
 Hval = mt_val_cur(it_a_n,:), highest a state val
-mval = mt_pol_a_cur(it_a_n,:), highest a state choice
+Hap = mt_pol_a_cur(it_a_n,:), highest a state choice
               z1        z2        z3        z4        z5        z6        z7        z8        z9       z10       z11       z12       z13       z14       z15  
             ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
 
     mval    7.4703    7.5727    7.6861    7.8068    7.9332    8.0648    8.2017    8.3439    8.4918    8.6455    8.8051    8.9706     9.141    9.3138     9.483
     map     22.677    22.706     22.74     22.78     22.83    22.892    22.968    23.059    23.169    23.301     23.46    23.647     23.87    24.137    24.457
     Hval    11.146    11.176     11.21    11.248    11.288    11.331    11.377    11.426    11.479    11.535    11.595    11.659    11.727    11.798    11.869
-    Hpol    45.928    45.928    45.995    45.995    46.061    46.128    46.195    46.262    46.395    46.529    46.662    46.862     47.13    47.397    47.664
+    Hap     45.928    45.928    45.995    45.995    46.061    46.128    46.195    46.262    46.395    46.529    46.662    46.862     47.13    47.397    47.664
 
 </pre><pre class="codeoutput">VAL it_iter:20, fl_diff:1.262395e+01, fl_diff_pol:6.448967e+00
 mval = mean(mt_val_cur,1), average value over a
 map  = mean(mt_pol_a_cur,1), average choice over a
 Hval = mt_val_cur(it_a_n,:), highest a state val
-mval = mt_pol_a_cur(it_a_n,:), highest a state choice
+Hap = mt_pol_a_cur(it_a_n,:), highest a state choice
               z1        z2        z3        z4        z5        z6        z7        z8        z9       z10       z11       z12       z13       z14       z15  
             ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
 
     mval    8.0687    8.1803    8.3041    8.4361    8.5746    8.7192    8.8698    9.0268    9.1905    9.3611     9.539     9.724    9.9154     10.11    10.301
     map     22.958    22.992    23.031    23.078    23.135    23.204    23.287    23.387    23.508    23.651    23.821    24.023    24.261    24.545    24.882
     Hval     12.19    12.227    12.269    12.315    12.364    12.417    12.473    12.534    12.598    12.667    12.741    12.819    12.902    12.988    13.075
-    Hpol    46.595    46.595    46.662    46.662    46.729    46.796    46.929    46.996     47.13    47.263    47.463    47.664    47.864    48.198    48.531
+    Hap     46.595    46.595    46.662    46.662    46.729    46.796    46.929    46.996     47.13    47.263    47.463    47.664    47.864    48.198    48.531
 
 </pre><pre class="codeoutput">VAL it_iter:25, fl_diff:7.622129e+00, fl_diff_pol:3.593419e+00
 mval = mean(mt_val_cur,1), average value over a
 map  = mean(mt_pol_a_cur,1), average choice over a
 Hval = mt_val_cur(it_a_n,:), highest a state val
-mval = mt_pol_a_cur(it_a_n,:), highest a state choice
+Hap = mt_pol_a_cur(it_a_n,:), highest a state choice
               z1        z2        z3        z4        z5        z6        z7        z8        z9       z10       z11       z12       z13       z14       z15  
             ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
 
     mval    8.4375    8.5535    8.6824      8.82    8.9646    9.1157    9.2735    9.4381    9.6101    9.7898    9.9775    10.173    10.376    10.583    10.787
     map     23.096    23.133    23.176    23.225    23.286     23.36    23.447    23.553     23.68    23.829    24.006    24.216    24.463    24.756    25.104
     Hval    12.815    12.857    12.904    12.956    13.011     13.07    13.134    13.201    13.274    13.351    13.434    13.522    13.615    13.712     13.81
-    Hpol    46.929    46.929    46.996    47.063     47.13    47.196    47.263    47.397     47.53    47.664    47.864    48.064    48.331    48.598    48.932
+    Hap     46.929    46.929    46.996    47.063     47.13    47.196    47.263    47.397     47.53    47.664    47.864    48.064    48.331    48.598    48.932
 
 </pre><pre class="codeoutput">VAL it_iter:30, fl_diff:4.712919e+00, fl_diff_pol:2.041756e+00
 mval = mean(mt_val_cur,1), average value over a
 map  = mean(mt_pol_a_cur,1), average choice over a
 Hval = mt_val_cur(it_a_n,:), highest a state val
-mval = mt_pol_a_cur(it_a_n,:), highest a state choice
+Hap = mt_pol_a_cur(it_a_n,:), highest a state choice
               z1        z2        z3        z4        z5        z6        z7        z8        z9       z10       z11       z12       z13       z14       z15  
             ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
 
     mval    8.6709    8.7892    8.9206    9.0611    9.2088    9.3633    9.5247    9.6933    9.8697    10.054    10.247    10.449    10.658    10.872    11.083
     map     23.168    23.206     23.25    23.302    23.366    23.441    23.532    23.641    23.771    23.924    24.106     24.32    24.573    24.871    25.226
     Hval    13.193    13.237    13.288    13.343    13.402    13.466    13.534    13.606    13.684    13.766    13.855     13.95     14.05    14.154    14.259
-    Hpol     47.13     47.13    47.196    47.263     47.33    47.397     47.53    47.597     47.73    47.931    48.064    48.331    48.531    48.865    49.199
+    Hap      47.13     47.13    47.196    47.263     47.33    47.397     47.53    47.597     47.73    47.931    48.064    48.331    48.531    48.865    49.199
 
 </pre><pre class="codeoutput">VAL it_iter:35, fl_diff:2.993796e+00, fl_diff_pol:1.306279e+00
 mval = mean(mt_val_cur,1), average value over a
 map  = mean(mt_pol_a_cur,1), average choice over a
 Hval = mt_val_cur(it_a_n,:), highest a state val
-mval = mt_pol_a_cur(it_a_n,:), highest a state choice
+Hap = mt_pol_a_cur(it_a_n,:), highest a state choice
               z1        z2        z3        z4        z5        z6        z7        z8        z9       z10       z11       z12       z13       z14       z15  
             ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
 
     mval    8.8227    8.9421    9.0749    9.2167     9.366    9.5222    9.6854    9.8562    10.035    10.222    10.418    10.622    10.835    11.053    11.268
     map     23.205    23.244    23.289    23.343    23.407    23.484    23.577    23.687    23.819    23.975    24.159    24.376    24.632    24.934    25.293
     Hval    13.422    13.468    13.521    13.578     13.64    13.706    13.777    13.852    13.933     14.02    14.112    14.211    14.316    14.425    14.535
-    Hpol    47.196    47.263     47.33    47.397    47.463     47.53    47.597     47.73    47.864    48.064    48.198    48.465    48.732    48.999    49.399
+    Hap     47.196    47.263     47.33    47.397    47.463     47.53    47.597     47.73    47.864    48.064    48.198    48.465    48.732    48.999    49.399
 
 </pre><pre class="codeoutput">VAL it_iter:40, fl_diff:1.963426e+00, fl_diff_pol:7.460670e-01
 mval = mean(mt_val_cur,1), average value over a
 map  = mean(mt_pol_a_cur,1), average choice over a
 Hval = mt_val_cur(it_a_n,:), highest a state val
-mval = mt_pol_a_cur(it_a_n,:), highest a state choice
+Hap = mt_pol_a_cur(it_a_n,:), highest a state choice
               z1        z2        z3        z4        z5        z6        z7        z8        z9       z10       z11       z12       z13       z14       z15  
             ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
 
     mval    8.9243    9.0443    9.1776    9.3202    9.4702    9.6272    9.7914    9.9631    10.143    10.331    10.528    10.735    10.949    11.169    11.386
     map     23.223    23.262    23.308    23.362    23.428    23.506      23.6    23.711    23.844    24.001    24.187    24.405    24.663    24.968    25.328
     Hval    13.563     13.61    13.664    13.723    13.786    13.853    13.926    14.003    14.086    14.175     14.27    14.371    14.479    14.591    14.704
-    Hpol    47.263     47.33    47.397    47.463     47.53    47.597    47.664    47.797    47.931    48.131    48.331    48.531    48.798    49.132    49.466
+    Hap     47.263     47.33    47.397    47.463     47.53    47.597    47.664    47.797    47.931    48.131    48.331    48.531    48.798    49.132    49.466
 
 </pre><pre class="codeoutput">VAL it_iter:45, fl_diff:1.331597e+00, fl_diff_pol:5.043292e-01
 mval = mean(mt_val_cur,1), average value over a
 map  = mean(mt_pol_a_cur,1), average choice over a
 Hval = mt_val_cur(it_a_n,:), highest a state val
-mval = mt_pol_a_cur(it_a_n,:), highest a state choice
+Hap = mt_pol_a_cur(it_a_n,:), highest a state choice
               z1        z2        z3        z4        z5        z6        z7        z8        z9       z10       z11       z12       z13       z14       z15  
             ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
 
     mval    8.9943    9.1144     9.248    9.3909    9.5412    9.6987    9.8633    10.036    10.216    10.405    10.603     10.81    11.025    11.246    11.464
     map     23.231    23.272    23.317    23.372    23.438    23.517     23.61    23.723    23.856    24.014    24.201     24.42    24.679    24.985    25.347
     Hval    13.651    13.699    13.753    13.813    13.877    13.945    14.018    14.097    14.181    14.271    14.367     14.47    14.579    14.693    14.808
-    Hpol     47.33    47.397    47.397    47.463     47.53    47.664     47.73    47.864    47.997    48.131    48.331    48.598    48.865    49.132    49.533
+    Hap      47.33    47.397    47.397    47.463     47.53    47.664     47.73    47.864    47.997    48.131    48.331    48.598    48.865    49.132    49.533
 
 </pre><pre class="codeoutput">VAL it_iter:50, fl_diff:9.296191e-01, fl_diff_pol:2.903908e-01
 mval = mean(mt_val_cur,1), average value over a
 map  = mean(mt_pol_a_cur,1), average choice over a
 Hval = mt_val_cur(it_a_n,:), highest a state val
-mval = mt_pol_a_cur(it_a_n,:), highest a state choice
+Hap = mt_pol_a_cur(it_a_n,:), highest a state choice
               z1        z2        z3        z4        z5        z6        z7        z8        z9       z10       z11       z12       z13       z14       z15  
             ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
 
     mval    9.0435    9.1638    9.2975    9.4405     9.591    9.7486    9.9134    10.086    10.266    10.456    10.654    10.861    11.077    11.298    11.516
     map     23.235    23.275    23.321    23.376    23.443    23.521    23.615    23.728    23.862    24.019    24.207    24.427    24.687    24.992    25.356
     Hval    13.708    13.756    13.811    13.871    13.935    14.004    14.078    14.157    14.241    14.332    14.429    14.533    14.643    14.758    14.873
-    Hpol     47.33    47.397    47.463    47.463    47.597    47.664     47.73    47.864    47.997    48.198    48.398    48.598    48.865    49.199    49.533
+    Hap      47.33    47.397    47.463    47.463    47.597    47.664     47.73    47.864    47.997    48.198    48.398    48.598    48.865    49.199    49.533
 
 </pre><pre class="codeoutput">VAL it_iter:55, fl_diff:6.625543e-01, fl_diff_pol:1.931568e-01
 mval = mean(mt_val_cur,1), average value over a
 map  = mean(mt_pol_a_cur,1), average choice over a
 Hval = mt_val_cur(it_a_n,:), highest a state val
-mval = mt_pol_a_cur(it_a_n,:), highest a state choice
+Hap = mt_pol_a_cur(it_a_n,:), highest a state choice
               z1        z2        z3        z4        z5        z6        z7        z8        z9       z10       z11       z12       z13       z14       z15  
             ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
 
     mval    9.0788    9.1991    9.3329    9.4759    9.6265    9.7841     9.949    10.122    10.302    10.492     10.69    10.897    11.113    11.334    11.553
     map     23.236    23.276    23.323    23.378    23.444    23.523    23.618     23.73    23.864    24.022    24.209     24.43     24.69    24.996     25.36
     Hval    13.746    13.795     13.85     13.91    13.974    14.043    14.117    14.197    14.282    14.372     14.47    14.574    14.684      14.8    14.916
-    Hpol     47.33    47.397    47.463     47.53    47.597    47.664    47.797    47.864    47.997    48.198    48.398    48.598    48.865    49.199    49.599
+    Hap      47.33    47.397    47.463     47.53    47.597    47.664    47.797    47.864    47.997    48.198    48.398    48.598    48.865    49.199    49.599
 
 </pre><pre class="codeoutput">VAL it_iter:60, fl_diff:4.783569e-01, fl_diff_pol:1.434553e-01
 mval = mean(mt_val_cur,1), average value over a
 map  = mean(mt_pol_a_cur,1), average choice over a
 Hval = mt_val_cur(it_a_n,:), highest a state val
-mval = mt_pol_a_cur(it_a_n,:), highest a state choice
+Hap = mt_pol_a_cur(it_a_n,:), highest a state choice
               z1        z2        z3        z4        z5        z6        z7        z8        z9       z10       z11       z12       z13       z14       z15  
             ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
 
     mval    9.1043    9.2246    9.3585    9.5015    9.6521    9.8098    9.9747    10.147    10.328    10.517    10.716    10.923    11.139    11.361    11.579
     map     23.237    23.277    23.324    23.378    23.445    23.524    23.619    23.731    23.865    24.023     24.21    24.431    24.691    24.997    25.361
     Hval    13.773    13.822    13.877    13.937    14.001    14.071    14.145    14.224    14.309      14.4    14.498    14.602    14.712    14.828    14.944
-    Hpol     47.33    47.397    47.463     47.53    47.597    47.664    47.797    47.864    47.997    48.198    48.398    48.598    48.865    49.199    49.599
+    Hap      47.33    47.397    47.463     47.53    47.597    47.664    47.797    47.864    47.997    48.198    48.398    48.598    48.865    49.199    49.599
 
 </pre><pre class="codeoutput">VAL it_iter:65, fl_diff:3.479559e-01, fl_diff_pol:9.440678e-02
 mval = mean(mt_val_cur,1), average value over a
 map  = mean(mt_pol_a_cur,1), average choice over a
 Hval = mt_val_cur(it_a_n,:), highest a state val
-mval = mt_pol_a_cur(it_a_n,:), highest a state choice
+Hap = mt_pol_a_cur(it_a_n,:), highest a state choice
               z1        z2        z3        z4        z5        z6        z7        z8        z9       z10       z11       z12       z13       z14       z15  
             ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
 
     mval    9.1229    9.2433    9.3771    9.5202    9.6708    9.8284    9.9934    10.166    10.347    10.536    10.734    10.942    11.158    11.379    11.598
     map     23.237    23.277    23.324    23.379    23.445    23.524    23.619    23.731    23.866    24.023    24.211    24.432    24.692    24.998    25.362
     Hval    13.792    13.841    13.896    13.956    14.021     14.09    14.164    14.243    14.328     14.42    14.517    14.621    14.732    14.848    14.964
-    Hpol     47.33    47.397    47.463     47.53    47.597    47.664    47.797    47.864    48.064    48.198    48.398    48.598    48.865    49.199    49.599
+    Hap      47.33    47.397    47.463     47.53    47.597    47.664    47.797    47.864    48.064    48.198    48.398    48.598    48.865    49.199    49.599
 
 </pre><pre class="codeoutput">VAL it_iter:70, fl_diff:2.541499e-01, fl_diff_pol:6.675567e-02
 mval = mean(mt_val_cur,1), average value over a
 map  = mean(mt_pol_a_cur,1), average choice over a
 Hval = mt_val_cur(it_a_n,:), highest a state val
-mval = mt_pol_a_cur(it_a_n,:), highest a state choice
+Hap = mt_pol_a_cur(it_a_n,:), highest a state choice
               z1        z2        z3        z4        z5        z6        z7        z8        z9       z10       z11       z12       z13       z14       z15  
             ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
 
     mval    9.1365    9.2569    9.3907    9.5338    9.6844    9.8421    10.007     10.18     10.36     10.55    10.748    10.956    11.172    11.393    11.612
     map     23.237    23.277    23.324    23.379    23.445    23.524    23.619    23.732    23.866    24.024    24.211    24.432    24.692    24.998    25.362
     Hval    13.806    13.855     13.91     13.97    14.034    14.104    14.178    14.257    14.342    14.433    14.531    14.635    14.746    14.862    14.978
-    Hpol     47.33    47.397    47.463     47.53    47.597    47.664    47.797    47.864    48.064    48.198    48.398    48.598    48.865    49.199    49.599
+    Hap      47.33    47.397    47.463     47.53    47.597    47.664    47.797    47.864    48.064    48.198    48.398    48.598    48.865    49.199    49.599
 
 </pre><pre class="codeoutput">VAL it_iter:75, fl_diff:1.860484e-01, fl_diff_pol:0
 mval = mean(mt_val_cur,1), average value over a
 map  = mean(mt_pol_a_cur,1), average choice over a
 Hval = mt_val_cur(it_a_n,:), highest a state val
-mval = mt_pol_a_cur(it_a_n,:), highest a state choice
+Hap = mt_pol_a_cur(it_a_n,:), highest a state choice
               z1        z2        z3        z4        z5        z6        z7        z8        z9       z10       z11       z12       z13       z14       z15  
             ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
 
     mval    9.1465    9.2668    9.4006    9.5437    9.6943     9.852    10.017     10.19     10.37     10.56    10.758    10.966    11.182    11.403    11.622
     map     23.237    23.277    23.324    23.379    23.445    23.524    23.619    23.732    23.866    24.024    24.211    24.432    24.692    24.998    25.362
     Hval    13.816    13.865     13.92     13.98    14.044    14.114    14.188    14.267    14.352    14.444    14.541    14.645    14.756    14.872    14.988
-    Hpol     47.33    47.397    47.463     47.53    47.597    47.664    47.797    47.864    48.064    48.198    48.398    48.598    48.865    49.199    49.599
+    Hap      47.33    47.397    47.463     47.53    47.597    47.664    47.797    47.864    48.064    48.198    48.398    48.598    48.865    49.199    49.599
 
 </pre><pre class="codeoutput">VAL it_iter:80, fl_diff:1.363580e-01, fl_diff_pol:0
 mval = mean(mt_val_cur,1), average value over a
 map  = mean(mt_pol_a_cur,1), average choice over a
 Hval = mt_val_cur(it_a_n,:), highest a state val
-mval = mt_pol_a_cur(it_a_n,:), highest a state choice
+Hap = mt_pol_a_cur(it_a_n,:), highest a state choice
               z1        z2        z3        z4        z5        z6        z7        z8        z9       z10       z11       z12       z13       z14       z15  
             ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
 
     mval    9.1538    9.2741    9.4079     9.551    9.7016    9.8593    10.024    10.197    10.378    10.567    10.765    10.973    11.189     11.41    11.629
     map     23.237    23.277    23.324    23.379    23.445    23.524    23.619    23.732    23.866    24.024    24.211    24.432    24.692    24.998    25.362
     Hval    13.823    13.872    13.927    13.987    14.052    14.121    14.195    14.275     14.36    14.451    14.548    14.653    14.764    14.879    14.996
-    Hpol     47.33    47.397    47.463     47.53    47.597    47.664    47.797    47.864    48.064    48.198    48.398    48.598    48.865    49.199    49.599
+    Hap      47.33    47.397    47.463     47.53    47.597    47.664    47.797    47.864    48.064    48.198    48.398    48.598    48.865    49.199    49.599
 
 </pre><pre class="codeoutput">VAL it_iter:85, fl_diff:1.000025e-01, fl_diff_pol:0
 mval = mean(mt_val_cur,1), average value over a
 map  = mean(mt_pol_a_cur,1), average choice over a
 Hval = mt_val_cur(it_a_n,:), highest a state val
-mval = mt_pol_a_cur(it_a_n,:), highest a state choice
+Hap = mt_pol_a_cur(it_a_n,:), highest a state choice
               z1        z2        z3        z4        z5        z6        z7        z8        z9       z10       z11       z12       z13       z14       z15  
             ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
 
     mval    9.1592    9.2795    9.4133    9.5564     9.707    9.8647     10.03    10.202    10.383    10.572    10.771    10.978    11.194    11.416    11.635
     map     23.237    23.277    23.324    23.379    23.445    23.524    23.619    23.732    23.866    24.024    24.211    24.432    24.692    24.998    25.362
     Hval    13.829    13.877    13.932    13.992    14.057    14.126    14.201     14.28    14.365    14.456    14.554    14.658    14.769    14.885    15.001
-    Hpol     47.33    47.397    47.463     47.53    47.597    47.664    47.797    47.864    48.064    48.198    48.398    48.598    48.865    49.199    49.599
+    Hap      47.33    47.397    47.463     47.53    47.597    47.664    47.797    47.864    48.064    48.198    48.398    48.598    48.865    49.199    49.599
 
 </pre><pre class="codeoutput">VAL it_iter:90, fl_diff:7.336463e-02, fl_diff_pol:0
 mval = mean(mt_val_cur,1), average value over a
 map  = mean(mt_pol_a_cur,1), average choice over a
 Hval = mt_val_cur(it_a_n,:), highest a state val
-mval = mt_pol_a_cur(it_a_n,:), highest a state choice
+Hap = mt_pol_a_cur(it_a_n,:), highest a state choice
               z1        z2        z3        z4        z5        z6        z7        z8        z9       z10       z11       z12       z13       z14       z15  
             ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
 
     mval    9.1631    9.2834    9.4172    9.5603    9.7109    9.8686    10.034    10.206    10.387    10.576    10.775    10.982    11.198     11.42    11.638
     map     23.237    23.277    23.324    23.379    23.445    23.524    23.619    23.732    23.866    24.024    24.211    24.432    24.692    24.998    25.362
     Hval    13.833    13.881    13.936    13.996    14.061     14.13    14.205    14.284    14.369     14.46    14.558    14.662    14.773    14.889    15.005
-    Hpol     47.33    47.397    47.463     47.53    47.597    47.664    47.797    47.864    48.064    48.198    48.398    48.598    48.865    49.199    49.599
+    Hap      47.33    47.397    47.463     47.53    47.597    47.664    47.797    47.864    48.064    48.198    48.398    48.598    48.865    49.199    49.599
 
 </pre><pre class="codeoutput">VAL it_iter:95, fl_diff:5.383191e-02, fl_diff_pol:0
 mval = mean(mt_val_cur,1), average value over a
 map  = mean(mt_pol_a_cur,1), average choice over a
 Hval = mt_val_cur(it_a_n,:), highest a state val
-mval = mt_pol_a_cur(it_a_n,:), highest a state choice
+Hap = mt_pol_a_cur(it_a_n,:), highest a state choice
               z1        z2        z3        z4        z5        z6        z7        z8        z9       z10       z11       z12       z13       z14       z15  
             ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
 
     mval     9.166    9.2863    9.4201    9.5632    9.7138    9.8715    10.036    10.209     10.39    10.579    10.778    10.985    11.201    11.423    11.641
     map     23.237    23.277    23.324    23.379    23.445    23.524    23.619    23.732    23.866    24.024    24.211    24.432    24.692    24.998    25.362
     Hval    13.836    13.884    13.939    13.999    14.064    14.133    14.207    14.287    14.372    14.463    14.561    14.665    14.776    14.891    15.008
-    Hpol     47.33    47.397    47.463     47.53    47.597    47.664    47.797    47.864    48.064    48.198    48.398    48.598    48.865    49.199    49.599
+    Hap      47.33    47.397    47.463     47.53    47.597    47.664    47.797    47.864    48.064    48.198    48.398    48.598    48.865    49.199    49.599
 
 </pre><pre class="codeoutput">VAL it_iter:100, fl_diff:3.950331e-02, fl_diff_pol:0
 mval = mean(mt_val_cur,1), average value over a
 map  = mean(mt_pol_a_cur,1), average choice over a
 Hval = mt_val_cur(it_a_n,:), highest a state val
-mval = mt_pol_a_cur(it_a_n,:), highest a state choice
+Hap = mt_pol_a_cur(it_a_n,:), highest a state choice
               z1        z2        z3        z4        z5        z6        z7        z8        z9       z10       z11       z12       z13       z14       z15  
             ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
 
     mval    9.1681    9.2884    9.4222    9.5653    9.7159    9.8736    10.039    10.211    10.392    10.581     10.78    10.987    11.203    11.425    11.643
     map     23.237    23.277    23.324    23.379    23.445    23.524    23.619    23.732    23.866    24.024    24.211    24.432    24.692    24.998    25.362
     Hval    13.838    13.886    13.941    14.001    14.066    14.135     14.21    14.289    14.374    14.465    14.563    14.667    14.778    14.894     15.01
-    Hpol     47.33    47.397    47.463     47.53    47.597    47.664    47.797    47.864    48.064    48.198    48.398    48.598    48.865    49.199    49.599
+    Hap      47.33    47.397    47.463     47.53    47.597    47.664    47.797    47.864    48.064    48.198    48.398    48.598    48.865    49.199    49.599
 
 </pre><pre class="codeoutput">VAL it_iter:105, fl_diff:2.899003e-02, fl_diff_pol:0
 mval = mean(mt_val_cur,1), average value over a
 map  = mean(mt_pol_a_cur,1), average choice over a
 Hval = mt_val_cur(it_a_n,:), highest a state val
-mval = mt_pol_a_cur(it_a_n,:), highest a state choice
+Hap = mt_pol_a_cur(it_a_n,:), highest a state choice
               z1        z2        z3        z4        z5        z6        z7        z8        z9       z10       z11       z12       z13       z14       z15  
             ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
 
     mval    9.1696      9.29    9.4238    9.5669    9.7175    9.8752     10.04    10.213    10.393    10.583    10.781    10.989    11.205    11.426    11.645
     map     23.237    23.277    23.324    23.379    23.445    23.524    23.619    23.732    23.866    24.024    24.211    24.432    24.692    24.998    25.362
     Hval    13.839    13.888    13.943    14.003    14.068    14.137    14.211    14.291    14.376    14.467    14.564    14.669    14.779    14.895    15.012
-    Hpol     47.33    47.397    47.463     47.53    47.597    47.664    47.797    47.864    48.064    48.198    48.398    48.598    48.865    49.199    49.599
+    Hap      47.33    47.397    47.463     47.53    47.597    47.664    47.797    47.864    48.064    48.198    48.398    48.598    48.865    49.199    49.599
 
 </pre><pre class="codeinput"><span class="keyword">end</span>
 
@@ -502,10 +500,11 @@ mval = mt_pol_a_cur(it_a_n,:), highest a state choice
     st_file_name = [st_profile_prefix st_profile_name_main st_profile_suffix];
     profsave(profile(<span class="string">'info'</span>), strcat(st_profile_path, st_file_name));
 <span class="keyword">end</span>
-</pre><pre class="codeoutput">Elapsed time is 36.903047 seconds.
+</pre><pre class="codeoutput">Elapsed time is 55.781961 seconds.
 </pre><h2 id="13">Process Optimal Choices</h2><pre class="codeinput">result_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
 result_map(<span class="string">'mt_val'</span>) = mt_val;
 result_map(<span class="string">'mt_pol_a'</span>) = mt_pol_a;
+result_map(<span class="string">'mt_pol_idx'</span>) = mt_pol_idx;
 
 <span class="keyword">if</span> (bl_post)
     bl_input_override = true;
@@ -832,21 +831,21 @@ tb_pol_a
     a749=49.9332       47.263         47.33       47.397       47.463         47.53        47.597       48.131        48.331        48.531        48.798        49.132       49.533  
     a750=50             47.33        47.397       47.463        47.53        47.597        47.664       48.198        48.398        48.598        48.865        49.199       49.599  
 
-</pre><img vspace="5" hspace="5" src="ff_az_vf_vec_01.png" alt=""> <img vspace="5" hspace="5" src="ff_az_vf_vec_02.png" alt=""> <img vspace="5" hspace="5" src="ff_az_vf_vec_03.png" alt=""> <img vspace="5" hspace="5" src="ff_az_vf_vec_04.png" alt=""> <img vspace="5" hspace="5" src="ff_az_vf_vec_05.png" alt=""> <img vspace="5" hspace="5" src="ff_az_vf_vec_06.png" alt=""> <img vspace="5" hspace="5" src="ff_az_vf_vec_07.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="ff_az_vf_vec_01.png" alt=""> <img vspace="5" hspace="5" src="ff_az_vf_vec_02.png" alt=""> <img vspace="5" hspace="5" src="ff_az_vf_vec_03.png" alt=""> <img vspace="5" hspace="5" src="ff_az_vf_vec_04.png" alt=""> <img vspace="5" hspace="5" src="ff_az_vf_vec_05.png" alt=""> <img vspace="5" hspace="5" src="ff_az_vf_vec_06.png" alt=""> <img vspace="5" hspace="5" src="ff_az_vf_vec_07.png" alt=""> <img vspace="5" hspace="5" src="ff_az_vf_vec_08.png" alt=""> <img vspace="5" hspace="5" src="ff_az_vf_vec_09.png" alt=""> <img vspace="5" hspace="5" src="ff_az_vf_vec_10.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
 </pre><pre class="codeoutput">
 ans = 
 
   Map with properties:
 
-        Count: 11
+        Count: 12
       KeyType: char
     ValueType: any
 
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
-%% 
+%%
 % *back to <https://fanwangecon.github.io Fan>'s
-% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository> 
+% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
 function result_map = ff_az_vf_vec(varargin)
@@ -868,7 +867,7 @@ function result_map = ff_az_vf_vec(varargin)
 %
 % @return result_map container contains policy function matrix, value
 % function matrix, iteration results, and policy function, value function
-% and iteration results tables. 
+% and iteration results tables.
 %
 % keys included in result_map:
 %
@@ -937,11 +936,11 @@ params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z'});
 params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons'});
 [f_util_log, f_util_crra, f_cons] = params_group{:};
 % param_map
-params_group = values(param_map, {'fl_r_save', 'fl_r_borr', 'fl_w',...
-    'it_a_n', 'it_z_n', 'fl_crra', 'fl_beta', 'fl_c_min'});
-[fl_r_save, fl_r_borr, fl_wage, it_a_n, it_z_n, fl_crra, fl_beta, fl_c_min] = params_group{:};
+params_group = values(param_map, {'it_a_n', 'it_z_n', 'fl_crra', 'fl_beta', 'fl_nan_replace'});
+[it_a_n, it_z_n, fl_crra, fl_beta, fl_nan_replace] = params_group{:};
 params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol', 'it_tol_pol_nochange'});
 [it_maxiter_val, fl_tol_val, fl_tol_pol, it_tol_pol_nochange] = params_group{:};
+
 % support_map
 params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
     'st_profile_prefix', 'st_profile_name_main', 'st_profile_suffix',...
@@ -991,40 +990,38 @@ end
 % Value Function Iteration
 while bl_vfi_continue
     it_iter = it_iter + 1;
-    
+
     %% Solve Optimization Problem Current Iteration
     % Only this segment of code differs between ff_az_vf and ff_az_vf_vec
-    
+
     % loop 1: over exogenous states
     % incorporating these shocks into vectorization has high memory burden
     % but insignificant speed gains. Keeping this loop allows for large
-    % number of shocks without overwhelming memory    
+    % number of shocks without overwhelming memory
     for it_z_i = 1:length(ar_z)
-        
+
         % Current Shock
         fl_z = ar_z(it_z_i);
 
         % Consumption
         mt_c = f_cons(fl_z, ar_a, ar_a');
-        
+
         % EVAL current utility: N by N, f_util defined earlier
         if (fl_crra == 1)
             mt_utility = f_util_log(mt_c);
-            fl_u_neg_c = f_util_log(fl_c_min);            
         else
             mt_utility = f_util_crra(mt_c);
-            fl_u_neg_c = f_util_crra(fl_c_min);            
         end
 
         % f(z'|z)
         ar_z_trans_condi = mt_z_trans(it_z_i,:);
-        
+
         % EVAL EV((A',K'),Z'|Z) = V((A',K'),Z') x p(z'|z)', (N by Z) x (Z by 1) = N by 1
         mt_evzp_condi_z = mt_val_cur * ar_z_trans_condi';
-        
+
         % EVAL add on future utility, N by N + N by 1
         mt_utility = mt_utility + fl_beta*mt_evzp_condi_z;
-        mt_utility(mt_c <= fl_c_min) = fl_u_neg_c;
+        mt_utility(mt_c <= 0) = fl_nan_replace;
 
         % Optimization: remember matlab is column major, rows must be
         % choices, columns must be states
@@ -1036,18 +1033,18 @@ while bl_vfi_continue
             mt_pol_idx(:,it_z_i) = ar_opti_idx_z;
         end
     end
-    
+
     %% Check Tolerance and Continuation
-    
+
     % Difference across iterations
     ar_val_diff_norm(it_iter) = norm(mt_val - mt_val_cur);
     ar_pol_diff_norm(it_iter) = norm(mt_pol_a - mt_pol_a_cur);
     mt_pol_perc_change(it_iter, :) = sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n);
-    
+
     % Update
     mt_val_cur = mt_val;
     mt_pol_a_cur = mt_pol_a;
-    
+
     % Print Iteration Results
     if (bl_display && (rem(it_iter, it_display_every)==0))
         fprintf('VAL it_iter:%d, fl_diff:%d, fl_diff_pol:%d\n', ...
@@ -1055,14 +1052,14 @@ while bl_vfi_continue
         tb_valpol_iter = array2table([mean(mt_val_cur,1); mean(mt_pol_a_cur,1); ...
             mt_val_cur(it_a_n,:); mt_pol_a_cur(it_a_n,:)]);
         tb_valpol_iter.Properties.VariableNames = strcat('z', string((1:size(mt_val_cur,2))));
-        tb_valpol_iter.Properties.RowNames = {'mval', 'map', 'Hval', 'Hpol'};
+        tb_valpol_iter.Properties.RowNames = {'mval', 'map', 'Hval', 'Hap'};
         disp('mval = mean(mt_val_cur,1), average value over a')
         disp('map  = mean(mt_pol_a_cur,1), average choice over a')
         disp('Hval = mt_val_cur(it_a_n,:), highest a state val')
-        disp('mval = mt_pol_a_cur(it_a_n,:), highest a state choice')
+        disp('Hap = mt_pol_a_cur(it_a_n,:), highest a state choice')
         disp(tb_valpol_iter);
     end
-    
+
     % Continuation Conditions:
     % 1. if value function convergence criteria reached
     % 2. if policy function variation over iterations is less than
@@ -1074,9 +1071,9 @@ while bl_vfi_continue
             (sum(ar_pol_diff_norm(max(1, it_iter-it_tol_pol_nochange):it_iter)) < fl_tol_pol))
         % Fix to max, run again to save results if needed
         it_iter_last = it_iter;
-        it_iter = it_maxiter_val;        
+        it_iter = it_maxiter_val;
     end
-    
+
 end
 
 % End Timer
@@ -1097,6 +1094,7 @@ end
 result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
 result_map('mt_pol_a') = mt_pol_a;
+result_map('mt_pol_idx') = mt_pol_idx;
 
 if (bl_post)
     bl_input_override = true;

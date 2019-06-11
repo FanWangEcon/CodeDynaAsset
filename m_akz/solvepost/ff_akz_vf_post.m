@@ -1,6 +1,6 @@
-%% 
+%%
 % *back to <https://fanwangecon.github.io Fan>'s
-% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository> 
+% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
 function [result_map] = ff_akz_vf_post(varargin)
@@ -23,7 +23,7 @@ function [result_map] = ff_akz_vf_post(varargin)
 % function matrix, iteration results
 %
 % @return result_map container add coh consumption and other matrixes to
-% result_map also add table versions of val pol and iter matries 
+% result_map also add table versions of val pol and iter matries
 %
 % @example
 %
@@ -55,38 +55,38 @@ end
 if (bl_input_override)
     % if invoked from outside overrid fully
     [param_map, support_map, armt_map, func_map, result_map, ~] = varargin{:};
-    
+
     params_group = values(result_map, {'mt_val', 'mt_pol_a', 'mt_pol_k'});
     [mt_val, mt_pol_a, mt_pol_k] = params_group{:};
     params_group = values(result_map, {'ar_val_diff_norm', 'ar_pol_diff_norm', 'mt_pol_perc_change'});
     [ar_val_diff_norm, ar_pol_diff_norm, mt_pol_perc_change] = params_group{:};
-    
+
     % Get Parameters
     params_group = values(param_map, {'it_z_n'});
     [it_z_n] = params_group{:};
     params_group = values(armt_map, {'ar_a_meshk', 'ar_k_mesha', 'ar_z', 'mt_coh_wkb', 'it_ameshk_n'});
     [ar_a_meshk, ar_k_mesha, ar_z, mt_coh_wkb, it_ameshk_n] = params_group{:};
-    
+
 else
     clear all;
     close all;
-    
+
     % internal invoke for testing
     it_param_set = 4;
     bl_input_override = true;
-    
+
     % Get Parameters
     [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
     [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
-    
+
     % Generate Default val and policy matrixes
     params_group = values(param_map, {'it_maxiter_val', 'it_z_n'});
-    [it_maxiter_val, it_z_n] = params_group{:};    
+    [it_maxiter_val, it_z_n] = params_group{:};
     params_group = values(armt_map, {'ar_a_meshk', 'ar_k_mesha', 'ar_z', 'mt_coh_wkb', 'it_ameshk_n'});
     [ar_a_meshk, ar_k_mesha, ar_z, mt_coh_wkb, it_ameshk_n] = params_group{:};
     params_group = values(func_map, {'f_util_standin', 'f_cons', 'f_coh'});
-    [f_util_standin, f_cons, f_coh] = params_group{:};    
-    
+    [f_util_standin, f_cons, f_coh] = params_group{:};
+
     % Set Defaults
     mt_val = f_util_standin(ar_z, ar_a_meshk, ar_k_mesha);
     mt_pol_aksum = mt_coh_wkb.*(cumsum(sort(ar_z))/sum(ar_z)*0.4 + 0.4);
@@ -96,7 +96,7 @@ else
     ar_val_diff_norm = rand([it_iter_max, 1]);
     ar_pol_diff_norm = rand([it_iter_max, 1]);
     mt_pol_perc_change = rand([it_iter_max, it_z_n]);
-    
+
     % Set Results Map
     result_map = containers.Map('KeyType','char', 'ValueType','any');
     result_map('mt_val') = mt_val;
@@ -136,19 +136,19 @@ end
 %% Display Val Pol Iter Table
 
 if (bl_display_final)
-    
+
     % Display Value Function Iteration Step by Step REsults
     it_iter_max = length(ar_val_diff_norm);
     if (it_iter_max >= it_display_final_rowmax)
         ar_it_rows_iter = (1:1:round(it_display_final_rowmax/2));
-        ar_it_rows_iter = [ar_it_rows_iter ((it_iter_max)-round(it_display_final_rowmax/2)+1):1:(it_iter_max)];        
+        ar_it_rows_iter = [ar_it_rows_iter ((it_iter_max)-round(it_display_final_rowmax/2)+1):1:(it_iter_max)];
     else
         ar_it_rows_iter = 1:1:it_iter_max;
     end
     tb_valpol_alliter = array2table([ar_val_diff_norm(ar_it_rows_iter)';...
                                      ar_pol_diff_norm(ar_it_rows_iter)';...
                                      mt_pol_perc_change(ar_it_rows_iter, :)']');
-                                 
+
     cl_col_names = ['valgap', 'polgap', strcat('z', string((1:it_z_n)))];
     cl_row_names = strcat('iter=', string(ar_it_rows_iter));
     tb_valpol_alliter.Properties.VariableNames = cl_col_names;
@@ -156,12 +156,12 @@ if (bl_display_final)
     tb_valpol_alliter.Properties.VariableDescriptions{'valgap'} = 'norm(mt_val - mt_val_cur)';
     tb_valpol_alliter.Properties.VariableDescriptions{'polgap'} = 'norm(mt_pol_a - mt_pol_a_cur)';
     tb_valpol_alliter.Properties.VariableDescriptions{'z1'} = 'z1 perc change: sum((mt_pol_a ~= mt_pol_a_cur))/(it_ameshk_n)';
-    
+
     disp('valgap = norm(mt_val - mt_val_cur)');
     disp('polgap = norm(mt_pol_a - mt_pol_a_cur)');
-    disp('z1 = z1 perc change: sum((mt_pol_a ~= mt_pol_a_cur))/(it_ameshk_n)');   
+    disp('z1 = z1 perc change: sum((mt_pol_a ~= mt_pol_a_cur))/(it_ameshk_n)');
     disp(tb_valpol_alliter);
-    
+
     % Display Values by States
     % at most display 11 columns of shocks
     % at most display 50 rows for states
@@ -182,7 +182,7 @@ if (bl_display_final)
     mt_pol_a_print = mt_pol_a(ar_it_rows, ar_it_cols);
     mt_pol_k_print = mt_pol_k(ar_it_rows, ar_it_cols);
     mt_pol_w_print = mt_pol_a_print + mt_pol_k_print;
-    
+
     % Display Optimal Values
     tb_val = array2table(mt_val_print);
     tb_val.Properties.RowNames = strcat('coh', string(ar_it_rows),...
@@ -191,7 +191,7 @@ if (bl_display_final)
     tb_val.Properties.VariableNames = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));
     disp('tb_val');
     disp(tb_val);
-    
+
     % Display Optimal Choices for a
     tb_pol_a = array2table(mt_pol_a_print);
     tb_pol_a.Properties.RowNames = strcat('coh', string(ar_it_rows),...
@@ -218,7 +218,7 @@ if (bl_display_final)
     tb_pol_w.Properties.VariableNames = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));
     disp('tb_pol_w');
     disp(tb_pol_w);
-        
+
     % Save to result map
     result_map('tb_valpol_alliter') = tb_valpol_alliter;
     result_map('tb_val') = tb_val;

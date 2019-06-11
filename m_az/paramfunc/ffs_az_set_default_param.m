@@ -52,9 +52,8 @@ param_map('it_a_n') = 750;
 % Prices
 param_map('fl_w') = 1.28;
 param_map('fl_r_save') = 0.025;
-param_map('fl_r_borr') = 0.025;
 % Minimum Consumption, utility lower bound (major impact parameter
-param_map('fl_c_min') = 0.001;
+param_map('fl_nan_replace') = -9999;
 
 % Solution Accuracy
 param_map('it_maxiter_val') = 1000;

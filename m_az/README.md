@@ -3,7 +3,7 @@ Back to [Fan](https://fanwangecon.github.io)'s
 
 # The AZ (BZ) model
 
-- *a*: asset state/choice
+- *a*: asset state/choice (a > 0 only)
 - *z*: shock
 
 # Descriptions

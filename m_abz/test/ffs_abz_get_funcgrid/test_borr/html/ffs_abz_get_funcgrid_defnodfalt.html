@@ -1,0 +1,302 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>ffs_abz_get_funcgrid_defnodfalt</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-10"><meta name="DC.source" content="ffs_abz_get_funcgrid_defnodfalt.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">Test FFS_ABZ_GET_FUNCGRID handling of defaults</a></li><li><a href="#2">Generate Savings a grid</a></li><li><a href="#3">Generate Borrowing A Grid without Default</a></li><li><a href="#4">Generate Borrowing A Grid with Default</a></li><li><a href="#5">Generate Borrowing A Grid with Binding Exo Borrowing</a></li></ul></div><h2 id="1">Test FFS_ABZ_GET_FUNCGRID handling of defaults</h2><p>Here I test <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html">ffs_abz_get_funcgrid</a> the choice grid changes when we have savings vs borrowing without defaults vs borrowing with default.</p><pre class="codeinput">close <span class="string">all</span>
+
+<span class="comment">% Production Function</span>
+fl_a_max = 2;
+it_a_n = 50;
+fl_r_save = 0.10; <span class="comment">% 10 percent savings interest rate</span>
+fl_r_borr = 0.50;
+fl_w = 3;
+
+<span class="comment">% Display</span>
+bl_graph_funcgrids = true;
+bl_display_funcgrids = false;
+</pre><h2 id="2">Generate Savings a grid</h2><pre class="codeinput"><span class="comment">% Not default parameters, but parameters that generate defaults</span>
+it_param_set = 4;
+bl_input_override = true;
+[param_map, support_map] = ffs_abz_set_default_param(it_param_set);
+
+<span class="comment">% graph and display</span>
+support_map(<span class="string">'bl_graph_funcgrids'</span>) = bl_graph_funcgrids;
+support_map(<span class="string">'bl_display_funcgrids'</span>) = bl_display_funcgrids;
+
+<span class="comment">% shared parameters</span>
+param_map(<span class="string">'fl_a_min'</span>) = 0;
+param_map(<span class="string">'fl_a_max'</span>) = fl_a_max;
+param_map(<span class="string">'it_a_n'</span>) = it_a_n;
+param_map(<span class="string">'fl_r_save'</span>) = fl_r_save;
+param_map(<span class="string">'fl_r_borr'</span>) = fl_r_borr;
+param_map(<span class="string">'fl_w'</span>) = fl_w;
+
+<span class="comment">% control saving, borrowing, default</span>
+param_map(<span class="string">'fl_b_bd'</span>) = 0;
+param_map(<span class="string">'bl_default'</span>) = 0;
+
+<span class="comment">% run program</span>
+[armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+</pre><img vspace="5" hspace="5" src="ffs_abz_get_funcgrid_defnodfalt_01.png" alt=""> <h2 id="3">Generate Borrowing A Grid without Default</h2><pre class="codeinput"><span class="comment">% Not default parameters, but parameters that generate defaults</span>
+it_param_set = 4;
+bl_input_override = true;
+[param_map, support_map] = ffs_abz_set_default_param(it_param_set);
+
+<span class="comment">% graph and display</span>
+support_map(<span class="string">'bl_graph_funcgrids'</span>) = bl_graph_funcgrids;
+support_map(<span class="string">'bl_display_funcgrids'</span>) = bl_display_funcgrids;
+
+<span class="comment">% shared parameters</span>
+param_map(<span class="string">'fl_a_min'</span>) = 0;
+param_map(<span class="string">'fl_a_max'</span>) = fl_a_max;
+param_map(<span class="string">'it_a_n'</span>) = it_a_n;
+param_map(<span class="string">'fl_r_save'</span>) = fl_r_save;
+param_map(<span class="string">'fl_r_borr'</span>) = fl_r_borr;
+param_map(<span class="string">'fl_w'</span>) = fl_w;
+
+<span class="comment">% control saving, borrowing, default</span>
+param_map(<span class="string">'fl_b_bd'</span>) = -20;
+param_map(<span class="string">'bl_default'</span>) = 0;
+
+<span class="comment">% run program</span>
+[armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+</pre><img vspace="5" hspace="5" src="ffs_abz_get_funcgrid_defnodfalt_02.png" alt=""> <h2 id="4">Generate Borrowing A Grid with Default</h2><pre class="codeinput"><span class="comment">% Not default parameters, but parameters that generate defaults</span>
+it_param_set = 4;
+bl_input_override = true;
+[param_map, support_map] = ffs_abz_set_default_param(it_param_set);
+
+<span class="comment">% graph and display</span>
+support_map(<span class="string">'bl_graph_funcgrids'</span>) = bl_graph_funcgrids;
+support_map(<span class="string">'bl_display_funcgrids'</span>) = bl_display_funcgrids;
+
+<span class="comment">% shared parameters</span>
+param_map(<span class="string">'fl_a_min'</span>) = 0;
+param_map(<span class="string">'fl_a_max'</span>) = fl_a_max;
+param_map(<span class="string">'it_a_n'</span>) = it_a_n;
+param_map(<span class="string">'fl_r_save'</span>) = fl_r_save;
+param_map(<span class="string">'fl_r_borr'</span>) = fl_r_borr;
+param_map(<span class="string">'fl_w'</span>) = fl_w;
+
+<span class="comment">% control saving, borrowing, default</span>
+param_map(<span class="string">'fl_b_bd'</span>) = -20;
+param_map(<span class="string">'bl_default'</span>) = 1;
+
+<span class="comment">% run program</span>
+[armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+</pre><img vspace="5" hspace="5" src="ffs_abz_get_funcgrid_defnodfalt_03.png" alt=""> <h2 id="5">Generate Borrowing A Grid with Binding Exo Borrowing</h2><pre class="codeinput"><span class="comment">% Not default parameters, but parameters that generate defaults</span>
+it_param_set = 4;
+bl_input_override = true;
+[param_map, support_map] = ffs_abz_set_default_param(it_param_set);
+
+<span class="comment">% graph and display</span>
+support_map(<span class="string">'bl_graph_funcgrids'</span>) = bl_graph_funcgrids;
+support_map(<span class="string">'bl_display_funcgrids'</span>) = bl_display_funcgrids;
+
+<span class="comment">% shared parameters</span>
+param_map(<span class="string">'fl_a_min'</span>) = 0;
+param_map(<span class="string">'fl_a_max'</span>) = fl_a_max;
+param_map(<span class="string">'it_a_n'</span>) = it_a_n;
+param_map(<span class="string">'fl_r_save'</span>) = fl_r_save;
+param_map(<span class="string">'fl_r_borr'</span>) = fl_r_borr;
+param_map(<span class="string">'fl_w'</span>) = fl_w;
+
+<span class="comment">% control saving, borrowing, default</span>
+param_map(<span class="string">'fl_b_bd'</span>) = -8;
+param_map(<span class="string">'bl_default'</span>) = 1;
+
+<span class="comment">% run program</span>
+[armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+</pre><img vspace="5" hspace="5" src="ffs_abz_get_funcgrid_defnodfalt_04.png" alt=""> <p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Test FFS_ABZ_GET_FUNCGRID handling of defaults
+% Here I test
+% <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html
+% ffs_abz_get_funcgrid> the choice grid changes when we have savings vs
+% borrowing without defaults vs borrowing with default.
+
+close all
+
+% Production Function
+fl_a_max = 2;
+it_a_n = 50;
+fl_r_save = 0.10; % 10 percent savings interest rate
+fl_r_borr = 0.50;
+fl_w = 3;
+
+% Display
+bl_graph_funcgrids = true;
+bl_display_funcgrids = false;
+
+%% Generate Savings a grid
+
+% Not default parameters, but parameters that generate defaults
+it_param_set = 4;
+bl_input_override = true;
+[param_map, support_map] = ffs_abz_set_default_param(it_param_set);
+
+% graph and display
+support_map('bl_graph_funcgrids') = bl_graph_funcgrids;
+support_map('bl_display_funcgrids') = bl_display_funcgrids;
+
+% shared parameters
+param_map('fl_a_min') = 0;
+param_map('fl_a_max') = fl_a_max;
+param_map('it_a_n') = it_a_n;
+param_map('fl_r_save') = fl_r_save;
+param_map('fl_r_borr') = fl_r_borr;
+param_map('fl_w') = fl_w;
+
+% control saving, borrowing, default
+param_map('fl_b_bd') = 0;
+param_map('bl_default') = 0;
+
+% run program
+[armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+
+
+%% Generate Borrowing A Grid without Default
+
+% Not default parameters, but parameters that generate defaults
+it_param_set = 4;
+bl_input_override = true;
+[param_map, support_map] = ffs_abz_set_default_param(it_param_set);
+
+% graph and display
+support_map('bl_graph_funcgrids') = bl_graph_funcgrids;
+support_map('bl_display_funcgrids') = bl_display_funcgrids;
+
+% shared parameters
+param_map('fl_a_min') = 0;
+param_map('fl_a_max') = fl_a_max;
+param_map('it_a_n') = it_a_n;
+param_map('fl_r_save') = fl_r_save;
+param_map('fl_r_borr') = fl_r_borr;
+param_map('fl_w') = fl_w;
+
+% control saving, borrowing, default
+param_map('fl_b_bd') = -20;
+param_map('bl_default') = 0;
+
+% run program
+[armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+
+
+%% Generate Borrowing A Grid with Default
+
+% Not default parameters, but parameters that generate defaults
+it_param_set = 4;
+bl_input_override = true;
+[param_map, support_map] = ffs_abz_set_default_param(it_param_set);
+
+% graph and display
+support_map('bl_graph_funcgrids') = bl_graph_funcgrids;
+support_map('bl_display_funcgrids') = bl_display_funcgrids;
+
+% shared parameters
+param_map('fl_a_min') = 0;
+param_map('fl_a_max') = fl_a_max;
+param_map('it_a_n') = it_a_n;
+param_map('fl_r_save') = fl_r_save;
+param_map('fl_r_borr') = fl_r_borr;
+param_map('fl_w') = fl_w;
+
+% control saving, borrowing, default
+param_map('fl_b_bd') = -20;
+param_map('bl_default') = 1;
+
+% run program
+[armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+
+
+%% Generate Borrowing A Grid with Binding Exo Borrowing
+
+% Not default parameters, but parameters that generate defaults
+it_param_set = 4;
+bl_input_override = true;
+[param_map, support_map] = ffs_abz_set_default_param(it_param_set);
+
+% graph and display
+support_map('bl_graph_funcgrids') = bl_graph_funcgrids;
+support_map('bl_display_funcgrids') = bl_display_funcgrids;
+
+% shared parameters
+param_map('fl_a_min') = 0;
+param_map('fl_a_max') = fl_a_max;
+param_map('it_a_n') = it_a_n;
+param_map('fl_r_save') = fl_r_save;
+param_map('fl_r_borr') = fl_r_borr;
+param_map('fl_w') = fl_w;
+
+% control saving, borrowing, default
+param_map('fl_b_bd') = -8;
+param_map('bl_default') = 1;
+
+% run program
+[armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+
+##### SOURCE END #####
+--></body></html>

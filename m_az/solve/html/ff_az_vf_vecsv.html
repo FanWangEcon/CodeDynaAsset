@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>ff_az_vf_vecsv</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-02"><meta name="DC.source" content="ff_az_vf_vecsv.m"><style type="text/css">
+      --><title>ff_az_vf_vecsv</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-10"><meta name="DC.source" content="ff_az_vf_vecsv.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -70,8 +70,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 </pre><h2 id="2">FF_AZ_VF_VEC solve infinite horizon exo shock + endo asset problem</h2><p>This program solves the infinite horizon dynamic single asset and single shock problem with vectorized codes. <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf.html">ff_az_vf</a> shows looped codes. <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vec.html">ff_az_vf_vec</a> shows vectorized codes. This file shows vectorized codes that is faster but is more memory intensive.</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@param func_map container container with function handles for consumption cash-on-hand etc.</p><p>@return result_map container contains policy function matrix, value function matrix, iteration results, and policy function, value function and iteration results tables.</p><p>keys included in result_map:</p><div><ul><li>mt_val matrix states_n by shock_n matrix of converged value function grid</li><li>mt_pol_a matrix states_n by shock_n matrix of converged policy function grid</li><li>ar_val_diff_norm array if bl_post = true it_iter_last by 1 val function difference between iteration</li><li>ar_pol_diff_norm array if bl_post = true it_iter_last by 1 policy function difference between iterations</li><li>mt_pol_perc_change matrix if bl_post = true it_iter_last by shock_n the proportion of grid points at which policy function changed between current and last iteration for each element of shock</li></ul></div><p>@example</p><p>@include</p><div><ul><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/paramfunc/ffs_az_set_default_param.m">ffs_az_set_default_param</a></li><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/paramfunc/ffs_az_get_funcgrid.m">ffs_az_get_funcgrid</a></li><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solvepost/ff_az_vf_post.m">ff_az_vf_post</a></li></ul></div><h2 id="3">Default</h2><div><ul><li>it_param_set = 1: quick test</li><li>it_param_set = 2: benchmark run</li><li>it_param_set = 3: benchmark profile</li><li>it_param_set = 4: press publish button</li></ul></div><p>go to <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_set_default_param.html">ffs_az_set_default_param</a> to change parameters in param_map container. The parameters can also be updated here directly after obtaining them from ffs_az_set_default_param as we possibly change it_a_n and it_z_n here.</p><pre class="codeinput">it_param_set = 4;
 bl_input_override = true;
 [param_map, support_map] = ffs_az_set_default_param(it_param_set);
-param_map(<span class="string">'it_a_n'</span>) = 750;
-param_map(<span class="string">'it_z_n'</span>) = 15;
+<span class="comment">% param_map('it_a_n') = 750;</span>
+<span class="comment">% param_map('it_z_n') = 15;</span>
 [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override); <span class="comment">% 1 for override</span>
 default_params = {param_map support_map armt_map func_map};
 </pre><h2 id="4">Parse Parameters 1</h2><pre class="codeinput"><span class="comment">% if varargin only has param_map and support_map,</span>
@@ -102,11 +102,11 @@ params_group = values(armt_map, {<span class="string">'ar_a'</span>, <span class
 params_group = values(func_map, {<span class="string">'f_util_log'</span>, <span class="string">'f_util_crra'</span>, <span class="string">'f_cons'</span>});
 [f_util_log, f_util_crra, f_cons] = params_group{:};
 <span class="comment">% param_map</span>
-params_group = values(param_map, {<span class="string">'fl_r_save'</span>, <span class="string">'fl_r_borr'</span>, <span class="string">'fl_w'</span>,<span class="keyword">...</span>
-    <span class="string">'it_a_n'</span>, <span class="string">'it_z_n'</span>, <span class="string">'fl_crra'</span>, <span class="string">'fl_beta'</span>, <span class="string">'fl_c_min'</span>});
-[fl_r_save, fl_r_borr, fl_wage, it_a_n, it_z_n, fl_crra, fl_beta, fl_c_min] = params_group{:};
+params_group = values(param_map, {<span class="string">'it_a_n'</span>, <span class="string">'it_z_n'</span>, <span class="string">'fl_crra'</span>, <span class="string">'fl_beta'</span>, <span class="string">'fl_nan_replace'</span>});
+[it_a_n, it_z_n, fl_crra, fl_beta, fl_nan_replace] = params_group{:};
 params_group = values(param_map, {<span class="string">'it_maxiter_val'</span>, <span class="string">'fl_tol_val'</span>, <span class="string">'fl_tol_pol'</span>, <span class="string">'it_tol_pol_nochange'</span>});
 [it_maxiter_val, fl_tol_val, fl_tol_pol, it_tol_pol_nochange] = params_group{:};
+
 <span class="comment">% support_map</span>
 params_group = values(support_map, {<span class="string">'bl_profile'</span>, <span class="string">'st_profile_path'</span>, <span class="keyword">...</span>
     <span class="string">'st_profile_prefix'</span>, <span class="string">'st_profile_name_main'</span>, <span class="string">'st_profile_suffix'</span>,<span class="keyword">...</span>
@@ -162,18 +162,16 @@ mt_pol_perc_change = zeros([it_maxiter_val, it_z_n]);
             <span class="comment">% slightly faster to explicitly write function</span>
             <span class="keyword">if</span> (fl_crra == 1)
                 mt_utility = log(mt_c);
-                fl_u_neg_c = f_util_log(fl_c_min);
             <span class="keyword">else</span>
                 <span class="comment">% slightly faster if write function here directly, but</span>
                 <span class="comment">% speed gain is very small, more important to have single</span>
                 <span class="comment">% location control of functions.</span>
                 mt_utility = f_util_crra(mt_c);
-                fl_u_neg_c = f_util_crra(fl_c_min);
             <span class="keyword">end</span>
 
             <span class="comment">% Eliminate Complex Numbers</span>
-            mt_it_c_valid_idx = (mt_c &lt;= fl_c_min);
-            mt_utility(mt_it_c_valid_idx) = fl_u_neg_c;
+            mt_it_c_valid_idx = (mt_c &lt;= 0);
+            mt_utility(mt_it_c_valid_idx) = fl_nan_replace;
 
             <span class="comment">% Store in cells</span>
             cl_u_c_store{it_z_i} = mt_utility;
@@ -194,7 +192,7 @@ mt_pol_perc_change = zeros([it_maxiter_val, it_z_n]);
         <span class="comment">% using the method below is much faster than index replace</span>
         <span class="comment">% see &lt;https://fanwangecon.github.io/M4Econ/support/speed/index/fs_subscript.html fs_subscript&gt;</span>
         mt_it_c_valid_idx = cl_c_valid_idx{it_z_i};
-        mt_utility = mt_utility.*(~mt_it_c_valid_idx) + fl_u_neg_c*(mt_it_c_valid_idx);
+        mt_utility = mt_utility.*(~mt_it_c_valid_idx) + fl_nan_replace*(mt_it_c_valid_idx);
 
         <span class="comment">% Optimization: remember matlab is column major, rows must be</span>
         <span class="comment">% choices, columns must be states</span>
@@ -530,7 +528,7 @@ Hap = mt_pol_a_cur(it_a_n,:), highest a state choice
     st_file_name = [st_profile_prefix st_profile_name_main st_profile_suffix];
     profsave(profile(<span class="string">'info'</span>), strcat(st_profile_path, st_file_name));
 <span class="keyword">end</span>
-</pre><pre class="codeoutput">Elapsed time is 3.103178 seconds.
+</pre><pre class="codeoutput">Elapsed time is 4.686468 seconds.
 </pre><h2 id="13">Process Optimal Choices</h2><pre class="codeinput">result_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
 result_map(<span class="string">'mt_val'</span>) = mt_val;
 result_map(<span class="string">'mt_pol_a'</span>) = mt_pol_a;
@@ -861,7 +859,7 @@ tb_pol_a
     a749=49.9332       47.263         47.33       47.397       47.463         47.53        47.597       48.131        48.331        48.531        48.798        49.132       49.533  
     a750=50             47.33        47.397       47.463        47.53        47.597        47.664       48.198        48.398        48.598        48.865        49.199       49.599  
 
-</pre><img vspace="5" hspace="5" src="ff_az_vf_vecsv_01.png" alt=""> <img vspace="5" hspace="5" src="ff_az_vf_vecsv_02.png" alt=""> <img vspace="5" hspace="5" src="ff_az_vf_vecsv_03.png" alt=""> <img vspace="5" hspace="5" src="ff_az_vf_vecsv_04.png" alt=""> <img vspace="5" hspace="5" src="ff_az_vf_vecsv_05.png" alt=""> <img vspace="5" hspace="5" src="ff_az_vf_vecsv_06.png" alt=""> <img vspace="5" hspace="5" src="ff_az_vf_vecsv_07.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="ff_az_vf_vecsv_01.png" alt=""> <img vspace="5" hspace="5" src="ff_az_vf_vecsv_02.png" alt=""> <img vspace="5" hspace="5" src="ff_az_vf_vecsv_03.png" alt=""> <img vspace="5" hspace="5" src="ff_az_vf_vecsv_04.png" alt=""> <img vspace="5" hspace="5" src="ff_az_vf_vecsv_05.png" alt=""> <img vspace="5" hspace="5" src="ff_az_vf_vecsv_06.png" alt=""> <img vspace="5" hspace="5" src="ff_az_vf_vecsv_07.png" alt=""> <img vspace="5" hspace="5" src="ff_az_vf_vecsv_08.png" alt=""> <img vspace="5" hspace="5" src="ff_az_vf_vecsv_09.png" alt=""> <img vspace="5" hspace="5" src="ff_az_vf_vecsv_10.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
 </pre><pre class="codeoutput">
 ans = 
 
@@ -936,13 +934,13 @@ function result_map = ff_az_vf_vecsv(varargin)
 % ffs_az_set_default_param> to change parameters in param_map container.
 % The parameters can also be updated here directly after obtaining them
 % from ffs_az_set_default_param as we possibly change it_a_n and it_z_n
-% here. 
+% here.
 
 it_param_set = 4;
 bl_input_override = true;
 [param_map, support_map] = ffs_az_set_default_param(it_param_set);
-param_map('it_a_n') = 750;
-param_map('it_z_n') = 15;
+% param_map('it_a_n') = 750;
+% param_map('it_z_n') = 15;
 [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 default_params = {param_map support_map armt_map func_map};
 
@@ -979,11 +977,11 @@ params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z'});
 params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons'});
 [f_util_log, f_util_crra, f_cons] = params_group{:};
 % param_map
-params_group = values(param_map, {'fl_r_save', 'fl_r_borr', 'fl_w',...
-    'it_a_n', 'it_z_n', 'fl_crra', 'fl_beta', 'fl_c_min'});
-[fl_r_save, fl_r_borr, fl_wage, it_a_n, it_z_n, fl_crra, fl_beta, fl_c_min] = params_group{:};
+params_group = values(param_map, {'it_a_n', 'it_z_n', 'fl_crra', 'fl_beta', 'fl_nan_replace'});
+[it_a_n, it_z_n, fl_crra, fl_beta, fl_nan_replace] = params_group{:};
 params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol', 'it_tol_pol_nochange'});
 [it_maxiter_val, fl_tol_val, fl_tol_pol, it_tol_pol_nochange] = params_group{:};
+
 % support_map
 params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
     'st_profile_prefix', 'st_profile_name_main', 'st_profile_suffix',...
@@ -1040,62 +1038,60 @@ end
 % Value Function Iteration
 while bl_vfi_continue
     it_iter = it_iter + 1;
-    
+
     %% Solve Optimization Problem Current Iteration
     % Only this segment of code differs between ff_az_vf and ff_az_vf_vec
     % Store in cells results and retrieve, this is more memory intensive
     % than ff_az_vf_vec.
-    
+
     % loop 1: over exogenous states
     for it_z_i = 1:length(ar_z)
-        
+
         % Current Shock
         fl_z = ar_z(it_z_i);
-        
+
         % Consumption and u(c) only need to be evaluated once
         if (it_iter == 1)
-            
+
             % Consumption
             mt_c = f_cons(fl_z, ar_a, ar_a');
-            
+
             % EVAL current utility: N by N, f_util defined earlier
             % slightly faster to explicitly write function
             if (fl_crra == 1)
                 mt_utility = log(mt_c);
-                fl_u_neg_c = f_util_log(fl_c_min);
             else
                 % slightly faster if write function here directly, but
                 % speed gain is very small, more important to have single
                 % location control of functions.
                 mt_utility = f_util_crra(mt_c);
-                fl_u_neg_c = f_util_crra(fl_c_min);
             end
-            
+
             % Eliminate Complex Numbers
-            mt_it_c_valid_idx = (mt_c <= fl_c_min);
-            mt_utility(mt_it_c_valid_idx) = fl_u_neg_c;        
-            
+            mt_it_c_valid_idx = (mt_c <= 0);
+            mt_utility(mt_it_c_valid_idx) = fl_nan_replace;
+
             % Store in cells
-            cl_u_c_store{it_z_i} = mt_utility;            
+            cl_u_c_store{it_z_i} = mt_utility;
             cl_c_valid_idx{it_z_i} = mt_it_c_valid_idx;
-            
+
         end
 
         % f(z'|z)
         ar_z_trans_condi = mt_z_trans(it_z_i,:);
-        
+
         % EVAL EV((A',K'),Z'|Z) = V((A',K'),Z') x p(z'|z)', (N by Z) x (Z by 1) = N by 1
         mt_evzp_condi_z = mt_val_cur * ar_z_trans_condi';
-        
+
         % EVAL add on future utility, N by N + N by 1
         mt_utility = cl_u_c_store{it_z_i} + fl_beta*mt_evzp_condi_z;
-        
+
         % Index update
         % using the method below is much faster than index replace
         % see <https://fanwangecon.github.io/M4Econ/support/speed/index/fs_subscript.html fs_subscript>
-        mt_it_c_valid_idx = cl_c_valid_idx{it_z_i};        
-        mt_utility = mt_utility.*(~mt_it_c_valid_idx) + fl_u_neg_c*(mt_it_c_valid_idx);
-        
+        mt_it_c_valid_idx = cl_c_valid_idx{it_z_i};
+        mt_utility = mt_utility.*(~mt_it_c_valid_idx) + fl_nan_replace*(mt_it_c_valid_idx);
+
         % Optimization: remember matlab is column major, rows must be
         % choices, columns must be states
         % <https://en.wikipedia.org/wiki/Row-_and_column-major_order COLUMN-MAJOR>
@@ -1106,18 +1102,18 @@ while bl_vfi_continue
             mt_pol_idx(:,it_z_i) = ar_opti_idx_z;
         end
     end
-    
+
     %% Check Tolerance and Continuation
-    
+
     % Difference across iterations
     ar_val_diff_norm(it_iter) = norm(mt_val - mt_val_cur);
     ar_pol_diff_norm(it_iter) = norm(mt_pol_a - mt_pol_a_cur);
     mt_pol_perc_change(it_iter, :) = sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n);
-    
+
     % Update
     mt_val_cur = mt_val;
     mt_pol_a_cur = mt_pol_a;
-    
+
     % Print Iteration Results
     if (bl_display && (rem(it_iter, it_display_every)==0))
         fprintf('VAL it_iter:%d, fl_diff:%d, fl_diff_pol:%d\n', ...
@@ -1132,7 +1128,7 @@ while bl_vfi_continue
         disp('Hap = mt_pol_a_cur(it_a_n,:), highest a state choice')
         disp(tb_valpol_iter);
     end
-    
+
     % Continuation Conditions:
     % 1. if value function convergence criteria reached
     % 2. if policy function variation over iterations is less than
@@ -1146,7 +1142,7 @@ while bl_vfi_continue
         it_iter_last = it_iter;
         it_iter = it_maxiter_val;
     end
-    
+
 end
 
 % End Timer

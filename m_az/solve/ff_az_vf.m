@@ -1,6 +1,6 @@
-%% 
+%%
 % *back to <https://fanwangecon.github.io Fan>'s
-% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository> 
+% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
 function result_map = ff_az_vf(varargin)
@@ -8,7 +8,7 @@ function result_map = ff_az_vf(varargin)
 % This program solves the infinite horizon dynamic single asset and single
 % shock problem with loops. It is useful to have a version of code that is
 % looped for easy debugging. This is the standard dynamic exogenous
-% incomplete borrowing and savings problem. 
+% incomplete borrowing and savings problem.
 %
 % @param param_map container parameter container
 %
@@ -22,7 +22,7 @@ function result_map = ff_az_vf(varargin)
 %
 % @return result_map container contains policy function matrix, value
 % function matrix, iteration results, and policy function, value function
-% and iteration results tables. 
+% and iteration results tables.
 %
 % keys included in result_map:
 %
@@ -91,9 +91,8 @@ params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z'});
 params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons'});
 [f_util_log, f_util_crra, f_cons] = params_group{:};
 % param_map
-params_group = values(param_map, {'fl_r_save', 'fl_r_borr', 'fl_w',...
-    'it_a_n', 'it_z_n', 'fl_crra', 'fl_beta', 'fl_c_min'});
-[fl_r_save, fl_r_borr, fl_wage, it_a_n, it_z_n, fl_crra, fl_beta, fl_c_min] = params_group{:};
+params_group = values(param_map, {'it_a_n', 'it_z_n', 'fl_crra', 'fl_beta', 'fl_nan_replace'});
+[it_a_n, it_z_n, fl_crra, fl_beta, fl_nan_replace] = params_group{:};
 params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol', 'it_tol_pol_nochange'});
 [it_maxiter_val, fl_tol_val, fl_tol_pol, it_tol_pol_nochange] = params_group{:};
 % support_map
@@ -143,63 +142,61 @@ end
 % Value Function Iteration
 while bl_vfi_continue
     it_iter = it_iter + 1;
-    
+
     %% Solve Optimization Problem Current Iteration
-    
+
     % loop 1: over exogenous states
     for it_z_i = 1:length(ar_z)
         fl_z = ar_z(it_z_i);
-        
+
         % loop 2: over endogenous states
         for it_a_j = 1:length(ar_a)
             fl_a = ar_a(it_a_j);
             ar_val_cur = zeros(size(ar_a));
-            
+
             % loop 3: over choices
             for it_ap_k = 1:length(ar_a)
                 fl_ap = ar_a(it_ap_k);
                 fl_c = f_cons(fl_z, fl_a, fl_ap);
-                
+
                 % current utility
                 if (fl_crra == 1)
                     ar_val_cur(it_ap_k) = f_util_log(fl_c);
-                    fl_u_neg_c = f_util_log(fl_c_min);
                 else
                     ar_val_cur(it_ap_k) = f_util_crra(fl_c);
-                    fl_u_neg_c = f_util_crra(fl_c_min);
                 end
-                
+
                 % loop 4: add future utility, integration--loop over future shocks
                 for it_az_q = 1:length(ar_z)
                     ar_val_cur(it_ap_k) = ar_val_cur(it_ap_k) + fl_beta*mt_z_trans(it_z_i,it_az_q)*mt_val_cur(it_ap_k,it_az_q);
                 end
-                
+
                 % Replace if negative consumption
                 if fl_c <= 0
-                    ar_val_cur(it_ap_k) = fl_u_neg_c;
+                    ar_val_cur(it_ap_k) = fl_nan_replace;
                 end
-                
+
             end
-            
+
             % maximization over loop 3 choices for loop 1+2 states
             it_max_lin_idx = find(ar_val_cur == max(ar_val_cur));
             mt_val(it_a_j,it_z_i) = ar_val_cur(it_max_lin_idx(1));
             mt_pol_a(it_a_j,it_z_i) = ar_a(it_max_lin_idx(1));
-            
+
         end
     end
-    
+
     %% Check Tolerance and Continuation
-    
+
     % Difference across iterations
     ar_val_diff_norm(it_iter) = norm(mt_val - mt_val_cur);
     ar_pol_diff_norm(it_iter) = norm(mt_pol_a - mt_pol_a_cur);
     mt_pol_perc_change(it_iter, :) = sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n);
-    
+
     % Update
     mt_val_cur = mt_val;
     mt_pol_a_cur = mt_pol_a;
-    
+
     % Print Iteration Results
     if (bl_display && (rem(it_iter, it_display_every)==0))
         fprintf('VAL it_iter:%d, fl_diff:%d, fl_diff_pol:%d\n', ...
@@ -214,7 +211,7 @@ while bl_vfi_continue
         disp('Hap = mt_pol_a_cur(it_a_n,:), highest a state choice')
         disp(tb_valpol_iter);
     end
-    
+
     % Continuation Conditions:
     % 1. if value function convergence criteria reached
     % 2. if policy function variation over iterations is less than
@@ -226,9 +223,9 @@ while bl_vfi_continue
             (sum(ar_pol_diff_norm(max(1, it_iter-it_tol_pol_nochange):it_iter)) < fl_tol_pol))
         % Fix to max, run again to save results if needed
         it_iter_last = it_iter;
-        it_iter = it_maxiter_val;        
+        it_iter = it_maxiter_val;
     end
-    
+
 end
 
 % End Timer

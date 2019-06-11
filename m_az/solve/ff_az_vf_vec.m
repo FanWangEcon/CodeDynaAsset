@@ -1,6 +1,6 @@
-%% 
+%%
 % *back to <https://fanwangecon.github.io Fan>'s
-% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository> 
+% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
 function result_map = ff_az_vf_vec(varargin)
@@ -22,7 +22,7 @@ function result_map = ff_az_vf_vec(varargin)
 %
 % @return result_map container contains policy function matrix, value
 % function matrix, iteration results, and policy function, value function
-% and iteration results tables. 
+% and iteration results tables.
 %
 % keys included in result_map:
 %
@@ -52,7 +52,7 @@ function result_map = ff_az_vf_vec(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 4;
+it_param_set = 3;
 bl_input_override = true;
 [param_map, support_map] = ffs_az_set_default_param(it_param_set);
 [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
@@ -91,11 +91,11 @@ params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z'});
 params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons'});
 [f_util_log, f_util_crra, f_cons] = params_group{:};
 % param_map
-params_group = values(param_map, {'fl_r_save', 'fl_r_borr', 'fl_w',...
-    'it_a_n', 'it_z_n', 'fl_crra', 'fl_beta', 'fl_c_min'});
-[fl_r_save, fl_r_borr, fl_wage, it_a_n, it_z_n, fl_crra, fl_beta, fl_c_min] = params_group{:};
+params_group = values(param_map, {'it_a_n', 'it_z_n', 'fl_crra', 'fl_beta', 'fl_nan_replace'});
+[it_a_n, it_z_n, fl_crra, fl_beta, fl_nan_replace] = params_group{:};
 params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol', 'it_tol_pol_nochange'});
 [it_maxiter_val, fl_tol_val, fl_tol_pol, it_tol_pol_nochange] = params_group{:};
+
 % support_map
 params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
     'st_profile_prefix', 'st_profile_name_main', 'st_profile_suffix',...
@@ -145,40 +145,38 @@ end
 % Value Function Iteration
 while bl_vfi_continue
     it_iter = it_iter + 1;
-    
+
     %% Solve Optimization Problem Current Iteration
     % Only this segment of code differs between ff_az_vf and ff_az_vf_vec
-    
+
     % loop 1: over exogenous states
     % incorporating these shocks into vectorization has high memory burden
     % but insignificant speed gains. Keeping this loop allows for large
-    % number of shocks without overwhelming memory    
+    % number of shocks without overwhelming memory
     for it_z_i = 1:length(ar_z)
-        
+
         % Current Shock
         fl_z = ar_z(it_z_i);
 
         % Consumption
         mt_c = f_cons(fl_z, ar_a, ar_a');
-        
+
         % EVAL current utility: N by N, f_util defined earlier
         if (fl_crra == 1)
             mt_utility = f_util_log(mt_c);
-            fl_u_neg_c = f_util_log(fl_c_min);            
         else
             mt_utility = f_util_crra(mt_c);
-            fl_u_neg_c = f_util_crra(fl_c_min);            
         end
 
         % f(z'|z)
         ar_z_trans_condi = mt_z_trans(it_z_i,:);
-        
+
         % EVAL EV((A',K'),Z'|Z) = V((A',K'),Z') x p(z'|z)', (N by Z) x (Z by 1) = N by 1
         mt_evzp_condi_z = mt_val_cur * ar_z_trans_condi';
-        
+
         % EVAL add on future utility, N by N + N by 1
         mt_utility = mt_utility + fl_beta*mt_evzp_condi_z;
-        mt_utility(mt_c <= fl_c_min) = fl_u_neg_c;
+        mt_utility(mt_c <= 0) = fl_nan_replace;
 
         % Optimization: remember matlab is column major, rows must be
         % choices, columns must be states
@@ -190,18 +188,18 @@ while bl_vfi_continue
             mt_pol_idx(:,it_z_i) = ar_opti_idx_z;
         end
     end
-    
+
     %% Check Tolerance and Continuation
-    
+
     % Difference across iterations
     ar_val_diff_norm(it_iter) = norm(mt_val - mt_val_cur);
     ar_pol_diff_norm(it_iter) = norm(mt_pol_a - mt_pol_a_cur);
     mt_pol_perc_change(it_iter, :) = sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n);
-    
+
     % Update
     mt_val_cur = mt_val;
     mt_pol_a_cur = mt_pol_a;
-    
+
     % Print Iteration Results
     if (bl_display && (rem(it_iter, it_display_every)==0))
         fprintf('VAL it_iter:%d, fl_diff:%d, fl_diff_pol:%d\n', ...
@@ -216,7 +214,7 @@ while bl_vfi_continue
         disp('Hap = mt_pol_a_cur(it_a_n,:), highest a state choice')
         disp(tb_valpol_iter);
     end
-    
+
     % Continuation Conditions:
     % 1. if value function convergence criteria reached
     % 2. if policy function variation over iterations is less than
@@ -228,9 +226,9 @@ while bl_vfi_continue
             (sum(ar_pol_diff_norm(max(1, it_iter-it_tol_pol_nochange):it_iter)) < fl_tol_pol))
         % Fix to max, run again to save results if needed
         it_iter_last = it_iter;
-        it_iter = it_maxiter_val;        
+        it_iter = it_maxiter_val;
     end
-    
+
 end
 
 % End Timer

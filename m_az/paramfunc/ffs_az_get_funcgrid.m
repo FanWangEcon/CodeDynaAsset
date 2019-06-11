@@ -1,6 +1,6 @@
-%% 
+%%
 % *back to <https://fanwangecon.github.io Fan>'s
-% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository> 
+% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
 function [armt_map, func_map] = ffs_az_get_funcgrid(varargin)
@@ -67,11 +67,11 @@ params_group = values(param_map, {'it_z_n', 'fl_z_mu', 'fl_z_rho', 'fl_z_sig'});
 params_group = values(param_map, {'fl_b_bd', 'fl_a_min', 'fl_a_max', 'bl_loglin', 'fl_loglin_threshold', 'it_a_n'});
 [fl_b_bd, fl_a_min, fl_a_max, bl_loglin, fl_loglin_threshold, it_a_n] = params_group{:};
 
-params_group = values(param_map, {'fl_crra', 'fl_c_min'});
-[fl_crra, fl_c_min] = params_group{:};
+params_group = values(param_map, {'fl_crra'});
+[fl_crra] = params_group{:};
 
-params_group = values(param_map, {'fl_r_save', 'fl_r_borr', 'fl_w'});
-[fl_r_save, fl_r_borr, fl_w] = params_group{:};
+params_group = values(param_map, {'fl_r_save', 'fl_w'});
+[fl_r_save, fl_w] = params_group{:};
 
 params_group = values(support_map, {'bl_graph_funcgrids', 'bl_display_funcgrids'});
 [bl_graph_funcgrids, bl_display_funcgrids] = params_group{:};
@@ -93,7 +93,7 @@ end
 
 %% Get Equations
 
-[f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons] = ffs_az_set_functions(fl_crra, fl_c_min, fl_r_save, fl_r_borr, fl_w);
+[f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons] = ffs_az_set_functions(fl_crra, fl_r_save, fl_w);
 
 %% Store
 

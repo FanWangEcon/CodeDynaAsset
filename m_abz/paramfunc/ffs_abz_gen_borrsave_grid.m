@@ -3,8 +3,8 @@
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository> 
 % Table of Content.*
 
-function [ar_a] = ffs_az_gen_borrsave_grid(varargin)
-%% FFS_AZ_GEN_BORRSAVE_GRID get funcs, params, states choices shocks grids
+function [ar_a, fl_borr_yminbd, fl_borr_ymaxbd] = ffs_abz_gen_borrsave_grid(varargin)
+%% FFS_ABZ_GEN_BORRSAVE_GRID get funcs, params, states choices shocks grids
 % Generate savings and borrowing states/choice grids. There are three types
 % of grids:
 % # savings choice/state grid
@@ -45,6 +45,8 @@ function [ar_a] = ffs_az_gen_borrsave_grid(varargin)
 %
 % @example
 %
+%   ar_a = ffs_abz_gen_borrsave_grid(fl_b_bd, bl_default, ar_z, ...
+%                                    fl_w, fl_r_borr, fl_a_max, it_a_n);
 % @include
 %
 
@@ -54,14 +56,15 @@ cl_params_len = length(varargin);
 
 fl_b_bd = -100;
 bl_default = 1;
-ar_z = [0.3, 2.3];
+ar_z = [0.3474 0.4008 0.4623 0.5333 0.6152 0.7097 0.8186 0.9444 1.0894 1.2567 1.4496 1.6723 1.9291 2.2253 2.5670];
 fl_w = 1;
 fl_r_borr = 0.05;
+fl_a_min = 0;
 fl_a_max = 50;
 it_a_n = 100;
 
 cl_params = {fl_b_bd bl_default ar_z ...
-                   fl_w fl_r_borr fl_a_max it_a_n};
+             fl_w fl_r_borr fl_a_min fl_a_max it_a_n};
 
 %% Parse Parameters
 % numvarargs is the number of varagin inputted
@@ -71,12 +74,24 @@ bl_default = cl_params{2};
 ar_z = cl_params{3};
 fl_w = cl_params{4};
 fl_r_borr = cl_params{5};
-fl_a_max = cl_params{6};
-it_a_n = cl_params{7};
+fl_a_min = cl_params{6};
+fl_a_max = cl_params{7};
+it_a_n = cl_params{8};
+
+%% Min and Max Income
+% With the discretized exogenous income process, there are minimum and
+% maximum levels of income next period given the vector of shocks. 
+
+fl_ar_z_min = min(ar_z);
+fl_borr_yminbd = -(fl_ar_z_min*fl_w)/fl_r_borr;
+
+fl_ar_z_max = max(ar_z);
+fl_borr_ymaxbd = -(fl_ar_z_max*fl_w)/fl_r_borr;
 
 %% Savings Only
 if (fl_b_bd >= 0)
-    fl_a_min = 0;
+    % interpret this as minimum savings level if 0 is not allowed
+    fl_a_min = fl_a_min;
 end
 
 %% Borrowing
@@ -84,18 +99,13 @@ if (fl_b_bd < 0)
     
     %% Borrowing not allowing for default
     if (~bl_default)
-        fl_ar_z_min = min(ar_z);
-        fl_y_min = fl_ar_z_min*fl_w;
-        fl_a_min = max(fl_b_bd, -fl_y_min/fl_r_borr);
+        fl_a_min = max(fl_b_bd, fl_borr_yminbd);
     end
     
     %% Borrowing allowing for default
     if (bl_default)
-        fl_ar_z_max = max(ar_z);
-        fl_y_max = fl_ar_z_max*fl_w;
-        fl_a_min = max(fl_b_bd, -fl_y_max/fl_r_borr);
-    end
-    
+        fl_a_min = max(fl_b_bd, fl_borr_ymaxbd);
+    end    
     
 end
 
