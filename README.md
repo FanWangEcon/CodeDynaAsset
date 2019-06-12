@@ -395,7 +395,7 @@ The algorithm is the same as for *ipwkz*. For issues related to defaults, the al
 1. Second Stage with borrowing *ipwkbz* [2nd stage solution](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_evf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/solve/ff_ipwkbz_evf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_evf.html)
     * solving for kperc(w,z) = argmax_{kperc'}(E(V(coh(kperc',b'=w-w*kperc'),z')) given z and w.
 2. *ipwkbz* model [optimized vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_vf_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/solve/ff_ipwkbz_vf_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_vf_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/profile/ff_ipwkbz_vf_vecsv_default_p3/file0.html)    
-    * speed: **3.5** seconds
+    * speed: **2.5** seconds
     * Step One solve kperc(w,z); Step Two solve wperc(z,coh(b,k,z)) given kperc(w,z)
     * loops: 1 for VFI, 1 for shocks, vectorize remaining
     * interpolate u(c), interpolate v(coh,z), interpolate EV(w,z)
@@ -424,7 +424,7 @@ All solution algorithms share the same support files.
 2. *ipwkbz* shares with *akz+wkz+iwkz* models [solution results graphing](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_vf_post_graph.html) codes.
 
 
-## 5.5 Risky + Safe Borrowing Testing (ipWKBZ)
+## 5.4 Risky + Safe Borrowing Testing (ipWKBZ)
 
 We solve the joint asset choice problem using the *optimized-vectorized* method for *ipwkbz* algorithm from *3.3*. Now we analyze model features by adjusting parameters.
 

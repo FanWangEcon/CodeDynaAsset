@@ -123,7 +123,7 @@ support_map = containers.Map('KeyType','char', 'ValueType','any');
 
 % root directory
 [st_root_path] = preamble();
-st_matimg_path_root = [st_root_path '/m_ipwkz/'];
+st_matimg_path_root = [st_root_path '/m_ipwkbz/'];
 support_map('st_matimg_path_root') = st_matimg_path_root;
 
 % timer
