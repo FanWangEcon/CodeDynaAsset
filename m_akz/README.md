@@ -9,7 +9,7 @@ Back to [Fan](https://fanwangecon.github.io)'s
 - *k*: risky asset state/choice
 - *z*: some possibly persistent shock process
 
-See descriptions for **Section 2.1** on the [Dynamic Assets Repository](https://fanwangecon.github.io/CodeDynaAsset/) main page.
+See descriptions for **Section 3.1** on the [Dynamic Assets Repository](https://fanwangecon.github.io/CodeDynaAsset/) main page.
 
 ## The WKZ model
 
@@ -17,7 +17,7 @@ See descriptions for **Section 2.1** on the [Dynamic Assets Repository](https://
 - *k*: choose k' given w and z
 - *z*: some possibly persistent shock process
 
-See descriptions for **Section 2.2** on the [Dynamic Assets Repository](https://fanwangecon.github.io/CodeDynaAsset/) main page.
+See descriptions for **Section 3.2** on the [Dynamic Assets Repository](https://fanwangecon.github.io/CodeDynaAsset/) main page.
 
 ## The IWKZ model
 
@@ -26,4 +26,4 @@ See descriptions for **Section 2.2** on the [Dynamic Assets Repository](https://
 - *k*: choose k' given w and z
 - *z*: some possibly persistent shock process
 
-See descriptions for **Section 2.3** on the [Dynamic Assets Repository](https://fanwangecon.github.io/CodeDynaAsset/) main page.
+See descriptions for **Section 3.3** on the [Dynamic Assets Repository](https://fanwangecon.github.io/CodeDynaAsset/) main page.

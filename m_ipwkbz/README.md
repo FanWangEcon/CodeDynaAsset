@@ -12,4 +12,4 @@ Back to [Fan](https://fanwangecon.github.io)'s
 
 # Descriptions
 
-See descriptions for **Section 4** on the [Dynamic Assets Repository](https://fanwangecon.github.io/CodeDynaAsset/) main page.
+See descriptions for **Section 5** on the [Dynamic Assets Repository](https://fanwangecon.github.io/CodeDynaAsset/) main page.
