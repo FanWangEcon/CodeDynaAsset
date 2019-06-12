@@ -4,7 +4,7 @@
 % Table of Content.*
 
 function result_map = ff_abz_vf_vecsv(varargin)
-%% FF_ABZ_VF_VEC solve infinite horizon exo shock + endo asset problem
+%% FF_ABZ_VF_VECSV solve infinite horizon exo shock + endo asset problem
 % This program solves the infinite horizon dynamic single asset and single
 % shock problem with vectorized codes.
 % <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf.html

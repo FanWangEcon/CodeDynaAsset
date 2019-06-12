@@ -187,10 +187,22 @@ if (bl_graph_pol_lvl)
     for sub_j = ar_sub_j
 
         if (sub_j==1 || sub_j == 3)
+            
+            % asset choice
             mt_outcome = mt_pol_a;
+            
         end
         if (sub_j==2 || sub_j == 4)
+            
+            % consumption choice
             mt_outcome = mt_cons;
+            
+            % for borrowing models consumption could be at cmin, and next
+            % period a' choice given default is a'=0, using the consumption
+            % equation, this leads to not cmin but a negative consumption
+            % level. so here adjust negative consumption to 0            
+            mt_outcome(mt_cons <0) = 0;
+            
         end
 
         if (~bl_graph_onebyones)
@@ -207,9 +219,11 @@ if (bl_graph_pol_lvl)
             ar_opti_curz = mt_outcome(:, i);
 
             if (sub_j==1 || sub_j == 2)
+                % levels
                 ar_a_curz_use = ar_a';
                 ar_opti_curz_use = ar_opti_curz';
             elseif (sub_j==3 || sub_j == 4)
+                % logs
                 ar_a_curz_use = log(ar_a' - min(ar_a) + 1);
                 if (sub_j==3)
                     % borrow save
@@ -233,7 +247,7 @@ if (bl_graph_pol_lvl)
                           'if a''(a,z)<=a for all z, dist. shifts down'};
         end
         if (sub_j==2)
-            st_y_label = 'Consumption';
+            st_y_label = 'Consumption (br cmin set to 0)';
             st_x_label = 'Asset (a) State';
         end
         if (sub_j==3)
@@ -243,7 +257,7 @@ if (bl_graph_pol_lvl)
                           'if a''(a,z)<=a for all z, dist. shifts down'};
         end
         if (sub_j==4)
-            st_y_label = 'log(Consumption + 1)';
+            st_y_label = 'log(Consumption + 1) (br cmin set to 0)';
             st_x_label = 'log(Asset State - min(a) + 1)';
         end
 

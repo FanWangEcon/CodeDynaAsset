@@ -4,7 +4,7 @@
 % Table of Content.*
 
 function result_map = ff_az_vf_vec(varargin)
-%% FF_AZ_VF_VEC solve infinite horizon exo shock + endo asset problem
+%% FF_AZ_VF_VECSV solve infinite horizon exo shock + endo asset problem
 % This program solves the infinite horizon dynamic single asset and single
 % shock problem with vectorized codes.
 % <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf.html
@@ -52,7 +52,7 @@ function result_map = ff_az_vf_vec(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 3;
+it_param_set = 4;
 bl_input_override = true;
 [param_map, support_map] = ffs_az_set_default_param(it_param_set);
 [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override

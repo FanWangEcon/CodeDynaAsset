@@ -49,7 +49,8 @@ if (bl_input_override)
 else
     close all
     % default internal run
-    [param_map, support_map] = ffs_abz_set_default_param();
+    it_param_set = 4;
+    [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
     support_map('bl_graph_funcgrids') = true;
     support_map('bl_display_funcgrids') = true;
     default_maps = {param_map, support_map};

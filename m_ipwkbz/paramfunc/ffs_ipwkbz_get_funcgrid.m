@@ -61,7 +61,10 @@ else
     support_map('bl_display_funcgrids') = true;
     
     % to be able to visually see choice grid points
-    param_map('fl_b_bd') = 0;
+    param_map('fl_b_bd') = -20; % borrow bound, = 0 if save only
+    param_map('fl_default_aprime') = 0;
+    param_map('bl_default') = 0; % if borrowing is default allowed
+    
     param_map('fl_w_min') = param_map('fl_b_bd');
     param_map('it_w_perc_n') = 25;
     param_map('it_ak_perc_n') = 45;

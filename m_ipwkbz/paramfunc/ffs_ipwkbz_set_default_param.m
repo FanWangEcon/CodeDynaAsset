@@ -67,7 +67,12 @@ param_map('fl_r_borr') = 0.025;
 % choice given w. fl_c_min resets invalid consumption levels due to w
 % choices that are invalid. But this is the case when fl_w > 0.
 param_map('fl_c_min') = 0.001;
-param_map('fl_nan_replace') = -inf;
+param_map('fl_nan_replace') = -9999;
+
+% Borrowing Parameters
+param_map('fl_b_bd') = -20; % borrow bound, = 0 if save only
+param_map('fl_default_aprime') = 0;
+param_map('bl_default') = 1; % if borrowing is default allowed
 
 % Asset Grids
 % Toal savings aggregate grid (see discussion on top). 35 points picked for
@@ -75,7 +80,6 @@ param_map('fl_nan_replace') = -inf;
 % levle has associated w_max. Unlike before, when we had it_w_n, now we
 % have it_w_perc_n which is how many percentage grid points to have. We
 % also now include fl_w_interp_grid_gap, the grip gap for interpolation. 
-param_map('fl_b_bd') = 0; % borrow bound, = 0 if save only
 param_map('fl_w_min') = param_map('fl_b_bd'); % but b_bd overrides this
 param_map('fl_w_max') = 50;
 param_map('it_w_perc_n') = 50;
