@@ -334,8 +334,12 @@ if (bl_graph_pol_pct)
             st_title = 'Save/Borrow % of Borrow Limit or COH';
         end
         if (sub_j==2 || sub_j==4)
-            mt_outcome(mt_it_borr_idx) = mt_cons(mt_it_borr_idx)./(mt_coh(mt_it_borr_idx) - mt_pol_a(mt_it_borr_idx));
-            mt_outcome(~mt_it_borr_idx) = mt_cons(~mt_it_borr_idx)./mt_coh(~mt_it_borr_idx);
+            
+            mt_cons_use = mt_cons;
+            mt_cons_use(mt_cons <0) = 0;
+            
+            mt_outcome(mt_it_borr_idx) = mt_cons_use(mt_it_borr_idx)./(mt_coh(mt_it_borr_idx) - mt_pol_a(mt_it_borr_idx));
+            mt_outcome(~mt_it_borr_idx) = mt_cons_use(~mt_it_borr_idx)./mt_coh(~mt_it_borr_idx);
             st_y_label = 'c/(coh-aprime) if br; c/cashonhand if sv';
             st_legend_loc = 'northeast';
             st_title = 'Consumption Choice As Fraction';

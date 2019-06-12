@@ -3,8 +3,8 @@
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository> 
 % Table of Content.*
 
-function result_map = ff_ipwkz_vf_vec(varargin)
-%% FF_IPWKZ_VF_VEC solve infinite horizon exo shock + endo asset problem
+function result_map = ff_ipwkbz_vf_vec(varargin)
+%% FF_IPWKBZ_VF_VEC solve infinite horizon exo shock + endo asset problem
 % This program solves the infinite horizon dynamic savings and risky
 % capital asset problem with some ar1 shock. This is the two step solution
 % with interpolation and with percentage asset grids version of

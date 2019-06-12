@@ -55,10 +55,10 @@ function [f_util_log, f_util_crra, f_util_standin, f_prod, f_inc, f_coh, f_cons]
 
 %% Default
 
-[fl_crra, fl_c_min] = deal(1.5, 0.001);
+[fl_crra, fl_c_min, fl_b_bd] = deal(1.5, 0.001, -20);
 [fl_Amean, fl_alpha, fl_delta] = deal(1, 0.36, 0.08);
 [fl_r_save, fl_r_borr, fl_w] = deal(0.02, 0.02, 1.23);
-default_params = {fl_crra fl_c_min ...
+default_params = {fl_crra fl_c_min fl_b_bd ...
     fl_Amean fl_alpha fl_delta fl_r_save fl_r_borr fl_w};
 
 
@@ -66,7 +66,7 @@ default_params = {fl_crra fl_c_min ...
 
 % numvarargs is the number of varagin inputted
 [default_params{1:length(varargin)}] = varargin{:};
-[fl_crra, fl_c_min, ...
+[fl_crra, fl_c_min, fl_b_bd,...
     fl_Amean, fl_alpha, fl_delta, fl_r_save, fl_r_borr, fl_w] = default_params{:};
 
 %% Equations Utility
@@ -114,7 +114,7 @@ f_cons = @(coh, bprime, kprime) (coh - kprime - bprime);
 % as the state variable using this equation here, there is no effect of
 % shock on utility, it is fully captured by the coh.
 f_util_standin = @(z, b, k) f_util_log(f_coh(z,b,k).*(f_coh(z,b,k) > 0) + ...
-                                    fl_c_min.*(f_coh(z,b,k) <= 0));
+                                       fl_c_min.*(f_coh(z,b,k) <= 0));
 
 
 end

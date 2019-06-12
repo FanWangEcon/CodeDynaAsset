@@ -8,12 +8,19 @@ function [armt_map, func_map] = ffs_ipwkz_get_funcgrid(varargin)
 % centralized gateway for retrieving parameters, and solution grids and
 % functions. Similar to
 % <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html
-% ffs_akz_get_funcgrid> function.
+% ffs_akz_get_funcgrid> function. This code only deals with savings
+% problems.
 %
 % The graphs below show the difference between percentage choice grid and
 % level choice grid. See comments by graphs below for explanations of
 % differences between the choice grids here and choice grids in the
 % ffs_akz_get_funcgrid function.
+%
+% Note that the first stage w grid is based on cash-on-hand level reached
+% by the coh(k,w-k,z) possible choice and shock combinations. This
+% coh(k,w-k,z) > max(w), which also means that at max(coh) grid, the w_perc
+% choices at higher points require extrapolation. Extrapolation is based on
+% nearest extrapolation.
 %
 % @param param_map container parameter container
 %
@@ -284,7 +291,7 @@ if (bl_graph_funcgrids)
 
     title('Choice Grids Conditional on k+a=w')
     ylabel('Capital Choice')
-    xlabel({'Borrowing or Saving'})
+    xlabel({'Saving'})
     legend2plot = fliplr([1 round(numel(chart)/3) round((2*numel(chart))/4)  numel(chart)]);
     legendCell = cellstr(num2str(ar_w_level', 'k+a=%3.2f'));
     legend(chart(legend2plot), legendCell(legend2plot), 'Location','northeast');

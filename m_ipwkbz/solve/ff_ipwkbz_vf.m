@@ -3,8 +3,8 @@
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository> 
 % Table of Content.*
 
-function result_map = ff_ipwkz_vf(varargin)
-%% FF_IPWKZ_VF solve infinite horizon exo shock + endo asset problem
+function result_map = ff_ipwkbz_vf(varargin)
+%% FF_IPWKBZ_VF solve infinite horizon exo shock + endo asset problem
 % This program solves the infinite horizon dynamic savings and risky
 % capital asset problem with some ar1 shock. This is the two step solution
 % with interpolation and with percentage asset grids version of
@@ -60,7 +60,7 @@ function result_map = ff_ipwkz_vf(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 4;
+it_param_set = 1;
 bl_input_override = true;
 [param_map, support_map] = ffs_ipwkz_set_default_param(it_param_set);
 

@@ -3,8 +3,8 @@
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
-function [mt_ev_condi_z_max, mt_ev_condi_z_max_idx, mt_ev_condi_z_max_kp, mt_ev_condi_z_max_bp] = ff_ipwkz_evf(varargin)
-%% FF_IPWKZ_EVF solves the k' vs b' problem given aggregate savings
+function [mt_ev_condi_z_max, mt_ev_condi_z_max_idx, mt_ev_condi_z_max_kp, mt_ev_condi_z_max_bp] = ff_ipwkbz_evf(varargin)
+%% FF_IPWKBZ_EVF solves the k' vs b' problem given aggregate savings
 % This function follows the structure set up here:
 % <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_evf.html
 % ff_wkz_evf> but now we solve the second stage with percentage choice grid
@@ -47,8 +47,8 @@ function [mt_ev_condi_z_max, mt_ev_condi_z_max_idx, mt_ev_condi_z_max_kp, mt_ev_
 %
 % @include
 %
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/paramfunc/ffs_ipwkz_set_default_param.m ffs_ipwkz_set_default_param>
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/paramfunc/ffs_ipwkz_get_funcgrid.m ffs_ipwkz_get_funcgrid>
+% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/paramfunc/ffs_ipwkbz_set_default_param.m ffs_ipwkbz_set_default_param>
+% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/paramfunc/ffs_ipwkbz_get_funcgrid.m ffs_ipwkbz_get_funcgrid>
 %
 
 %% Default
@@ -68,15 +68,17 @@ else
     % Not default parameters, but parameters that generate defaults
     it_param_set = 4;
     bl_input_override = true;
-    [param_map, support_map] = ffs_ipwkz_set_default_param(it_param_set);
+    [param_map, support_map] = ffs_ipwkbz_set_default_param(it_param_set);
     
     support_map('bl_graph_evf') = true;
     support_map('bl_display_evf') = true;
     
+%     param_map('it_z_n') = 10;
+    
     param_map('it_ak_perc_n') = 250;
     param_map('fl_w_interp_grid_gap') = (param_map('fl_w_max')-param_map('fl_b_bd'))/param_map('it_ak_perc_n');
     
-    [armt_map, func_map] = ffs_ipwkz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
+    [armt_map, func_map] = ffs_ipwkbz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
     
     % Generating Defaults
     params_group = values(armt_map, {'ar_a_meshk', 'ar_k_mesha', 'ar_z'});
@@ -99,7 +101,7 @@ params_group = values(support_map, {'bl_img_save', 'st_img_path', 'st_img_prefix
 [bl_img_save, st_img_path, st_img_prefix, st_img_name_main, st_img_suffix] = params_group{:};
 
 % append function name
-st_func_name = 'ff_ipwkz_evf';
+st_func_name = 'ff_ipwkbz_evf';
 st_img_name_main = [st_func_name st_img_name_main];
 
 %% Integrate *E(V(coh(k',b'), z')|z, w)*
@@ -108,8 +110,8 @@ st_img_name_main = [st_func_name st_img_name_main];
 % dim(mt_ev_condi_z): *Q by M*
 % Note that: mt_ev_condi_z = mt_val*mt_z_trans' is a mistake, that would be
 % what we do in the
-% <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/paramfunc/html/ffs_ipwkz_set_functions.html
-% ffs_ipwkz_set_functions> code where we loop over current z, and for each
+% <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_set_functions.html
+% ffs_ipwkbz_set_functions> code where we loop over current z, and for each
 % current z, grab out a particular row from the mt_z_trans that corresponds
 % to a current shock's transition into all future states.
 %

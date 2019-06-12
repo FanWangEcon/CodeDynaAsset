@@ -226,7 +226,7 @@ while bl_vfi_continue
         % using the method below is much faster than index replace
         % see <https://fanwangecon.github.io/M4Econ/support/speed/index/fs_subscript.html fs_subscript>
         mt_it_c_valid_idx = cl_c_valid_idx{it_z_i};
-
+        % Default or Not Utility Handling
         if (bl_default)
             % if default: only today u(cmin), transition out next period, debt wiped out
             fl_v_default = fl_u_cmin + fl_beta*mt_evzp_condi_z(ar_a == fl_default_aprime);

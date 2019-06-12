@@ -105,13 +105,13 @@ ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)
 
 if (bl_graph_val)
 
-    if(~bl_graph_onebyones)
+    if (~bl_graph_onebyones)
         figure('PaperPosition', [0 0 14 4]);
     end
 
     for sub_j=1:1:2
 
-        if(~bl_graph_onebyones)
+        if (~bl_graph_onebyones)
             subplot(1,2,sub_j)
         else
             figure('PaperPosition', [0 0 7 4]);
@@ -177,7 +177,7 @@ end
 
 if (bl_graph_pol_lvl)
 
-    if(~bl_graph_onebyones)
+    if (~bl_graph_onebyones)
         figure('PaperPosition', [0 0 21 8]);
         ar_sub_j = 1:1:6;
     else
@@ -186,17 +186,23 @@ if (bl_graph_pol_lvl)
 
     for sub_j = ar_sub_j
 
-        if(sub_j==1 || sub_j == 4)
+        if (sub_j==1 || sub_j == 4)
             mt_outcome = mt_pol_a;
         end
-        if(sub_j==2 || sub_j == 5)
+        if (sub_j==2 || sub_j == 5)
             mt_outcome = mt_pol_k;
         end
-        if(sub_j==3 || sub_j == 6)
+        if (sub_j==3 || sub_j == 6)
             mt_outcome = mt_cons;
+
+            % for borrowing models consumption could be at cmin, and next
+            % period a' choice given default is a'=0, using the consumption
+            % equation, this leads to not cmin but a negative consumption
+            % level. so here adjust negative consumption to 0
+            mt_outcome(mt_cons <0) = 0;
         end
 
-        if(~bl_graph_onebyones)
+        if (~bl_graph_onebyones)
             subplot(2,3,sub_j)
         else
             figure('PaperPosition', [0 0 7 4]);
@@ -209,23 +215,23 @@ if (bl_graph_pol_lvl)
             i_ctr = i_ctr + 1;
             ar_opti_curz = mt_outcome(:, i);
 
-            if(sub_j==1 || sub_j == 2 || sub_j == 3)
+            if (sub_j==1 || sub_j == 2 || sub_j == 3)
 
                 ar_a_curz_use = mt_coh_wkb(:,i)';
                 ar_opti_curz_use = ar_opti_curz';
                 fl_w_max_line = fl_w_max;
 
-            elseif(sub_j == 4 || sub_j == 5 || sub_j == 6)
+            elseif (sub_j == 4 || sub_j == 5 || sub_j == 6)
 
                 ar_a_curz_use = log(mt_coh_wkb(:,i)' - fl_b_bd + 1);
                 fl_w_max_line = log(fl_w_max  - fl_b_bd + 1);
 
-                if(sub_j == 4)
+                if (sub_j == 4)
                     % borrow save
                     ar_opti_curz_use = log(ar_opti_curz' - fl_b_bd + 1);
                 end
 
-                if(sub_j == 5 || sub_j == 6)
+                if (sub_j == 5 || sub_j == 6)
                     % risky capital choice and consumption, both are >= 0
                     ar_opti_curz_use = log(ar_opti_curz' + 1);
                 end
@@ -240,28 +246,28 @@ if (bl_graph_pol_lvl)
                 'MarkerFaceColor', clr(i_ctr,:));
         end
 
-        if(sub_j==1)
+        if (sub_j==1)
             st_y_label = 'Safe Savings/Borrowing';
             st_x_label = 'Cash-on-Hand';
         end
-        if(sub_j==2)
+        if (sub_j==2)
             st_y_label = 'Risky K investment';
             st_x_label = 'Cash-on-Hand';
         end
-        if(sub_j==3)
-            st_y_label = 'Consumption';
+        if (sub_j==3)
+            st_y_label = 'Consumption (br cmin set to 0)';
             st_x_label = 'Cash-on-Hand';
         end
-        if(sub_j==4)
+        if (sub_j==4)
             st_y_label = 'log(SaveBorr - borrbound + 1)';
             st_x_label = 'log(COH - borrbound + 1)';
         end
-        if(sub_j==5)
+        if (sub_j==5)
             st_y_label = 'log(Risky K + 1)';
             st_x_label = 'log(COH - borrbound + 1)';
         end
-        if(sub_j==6)
-            st_y_label = 'log(Consumption + 1)';
+        if (sub_j==6)
+            st_y_label = 'log(Consumption + 1) (br cmin set to 0)';
             st_x_label = 'log(COH - borrbound + 1)';
         end
 
@@ -283,7 +289,7 @@ if (bl_graph_pol_lvl)
         hline.Color = 'k';
         hline.LineStyle = ':';
         hline.HandleVisibility = 'off';
-        if(sub_j==4 || sub_j == 5 || || sub_j == 6)
+        if (sub_j==4 || sub_j == 5 || sub_j == 6)
         else
             xline0 = xline(0);
             xline0.HandleVisibility = 'off';
@@ -306,9 +312,23 @@ end
 
 %% Graphing Choice Percentages
 
+% for borrowing models consumption could be at cmin, and next
+% period a' choice given default is a'=0, using the consumption
+% equation, this leads to not cmin but a negative consumption
+% level. so here adjust negative consumption to 0
+mt_cons_use = mt_cons;
+mt_cons_use(mt_cons <0) = 0;
+
+mt_pol_a_use = mt_pol_a;
+mt_pol_a_use(mt_cons <0) = 0;
+
+mt_pol_k_use = mt_pol_k;
+mt_pol_k_use(mt_cons <0) = 0;
+
+
 if (bl_graph_pol_pct)
 
-    if(~bl_graph_onebyones)
+    if (~bl_graph_onebyones)
         figure('PaperPosition', [0 0 24 8]);
         ar_sub_j = 1:1:8;
     else
@@ -317,8 +337,8 @@ if (bl_graph_pol_pct)
 
     for sub_j = ar_sub_j
 
-        mt_outcome = zeros(size(mt_pol_a));
-        mt_it_borr_idx = (mt_pol_a < 0);
+        mt_outcome = zeros(size(mt_pol_a_use));
+        mt_it_borr_idx = (mt_pol_a_use < 0);
 
         if (ismember(sub_j, [1,2,3,4]))
             bl_log_coh = 0;
@@ -330,38 +350,38 @@ if (bl_graph_pol_pct)
             st_title_suffix = ' (x=log(coh))';
         end
 
-        if(sub_j==1 || sub_j == 5)
-            mt_outcome(mt_it_borr_idx) = -mt_pol_a(mt_it_borr_idx)./fl_b_bd;
-            mt_outcome(~mt_it_borr_idx) = mt_pol_a(~mt_it_borr_idx)./mt_coh_wkb(~mt_it_borr_idx);
+        if (sub_j==1 || sub_j == 5)
+            mt_outcome(mt_it_borr_idx) = -mt_pol_a_use(mt_it_borr_idx)./fl_b_bd;
+            mt_outcome(~mt_it_borr_idx) = mt_pol_a_use(~mt_it_borr_idx)./mt_coh_wkb(~mt_it_borr_idx);
             st_y_label = 'aprime/borrbound if br; aprime/cashonhand if sv';
             st_legend_loc = 'southeast';
             st_title = 'Save/Borrow % of Borrow Limit or COH';
         end
-        if(sub_j==2 || sub_j == 6)
-            mt_outcome(mt_it_borr_idx) = mt_pol_k(mt_it_borr_idx)./(mt_coh_wkb(mt_it_borr_idx) - mt_pol_a(mt_it_borr_idx));
-            mt_outcome(~mt_it_borr_idx) = mt_pol_k(~mt_it_borr_idx)./mt_coh_wkb(~mt_it_borr_idx);
+        if (sub_j==2 || sub_j == 6)
+            mt_outcome(mt_it_borr_idx) = mt_pol_k_use(mt_it_borr_idx)./(mt_coh_wkb(mt_it_borr_idx) - mt_pol_a_use(mt_it_borr_idx));
+            mt_outcome(~mt_it_borr_idx) = mt_pol_k_use(~mt_it_borr_idx)./mt_coh_wkb(~mt_it_borr_idx);
             st_y_label = 'kprime/(coh-aprime) if br; k/cashonhand if sv';
             st_legend_loc = 'southeast';
             st_title = 'Risky Investment % of coh + borrow';
         end
-        if(sub_j==3 || sub_j == 7)
+        if (sub_j==3 || sub_j == 7)
             %             If borrowing, how much is what is borrowing going to K?
             %             If saving, how much is what is total savings in K?
-            mt_outcome(mt_it_borr_idx) = mt_pol_a(mt_it_borr_idx)./mt_pol_k(mt_it_borr_idx);
-            mt_outcome(~mt_it_borr_idx) = mt_pol_a(~mt_it_borr_idx)./mt_pol_k(~mt_it_borr_idx);
+            mt_outcome(mt_it_borr_idx) = mt_pol_a_use(mt_it_borr_idx)./mt_pol_k_use(mt_it_borr_idx);
+            mt_outcome(~mt_it_borr_idx) = mt_pol_a_use(~mt_it_borr_idx)./mt_pol_k_use(~mt_it_borr_idx);
             st_y_label = 'aprime/kprime';
             st_legend_loc = 'northwest';
             st_title = 'safe borr/save divide risky k';
         end
-        if(sub_j==4 || sub_j == 8)
-            mt_outcome(mt_it_borr_idx) = mt_cons(mt_it_borr_idx)./(mt_coh_wkb(mt_it_borr_idx) - mt_pol_a(mt_it_borr_idx));
-            mt_outcome(~mt_it_borr_idx) = mt_cons(~mt_it_borr_idx)./mt_coh_wkb(~mt_it_borr_idx);
+        if (sub_j==4 || sub_j == 8)
+            mt_outcome(mt_it_borr_idx) = mt_cons_use(mt_it_borr_idx)./(mt_coh_wkb(mt_it_borr_idx) - mt_pol_a_use(mt_it_borr_idx));
+            mt_outcome(~mt_it_borr_idx) = mt_cons_use(~mt_it_borr_idx)./mt_coh_wkb(~mt_it_borr_idx);
             st_y_label = 'c/(coh-aprime) if br; c/cashonhand if sv';
             st_legend_loc = 'northeast';
             st_title = 'Consumption Choice % of coh + borrow';
         end
 
-        if(~bl_graph_onebyones)
+        if (~bl_graph_onebyones)
             subplot(2,4,sub_j)
         else
             figure('PaperPosition', [0 0 7 4]);

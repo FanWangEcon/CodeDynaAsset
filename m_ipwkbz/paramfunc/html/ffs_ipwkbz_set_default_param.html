@@ -70,7 +70,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 </pre><h2 id="2">FFS_IPKZ_SET_DEFAULT_PARAM setting model default parameters</h2><p>Define model parameters, similar to <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html">ffs_akz_set_default_param</a> see that file for descriptions.</p><p>Several changes here: 1, inclusion of percentage based choice grids</p><p>@param it_subset integer default parameter control subsetting. it_subset = 1 is basic invoke quick test. it_subset = 2 is main invoke. it_subset = 3 is profiling invoke. it_subset = 4 is matlab publish.</p><p>@param bl_display_defparam boolean local printing</p><p>@return param_map container parameters needed for solving the model</p><p>@return support_map container programming control parameters like to graph to print etc</p><p>@example</p><pre class="language-matlab">it_param_set = 1;
 [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
 </pre><h2 id="3">Default</h2><pre class="codeinput">it_subset = 0;
-bl_display_defparam = false;
+bl_display_defparam = true;
 default_params = {it_subset bl_display_defparam};
 [default_params{1:length(varargin)}] = varargin{:};
 [it_subset, bl_display_defparam] = default_params{:};
@@ -104,7 +104,12 @@ param_map(<span class="string">'fl_r_borr'</span>) = 0.025;
 <span class="comment">% choice given w. fl_c_min resets invalid consumption levels due to w</span>
 <span class="comment">% choices that are invalid. But this is the case when fl_w &gt; 0.</span>
 param_map(<span class="string">'fl_c_min'</span>) = 0.001;
-param_map(<span class="string">'fl_nan_replace'</span>) = -inf;
+param_map(<span class="string">'fl_nan_replace'</span>) = -9999;
+
+<span class="comment">% Borrowing Parameters</span>
+param_map(<span class="string">'fl_b_bd'</span>) = -20; <span class="comment">% borrow bound, = 0 if save only</span>
+param_map(<span class="string">'fl_default_aprime'</span>) = 0;
+param_map(<span class="string">'bl_default'</span>) = 1; <span class="comment">% if borrowing is default allowed</span>
 
 <span class="comment">% Asset Grids</span>
 <span class="comment">% Toal savings aggregate grid (see discussion on top). 35 points picked for</span>
@@ -125,11 +130,6 @@ param_map(<span class="string">'it_w_perc_n'</span>) = 50;
 param_map(<span class="string">'fl_k_min'</span>) = 0;
 param_map(<span class="string">'fl_k_max'</span>) = (param_map(<span class="string">'fl_w_max'</span>) - param_map(<span class="string">'fl_b_bd'</span>));
 param_map(<span class="string">'it_ak_perc_n'</span>) = param_map(<span class="string">'it_w_perc_n'</span>); <span class="comment">% grid for a and k the same</span>
-
-<span class="comment">% Borrowing Parameters</span>
-param_map(<span class="string">'fl_b_bd'</span>) = -20; <span class="comment">% borrow bound, = 0 if save only</span>
-param_map(<span class="string">'fl_default_aprime'</span>) = 0;
-param_map(<span class="string">'bl_default'</span>) = 1; <span class="comment">% if borrowing is default allowed</span>
 
 <span class="comment">% Interpolation</span>
 <span class="comment">% fl_coh_interp_grid_gap controls the number of coh points at which to solve the model</span>
@@ -153,16 +153,11 @@ param_map(<span class="string">'it_maxiter_val'</span>) = 250;
 param_map(<span class="string">'fl_tol_val'</span>) = 10^-5;
 param_map(<span class="string">'fl_tol_pol'</span>) = 10^-5;
 param_map(<span class="string">'it_tol_pol_nochange'</span>) = 25; <span class="comment">% number of iterations where policy does not change</span>
-</pre><pre class="codeoutput error">Error using containers.Map/subsref
-The specified key is not present in this container.
-
-Error in ffs_ipwkbz_set_default_param (line 78)
-param_map('fl_w_min') = param_map('fl_b_bd'); % but b_bd overrides this
 </pre><h2 id="5">Setting support_map container</h2><pre class="codeinput">support_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
 
 <span class="comment">% root directory</span>
 [st_root_path] = preamble();
-st_matimg_path_root = [st_root_path <span class="string">'/m_ipwkz/'</span>];
+st_matimg_path_root = [st_root_path <span class="string">'/m_ipwkbz/'</span>];
 support_map(<span class="string">'st_matimg_path_root'</span>) = st_matimg_path_root;
 
 <span class="comment">% timer</span>
@@ -273,7 +268,94 @@ support_map(<span class="string">'bl_display_evf'</span>) = false;
         disp(st_display);
     <span class="keyword">end</span>
 <span class="keyword">end</span>
+</pre><pre class="codeoutput">param_map
+  Map with properties:
+
+        Count: 30
+      KeyType: char
+    ValueType: any
+
+pos = 1 ; key = bl_default ; val = 1
+pos = 2 ; key = fl_Amean ; val = 1
+pos = 3 ; key = fl_alpha ; val = 0.36
+pos = 4 ; key = fl_b_bd ; val = -20
+pos = 5 ; key = fl_beta ; val = 0.94
+pos = 6 ; key = fl_c_min ; val = 0.001
+pos = 7 ; key = fl_coh_interp_grid_gap ; val = 0.1
+pos = 8 ; key = fl_crra ; val = 1.5
+pos = 9 ; key = fl_default_aprime ; val = 0
+pos = 10 ; key = fl_delta ; val = 0.08
+pos = 11 ; key = fl_k_max ; val = 70
+pos = 12 ; key = fl_k_min ; val = 0
+pos = 13 ; key = fl_nan_replace ; val = -9999
+pos = 14 ; key = fl_r_borr ; val = 0.025
+pos = 15 ; key = fl_r_save ; val = 0.025
+pos = 16 ; key = fl_tol_pol ; val = 1e-05
+pos = 17 ; key = fl_tol_val ; val = 1e-05
+pos = 18 ; key = fl_w ; val = 0.44365
+pos = 19 ; key = fl_w_interp_grid_gap ; val = 0.1
+pos = 20 ; key = fl_w_max ; val = 50
+pos = 21 ; key = fl_w_min ; val = -20
+pos = 22 ; key = fl_z_mu ; val = 0
+pos = 23 ; key = fl_z_rho ; val = 0.8
+pos = 24 ; key = fl_z_sig ; val = 0.2
+pos = 25 ; key = it_ak_perc_n ; val = 50
+pos = 26 ; key = it_c_interp_grid_gap ; val = 0.0001
+pos = 27 ; key = it_maxiter_val ; val = 250
+pos = 28 ; key = it_tol_pol_nochange ; val = 25
+pos = 29 ; key = it_w_perc_n ; val = 50
+pos = 30 ; key = it_z_n ; val = 15
+support_map
+  Map with properties:
+
+        Count: 34
+      KeyType: char
+    ValueType: any
+
+pos = 1 ; key = bl_display ; val = true
+pos = 2 ; key = bl_display_evf ; val = false
+pos = 3 ; key = bl_display_final ; val = false
+pos = 4 ; key = bl_display_funcgrids ; val = false
+pos = 5 ; key = bl_graph ; val = false
+pos = 6 ; key = bl_graph_evf ; val = false
+pos = 7 ; key = bl_graph_funcgrids ; val = false
+pos = 8 ; key = bl_graph_funcgrids_detail ; val = false
+pos = 9 ; key = bl_graph_onebyones ; val = true
+pos = 10 ; key = bl_graph_pol_lvl ; val = true
+pos = 11 ; key = bl_graph_pol_pct ; val = true
+pos = 12 ; key = bl_graph_val ; val = true
+pos = 13 ; key = bl_img_save ; val = false
+pos = 14 ; key = bl_mat ; val = false
+pos = 15 ; key = bl_post ; val = false
+pos = 16 ; key = bl_profile ; val = false
+pos = 17 ; key = bl_time ; val = true
+pos = 18 ; key = it_display_every ; val = 5
+pos = 19 ; key = it_display_final_colmax ; val = 12
+pos = 20 ; key = it_display_final_rowmax ; val = 100
+pos = 21 ; key = st_img_name_main ; val = _default
+pos = 22 ; key = st_img_path ; val = C:/Users/fan/CodeDynaAsset//m_ipwkbz//solve/img/
+pos = 23 ; key = st_img_prefix ; val = 
+pos = 24 ; key = st_img_suffix ; val = _p0.png
+pos = 25 ; key = st_mat_name_main ; val = _default
+pos = 26 ; key = st_mat_path ; val = C:/Users/fan/CodeDynaAsset//m_ipwkbz//solve/mat/
+pos = 27 ; key = st_mat_prefix ; val = 
+pos = 28 ; key = st_mat_suffix ; val = _p0
+pos = 29 ; key = st_matimg_path_root ; val = C:/Users/fan/CodeDynaAsset//m_ipwkbz/
+pos = 30 ; key = st_profile_name_main ; val = _default
+pos = 31 ; key = st_profile_path ; val = C:/Users/fan/CodeDynaAsset//m_ipwkbz//solve/profile/
+pos = 32 ; key = st_profile_prefix ; val = 
+pos = 33 ; key = st_profile_suffix ; val = _p0
+pos = 34 ; key = st_title_prefix ; val = 
 </pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><pre class="codeoutput">
+ans = 
+
+  Map with properties:
+
+        Count: 30
+      KeyType: char
+    ValueType: any
+
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %%
@@ -285,7 +367,7 @@ function [param_map, support_map] = ffs_ipwkbz_set_default_param(varargin)
 %% FFS_IPKZ_SET_DEFAULT_PARAM setting model default parameters
 % Define model parameters, similar to
 % <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html
-% ffs_akz_set_default_param> see that file for descriptions. 
+% ffs_akz_set_default_param> see that file for descriptions.
 %
 % Several changes here: 1, inclusion of percentage based choice grids
 %
@@ -308,7 +390,7 @@ function [param_map, support_map] = ffs_ipwkbz_set_default_param(varargin)
 %% Default
 
 it_subset = 0;
-bl_display_defparam = false;
+bl_display_defparam = true;
 default_params = {it_subset bl_display_defparam};
 [default_params{1:length(varargin)}] = varargin{:};
 [it_subset, bl_display_defparam] = default_params{:};
@@ -345,14 +427,19 @@ param_map('fl_r_borr') = 0.025;
 % choice given w. fl_c_min resets invalid consumption levels due to w
 % choices that are invalid. But this is the case when fl_w > 0.
 param_map('fl_c_min') = 0.001;
-param_map('fl_nan_replace') = -inf;
+param_map('fl_nan_replace') = -9999;
+
+% Borrowing Parameters
+param_map('fl_b_bd') = -20; % borrow bound, = 0 if save only
+param_map('fl_default_aprime') = 0;
+param_map('bl_default') = 1; % if borrowing is default allowed
 
 % Asset Grids
 % Toal savings aggregate grid (see discussion on top). 35 points picked for
 % for this problem w_max is overall for everyone, but each individual coh
 % levle has associated w_max. Unlike before, when we had it_w_n, now we
 % have it_w_perc_n which is how many percentage grid points to have. We
-% also now include fl_w_interp_grid_gap, the grip gap for interpolation. 
+% also now include fl_w_interp_grid_gap, the grip gap for interpolation.
 param_map('fl_w_min') = param_map('fl_b_bd'); % but b_bd overrides this
 param_map('fl_w_max') = 50;
 param_map('it_w_perc_n') = 50;
@@ -367,18 +454,13 @@ param_map('fl_k_min') = 0;
 param_map('fl_k_max') = (param_map('fl_w_max') - param_map('fl_b_bd'));
 param_map('it_ak_perc_n') = param_map('it_w_perc_n'); % grid for a and k the same
 
-% Borrowing Parameters
-param_map('fl_b_bd') = -20; % borrow bound, = 0 if save only
-param_map('fl_default_aprime') = 0;
-param_map('bl_default') = 1; % if borrowing is default allowed
-
 % Interpolation
 % fl_coh_interp_grid_gap controls the number of coh points at which to solve the model
 % it_c_interp_grid_gap determines the gap between consumption terpolation
 % points. For consumption interpolation 10^-4 is extremely accurate, there
 % should be no perceptible differences in value and policy functions when the
 % it_c_interp_grid_gap <= 0.001 compared to actual evaluation. Also include
-% now fl_w_interp_grid_gap above, which is for interpolation over w. 
+% now fl_w_interp_grid_gap above, which is for interpolation over w.
 param_map('fl_coh_interp_grid_gap') = 0.1;
 % param_map('it_coh_interp_n') = 500;
 param_map('it_c_interp_grid_gap') = 10^-4;
@@ -401,7 +483,7 @@ support_map = containers.Map('KeyType','char', 'ValueType','any');
 
 % root directory
 [st_root_path] = preamble();
-st_matimg_path_root = [st_root_path '/m_ipwkz/'];
+st_matimg_path_root = [st_root_path '/m_ipwkbz/'];
 support_map('st_matimg_path_root') = st_matimg_path_root;
 
 % timer
@@ -467,9 +549,9 @@ if (ismember(it_subset, [1,2,3,4]))
     if (ismember(it_subset, [1]))
         % TEST quick
         param_map('it_w_perc_n') = 20;
-        param_map('it_ak_perc_n') = param_map('it_w_perc_n');        
+        param_map('it_ak_perc_n') = param_map('it_w_perc_n');
         param_map('it_z_n') = 3;
-        
+
         param_map('fl_coh_interp_grid_gap') = 0.25;
         param_map('it_c_interp_grid_gap') = 0.001;
         param_map('fl_w_interp_grid_gap') = 1;

@@ -7,7 +7,7 @@ function [param_map, support_map] = ffs_ipwkbz_set_default_param(varargin)
 %% FFS_IPKZ_SET_DEFAULT_PARAM setting model default parameters
 % Define model parameters, similar to
 % <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html
-% ffs_akz_set_default_param> see that file for descriptions. 
+% ffs_akz_set_default_param> see that file for descriptions.
 %
 % Several changes here: 1, inclusion of percentage based choice grids
 %
@@ -71,7 +71,7 @@ param_map('fl_nan_replace') = -9999;
 
 % Borrowing Parameters
 param_map('fl_b_bd') = -20; % borrow bound, = 0 if save only
-param_map('fl_default_aprime') = 0;
+param_map('fl_default_wprime') = 0; % wprime not a prime
 param_map('bl_default') = 1; % if borrowing is default allowed
 
 % Asset Grids
@@ -79,7 +79,7 @@ param_map('bl_default') = 1; % if borrowing is default allowed
 % for this problem w_max is overall for everyone, but each individual coh
 % levle has associated w_max. Unlike before, when we had it_w_n, now we
 % have it_w_perc_n which is how many percentage grid points to have. We
-% also now include fl_w_interp_grid_gap, the grip gap for interpolation. 
+% also now include fl_w_interp_grid_gap, the grip gap for interpolation.
 param_map('fl_w_min') = param_map('fl_b_bd'); % but b_bd overrides this
 param_map('fl_w_max') = 50;
 param_map('it_w_perc_n') = 50;
@@ -100,7 +100,7 @@ param_map('it_ak_perc_n') = param_map('it_w_perc_n'); % grid for a and k the sam
 % points. For consumption interpolation 10^-4 is extremely accurate, there
 % should be no perceptible differences in value and policy functions when the
 % it_c_interp_grid_gap <= 0.001 compared to actual evaluation. Also include
-% now fl_w_interp_grid_gap above, which is for interpolation over w. 
+% now fl_w_interp_grid_gap above, which is for interpolation over w.
 param_map('fl_coh_interp_grid_gap') = 0.1;
 % param_map('it_coh_interp_n') = 500;
 param_map('it_c_interp_grid_gap') = 10^-4;
@@ -189,9 +189,9 @@ if (ismember(it_subset, [1,2,3,4]))
     if (ismember(it_subset, [1]))
         % TEST quick
         param_map('it_w_perc_n') = 20;
-        param_map('it_ak_perc_n') = param_map('it_w_perc_n');        
+        param_map('it_ak_perc_n') = param_map('it_w_perc_n');
         param_map('it_z_n') = 3;
-        
+
         param_map('fl_coh_interp_grid_gap') = 0.25;
         param_map('it_c_interp_grid_gap') = 0.001;
         param_map('fl_w_interp_grid_gap') = 1;
