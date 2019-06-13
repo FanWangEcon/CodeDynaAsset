@@ -1,6 +1,4 @@
-This is a work-in-progress [website](https://fanwangecon.github.io/CodeDynaAsset/) of code for solving several infinite-horizon exogenously-incomplete dynamic assets models in discrete-time. Section **(1)** solves the savings problem. Section **(2)** solves the borrowing and savings problem. Section **(3)** solve the risky and safe asset problem (risky entrepreneur). Section **(4)** solves the same problem as (3) with percentage choice grids and interpolation. Section **(5)** analyzes the risky and safe asset problem allowing for risky asset investment financing through borrowing.
-
-Section (6) is an application of the earlier models. In Section (6), models from (1) through (5) are augmented with formal and informal credit market choices to allow for (a) formal borrowing choice menu, (b) bridge loans, and (c) defaults. The model is section (6) is from the paper: *A Choice Amongst Many: Household Borrowing in a Setting with Multiple Providers* ([**Robert M. Townsend**](http://www.robertmtownsend.net/) and [**Fan Wang**](https://fanwangecon.github.io/) 2019).
+This is a work-in-progress [website](https://fanwangecon.github.io/CodeDynaAsset/) of code for solving several infinite-horizon exogenously-incomplete dynamic assets models in discrete-time. Section **(1)** solves the savings problem. Section **(2)** solves the borrowing and savings problem. Section **(3)** solve the risky and safe asset problem (risky entrepreneur). Section **(4)** solves the same problem as (3) with percentage choice grids and interpolation. Section **(5)** analyzes the risky and safe asset problem allowing for risky asset investment financing through borrowing. Section **(6)** is an application/extension of the earlier models: models from (1) through (5) are augmented following *A Choice Amongst Many: Household Borrowing in a Setting with Multiple Providers* ([**Robert M. Townsend**](http://www.robertmtownsend.net/) and [**Fan Wang**](https://fanwangecon.github.io/) 2019).
 
 Generally, in sections (1) through (5), looped, vectorized, and optimized-vectorized implementations of the same solution algorithm with tabular, graphical and profiling results are shown. Separate subsections show files that solve policy functions and derive asset distributions. Looped codes are shown for clarity, vectorized codes are shown for speed. Codes are designed to not require special hardware or explicit parallelization. Codes tested on Windows 10 with [Matlab 2019a](https://www.mathworks.com/company/newsroom/mathworks-announces-release-2019a-of-matlab-and-simulink.html) for replicability. Please contact [FanWangEcon](https://fanwangecon.github.io/) for problems.
 
@@ -260,15 +258,13 @@ We solve the joint asset choice problem using the *optimized-vectorized* method 
 
 In Section 2, we solved the two asset problem in levels. Here, the same model is solved, but using an alternative algorithm. Now the model is solved in percentages. Households choose the percentage of cash-on-hand to allocate to aggregate savings, and then given that the percentage of total savings to allocate to safe vs risky asset.
 
-In the levels solution above, households at different state space points face the same choice set, but almost half of the choice points are invalid because they would lead to negative consumption today. Solving the problem in percentages allow all households to have the same choice grid in terms of percentage levels. This potentially offers much more precise solutions under some model parameters combinations. One could compare testing results from *3.6* above and *4.4* below. Additionally, the levels based grid solution might lead to degenerate steady state asset distributions. This is because at low levels of cash-on-hand, if the risky asset's lowest level of choice is invalid, then an individual could be stuck in that state.
-
 ## 4.1 Two Stage Percentage Interpolation (ipWKZ)
 
 ### 4.1.a Algorithm Description
 
-This is the *ipWKZ* problem: *i* stands for interpolation, *p* stands for percentage, *wk* stand for two stage w=k'+b' first then k' given w.
+In the levels solution above, households at different state space points face the same choice set, but almost half of the choice points are invalid because they would lead to negative consumption today. Solving the problem in percentages allow all households to have the same choice grid in terms of percentage levels. This potentially offers much more precise solutions under some model parameters combinations. One could compare testing results from *3.6* above and *4.4* below. Additionally, the levels based grid solution might lead to degenerate steady state asset distributions. This is because at low levels of cash-on-hand, if the risky asset's lowest level of choice is invalid, then an individual could be stuck in that state.
 
-For the *ipWKZ* model, while there is still very substantial gains from the looped to the vectorized algorithm implementation, the speed improvements from moving to the efficient-vectorized implementation is much less substantial. For the small benchmark grids, the speed is actually slower when we use the efficient-vectorized implementation.
+This is the *ipWKZ* problem: *i* stands for interpolation, *p* stands for percentage, *wk* stand for two stage w=k'+b' first then k' given w. For the *ipWKZ* model, while there is still very substantial gains from the looped to the vectorized algorithm implementation, the speed improvements from moving to the efficient-vectorized implementation is much less substantial. For the small benchmark grids, the speed is actually slower when we use the efficient-vectorized implementation.
 
 We have three sets of interpolations now:
 - **interpolate 1**: As before, we interpolate over u(c).
@@ -357,14 +353,7 @@ Now we set up the model with borrowing, allowing for defaults. The *ipwkz* code 
 
 ## 5.1 Two Stage Percentage Interp Borrow (ipWKBZ)
 
-The algorithm is the same as for *ipwkz*. For issues related to defaults, the algorithm is the same as for *abz* discussed in section *2*. Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_set_default_param.html), for the benchmark simulation, same as *3.3*:
-
-- savings problem with alternative safe and risky assets
-- **50** aggregate savings *percentage* grid points, **50** risky investment *percentage* grid points, **2500** valid choice combinations in [triangular choice matrix with borrowing](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_get_funcgrid.html)
-- **15** grid points for the AR1 shock
-- interpolate 1: **0.0001** consumption interpolation grid gap
-- interpolate 2: **0.1** value function cash-on-hand interpolation grid gap
-- interpolate 3: **0.1** expected value function aggregate savings interpolation grid gap
+The algorithm is the same as for *ipwkz* with slight modifications to allow for borrowing and defaults. Set up for default is the same as in the *abz* model discussed in section *2*. Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_set_default_param.html), for the benchmark simulation, same parameters as *4.1*.
 
 1. Second Stage with borrowing *ipwkbz* [2nd stage solution](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_evf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/solve/ff_ipwkbz_evf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_evf.html)
     * solving for kperc(w,z) = argmax_{kperc'}(E(V(coh(kperc',b'=w-w*kperc'),z')) given z and w.
