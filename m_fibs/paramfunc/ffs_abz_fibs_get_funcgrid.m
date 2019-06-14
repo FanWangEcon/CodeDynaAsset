@@ -33,6 +33,7 @@ function [armt_map, func_map] = ffs_abz_fibs_get_funcgrid(varargin)
 % @include
 %
 % * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc/ffs_abz_fibs_set_functions.m ffs_abz_fibs_set_functions>
+% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc_fibs/ffs_for_br_block.m ffs_for_br_block>
 % * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/ffto_gen_tauchen_jhl.m ffto_gen_tauchen_jhl>
 % * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/fft_gen_grid_loglin.m fft_gen_grid_loglin>
 %
@@ -75,6 +76,9 @@ params_group = values(param_map, {'fl_crra', 'fl_c_min'});
 params_group = values(param_map, {'fl_r_fbr', 'fl_r_fsv', 'fl_r_inf', 'fl_w'});
 [fl_r_fbr, fl_r_fsv, fl_r_inf, fl_w] = params_group{:};
 
+params_group = values(param_map, {'st_forbrblk_type', 'fl_forbrblk_brmost', 'fl_forbrblk_brleast', 'fl_forbrblk_gap'});
+[st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap] = params_group{:};
+
 params_group = values(support_map, {'bl_graph_funcgrids', 'bl_display_funcgrids'});
 [bl_graph_funcgrids, bl_display_funcgrids] = params_group{:};
 
@@ -100,6 +104,11 @@ else
         fl_w, fl_r_inf, fl_a_min, fl_a_max, it_a_n);
 end
 
+%% Get Formal Borrowing Blocks
+
+[ar_forbrblk, ar_forbrblk_r] = ...
+        ffs_for_br_block_gen(fl_r_fbr, st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap);
+
 %% Store
 
 armt_map = containers.Map('KeyType','char', 'ValueType','any');
@@ -107,6 +116,8 @@ armt_map('ar_a') = ar_a;
 armt_map('mt_z_trans') = mt_z_trans;
 armt_map('ar_stationary') = ar_stationary;
 armt_map('ar_z') = ar_z;
+armt_map('ar_forbrblk') = ar_forbrblk;
+armt_map('ar_forbrblk_r') = ar_forbrblk_r;
 
 func_map = containers.Map('KeyType','char', 'ValueType','any');
 func_map('f_util_log') = f_util_log;
@@ -291,7 +302,11 @@ if (bl_display_funcgrids)
     disp('mt_z_trans');
     disp(size(mt_z_trans));
     disp(mt_z_trans);
-
+    
+    disp('ar_forbrblk, ar_forbrblk_r');
+    disp(size(ar_forbrblk));
+    disp([ar_forbrblk;ar_forbrblk_r]');
+    
     param_map_keys = keys(func_map);
     param_map_vals = values(func_map);
     for i = 1:length(func_map)

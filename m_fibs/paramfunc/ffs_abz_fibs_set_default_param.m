@@ -65,11 +65,17 @@ param_map('fl_r_save') = 0.025;
 param_map('fl_r_borr') = 0.035;
 
 % formal informal parameters
-% fl_for_br_block are the formal borrowing grid block sizes. 
+% fl_for_br_block are the formal borrowing grid block sizes.
 param_map('fl_r_inf') = 0.06;
 param_map('fl_r_fsv') = 0.01;
 param_map('fl_r_fbr') = 0.035;
-param_map('fl_for_br_block') = -1; 
+param_map('fl_for_br_block') = -1;
+param_map('bl_b_is_principle') = false;
+% see: ffs_for_br_block.m
+param_map('st_forbrblk_type') = 'seg3';
+param_map('fl_forbrblk_brmost') = -10;
+param_map('fl_forbrblk_brleast') = -1;
+param_map('fl_forbrblk_gap') = -1;
 
 % Minimum Consumption, c_min is for default, when c < 0, replace utility
 % with fl_nan_replace.
@@ -129,6 +135,7 @@ support_map('st_img_suffix') = ['_p' num2str(it_subset) '.png'];
 % Sub-function graphing controls
 support_map('bl_graph_funcgrids') = false;
 support_map('bl_display_funcgrids') = false;
+support_map('bl_display_minccost') = true;
 
 %% Subset Options
 %

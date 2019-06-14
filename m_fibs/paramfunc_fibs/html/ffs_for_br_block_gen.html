@@ -1,0 +1,229 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>ffs_for_br_block_gen</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-13"><meta name="DC.source" content="ffs_for_br_block_gen.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">FFS_FOR_BR_BLOCK_GEN formal borrowing blocks</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Set Formal Borrowing Grid Uniform</a></li><li><a href="#6">Set Formal Borrowing Grid Three Segment</a></li><li><a href="#7">Sort Borrowing Blocks</a></li><li><a href="#8">Generate Corresponding Interest Rates Arrays</a></li></ul></div><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><pre class="codeinput"><span class="keyword">function</span> [ar_forbrblk, ar_forbrblk_r] = ffs_for_br_block_gen(varargin)
+</pre><h2 id="2">FFS_FOR_BR_BLOCK_GEN formal borrowing blocks</h2><p>Grid of formal borrowing points with associated interest rates. Policies could shift this. This function could be invoked to generate multiple formal borrowing grids from multiple formal borrowing providers, and the overall formal borrowing choice set is a combination of these grids.</p><p>@param fl_r_fbr boolean single formal borrowing interest rate</p><p>@param st_forbrblk_type string different formal borrowing grid structures, some for testing/illustration purposes. Estimation uses real observed blocks from data.</p><p>@param st_forbrblk_type string different formal borrowing grid structures, some for testing/illustration purposes. Estimation uses real observed blocks from data.</p><div><ol><li><b>unif</b>: uniform grid equal gap from min to</li><li><b>seg3</b>: three segment blocks, the first 1/3 gap of the third segement, respect min and max from fl_forbrblk_brmost and fl_forbrblk_brleast, smallest borrowing segment gap is fl_forbrblk_gap</li></ol></div><p>@param fl_forbrblk_brmost float maximum formal borrowing allowed on grid, , might not not be relevant for all <i>st_forbrblk_type</i></p><p>@param fl_forbrblk_brleast float minimum formal borrowing allowed on grid, might not be relevant for all <i>st_forbrblk_type</i></p><p>@param fl_forbrblk_gap float formal borrowing grid gap, means different things for different <i>st_forbrblk_type</i></p><p>@return ar_forbrblk array array of formal borrowing grid points. should be ordered from lowest to highest including zero at the top. i.e.: [-4, -2, -1, 0]. These are assumed to be in principles units always.</p><p>@return ar_forbrblk_r array interest rates associated with equal-length <i>ar_forbrblk</i>. ar_forbrblk_r multiplied element-wise with ar_forbrblk will provide the principle + interest rates associated with each formal borrowing grid elements.</p><p>@example</p><pre class="language-matlab">[ar_forbrblk, ar_forbrblk_r] = <span class="keyword">...</span>
+     ffs_for_br_block_gen(fl_r_fbr, st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap);
+</pre><h2 id="3">Default</h2><pre class="codeinput">fl_r_fbr = 0.035;
+[st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap] = deal(<span class="string">'seg3'</span>, -10, -1, -1.5);
+bl_display_forbrblock = true;
+default_params = {fl_r_fbr st_forbrblk_type fl_forbrblk_brmost fl_forbrblk_brleast fl_forbrblk_gap <span class="keyword">...</span>
+    bl_display_forbrblock};
+</pre><h2 id="4">Parse Parameters</h2><pre class="codeinput"><span class="comment">% numvarargs is the number of varagin inputted</span>
+[default_params{1:length(varargin)}] = varargin{:};
+[fl_r_fbr, st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap, <span class="keyword">...</span>
+    bl_display_forbrblock] = default_params{:};
+</pre><h2 id="5">Set Formal Borrowing Grid Uniform</h2><pre class="codeinput"><span class="keyword">if</span> (strcmp(st_forbrblk_type, <span class="string">'unif'</span>))
+    ar_forbrblk = fl_forbrblk_brleast:fl_forbrblk_gap:fl_forbrblk_brmost;
+<span class="keyword">end</span>
+</pre><h2 id="6">Set Formal Borrowing Grid Three Segment</h2><p>An example grid with three segments, the first segement has fl_forbrblk_gap as gap, the second segment gap is twice, the third segement the gap is 3 times as large as fl_forbrblk_gap. Respect fl_forbrblk_brmost fl_forbrblk_brleast, which means divided into three parts based on them as much as possible</p><pre class="codeinput"><span class="keyword">if</span> (strcmp(st_forbrblk_type, <span class="string">'seg3'</span>))
+    fl_most_least_gap = (fl_forbrblk_brmost - fl_forbrblk_brleast);
+    fl_most_least_seg3_interval = fl_most_least_gap/3;
+
+    ar_seg1 = fl_forbrblk_brleast:fl_forbrblk_gap:fl_most_least_seg3_interval;
+    ar_seg2 = max(ar_seg1):(fl_forbrblk_gap*2):fl_most_least_seg3_interval*2;
+    ar_seg3 = max(ar_seg2):(fl_forbrblk_gap*3):fl_forbrblk_brmost;
+
+    ar_forbrblk =[ar_seg1, ar_seg2, ar_seg3];
+<span class="keyword">end</span>
+</pre><h2 id="7">Sort Borrowing Blocks</h2><pre class="codeinput"><span class="comment">% add zero because formal borrowing = 0 should be an option</span>
+ar_forbrblk = [-0 ar_forbrblk];
+ar_forbrblk = sort(unique([ar_forbrblk]));
+</pre><h2 id="8">Generate Corresponding Interest Rates Arrays</h2><pre class="codeinput">ar_forbrblk_r = fl_r_fbr + zeros(size(ar_forbrblk));
+
+<span class="keyword">if</span> (bl_display_forbrblock)
+    disp(<span class="string">'ar_forbrblk'</span>);
+    disp(ar_forbrblk);
+    disp(<span class="string">'ar_forbrblk_r'</span>);
+    disp(ar_forbrblk_r);
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">ar_forbrblk
+  -10.0000   -5.5000   -4.0000   -2.5000   -1.0000         0
+
+ar_forbrblk_r
+    0.0350    0.0350    0.0350    0.0350    0.0350    0.0350
+
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><pre class="codeoutput">
+ans =
+
+  -10.0000   -5.5000   -4.0000   -2.5000   -1.0000         0
+
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%%
+% *back to <https://fanwangecon.github.io Fan>'s
+% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
+% Table of Content.*
+
+function [ar_forbrblk, ar_forbrblk_r] = ffs_for_br_block_gen(varargin)
+%% FFS_FOR_BR_BLOCK_GEN formal borrowing blocks
+% Grid of formal borrowing points with associated interest rates. Policies
+% could shift this. This function could be invoked to generate multiple
+% formal borrowing grids from multiple formal borrowing providers, and the
+% overall formal borrowing choice set is a combination of these grids. 
+%
+% @param fl_r_fbr boolean single formal borrowing interest rate
+%
+% @param st_forbrblk_type string different formal borrowing grid
+% structures, some for testing/illustration purposes. Estimation uses real
+% observed blocks from data.
+%
+% @param st_forbrblk_type string different formal borrowing grid
+% structures, some for testing/illustration purposes. Estimation uses real
+% observed blocks from data.
+%
+% # *unif*: uniform grid equal gap from min to
+% # *seg3*: three segment blocks, the first 1/3 gap of the third segement,
+% respect min and max from fl_forbrblk_brmost and fl_forbrblk_brleast,
+% smallest borrowing segment gap is fl_forbrblk_gap
+%
+% @param fl_forbrblk_brmost float maximum formal borrowing allowed on grid,
+% , might not not be relevant for all _st_forbrblk_type_
+%
+% @param fl_forbrblk_brleast float minimum formal borrowing allowed on
+% grid, might not be relevant for all _st_forbrblk_type_
+%
+% @param fl_forbrblk_gap float formal borrowing grid gap, means different
+% things for different _st_forbrblk_type_
+%
+% @return ar_forbrblk array array of formal borrowing grid points. should
+% be ordered from lowest to highest including zero at the top. i.e.: [-4,
+% -2, -1, 0]. These are assumed to be in principles units always. 
+%
+% @return ar_forbrblk_r array interest rates associated with equal-length
+% _ar_forbrblk_. ar_forbrblk_r multiplied element-wise with ar_forbrblk
+% will provide the principle + interest rates associated with each formal
+% borrowing grid elements. 
+%
+% @example
+%
+%   [ar_forbrblk, ar_forbrblk_r] = ...
+%        ffs_for_br_block_gen(fl_r_fbr, st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap);
+%
+
+
+%% Default
+
+fl_r_fbr = 0.035;
+[st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap] = deal('seg3', -10, -1, -1.5);
+bl_display_forbrblock = true;
+default_params = {fl_r_fbr st_forbrblk_type fl_forbrblk_brmost fl_forbrblk_brleast fl_forbrblk_gap ...
+    bl_display_forbrblock};
+
+%% Parse Parameters
+
+% numvarargs is the number of varagin inputted
+[default_params{1:length(varargin)}] = varargin{:};
+[fl_r_fbr, st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap, ...
+    bl_display_forbrblock] = default_params{:};
+
+%% Set Formal Borrowing Grid Uniform
+
+if (strcmp(st_forbrblk_type, 'unif'))
+    ar_forbrblk = fl_forbrblk_brleast:fl_forbrblk_gap:fl_forbrblk_brmost;
+end
+
+%% Set Formal Borrowing Grid Three Segment
+% An example grid with three segments, the first segement has
+% fl_forbrblk_gap as gap, the second segment gap is twice, the third
+% segement the gap is 3 times as large as fl_forbrblk_gap. Respect
+% fl_forbrblk_brmost fl_forbrblk_brleast, which means divided into three
+% parts based on them as much as possible
+
+if (strcmp(st_forbrblk_type, 'seg3'))
+    fl_most_least_gap = (fl_forbrblk_brmost - fl_forbrblk_brleast);
+    fl_most_least_seg3_interval = fl_most_least_gap/3;
+    
+    ar_seg1 = fl_forbrblk_brleast:fl_forbrblk_gap:fl_most_least_seg3_interval;
+    ar_seg2 = max(ar_seg1):(fl_forbrblk_gap*2):fl_most_least_seg3_interval*2;
+    ar_seg3 = max(ar_seg2):(fl_forbrblk_gap*3):fl_forbrblk_brmost;
+    
+    ar_forbrblk =[ar_seg1, ar_seg2, ar_seg3];
+end
+
+%% Sort Borrowing Blocks
+
+% add zero because formal borrowing = 0 should be an option
+ar_forbrblk = [-0 ar_forbrblk];
+ar_forbrblk = sort(unique([ar_forbrblk]));
+
+%% Generate Corresponding Interest Rates Arrays
+ar_forbrblk_r = fl_r_fbr + zeros(size(ar_forbrblk));
+
+if (bl_display_forbrblock)
+    disp('ar_forbrblk');
+    disp(ar_forbrblk);
+    disp('ar_forbrblk_r');
+    disp(ar_forbrblk_r);
+end
+
+end
+
+##### SOURCE END #####
+--></body></html>

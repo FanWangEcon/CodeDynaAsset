@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>ffs_abz_fibs_get_funcgrid</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-12"><meta name="DC.source" content="ffs_abz_fibs_get_funcgrid.m"><style type="text/css">
+      --><title>ffs_abz_fibs_get_funcgrid</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-13"><meta name="DC.source" content="ffs_abz_fibs_get_funcgrid.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">FFS_ABZ_FIBS_GET_FUNCGRID get funcs, params, states choices shocks grids</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Get Shock Grids</a></li><li><a href="#6">Get Equations</a></li><li><a href="#7">Get Asset and Choice Grid</a></li><li><a href="#8">Store</a></li><li><a href="#9">Graph: A, Shocks, COH, and Defaults</a></li><li><a href="#10">Display</a></li></ul></div><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><pre class="codeinput"><span class="keyword">function</span> [armt_map, func_map] = ffs_abz_fibs_get_funcgrid(varargin)
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">FFS_ABZ_FIBS_GET_FUNCGRID get funcs, params, states choices shocks grids</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Get Shock Grids</a></li><li><a href="#6">Get Equations</a></li><li><a href="#7">Get Asset and Choice Grid</a></li><li><a href="#8">Get Formal Borrowing Blocks</a></li><li><a href="#9">Store</a></li><li><a href="#10">Graph: A, Shocks, COH, and Defaults</a></li><li><a href="#11">Display</a></li></ul></div><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><pre class="codeinput"><span class="keyword">function</span> [armt_map, func_map] = ffs_abz_fibs_get_funcgrid(varargin)
 </pre><h2 id="2">FFS_ABZ_FIBS_GET_FUNCGRID get funcs, params, states choices shocks grids</h2><p>centralized gateway for retrieving parameters, and solution grids and functions</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param bl_input_override boolean if true varargin contained param_map and support_map fully overrides local default. Local default is not invoked. This could be important for speed if this function is getting invoked within certain loops. Default is 0.</p><p>@return armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@return func_map container container with function handles for consumption cash-on-hand etc.</p><p>@example</p><pre>  it_param_set = 2;
   bl_input_override = true;
   [param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
@@ -103,11 +103,24 @@ params_group = values(param_map, {<span class="string">'fl_crra'</span>, <span c
 params_group = values(param_map, {<span class="string">'fl_r_fbr'</span>, <span class="string">'fl_r_fsv'</span>, <span class="string">'fl_r_inf'</span>, <span class="string">'fl_w'</span>});
 [fl_r_fbr, fl_r_fsv, fl_r_inf, fl_w] = params_group{:};
 
+params_group = values(param_map, {<span class="string">'st_forbrblk_type'</span>, <span class="string">'fl_forbrblk_brmost'</span>, <span class="string">'fl_forbrblk_brleast'</span>, <span class="string">'fl_forbrblk_gap'</span>});
+[st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap] = params_group{:};
+
 params_group = values(support_map, {<span class="string">'bl_graph_funcgrids'</span>, <span class="string">'bl_display_funcgrids'</span>});
 [bl_graph_funcgrids, bl_display_funcgrids] = params_group{:};
 </pre><h2 id="5">Get Shock Grids</h2><pre class="codeinput">[~, mt_z_trans, ar_stationary, ar_z] = ffto_gen_tauchen_jhl(fl_z_mu,fl_z_rho,fl_z_sig,it_z_n);
 </pre><h2 id="6">Get Equations</h2><pre class="codeinput">[f_util_log, f_util_crra, f_util_standin, f_inc, f_coh_fbis, f_cons_coh_fbis, f_bprime] = <span class="keyword">...</span>
     ffs_abz_fibs_set_functions(fl_crra, fl_c_min, fl_r_fbr, fl_r_fsv, fl_w);
+</pre><pre class="codeoutput">f_inc
+    @(ar_z,fl_r_inf,ar_for_borr,ar_inf_borr,ar_for_save)(ar_z*fl_w+((ar_for_borr./(1+fl_r_fbr))*fl_r_fbr+(ar_inf_borr./(1+fl_r_inf))*fl_r_inf+(ar_for_save./(1+fl_r_fsv))*fl_r_fsv))
+
+fl_inc=1.228
+with fl_r_inf:0.060, ar_for_borr:-1.000, ar_inf_borr:-0.330, ar_for_save:0.000f_coh_fbis
+    @(ar_z,ar_b)(ar_z*fl_w+ar_b)
+
+f_cons_coh_fbis
+    @(coh,ar_bprime)(coh-ar_bprime)
+
 </pre><h2 id="7">Get Asset and Choice Grid</h2><p>note this requires ar_z</p><pre class="codeinput"><span class="keyword">if</span> (bl_loglin)
     <span class="comment">% C:\Users\fan\M4Econ\asset\grid\ff_grid_loglin.m</span>
     ar_a = fft_gen_grid_loglin(it_a_n, fl_a_max, fl_a_min, fl_loglin_threshold);
@@ -116,11 +129,21 @@ params_group = values(support_map, {<span class="string">'bl_graph_funcgrids'</s
         fl_b_bd, bl_default, ar_z, <span class="keyword">...</span>
         fl_w, fl_r_inf, fl_a_min, fl_a_max, it_a_n);
 <span class="keyword">end</span>
-</pre><h2 id="8">Store</h2><pre class="codeinput">armt_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
+</pre><h2 id="8">Get Formal Borrowing Blocks</h2><pre class="codeinput">[ar_forbrblk, ar_forbrblk_r] = <span class="keyword">...</span>
+        ffs_for_br_block(fl_r_fbr, st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap);
+</pre><pre class="codeoutput">ar_forbrblk
+   -10    -7    -5    -4    -3    -2    -1
+
+ar_forbrblk_r
+    0.0350    0.0350    0.0350    0.0350    0.0350    0.0350    0.0350
+
+</pre><h2 id="9">Store</h2><pre class="codeinput">armt_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
 armt_map(<span class="string">'ar_a'</span>) = ar_a;
 armt_map(<span class="string">'mt_z_trans'</span>) = mt_z_trans;
 armt_map(<span class="string">'ar_stationary'</span>) = ar_stationary;
 armt_map(<span class="string">'ar_z'</span>) = ar_z;
+armt_map(<span class="string">'ar_forbrblk'</span>) = ar_forbrblk;
+armt_map(<span class="string">'ar_forbrblk_r'</span>) = ar_forbrblk_r;
 
 func_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
 func_map(<span class="string">'f_util_log'</span>) = f_util_log;
@@ -130,7 +153,7 @@ func_map(<span class="string">'f_inc'</span>) = f_inc;
 func_map(<span class="string">'f_coh_fbis'</span>) = f_coh_fbis;
 func_map(<span class="string">'f_cons_coh_fbis'</span>) = f_cons_coh_fbis;
 func_map(<span class="string">'f_bprime'</span>) = f_bprime;
-</pre><h2 id="9">Graph: A, Shocks, COH, and Defaults</h2><div><ol><li>y-axis : coh(a,z)</li><li>x-axis : a</li><li>color: z</li><li>overlay: coh points points where there is default.</li></ol></div><pre class="codeinput"><span class="keyword">if</span> (bl_graph_funcgrids)
+</pre><h2 id="10">Graph: A, Shocks, COH, and Defaults</h2><div><ol><li>y-axis : coh(a,z)</li><li>x-axis : a</li><li>color: z</li><li>overlay: coh points points where there is default.</li></ol></div><pre class="codeinput"><span class="keyword">if</span> (bl_graph_funcgrids)
 
     <span class="comment">% mesh a and and z</span>
     [mt_a_mesh_z, mt_z_mesh_a] = ndgrid(ar_a, ar_z);
@@ -286,7 +309,7 @@ func_map(<span class="string">'f_bprime'</span>) = f_bprime;
     <span class="keyword">end</span>
 
 <span class="keyword">end</span>
-</pre><img vspace="5" hspace="5" src="ffs_abz_fibs_get_funcgrid_01.png" alt=""> <h2 id="10">Display</h2><pre class="codeinput"><span class="keyword">if</span> (bl_display_funcgrids)
+</pre><img vspace="5" hspace="5" src="ffs_abz_fibs_get_funcgrid_01.png" alt=""> <h2 id="11">Display</h2><pre class="codeinput"><span class="keyword">if</span> (bl_display_funcgrids)
 
     disp(<span class="string">'ar_z'</span>);
     disp(size(ar_z));
@@ -295,6 +318,10 @@ func_map(<span class="string">'f_bprime'</span>) = f_bprime;
     disp(<span class="string">'mt_z_trans'</span>);
     disp(size(mt_z_trans));
     disp(mt_z_trans);
+
+    disp(<span class="string">'ar_forbrblk, ar_forbrblk_r'</span>);
+    disp(size(ar_forbrblk));
+    disp([ar_forbrblk;ar_forbrblk_r]');
 
     param_map_keys = keys(func_map);
     param_map_vals = values(func_map);
@@ -375,6 +402,17 @@ mt_z_trans
     0.1123
     0.2602
 
+ar_forbrblk, ar_forbrblk_r
+     1     7
+
+  -10.0000    0.0350
+   -7.0000    0.0350
+   -5.0000    0.0350
+   -4.0000    0.0350
+   -3.0000    0.0350
+   -2.0000    0.0350
+   -1.0000    0.0350
+
 pos = 1 ; key = f_bprime ; val = @(fl_r_inf,ar_for_borr,ar_inf_borr,ar_for_save)(ar_for_borr./(1+fl_r_fbr)+ar_inf_borr./(1+fl_r_inf)+ar_for_save./(1+fl_r_fsv))
 pos = 2 ; key = f_coh_fbis ; val = @(ar_z,ar_b)(ar_z*fl_w+ar_b)
 pos = 3 ; key = f_cons_coh_fbis ; val = @(coh,ar_bprime)(coh-ar_bprime)
@@ -388,7 +426,7 @@ ans =
 
   Map with properties:
 
-        Count: 4
+        Count: 6
       KeyType: char
     ValueType: any
 
@@ -471,6 +509,9 @@ params_group = values(param_map, {'fl_crra', 'fl_c_min'});
 params_group = values(param_map, {'fl_r_fbr', 'fl_r_fsv', 'fl_r_inf', 'fl_w'});
 [fl_r_fbr, fl_r_fsv, fl_r_inf, fl_w] = params_group{:};
 
+params_group = values(param_map, {'st_forbrblk_type', 'fl_forbrblk_brmost', 'fl_forbrblk_brleast', 'fl_forbrblk_gap'});
+[st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap] = params_group{:};
+
 params_group = values(support_map, {'bl_graph_funcgrids', 'bl_display_funcgrids'});
 [bl_graph_funcgrids, bl_display_funcgrids] = params_group{:};
 
@@ -496,6 +537,11 @@ else
         fl_w, fl_r_inf, fl_a_min, fl_a_max, it_a_n);
 end
 
+%% Get Formal Borrowing Blocks
+
+[ar_forbrblk, ar_forbrblk_r] = ...
+        ffs_for_br_block(fl_r_fbr, st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap);
+
 %% Store
 
 armt_map = containers.Map('KeyType','char', 'ValueType','any');
@@ -503,6 +549,8 @@ armt_map('ar_a') = ar_a;
 armt_map('mt_z_trans') = mt_z_trans;
 armt_map('ar_stationary') = ar_stationary;
 armt_map('ar_z') = ar_z;
+armt_map('ar_forbrblk') = ar_forbrblk;
+armt_map('ar_forbrblk_r') = ar_forbrblk_r;
 
 func_map = containers.Map('KeyType','char', 'ValueType','any');
 func_map('f_util_log') = f_util_log;
@@ -687,7 +735,11 @@ if (bl_display_funcgrids)
     disp('mt_z_trans');
     disp(size(mt_z_trans));
     disp(mt_z_trans);
-
+    
+    disp('ar_forbrblk, ar_forbrblk_r');
+    disp(size(ar_forbrblk));
+    disp([ar_forbrblk;ar_forbrblk_r]');
+    
     param_map_keys = keys(func_map);
     param_map_vals = values(func_map);
     for i = 1:length(func_map)

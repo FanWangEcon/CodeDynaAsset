@@ -174,6 +174,10 @@ while bl_vfi_continue
             % Consumption
             mt_c = f_cons_coh(ar_coh, ar_a');
 
+            % Bridge Loan and consumption
+            
+            % Post-Bridge Formal and Informal Choices consumption
+            
             % EVAL current utility: N by N, f_util defined earlier
             % slightly faster to explicitly write function
             if (fl_crra == 1)

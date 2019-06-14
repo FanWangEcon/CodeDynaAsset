@@ -191,7 +191,7 @@ The *iwkz* problem, interpolated version of 2.2. Takes significantly less time t
 
 The reason that *iWKZ* is faster then *3.2* is that when we increase aggregate savings grid points, we do not need to reduce the two interpolation grid gaps. COH is the endogenous state, and its size is determined by the *cash-on-hand interpolation grid gap*. The choice grid increases in size as we increase aggregate savings grid points, but since we are solving in two stages, the dimensionality of the problem increases proportionally (but not exponentially). The total number of safe and risky asset choice is determined by assuming equi-distance grid gap for aggregate savings as well as both risky and safe investments. Speed up achieved via interpolation as described [here](https://fanwangecon.github.io/M4Econ/).
 
-In section 2.6 below, I show how solution results change for *iwkz* as we increase aggregate savings grid points, shock grid points, reduce the interpolation gaps, or change production function parameters from decreasing to constant return to scale.
+In section *3.6* below, I show how solution results change for *iwkz* as we increase aggregate savings grid points, shock grid points, reduce the interpolation gaps, or change production function parameters from decreasing to constant return to scale.
 
 ### 3.3.b Algorithm Implementation
 
@@ -256,7 +256,7 @@ We solve the joint asset choice problem using the *optimized-vectorized* method 
 
 > Files for this section are in the [/m_ipwkz/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_ipwkz) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository.
 
-In Section 2, we solved the two asset problem in levels. Here, the same model is solved, but using an alternative algorithm. Now the model is solved in percentages. Households choose the percentage of cash-on-hand to allocate to aggregate savings, and then given that the percentage of total savings to allocate to safe vs risky asset.
+In Section 3, we solved the two asset problem in levels. Here, the same model is solved, but using an alternative algorithm. Now the model is solved in percentages. Households choose the percentage of cash-on-hand to allocate to aggregate savings, and then given that the percentage of total savings to allocate to safe vs risky asset.
 
 ## 4.1 Two Stage Percentage Interpolation (ipWKZ)
 
@@ -409,20 +409,37 @@ An application of the codes developed in sections (1) through (5) is the paper: 
 
 ## 6.1 Optimization Solution Files (FIBS)
 
-We have a very similar algorithm as before.
+We have a sequence of files that are specific to solving the joint formal and informal problem.
 
-1. Formal and Informal Optimization [Formal Informal](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_fibs_min_coh_aprime_wthbridge.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc/ffs_fibs_min_coh_aprime_wthbridge.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_fibs_min_coh_aprime_wthbridge.html)
-    * solve the formal and informal choice problem with formal grid and allowing for bridge loans.
-2. Second Stage with borrowing *fibs* 2nd stage solution: [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/solve/ff_fibs_evf.m)
-    * solving for kperc(w,z) = argmax_{kperc'}(E(V(coh(kperc',b'=w-w*kperc'),z')) given z and w.
-3. *fibs* model optimized vectorized solution: [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/solve/ff_fibs_vf_vecsv.m)
+1. [Formal Borrowing Grid](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_for_br_block_gen.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc/ffs_for_br_block_gen.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_for_br_block_gen.html)
+    * A menu of formal borrowing choices
+2. [Match Borrowing to Formal Grid](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_for_br_block_match.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc/ffs_for_br_block_match.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_for_br_block_match.html)
+    * Given a level of borrowing, what items on the formal borrowing menu are the closest to it
+3. [Optimize Formal and Informal, Borrowing and Savings Joint Choices](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_fibs_min_c_cost.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc/ffs_fibs_min_c_cost.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_fibs_min_c_cost.html)
+    * Given interest rates, choose among: formal + informal borrowing, formal borrowing + savings, informal borrowing only, formal borrowing only.
+4. [Bridge Loan](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_fibs_inf_bridge.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc/ffs_fibs_inf_bridge.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_fibs_inf_bridge.html)
+    * When cash-on-hand is insufficient for loan repayment, households resort to informal lenders for bridge loans
+5. [Informal Interest Rates](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_r_inf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc/ffs_r_inf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_r_inf.html)
+    * Append onto shock Z interest rate shock representing informal interest rate shocks
+
+## 6.2 One Asset Formal Informal (ABZ+FIBS)
+
+1. *abz* model optimized vectorized solution: [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/solve/ff_abz_fibs_vf_vecsv.m)
     * same as *ipwkbz* with the inclusion of informal choices
 
-## 6.2 Asset Distributions (FIBS)
+
+## 6.3 Two Assets Formal Informal (ipWKBZ+FIBS)
+
+1. Second Stage with borrowing *fibs* 2nd stage solution: [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/solve/ff_fibs_evf.m)
+    * solving for kperc(w,z) = argmax_{kperc'}(E(V(coh(kperc',b'=w-w*kperc'),z')) given z and w.
+2. *fibs* model optimized vectorized solution: [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/solve/ff_fibs_vf_vecsv.m)
+    * same as *ipwkbz* with the inclusion of informal choices
+
+## 6.4 Asset Distributions (FIBS)
 
 Solving for the asset distribution.
 
-## 6.3 Solution Support Files (FIBS)
+## 6.5 Solution Support Files (ipWKBZ+FIBS)
 
 All solution algorithms share the same support files.
 

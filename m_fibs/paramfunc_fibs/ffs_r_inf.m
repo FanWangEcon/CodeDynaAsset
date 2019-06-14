@@ -9,32 +9,6 @@ function [mt_r_inf_trans, ar_r_inf_stationary, ar_r_inf] = ffs_r_inf(varargin)
 % element in the sample space of the discrete random variable for informal
 % interest rate could be estimated.
 %
-% @param fl_r_inf float informal interest rate
-%
-% @param fl_r_fsv float (formal) savings interest rate
-%
-% @param fl_r_fbr float borrowing interest rate
-%
-% @param aprime array level of aggregate borrowing excluding
-% bridge loan. Note that bridge loan is needed if coh is negative and
-% households can not pay back principle and interests.
-%
-% @param coh_today array the level of cash-on-hand today, when the
-% borrowing and savings decisions are made. If this is positive, then
-% households freely borrow, do not need bridge loans. If this is negative
-% households need to first borrow to meet bridge loan needs. 
-%
-% @return mt_r_inf_trans transition matrix for the informal interest rate
-% discrete random variable
-%
-% @return ar_r_inf_stationary stationary distribution of the informal
-% interest rate discrete random variable
-%
-% @return ar_r_inf values associated with each element in the sample space
-% of the informal interest rate discrete random variable
-%
-% @example
-%
 %
 
 %% Default
