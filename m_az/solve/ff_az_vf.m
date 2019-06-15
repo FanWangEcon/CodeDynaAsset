@@ -45,14 +45,13 @@ function result_map = ff_az_vf(varargin)
 % * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solvepost/ff_az_vf_post.m ff_az_vf_post>
 %
 
-
 %% Default
 % * it_param_set = 1: quick test
 % * it_param_set = 2: benchmark run
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 4;
+it_param_set = 3;
 bl_input_override = true;
 [param_map, support_map] = ffs_az_set_default_param(it_param_set);
 [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override

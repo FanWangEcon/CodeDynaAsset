@@ -3,7 +3,7 @@
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
-function [f_util_log, f_util_crra, f_util_standin, f_prod, f_inc, f_coh, f_cons] = ffs_fibs_set_functions(varargin)
+function [f_util_log, f_util_crra, f_util_standin, f_prod, f_inc, f_coh, f_cons_coh] = ffs_fibs_set_functions(varargin)
 %% FFS_IPWKZ_SET_FUNCTIONS setting model functions
 % define functions here to avoid copy paste mistakes. This function is
 % identical to the
@@ -109,7 +109,7 @@ f_coh = @(z, b, k) (f_prod(z, k) + k*(1-fl_delta) + fl_w + b.*(1+fl_r_save).*(b>
 %% Equations Consumption
 % Simple Consumption given cash-on-hand
 % f_cons = @(coh, bprime, kprime) (coh - kprime - ((bprime./(1+fl_r_save)).*(bprime>0)) - ((bprime./(1+fl_r_borr)).*(bprime<=0)));
-f_cons = @(coh, bprime, kprime) (coh - kprime - bprime);
+f_cons_coh = @(coh, bprime, kprime) (coh - kprime - bprime);
 
 %% Equations Stand-in Fake Utility for Graphs
 % Utility for graphing with random data, note that when we graph with coh

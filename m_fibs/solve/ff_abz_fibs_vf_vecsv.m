@@ -1,10 +1,10 @@
-%%
+%% FF_ABZ_FIBS_VF_VECSV
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
 function result_map = ff_abz_fibs_vf_vecsv(varargin)
-%% FF_ABZ_FIBS_VF_VECSV solve infinite horizon exo shock + endo asset problem
+%% FF_ABZ_FIBS_VF_VECSV borr + save one asset formal informal + effi vec
 % The formal and informal borrowing and savings version of
 % <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html
 % ff_abz_vf_vecsv>.
@@ -27,9 +27,9 @@ function result_map = ff_abz_fibs_vf_vecsv(varargin)
 %
 % @include
 %
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc/ffs_abz_fibs_set_default_param.m ffs_abz_fibs_set_default_param>
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc/ffs_abz_fibs_get_funcgrid.m ffs_abz_fibs_get_funcgrid>
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solvepost/ff_az_vf_post.m ff_az_vf_post>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_fibs_set_default_param.html ffs_fibs_set_default_param>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_fibs_get_funcgrid.html ffs_fibs_get_funcgrid>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_vf_post.html ff_az_vf_post>
 %
 
 
@@ -155,9 +155,6 @@ while bl_vfi_continue
     it_iter = it_iter + 1;
 
     %% Solve Optimization Problem Current Iteration
-    % Only this segment of code differs between ff_abz_vf and ff_abz_vf_vec
-    % Store in cells results and retrieve, this is more memory intensive
-    % than ff_abz_vf_vec.
 
     % loop 1: over exogenous states
     for it_z_i = 1:length(ar_z)
@@ -169,10 +166,24 @@ while bl_vfi_continue
         ar_coh = f_coh(fl_z, ar_a);
 
         % Consumption and u(c) only need to be evaluated once
-        if (it_iter == 1)
-
-            % Consumption
-            mt_c = f_cons_coh(ar_coh, ar_a');
+        if (it_iter == 1)            
+            
+            %% Generate Current Consumption based on COH and Asset Choice
+            % Households have coh(a,z), and are choosing a'. In the model
+            % without formal and informal choices, consumption today is
+            % c=coh-a'. This is not the case here. There are four groups of
+            % coh and a' combinations:
+            %
+            % # (coh < 0) & (a' < 0)
+            % # (coh < 0) & (a' >= 0)
+            % # (coh >= 0) & (a' < 0)
+            % # (coh >= 0) & (a' >= 0)
+            %
+            % To deal with: (coh < 0) & (a' < 0), 
+            %
+            %
+            
+            mt_c = f_cons_coh(ar_coh, ar_a');             
 
             % Bridge Loan and consumption
             

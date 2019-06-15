@@ -89,7 +89,7 @@ params_group = values(support_map, {'bl_graph_funcgrids', 'bl_display_funcgrids'
 
 %% Get Equations
 
-[f_util_log, f_util_crra, f_util_standin, f_inc, f_coh_fbis, f_cons_coh_fbis, f_bprime] = ...
+[f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons_coh_fbis, f_cons_coh_save, f_bprime] = ...
     ffs_abz_fibs_set_functions(fl_crra, fl_c_min, fl_r_fbr, fl_r_fsv, fl_w);
 
 %% Get Asset and Choice Grid
@@ -124,8 +124,9 @@ func_map('f_util_log') = f_util_log;
 func_map('f_util_crra') = f_util_crra;
 func_map('f_util_standin') = f_util_standin;
 func_map('f_inc') = f_inc;
-func_map('f_coh_fbis') = f_coh_fbis;
+func_map('f_coh') = f_coh;
 func_map('f_cons_coh_fbis') = f_cons_coh_fbis;
+func_map('f_cons_coh_save') = f_cons_coh_save;
 func_map('f_bprime') = f_bprime;
 
 %% Graph: A, Shocks, COH, and Defaults
@@ -140,7 +141,7 @@ if (bl_graph_funcgrids)
     [mt_a_mesh_z, mt_z_mesh_a] = ndgrid(ar_a, ar_z);
 
     % cash-on-hand given a and z
-    mt_coh = f_coh_fbis(mt_z_mesh_a, mt_a_mesh_z);
+    mt_coh = f_coh(mt_z_mesh_a, mt_a_mesh_z);
 
     % loop over level vs log graphs
     for sub_j=1:1:1
@@ -302,11 +303,11 @@ if (bl_display_funcgrids)
     disp('mt_z_trans');
     disp(size(mt_z_trans));
     disp(mt_z_trans);
-    
+
     disp('ar_forbrblk, ar_forbrblk_r');
     disp(size(ar_forbrblk));
     disp([ar_forbrblk;ar_forbrblk_r]');
-    
+
     param_map_keys = keys(func_map);
     param_map_vals = values(func_map);
     for i = 1:length(func_map)

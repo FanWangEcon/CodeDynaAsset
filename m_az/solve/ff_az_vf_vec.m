@@ -158,7 +158,8 @@ while bl_vfi_continue
         % Current Shock
         fl_z = ar_z(it_z_i);
 
-        % Consumption
+        % Consumption: fl_z = 1 by 1, ar_a = 1 by N, ar_a' = N by 1
+        % mt_c is N by N: matrix broadcasting, expand to matrix from arrays
         mt_c = f_cons(fl_z, ar_a, ar_a');
 
         % EVAL current utility: N by N, f_util defined earlier
@@ -168,19 +169,22 @@ while bl_vfi_continue
             mt_utility = f_util_crra(mt_c);
         end
 
-        % f(z'|z)
+        % f(z'|z), 1 by Z
         ar_z_trans_condi = mt_z_trans(it_z_i,:);
 
         % EVAL EV((A',K'),Z'|Z) = V((A',K'),Z') x p(z'|z)', (N by Z) x (Z by 1) = N by 1
+        % Note: transpose ar_z_trans_condi from 1 by Z to Z by 1
+        % Note: matrix multiply not dot multiply
         mt_evzp_condi_z = mt_val_cur * ar_z_trans_condi';
 
-        % EVAL add on future utility, N by N + N by 1
+        % EVAL add on future utility, N by N + N by 1, bradcast again
         mt_utility = mt_utility + fl_beta*mt_evzp_condi_z;
         mt_utility(mt_c <= 0) = fl_nan_replace;
 
         % Optimization: remember matlab is column major, rows must be
         % choices, columns must be states
         % <https://en.wikipedia.org/wiki/Row-_and_column-major_order COLUMN-MAJOR>
+        % mt_utility is N by N, rows are choices, cols are states. 
         [ar_opti_val1_z, ar_opti_idx_z] = max(mt_utility);
         mt_val(:,it_z_i) = ar_opti_val1_z;
         mt_pol_a(:,it_z_i) = ar_a(ar_opti_idx_z);

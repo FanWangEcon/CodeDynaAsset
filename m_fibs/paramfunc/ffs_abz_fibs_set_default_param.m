@@ -135,7 +135,8 @@ support_map('st_img_suffix') = ['_p' num2str(it_subset) '.png'];
 % Sub-function graphing controls
 support_map('bl_graph_funcgrids') = false;
 support_map('bl_display_funcgrids') = false;
-support_map('bl_display_minccost') = true;
+support_map('bl_display_minccost') = false;
+support_map('bl_display_infbridge') = false;
 
 %% Subset Options
 %

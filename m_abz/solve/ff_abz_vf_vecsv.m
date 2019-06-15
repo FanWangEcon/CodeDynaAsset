@@ -66,8 +66,8 @@ function result_map = ff_abz_vf_vecsv(varargin)
 it_param_set = 4;
 bl_input_override = true;
 [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
-% param_map('it_a_n') = 750;
-% param_map('it_z_n') = 15;
+param_map('it_a_n') = 100;
+param_map('it_z_n') = 5;
 [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 default_params = {param_map support_map armt_map func_map};
 

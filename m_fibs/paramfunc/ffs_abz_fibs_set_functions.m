@@ -3,7 +3,7 @@
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
-function [f_util_log, f_util_crra, f_util_standin, f_inc, f_coh_fbis, f_cons_coh_fbis, f_bprime] = ffs_abz_fibs_set_functions(varargin)
+function [f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons_coh_fbis, f_cons_coh_save, f_bprime] = ffs_abz_fibs_set_functions(varargin)
 %% FFS_ABZ_SET_FUNCTIONS setting model functions
 % Define functions for the abz problem with formal and informal borrowing
 % and savings. See here:
@@ -90,21 +90,21 @@ end
 %% Define Cash on Hand Current Period
 
 if (bl_b_is_principle)
-    f_coh_fbis = @(ar_z, fl_r_inf, ar_for_borr, ar_inf_borr, ar_for_save) ...
+    f_coh = @(ar_z, fl_r_inf, ar_for_borr, ar_inf_borr, ar_for_save) ...
         (ar_z*fl_w ...
         + (ar_for_borr.*(1+fl_r_fbr) ...
         + ar_inf_borr.*(1+fl_r_inf) ...
         + ar_for_save.*(1+fl_r_fsv)));
 else
-    f_coh_fbis = @(ar_z, ar_b) (ar_z*fl_w + ar_b);
+    f_coh = @(ar_z, ar_b) (ar_z*fl_w + ar_b);
 end
 
 if (bl_display_setfunc)
     disp('f_coh_fbis')
-    disp(f_coh_fbis)
+    disp(f_coh)
     if (bl_b_is_principle)
         [ar_z, fl_r_inf, ar_for_borr, ar_inf_borr, ar_for_save] = deal(1, 0.06, -1, -0.33, 0);
-        fl_coh_fbis = f_coh_fbis(ar_z, fl_r_inf, ar_for_borr, ar_inf_borr, ar_for_save);
+        fl_coh_fbis = f_coh(ar_z, fl_r_inf, ar_for_borr, ar_inf_borr, ar_for_save);
         fprintf('fl_coh_fbis=%.3f\nwith fl_r_inf:%.3f, ar_for_borr:%.3f, ar_inf_borr:%.3f, ar_for_save:%.3f',...
             fl_coh_fbis, fl_r_inf, ar_for_borr, ar_inf_borr, ar_for_save);
     end
@@ -114,42 +114,47 @@ end
 %% Define Consumption
 
 if (bl_b_is_principle)
-    
+
     % ar_for_borr, ar_inf_borr, ar_for_save are choices
     f_cons_coh_fbis = @(coh, fl_r_inf, ar_for_borr, ar_inf_borr, ar_for_save) ...
-        (coh - (ar_for_borr + ar_inf_borr + ar_for_save));
-    
+        (coh + (ar_for_borr + ar_inf_borr + ar_for_save));
+
+    f_cons_coh_save = @(coh, ar_for_save) (coh - ar_for_save);
+
     f_bprime = @(fl_r_inf, ar_for_borr, ar_inf_borr, ar_for_save) ...
         (ar_for_borr + ar_inf_borr + ar_for_save);
-    
+
 else
-    f_cons_coh_fbis = @(coh, ar_bprime) (coh - ar_bprime);
-    
+    % ar_bprime_in_c: array of b prime choice in current consumption units
+    f_cons_coh_fbis = @(coh, ar_bprime_in_c) (coh + ar_bprime_in_c);
+
+    f_cons_coh_save = @(coh, ar_for_save) (coh - ar_for_save./(1+fl_r_fsv));
+
     f_bprime = @(fl_r_inf, ar_for_borr, ar_inf_borr, ar_for_save) ...
         (ar_for_borr./(1+fl_r_fbr) ...
         + ar_inf_borr./(1+fl_r_inf) ...
         + ar_for_save./(1+fl_r_fsv));
-    
+
 end
 
 if (bl_display_setfunc)
     disp('f_cons_coh_fbis')
     disp(f_cons_coh_fbis)
-    
+
     if (bl_b_is_principle)
         % current period states
         [ar_z, fl_r_inf, ar_for_borr, ar_inf_borr, ar_for_save] = deal(1, 0.06, -1, -0.33, 0);
-        fl_coh_fbis = f_coh_fbis(ar_z, fl_r_inf, ar_for_borr, ar_inf_borr, ar_for_save);
-        
+        fl_coh_fbis = f_coh(ar_z, fl_r_inf, ar_for_borr, ar_inf_borr, ar_for_save);
+
         % current period choices
         [ar_for_borr, ar_inf_borr, ar_for_save] = deal(-1, -0.33, 0);
         fl_cons_coh_fbis = f_cons_coh_fbis(fl_coh_fbis, fl_r_inf, ar_for_borr, ar_inf_borr, ar_for_save);
-        
+
         % display
         fprintf('fl_cons_coh_fbis=%.3f\nwith fl_r_inf:%.3f, ar_for_borr:%.3f, ar_inf_borr:%.3f, ar_for_save:%.3f',...
             fl_cons_coh_fbis, fl_r_inf, ar_for_borr, ar_inf_borr, ar_for_save);
     end
-    
+
 end
 
 %% Defome Stand-in Utility for Testing

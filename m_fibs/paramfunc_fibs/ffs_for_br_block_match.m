@@ -8,7 +8,7 @@ function [ar_a_grid_ceil_principle, ar_a_grid_ceil_wthr, ...
 %% FFS_FOR_BR_BLOCK_MATCH formal borrowing blocks
 % Find Value just below or above each element of *ar_a* from *ar_forbrblk*.
 % a vector of grid points, find for each element of ar_a the element of
-% ar_forbrblk that is just above or just below. 
+% ar_forbrblk that is just above or just below.
 %
 % # _ar_a_: $a'_i$ where $i \in (1,...,N)$
 % # _ar_forbrblk_: $grid_j$ where $j\in (1,...,M)$
@@ -16,7 +16,7 @@ function [ar_a_grid_ceil_principle, ar_a_grid_ceil_wthr, ...
 % $$ForCEIL_i = argmin_{j}(ForGrid_j - a'_i | grid_j > a'_i)$$
 %
 % $ForCEIL_i$ is the level of formal borrowing if joint formal + informal
-% borrowing is chosen. 
+% borrowing is chosen.
 %
 % $$ForFLOOR_i = argmax_{j}(ForGrid_j - a'_i | grid_j <= a'_i)$$
 %
@@ -32,9 +32,9 @@ function [ar_a_grid_ceil_principle, ar_a_grid_ceil_wthr, ...
 %
 % @param bl_b_is_principle boolean solving with aggregate savings as
 % savings + debt principles + interests, or just principles no interests.
-% if true, principels only, no interests. 
+% if true, principels only, no interests.
 %
-% @return ar_a_grid_ceil_principle array N by 1 Solution to: 
+% @return ar_a_grid_ceil_principle array N by 1 Solution to:
 %
 % $$min_{j}(ForGrid_j - a'_i | grid_j > a'_i)$$
 %
@@ -42,7 +42,7 @@ function [ar_a_grid_ceil_principle, ar_a_grid_ceil_wthr, ...
 % interest rates specified to each borrowing formal level added
 %
 % @return ar_a_grid_floor_principle array N by 1 element of the *ar_forbrblk* vector that are
-% the elements right above each eelemnt of ar_a. Solution to: 
+% the elements right above each eelemnt of ar_a. Solution to:
 %
 % $$max_{j}(ForGrid_j - a'_i | grid_j <= a'_i)$$
 %
@@ -86,7 +86,7 @@ default_params = {ar_a ar_forbrblk ar_forbrblk_r bl_b_is_principle bl_display_br
 % ar_forbrblk. If bl_b_is_principle is false, that means the ar_a vector is
 % principle and interest rates. Hence, need to convert ar_forbrblk which
 % are principles to interests plus principles to be on the same scale as
-% ar_a. 
+% ar_a.
 
 if (~bl_b_is_principle)
     ar_forbrblk_use = ar_forbrblk.*(1+ar_forbrblk_r);
@@ -96,11 +96,11 @@ end
 
 %% Show Details Step by Step
 if (bl_display_brblockmatch)
-        
+
     % show borrowing array
     disp('ar_a')
     disp(ar_a)
-    
+
     % show borrowing formal blocks/grids
     disp('ar_forbrblk_use and ar_forbrblk')
     disp([ar_forbrblk_use;ar_forbrblk]')
@@ -108,27 +108,27 @@ if (bl_display_brblockmatch)
     % all combination division
     disp('mt_a_dvd_grid = (ar_a./ar_forbrblk_use)')
     mt_a_dvd_grid = (ar_a./ar_forbrblk_use)
-    
+
     % ceiling for each
     disp('(mt_a_dvd_grid >= 1)')
     (mt_a_dvd_grid >= 1)
-    
+
     % If ceiling exists and cloest ceiling index
     % min_{j}( ar_forbrblk[j] - ar_a[i] | ar_forbrblk[j] > ar_a[i])
     disp('[~, ar_max_a_on_grid_idx] = max((mt_a_dvd_grid >= 1),[], 2)')
     [~, ar_max_a_on_grid_idx] = max((mt_a_dvd_grid >= 1),[], 2)
-    
+
     % ar_forbrblk[argmin_{j}( ar_forbrblk[j] - ar_a[i] | ar_forbrblk[j] > ar_a[i])]
     disp('ar_a_grid_ceil = ar_forbrblk_use(ar_max_a_on_grid_idx)')
     ar_a_grid_ceil = ar_forbrblk_use(ar_max_a_on_grid_idx)
     % ar_a_grid_ceil(ar_max_a_on_grid_idx == 1) = ar_forbrblk(0)
-    
+
     % now floor, just one index less
     disp('ar_a_grid_floor = ar_forbrblk_use(max(ar_max_a_on_grid_idx - 1, 1))')
     ar_a_grid_floor = ar_forbrblk_use(max(ar_max_a_on_grid_idx - 1, 1))
     % ar_a_grid_floor(ar_max_a_on_grid_idx == 1) =
-    
-    % Dispaly    
+
+    % Dispaly
     tab_matched_grid = table(ar_a, ar_a_grid_floor', ar_a_grid_ceil');
     tab_matched_grid.Properties.VariableNames = {'ar_a','ar_a_grid_floor','ar_a_grid_ceil'};
     disp('ar_a_grid_floor: for borrow + for save')
@@ -143,15 +143,15 @@ end
 
 % Get Values
 if (~bl_b_is_principle)
-    
+
     % Borrowing borrowing points, following formal grids, but add interests
     ar_a_grid_ceil_wthr = ar_forbrblk_use(ar_max_a_on_grid_idx)';
     ar_a_grid_floor_wthr = ar_forbrblk_use(max(ar_max_a_on_grid_idx - 1, 1))';
-    
+
     % Principles only
     ar_a_grid_ceil_principle = ar_forbrblk(ar_max_a_on_grid_idx)';
     ar_a_grid_floor_principle = ar_forbrblk(max(ar_max_a_on_grid_idx - 1, 1))';
-    
+
 else
 
     % Borrowing borrowing points, following formal grids, but add interests
@@ -159,9 +159,9 @@ else
         (ar_forbrblk_use(ar_max_a_on_grid_idx).*ar_forbrblk_r(ar_max_a_on_grid_idx))';
     ar_a_grid_floor_wthr = ...
         (ar_forbrblk_use(max(ar_max_a_on_grid_idx - 1, 1)).*ar_forbrblk_r(max(ar_max_a_on_grid_idx - 1, 1)))';
-    
+
     % Principles only, note ar_forbrblk_use = ar_forbrblk
     ar_a_grid_ceil_principle = ar_forbrblk_use(ar_max_a_on_grid_idx)';
     ar_a_grid_floor_principle = ar_forbrblk_use(max(ar_max_a_on_grid_idx - 1, 1))';
-    
+
 end

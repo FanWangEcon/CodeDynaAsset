@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>ffs_fibs_min_c_cost</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-13"><meta name="DC.source" content="ffs_fibs_min_c_cost.m"><style type="text/css">
+      --><title>Formal Informal Cost Minimizer</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-14"><meta name="DC.source" content="ffs_fibs_min_c_cost.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,11 +66,13 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">FFS_FIBS_MIN_C_COST Minimizes to consumption given aprime.</a></li><li><a href="#3">Default and Parse Parameters</a></li><li><a href="#4">Compute Consumption Informal Borrowing only</a></li><li><a href="#5">Compute Formal Block Sizes</a></li><li><a href="#6">Compute Consumption Values Formal + Informal Borrowing Jointly</a></li><li><a href="#7">Compute Consumption Values Formal Borrowing + Formal Savings</a></li><li><a href="#8">Maximize Consumption For non-Bridge Loan Component</a></li><li><a href="#9">Count up borrowing from different sources</a></li></ul></div><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><pre class="codeinput"><span class="keyword">function</span> [ar_max_c_nobridge, ar_inf_borr_nobridge, ar_for_borr, ar_for_save] = ffs_fibs_min_c_cost(varargin)
-</pre><h2 id="2">FFS_FIBS_MIN_C_COST Minimizes to consumption given aprime.</h2><p>Suppose I want to borrow 5 dollar today. That will increase current consumption by 5 dollars, but its cost to next period cash-on-hand is a function of how I get the 5 dollar of borrowing, whether I borrow from formal sources, informal or joint sources. Suppose the formal borrowing grid has three points, you can borrow 0, 3 or 6, these are the options:</p><div><ol><li>borrow all 5 informally</li><li>borrow 3 formally and 2 informally</li><li>borrow 6 formally and save 1</li><li>additionally, if 5 is actually on the grid, you would borrow 5 only formally if that offers the lower interest rate.</li></ol></div><p>This function here finds which one of of these options is optimal conditional on aprime choice. Households choose among the different aprime choices given these within aprime choice optimal formal/informal allocations.</p><p><i>ar_aprime</i> is the borrowing choices that do not include bridge loan. The additional borrowing on top of bridge loans.</p><p>@param bl_b_is_principle boolean solving with aggregate savings as savings + debt principles + interests, or just principles no interests. if true, principels only, no interests.</p><p>@param fl_r_inf float informal interest rate</p><p>@param fl_r_fsv float (formal) savings interest rate</p><p>@param fl_r_fbr float borrowing interest rate</p><p>@param ar_aprime array N by 1 level of aggregate borrowing excluding bridge loan. Note that bridge loan is needed if coh is negative and households can not pay back principle and interests.</p><p>@return ar_max_c_nobridge array N by 1 next period consumption cost (<i>bl_b_is_principle</i> == true), or this period consumption gain (<i>bl_b_is_principle</i> == false) based on choosing optimally between formal and informal, borrowing and savings joint categories, given either total borrowing in principles or principles + interest rate from ar_aprime.</p><p>@return ar_inf_borr_nobridge array N by 1 informal borrowing choices (Excluding Informal Bridge loans, calculated elsewhere) which could come from informal borrowing only if that minimizes consumption cost, or joint formal and informal borrowing if that is the cost minimizing choice.</p><p>@return ar_for_borr array N by 1 formal borrowing choice that minimizes consumption costs given fixed <i>ar_aprime</i>. Could come from formal borrowing alone (which shows up as joint formal and something else where the other choice is 0), or formal + informal joint borrow, or formal borrowing and formal savings.</p><p>@return ar_for_save array N by 1 this is the formal savings choice when households are borrowing. Households coulds save just for savings, no borrowing as well, that is not captured here.</p><p>@example</p><pre class="language-matlab">[ar_max_c_nobridge, ar_inf_borr_nobridge, ar_for_borr, ar_for_save] = <span class="keyword">...</span>
+  </style></head><body><div class="content"><h1>Formal Informal Cost Minimizer</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FFS_FIBS_MIN_C_COST Minimizes to consumption given aprime.</a></li><li><a href="#3">Default and Parse Parameters</a></li><li><a href="#4">Initialize Output Arrays</a></li><li><a href="#5">Find if ar_aprime contains Saving</a></li><li><a href="#6">Get consumption and savings choices if savings</a></li><li><a href="#7">Proceed to Process Borrowing if aprime Array has borrowing</a></li><li><a href="#9">Compute Consumption Informal Borrowing only</a></li><li><a href="#10">Compute Formal Block Sizes</a></li><li><a href="#11">Compute Consumption Values Formal + Informal Borrowing Jointly</a></li><li><a href="#12">Compute Consumption Values Formal Borrowing + Formal Savings</a></li><li><a href="#13">Maximize Consumption For non-Bridge Loan Component</a></li><li><a href="#14">Borrowing count up borrowing from different sources</a></li><li><a href="#16">Display Final</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [ar_max_c_nobridge, ar_inf_borr_nobridge, ar_for_borr, ar_for_save] = ffs_fibs_min_c_cost(varargin)
+</pre><h2 id="2">FFS_FIBS_MIN_C_COST Minimizes to consumption given aprime.</h2><p>Suppose I want to borrow 5 dollar today. That will increase current consumption by 5 dollars, but its cost to next period cash-on-hand is a function of how I get the 5 dollar of borrowing, whether I borrow from formal sources, informal or joint sources. Suppose the formal borrowing grid has three points, you can borrow 0, 3 or 6, these are the options:</p><div><ol><li>borrow all 5 informally</li><li>borrow 3 formally and 2 informally</li><li>borrow 6 formally and save 1</li><li>additionally, if 5 is actually on the grid, you would borrow 5 only formally if that offers the lower interest rate.</li></ol></div><p>This function here finds which one of of these options is optimal conditional on aprime choice. Households choose among the different aprime choices given these within aprime choice optimal formal/informal allocations.</p><p><i>ar_aprime</i> is the borrowing choices that do not include bridge loan. The additional borrowing on top of bridge loans.</p><p>@param bl_b_is_principle boolean solving with aggregate savings as savings + debt principles + interests, or just principles no interests. if true, principels only, no interests.</p><p>@param fl_r_inf float informal interest rate</p><p>@param fl_r_fsv float (formal) savings interest rate</p><p>@param fl_r_fbr float borrowing interest rate</p><p>@param ar_aprime array N by 1 level of aggregate borrowing excluding bridge loan. Note that bridge loan is needed if coh is negative and households can not pay back principle and interests. This must be negative.</p><p>@return ar_max_c_nobridge array N by 1 next period consumption cost (<i>bl_b_is_principle</i> == true), or this period consumption gain (<i>bl_b_is_principle</i> == false) based on choosing optimally between formal and informal, borrowing and savings joint categories, given either total borrowing in principles or principles + interest rate from ar_aprime.</p><p>@return ar_inf_borr_nobridge array N by 1 informal borrowing choices (Excluding Informal Bridge loans, calculated elsewhere) which could come from informal borrowing only if that minimizes consumption cost, or joint formal and informal borrowing if that is the cost minimizing choice. if <i>bl_b_is_principle</i> == true, then this includes just the principles,  no intrest rates. if <i>bl_b_is_principle</i> == false, that means this includes interest rates costs as well as principles costs.</p><p>@return ar_for_borr array N by 1 formal borrowing choice that minimizes consumption costs given fixed <i>ar_aprime</i>. Could come from formal borrowing alone (which shows up as joint formal and something else where the other choice is 0), or formal + informal joint borrow, or formal borrowing and formal savings.</p><p>@return ar_for_save array N by 1 this is the formal savings choice when households are borrowing. Households coulds save just for savings, no borrowing as well, that is not captured here.</p><p>@example</p><pre class="language-matlab">bl_input_override = true;
+[ar_max_c_nobridge, ar_inf_borr_nobridge, ar_for_borr, ar_for_save] = <span class="keyword">...</span>
      ffs_akz_set_functions(bl_b_is_principle, fl_r_inf, fl_r_fsv, <span class="keyword">...</span>
-                           ar_forbrblk_r, ar_forbrblk, ar_aprime_nobridge, bl_display_minccost);
-</pre><h2 id="3">Default and Parse Parameters</h2><pre class="codeinput">bl_input_override = 0;
+                           ar_forbrblk_r, ar_forbrblk, <span class="keyword">...</span>
+                           fl_ap, bl_display_minccost, bl_input_override);
+</pre><p>@include</p><div><ul><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_set_default_param.html">ffs_abz_fibs_set_default_param</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_get_funcgrid.html">ffs_abz_fibs_get_funcgrid</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_match.html">ffs_for_br_block_match</a></li></ul></div><h2 id="3">Default and Parse Parameters</h2><pre class="codeinput">bl_input_override = 0;
 <span class="keyword">if</span> (length(varargin) == 8)
     bl_input_override = varargin{8};
 <span class="keyword">end</span>
@@ -78,6 +80,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
     <span class="comment">% override when called from outside</span>
     [bl_b_is_principle, fl_r_inf, fl_r_fsv, <span class="keyword">...</span>
         ar_forbrblk_r, ar_forbrblk, ar_aprime_nobridge, bl_display_minccost, ~] = varargin{:};
+
 <span class="keyword">else</span>
 
     close <span class="string">all</span>
@@ -97,7 +100,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
     [bl_b_is_principle, fl_r_inf, fl_r_fsv] = params_group{:};
 
     <span class="comment">% Testing COH and Aprime Vectors</span>
-    ar_aprime_nobridge = [-5,-4.5,-4.1,-1.1,-0.1]';
+    ar_aprime_nobridge = [-20,-5,-4.5,-4.1,-1.1,-0.1, 0.1, 1]';
 
     <span class="comment">% Set Display Control</span>
     bl_display_minccost = true;
@@ -111,171 +114,320 @@ with fl_r_inf:0.060, ar_for_borr:-1.000, ar_inf_borr:-0.330, ar_for_save:0.000f_
     @(ar_z,ar_b)(ar_z*fl_w+ar_b)
 
 f_cons_coh_fbis
-    @(coh,ar_bprime)(coh-ar_bprime)
+    @(coh,ar_bprime_in_c)(coh-ar_bprime_in_c)
 
-</pre><h2 id="4">Compute Consumption Informal Borrowing only</h2><pre class="codeinput"><span class="comment">% Generate c Vectors</span>
-<span class="keyword">if</span> (bl_b_is_principle)
+</pre><h2 id="4">Initialize Output Arrays</h2><pre class="codeinput">ar_max_c_nobridge = zeros(size(ar_aprime_nobridge));
+ar_inf_borr_nobridge = zeros(size(ar_aprime_nobridge));
+ar_for_borr = zeros(size(ar_aprime_nobridge));
+ar_for_save = zeros(size(ar_aprime_nobridge));
+</pre><h2 id="5">Find if ar_aprime contains Saving</h2><p>only one savings option, function here meant for borrowing, but can deal with savings as well if they appear.</p><pre class="codeinput">ar_aprime_nobridge_pos_idx = (ar_aprime_nobridge &gt;= 0);
+ar_aprime_nobridge_br = ar_aprime_nobridge(~ar_aprime_nobridge_pos_idx);
+</pre><h2 id="6">Get consumption and savings choices if savings</h2><p>When households overall save, they could still have had to first pay informal lender for bridge loan. For households with positive cash-on-hand, if they save, they are only savings, and not borrowing at the same time. In practice, some households coule borrow from one sector and lend/save in another. This is not a mechanism in this model, but is discussed in <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3316939">Wang (2019)</a></p><pre class="codeinput"><span class="keyword">if</span> (sum(ar_aprime_nobridge_pos_idx))
 
-    <span class="comment">% c_infonly is cost of borrowing in next period consumption</span>
-    b_infonly_inf = (ar_aprime_nobridge);
-    c_infonly = b_infonly_inf.*(1+fl_r_inf);
+    <span class="comment">% savings = savings (including or not interest rates)</span>
+    ar_for_save(ar_aprime_nobridge_pos_idx) = ar_aprime_nobridge(ar_aprime_nobridge_pos_idx);
 
-<span class="keyword">else</span>
+    <span class="keyword">if</span> (bl_b_is_principle)
 
-    <span class="comment">% c_infonly is the gain from borrowing in current period consumption</span>
-    b_infonly_inf = (ar_aprime_nobridge);
-    c_infonly = (-1).*b_infonly_inf./(1+fl_r_inf);
+        <span class="comment">% consumption gain next period due to savings</span>
+        ar_max_c_nobridge(ar_aprime_nobridge_pos_idx) = <span class="keyword">...</span>
+            ar_aprime_nobridge(ar_aprime_nobridge_pos_idx)*(1+fl_r_fsv);
+
+    <span class="keyword">else</span>
+
+        <span class="comment">% consumption loss today due to savings</span>
+        ar_max_c_nobridge(ar_aprime_nobridge_pos_idx) = <span class="keyword">...</span>
+            (-1)*ar_aprime_nobridge(ar_aprime_nobridge_pos_idx)./(1+fl_r_fsv);
+
+    <span class="keyword">end</span>
 
 <span class="keyword">end</span>
+</pre><h2 id="7">Proceed to Process Borrowing if aprime Array has borrowing</h2><pre class="codeinput"><span class="keyword">if</span> (sum(~ar_aprime_nobridge_pos_idx))
+</pre><h2 id="9">Compute Consumption Informal Borrowing only</h2><pre class="codeinput">    <span class="comment">% Generate c Vectors</span>
+    <span class="keyword">if</span> (bl_b_is_principle)
 
-<span class="comment">% Display</span>
-<span class="keyword">if</span> (bl_display_minccost)
-    tab_c_infonly = table(ar_aprime_nobridge, b_infonly_inf, c_infonly);
-    disp([<span class="string">'informal borrow interest (fl_r_inf):'</span>, num2str(fl_r_inf)]);
-    disp(tab_c_infonly);
-<span class="keyword">end</span>
+        <span class="comment">% c_infonly is cost of borrowing in next period consumption</span>
+        b_infonly_inf = (ar_aprime_nobridge_br);
+        c_infonly = b_infonly_inf.*(1+fl_r_inf);
+
+    <span class="keyword">else</span>
+
+        <span class="comment">% c_infonly is the gain from borrowing in current period consumption</span>
+        b_infonly_inf = (ar_aprime_nobridge_br);
+        c_infonly = (-1).*b_infonly_inf./(1+fl_r_inf);
+
+    <span class="keyword">end</span>
+
+    <span class="comment">% Display</span>
+    <span class="keyword">if</span> (bl_display_minccost)
+        tab_c_infonly = table(ar_aprime_nobridge_br, b_infonly_inf, c_infonly);
+        disp([<span class="string">'informal borrow interest (fl_r_inf):'</span>, num2str(fl_r_inf)]);
+        disp(tab_c_infonly);
+    <span class="keyword">end</span>
 </pre><pre class="codeoutput">informal borrow interest (fl_r_inf):0.06
-    ar_aprime_nobridge    b_infonly_inf    c_infonly
-    __________________    _____________    _________
+    ar_aprime_nobridge_br    b_infonly_inf    c_infonly
+    _____________________    _____________    _________
 
-             -5                 -5            4.717 
-           -4.5               -4.5           4.2453 
-           -4.1               -4.1           3.8679 
-           -1.1               -1.1           1.0377 
-           -0.1               -0.1          0.09434 
+             -20                  -20           18.868 
+              -5                   -5            4.717 
+            -4.5                 -4.5           4.2453 
+            -4.1                 -4.1           3.8679 
+            -1.1                 -1.1           1.0377 
+            -0.1                 -0.1          0.09434 
 
-</pre><h2 id="5">Compute Formal Block Sizes</h2><p>Divide each asset choice by each element of the formal choice grid. The numbers closest to 1 above and below indicates the floor and ceil formal borrowing quantity for joint credit market participation choices.</p><pre class="codeinput">[ar_a_grid_ceil_principle, ar_a_grid_ceil_wthr, ar_a_grid_floor_principle, ar_a_grid_floor_wthr] = <span class="keyword">...</span>
-        ffs_for_br_block_match(ar_aprime_nobridge, ar_forbrblk, ar_forbrblk_r, bl_b_is_principle);
-</pre><h2 id="6">Compute Consumption Values Formal + Informal Borrowing Jointly</h2><p>if right on grid, informal could be zero.</p><pre class="codeinput"><span class="comment">% Generate c Vectors</span>
-<span class="keyword">if</span> (bl_b_is_principle)
+</pre><h2 id="10">Compute Formal Block Sizes</h2><p>Divide each asset choice by each element of the formal choice grid. The numbers closest to 1 above and below indicates the floor and ceil formal borrowing quantity for joint credit market participation choices.</p><pre class="codeinput">    [ar_a_grid_ceil_principle, ar_a_grid_ceil_wthr, ar_a_grid_floor_principle, ar_a_grid_floor_wthr] = <span class="keyword">...</span>
+        ffs_for_br_block_match(ar_aprime_nobridge_br, ar_forbrblk, ar_forbrblk_r, bl_b_is_principle);
+</pre><pre class="codeoutput">ar_a
+  -20.0000
+   -5.0000
+   -4.5000
+   -4.1000
+   -1.1000
+   -0.1000
 
-    <span class="comment">% c_infforb is cost of borrowing in next period consumption</span>
-    b_infforb_inf = (ar_aprime_nobridge - ar_a_grid_ceil_principle);
-    b_infforb_for = -(ar_a_grid_ceil_principle);
-    c_infforb =  (b_infforb_inf.*(1+fl_r_inf) + ar_a_grid_ceil_wthr);
+ar_forbrblk_use and ar_forbrblk
+  -10.3500  -10.0000
+   -7.2450   -7.0000
+   -5.1750   -5.0000
+   -4.1400   -4.0000
+   -3.1050   -3.0000
+   -2.0700   -2.0000
+   -1.0350   -1.0000
+         0         0
 
-<span class="keyword">else</span>
+mt_a_dvd_grid = (ar_a./ar_forbrblk_use)
 
-    <span class="comment">% c_infforb is the gain from borrowing in current period consumption</span>
-    b_infforb_inf = ar_aprime_nobridge - ar_a_grid_ceil_wthr;
-    b_infforb_for = ar_a_grid_ceil_wthr;
-    c_infforb = -1*((b_infforb_inf./(1+fl_r_inf) + ar_a_grid_ceil_principle));
+mt_a_dvd_grid =
 
-<span class="keyword">end</span>
+  Columns 1 through 7
 
-<span class="comment">% Display</span>
-<span class="keyword">if</span> (bl_display_minccost)
-    tab_c_infforb = table(ar_aprime_nobridge, b_infforb_for, b_infforb_inf, c_infforb);
-    disp([<span class="string">'formal block size (ar_forbrblk):'</span>, num2str(ar_forbrblk)]);
-    disp([<span class="string">'formal borrow interest (ar_forbrblk_r):'</span>, num2str(ar_forbrblk_r)]);
-    disp([<span class="string">'informal borrow interest (fl_r_inf):'</span>, num2str(fl_r_inf)]);
-    disp(tab_c_infforb);
-<span class="keyword">end</span>
+    1.9324    2.7605    3.8647    4.8309    6.4412    9.6618   19.3237
+    0.4831    0.6901    0.9662    1.2077    1.6103    2.4155    4.8309
+    0.4348    0.6211    0.8696    1.0870    1.4493    2.1739    4.3478
+    0.3961    0.5659    0.7923    0.9903    1.3205    1.9807    3.9614
+    0.1063    0.1518    0.2126    0.2657    0.3543    0.5314    1.0628
+    0.0097    0.0138    0.0193    0.0242    0.0322    0.0483    0.0966
+
+  Column 8
+
+       Inf
+       Inf
+       Inf
+       Inf
+       Inf
+       Inf
+
+(mt_a_dvd_grid &gt;= 1)
+
+ans =
+
+  6&times;8 logical array
+
+   1   1   1   1   1   1   1   1
+   0   0   0   1   1   1   1   1
+   0   0   0   1   1   1   1   1
+   0   0   0   0   1   1   1   1
+   0   0   0   0   0   0   1   1
+   0   0   0   0   0   0   0   1
+
+[~, ar_max_a_on_grid_idx] = max((mt_a_dvd_grid &gt;= 1),[], 2)
+
+ar_max_a_on_grid_idx =
+
+     1
+     4
+     4
+     5
+     7
+     8
+
+ar_a_grid_ceil = ar_forbrblk_use(ar_max_a_on_grid_idx)
+
+ar_a_grid_ceil =
+
+  -10.3500   -4.1400   -4.1400   -3.1050   -1.0350         0
+
+ar_a_grid_floor = ar_forbrblk_use(max(ar_max_a_on_grid_idx - 1, 1))
+
+ar_a_grid_floor =
+
+  -10.3500   -5.1750   -5.1750   -4.1400   -2.0700   -1.0350
+
+ar_a_grid_floor: for borrow + for save
+ar_a_grid_ceil: for + inf borrow
+    ar_a    ar_a_grid_floor    ar_a_grid_ceil
+    ____    _______________    ______________
+
+     -20        -10.35             -10.35    
+      -5        -5.175              -4.14    
+    -4.5        -5.175              -4.14    
+    -4.1         -4.14             -3.105    
+    -1.1         -2.07             -1.035    
+    -0.1        -1.035                  0    
+
+</pre><h2 id="11">Compute Consumption Values Formal + Informal Borrowing Jointly</h2><p>if right on grid, informal could be zero.</p><pre class="codeinput">    <span class="comment">% Generate c Vectors</span>
+    <span class="keyword">if</span> (bl_b_is_principle)
+
+        <span class="comment">% c_infforb is cost of borrowing in next period consumption</span>
+        b_infforb_inf = (ar_aprime_nobridge_br - ar_a_grid_ceil_principle);
+        b_infforb_for = -(ar_a_grid_ceil_principle);
+        c_infforb =  (b_infforb_inf.*(1+fl_r_inf) + ar_a_grid_ceil_wthr);
+
+    <span class="keyword">else</span>
+
+        <span class="comment">% c_infforb is the gain from borrowing in current period consumption</span>
+        b_infforb_inf = ar_aprime_nobridge_br - ar_a_grid_ceil_wthr;
+        b_infforb_for = ar_a_grid_ceil_wthr;
+        c_infforb = -1*((b_infforb_inf./(1+fl_r_inf) + ar_a_grid_ceil_principle));
+
+    <span class="keyword">end</span>
+
+    <span class="comment">% Display</span>
+    <span class="keyword">if</span> (bl_display_minccost)
+        tab_c_infforb = table(ar_aprime_nobridge_br, b_infforb_for, b_infforb_inf, c_infforb);
+        disp([<span class="string">'formal block size (ar_forbrblk):'</span>, num2str(ar_forbrblk)]);
+        disp([<span class="string">'formal borrow interest (ar_forbrblk_r):'</span>, num2str(ar_forbrblk_r)]);
+        disp([<span class="string">'informal borrow interest (fl_r_inf):'</span>, num2str(fl_r_inf)]);
+        disp(tab_c_infforb);
+    <span class="keyword">end</span>
 </pre><pre class="codeoutput">formal block size (ar_forbrblk):-10  -7  -5  -4  -3  -2  -1   0
 formal borrow interest (ar_forbrblk_r):0.035       0.035       0.035       0.035       0.035       0.035       0.035       0.035
 informal borrow interest (fl_r_inf):0.06
-    ar_aprime_nobridge    b_infforb_for    b_infforb_inf    c_infforb
-    __________________    _____________    _____________    _________
+    ar_aprime_nobridge_br    b_infforb_for    b_infforb_inf    c_infforb
+    _____________________    _____________    _____________    _________
 
-             -5               -4.14            -0.86          4.8113 
-           -4.5               -4.14            -0.36          4.3396 
-           -4.1              -3.105           -0.995          3.9387 
-           -1.1              -1.035           -0.065          1.0613 
-           -0.1                   0             -0.1         0.09434 
+             -20                -10.35            -9.65          19.104 
+              -5                 -4.14            -0.86          4.8113 
+            -4.5                 -4.14            -0.36          4.3396 
+            -4.1                -3.105           -0.995          3.9387 
+            -1.1                -1.035           -0.065          1.0613 
+            -0.1                     0             -0.1         0.09434 
 
-</pre><h2 id="7">Compute Consumption Values Formal Borrowing + Formal Savings</h2><pre class="codeinput"><span class="comment">% Generate c Vectors</span>
-<span class="keyword">if</span> (bl_b_is_principle)
+</pre><h2 id="12">Compute Consumption Values Formal Borrowing + Formal Savings</h2><pre class="codeinput">    <span class="comment">% Generate c Vectors</span>
+    <span class="keyword">if</span> (bl_b_is_principle)
 
-    <span class="comment">% c_forbrsv is cost of borrowing in next period consumption</span>
-    b_forbrsv_sav = (ar_aprime_nobridge - ar_a_grid_floor_principle);
-    b_forbrsv_brr = -(ar_a_grid_floor_principle);
-    c_forbrsv = (b_forbrsv_sav*(1+fl_r_fsv) + ar_a_grid_floor_wthr);
+        <span class="comment">% c_forbrsv is cost of borrowing in next period consumption</span>
+        b_forbrsv_sav = (ar_aprime_nobridge_br - ar_a_grid_floor_principle);
+        b_forbrsv_brr = -(ar_a_grid_floor_principle);
+        c_forbrsv = (b_forbrsv_sav*(1+fl_r_fsv) + ar_a_grid_floor_wthr);
 
-<span class="keyword">else</span>
+    <span class="keyword">else</span>
 
-    <span class="comment">% c_forbrsv is the gain from borrowing in current period consumption</span>
-    b_forbrsv_sav = ar_aprime_nobridge - ar_a_grid_floor_wthr;
-    b_forbrsv_brr = ar_a_grid_floor_wthr;
-    c_forbrsv = -1*((b_forbrsv_sav./(1+fl_r_fsv) + ar_a_grid_floor_principle));
+        <span class="comment">% c_forbrsv is the gain from borrowing in current period consumption</span>
+        b_forbrsv_sav = ar_aprime_nobridge_br - ar_a_grid_floor_wthr;
+        b_forbrsv_brr = ar_a_grid_floor_wthr;
+        c_forbrsv = -1*((b_forbrsv_sav./(1+fl_r_fsv) + ar_a_grid_floor_principle));
 
-<span class="keyword">end</span>
+    <span class="keyword">end</span>
 
-<span class="comment">% Display</span>
-<span class="keyword">if</span> (bl_display_minccost)
-    tab_c_forbrsv = table(ar_aprime_nobridge, b_forbrsv_brr, b_forbrsv_sav, c_forbrsv);
-    disp([<span class="string">'formal block size (ar_forbrblk):'</span>, num2str(ar_forbrblk)]);
-    disp([<span class="string">'formal borrow interest (ar_forbrblk_r):'</span>, num2str(ar_forbrblk_r)]);
-    disp([<span class="string">'savings interest (fl_r_fsv):'</span>, num2str(fl_r_fsv)]);
-    disp(tab_c_forbrsv);
-<span class="keyword">end</span>
+    <span class="comment">% if b_forbrsv_sav &lt; 0, largest formal borrow grid not large enough. set to</span>
+    <span class="comment">% 0 so addition of different formal and informal choice categories work.</span>
+    b_forbrsv_brr(b_forbrsv_sav &lt; 0) = 0;
+    c_forbrsv(b_forbrsv_sav &lt; 0) = nan;
+    b_forbrsv_sav(b_forbrsv_sav &lt; 0) = 0;
+
+    <span class="comment">% Display</span>
+    <span class="keyword">if</span> (bl_display_minccost)
+        tab_c_forbrsv = table(ar_aprime_nobridge_br, b_forbrsv_brr, b_forbrsv_sav, c_forbrsv);
+        disp([<span class="string">'formal block size (ar_forbrblk):'</span>, num2str(ar_forbrblk)]);
+        disp([<span class="string">'formal borrow interest (ar_forbrblk_r):'</span>, num2str(ar_forbrblk_r)]);
+        disp([<span class="string">'savings interest (fl_r_fsv):'</span>, num2str(fl_r_fsv)]);
+        disp(tab_c_forbrsv);
+    <span class="keyword">end</span>
 </pre><pre class="codeoutput">formal block size (ar_forbrblk):-10  -7  -5  -4  -3  -2  -1   0
 formal borrow interest (ar_forbrblk_r):0.035       0.035       0.035       0.035       0.035       0.035       0.035       0.035
 savings interest (fl_r_fsv):0.01
-    ar_aprime_nobridge    b_forbrsv_brr    b_forbrsv_sav    c_forbrsv
-    __________________    _____________    _____________    _________
+    ar_aprime_nobridge_br    b_forbrsv_brr    b_forbrsv_sav    c_forbrsv
+    _____________________    _____________    _____________    _________
 
-             -5              -5.175            0.175          4.8267 
-           -4.5              -5.175            0.675          4.3317 
-           -4.1               -4.14             0.04          3.9604 
-           -1.1               -2.07             0.97          1.0396 
-           -0.1              -1.035            0.935        0.074257 
+             -20                     0                0             NaN 
+              -5                -5.175            0.175          4.8267 
+            -4.5                -5.175            0.675          4.3317 
+            -4.1                 -4.14             0.04          3.9604 
+            -1.1                 -2.07             0.97          1.0396 
+            -0.1                -1.035            0.935        0.074257 
 
-</pre><h2 id="8">Maximize Consumption For non-Bridge Loan Component</h2><p>Trying to minimize consumption costs</p><pre class="codeinput">[ar_max_c_nobridge, max_idx] = max([c_infonly c_infforb c_forbrsv],[], 2);
+</pre><h2 id="13">Maximize Consumption For non-Bridge Loan Component</h2><p>Trying to minimize consumption costs</p><pre class="codeinput">    <span class="keyword">if</span> (bl_b_is_principle)
 
-<span class="keyword">if</span> (bl_display_minccost)
-    tab_c_max = table(ar_aprime_nobridge, ar_max_c_nobridge, max_idx, c_infonly, c_infforb, c_forbrsv);
-    disp(tab_c_max);
-<span class="keyword">end</span>
-</pre><pre class="codeoutput">    ar_aprime_nobridge    ar_max_c_nobridge    max_idx    c_infonly    c_infforb    c_forbrsv
-    __________________    _________________    _______    _________    _________    _________
+        <span class="comment">% minimize consumption cost to the future</span>
+        [ar_max_c_nobridge_br, max_idx] = min([c_infonly c_infforb c_forbrsv],[], 2);
 
-             -5                 4.8267            3          4.717       4.8113       4.8267 
-           -4.5                 4.3396            2         4.2453       4.3396       4.3317 
-           -4.1                 3.9604            3         3.8679       3.9387       3.9604 
-           -1.1                 1.0613            2         1.0377       1.0613       1.0396 
-           -0.1                0.09434            1        0.09434      0.09434     0.074257 
+    <span class="keyword">else</span>
 
-</pre><h2 id="9">Count up borrowing from different sources</h2><p>Informal borrowing comes from informal only or inffor both</p><pre class="codeinput">ar_inf_borr_nobridge = b_infonly_inf.*(max_idx == 1) + b_infforb_inf.*(max_idx == 2);
-ar_for_borr =          b_infforb_for.*(max_idx == 2) + b_forbrsv_brr.*(max_idx == 3);
-ar_for_save =                                          b_forbrsv_sav.*(max_idx == 3);
+        <span class="comment">% maximum consumption today</span>
+        [ar_max_c_nobridge_br, max_idx] = max([c_infonly c_infforb c_forbrsv],[], 2);
 
+    <span class="keyword">end</span>
 
-<span class="comment">% Display</span>
-<span class="keyword">if</span> (bl_display_minccost)
+    <span class="keyword">if</span> (bl_display_minccost)
+        tab_c_max = table(ar_aprime_nobridge_br, ar_max_c_nobridge_br, max_idx, c_infonly, c_infforb, c_forbrsv);
+        disp(tab_c_max);
+    <span class="keyword">end</span>
+</pre><pre class="codeoutput">    ar_aprime_nobridge_br    ar_max_c_nobridge_br    max_idx    c_infonly    c_infforb    c_forbrsv
+    _____________________    ____________________    _______    _________    _________    _________
+
+             -20                    19.104              2         18.868       19.104          NaN 
+              -5                    4.8267              3          4.717       4.8113       4.8267 
+            -4.5                    4.3396              2         4.2453       4.3396       4.3317 
+            -4.1                    3.9604              3         3.8679       3.9387       3.9604 
+            -1.1                    1.0613              2         1.0377       1.0613       1.0396 
+            -0.1                   0.09434              1        0.09434      0.09434     0.074257 
+
+</pre><h2 id="14">Borrowing count up borrowing from different sources</h2><p>Informal borrowing comes from informal only or inffor both</p><pre class="codeinput">    <span class="comment">% Consumption when borrowing</span>
+    ar_max_c_nobridge(~ar_aprime_nobridge_pos_idx) = ar_max_c_nobridge_br;
+
+    <span class="comment">% Informal Borrowing</span>
+    ar_inf_borr_nobridge(~ar_aprime_nobridge_pos_idx) = <span class="keyword">...</span>
+        b_infonly_inf.*(max_idx == 1) + b_infforb_inf.*(max_idx == 2);
+
+    <span class="comment">% Formal Borrowing</span>
+    ar_for_borr(~ar_aprime_nobridge_pos_idx) = <span class="keyword">...</span>
+        b_infforb_for.*(max_idx == 2) + b_forbrsv_brr.*(max_idx == 3);
+
+    <span class="comment">% Formal Savings</span>
+    ar_for_save(~ar_aprime_nobridge_pos_idx) = <span class="keyword">...</span>
+        b_forbrsv_sav.*(max_idx == 3);
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><h2 id="16">Display Final</h2><pre class="codeinput"><span class="keyword">if</span> (bl_display_minccost)
     ar_average_r = (-1)*(ar_aprime_nobridge./ar_max_c_nobridge);
     tab_opti_borrow = table(ar_aprime_nobridge, ar_max_c_nobridge, <span class="keyword">...</span>
-                            ar_average_r, max_idx, <span class="keyword">...</span>
-                            ar_inf_borr_nobridge, ar_for_borr, ar_for_save);
+        ar_average_r, ar_inf_borr_nobridge, ar_for_borr, ar_for_save);
     disp(tab_opti_borrow);
 <span class="keyword">end</span>
-</pre><pre class="codeoutput">    ar_aprime_nobridge    ar_max_c_nobridge    ar_average_r    max_idx    ar_inf_borr_nobridge    ar_for_borr    ar_for_save
-    __________________    _________________    ____________    _______    ____________________    ___________    ___________
+</pre><pre class="codeoutput">    ar_aprime_nobridge    ar_max_c_nobridge    ar_average_r    ar_inf_borr_nobridge    ar_for_borr    ar_for_save
+    __________________    _________________    ____________    ____________________    ___________    ___________
 
-             -5                 4.8267            1.0359          3                   0             -5.175          0.175   
-           -4.5                 4.3396             1.037          2               -0.36              -4.14              0   
-           -4.1                 3.9604            1.0353          3                   0              -4.14           0.04   
-           -1.1                 1.0613            1.0364          2              -0.065             -1.035              0   
-           -0.1                0.09434              1.06          1                -0.1                  0              0   
+            -20                 19.104            1.0469               -9.65             -10.35              0   
+             -5                 4.8267            1.0359                   0             -5.175          0.175   
+           -4.5                 4.3396             1.037               -0.36              -4.14              0   
+           -4.1                 3.9604            1.0353                   0              -4.14           0.04   
+           -1.1                 1.0613            1.0364              -0.065             -1.035              0   
+           -0.1                0.09434              1.06                -0.1                  0              0   
+            0.1               -0.09901              1.01                   0                  0            0.1   
+              1                -0.9901              1.01                   0                  0              1   
 
 </pre><pre class="codeinput"><span class="keyword">end</span>
 </pre><pre class="codeoutput">
 ans =
 
+   19.1038
     4.8267
     4.3396
     3.9604
     1.0613
     0.0943
+   -0.0990
+   -0.9901
 
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
-%%
+%% Formal Informal Cost Minimizer
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
-
+%%
 function [ar_max_c_nobridge, ar_inf_borr_nobridge, ar_for_borr, ar_for_save] = ffs_fibs_min_c_cost(varargin)
-%% FFS_FIBS_MIN_C_COST Minimizes to consumption given aprime. 
+%% FFS_FIBS_MIN_C_COST Minimizes to consumption given aprime.
 % Suppose I want to borrow 5 dollar today. That will increase current
 % consumption by 5 dollars, but its cost to next period cash-on-hand is a
 % function of how I get the 5 dollar of borrowing, whether I borrow from
@@ -286,19 +438,19 @@ function [ar_max_c_nobridge, ar_inf_borr_nobridge, ar_for_borr, ar_for_save] = f
 % # borrow 3 formally and 2 informally
 % # borrow 6 formally and save 1
 % # additionally, if 5 is actually on the grid, you would borrow 5 only
-% formally if that offers the lower interest rate. 
-% 
+% formally if that offers the lower interest rate.
+%
 % This function here finds which one of of these options is optimal
 % conditional on aprime choice. Households choose among the different
 % aprime choices given these within aprime choice optimal formal/informal
-% allocations. 
+% allocations.
 %
 % _ar_aprime_ is the borrowing choices that do not include bridge
 % loan. The additional borrowing on top of bridge loans.
 %
 % @param bl_b_is_principle boolean solving with aggregate savings as
 % savings + debt principles + interests, or just principles no interests.
-% if true, principels only, no interests. 
+% if true, principels only, no interests.
 %
 % @param fl_r_inf float informal interest rate
 %
@@ -308,34 +460,46 @@ function [ar_max_c_nobridge, ar_inf_borr_nobridge, ar_for_borr, ar_for_save] = f
 %
 % @param ar_aprime array N by 1 level of aggregate borrowing excluding
 % bridge loan. Note that bridge loan is needed if coh is negative and
-% households can not pay back principle and interests.
+% households can not pay back principle and interests. This must be
+% negative.
 %
 % @return ar_max_c_nobridge array N by 1 next period consumption cost
 % (_bl_b_is_principle_ == true), or this period consumption gain
 % (_bl_b_is_principle_ == false) based on choosing optimally between formal
 % and informal, borrowing and savings joint categories, given either total
-% borrowing in principles or principles + interest rate from ar_aprime.  
+% borrowing in principles or principles + interest rate from ar_aprime.
 %
 % @return ar_inf_borr_nobridge array N by 1 informal borrowing choices
 % (Excluding Informal Bridge loans, calculated elsewhere) which could come
 % from informal borrowing only if that minimizes consumption cost, or joint
-% formal and informal borrowing if that is the cost minimizing choice. 
+% formal and informal borrowing if that is the cost minimizing choice. if
+% _bl_b_is_principle_ == true, then this includes just the principles,  no
+% intrest rates. if _bl_b_is_principle_ == false, that means this includes
+% interest rates costs as well as principles costs.
 %
 % @return ar_for_borr array N by 1 formal borrowing choice that minimizes
 % consumption costs given fixed _ar_aprime_. Could come from formal
 % borrowing alone (which shows up as joint formal and something else where
 % the other choice is 0), or formal + informal joint borrow, or formal
-% borrowing and formal savings. 
+% borrowing and formal savings.
 %
 % @return ar_for_save array N by 1 this is the formal savings choice when
 % households are borrowing. Households coulds save just for savings, no
-% borrowing as well, that is not captured here. 
+% borrowing as well, that is not captured here.
 %
 % @example
 %
+%   bl_input_override = true;
 %   [ar_max_c_nobridge, ar_inf_borr_nobridge, ar_for_borr, ar_for_save] = ...
 %        ffs_akz_set_functions(bl_b_is_principle, fl_r_inf, fl_r_fsv, ...
-%                              ar_forbrblk_r, ar_forbrblk, ar_aprime_nobridge, bl_display_minccost);
+%                              ar_forbrblk_r, ar_forbrblk, ...
+%                              fl_ap, bl_display_minccost, bl_input_override);
+%
+% @include
+%
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_set_default_param.html ffs_abz_fibs_set_default_param>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_get_funcgrid.html ffs_abz_fibs_get_funcgrid>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_match.html ffs_for_br_block_match>
 %
 
 %% Default and Parse Parameters
@@ -348,6 +512,7 @@ if (bl_input_override)
     % override when called from outside
     [bl_b_is_principle, fl_r_inf, fl_r_fsv, ...
         ar_forbrblk_r, ar_forbrblk, ar_aprime_nobridge, bl_display_minccost, ~] = varargin{:};
+    
 else
     
     close all
@@ -355,143 +520,233 @@ else
     % Default
     it_param_set = 4;
     bl_input_override = true;
-    [param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);        
+    [param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
     [armt_map, ~] = ffs_abz_fibs_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
     
     % Gather Inputs from armt_map
     params_group = values(armt_map, {'ar_forbrblk', 'ar_forbrblk_r'});
     [ar_forbrblk, ar_forbrblk_r] = params_group{:};
-
+    
     % Gather Inputs from param_map
     params_group = values(param_map, {'bl_b_is_principle', 'fl_r_inf', 'fl_r_fsv'});
     [bl_b_is_principle, fl_r_inf, fl_r_fsv] = params_group{:};
     
     % Testing COH and Aprime Vectors
-    ar_aprime_nobridge = [-5,-4.5,-4.1,-1.1,-0.1]';
-        
+    ar_aprime_nobridge = [-20,-5,-4.5,-4.1,-1.1,-0.1, 0.1, 1]';
+    
     % Set Display Control
-    bl_display_minccost = true;        
-
-end
-
-%% Compute Consumption Informal Borrowing only
-
-% Generate c Vectors
-if (bl_b_is_principle)
-    
-    % c_infonly is cost of borrowing in next period consumption
-    b_infonly_inf = (ar_aprime_nobridge);
-    c_infonly = b_infonly_inf.*(1+fl_r_inf);
-    
-else
-    
-    % c_infonly is the gain from borrowing in current period consumption
-    b_infonly_inf = (ar_aprime_nobridge);
-    c_infonly = (-1).*b_infonly_inf./(1+fl_r_inf);
+    bl_display_minccost = true;
     
 end
 
-% Display
-if (bl_display_minccost)
-    tab_c_infonly = table(ar_aprime_nobridge, b_infonly_inf, c_infonly);
-    disp(['informal borrow interest (fl_r_inf):', num2str(fl_r_inf)]);
-    disp(tab_c_infonly);    
-end
+%% Initialize Output Arrays
 
-%% Compute Formal Block Sizes
-% Divide each asset choice by each element of the formal choice grid. The
-% numbers closest to 1 above and below indicates the floor and ceil formal
-% borrowing quantity for joint credit market participation choices. 
+ar_max_c_nobridge = zeros(size(ar_aprime_nobridge));
+ar_inf_borr_nobridge = zeros(size(ar_aprime_nobridge));
+ar_for_borr = zeros(size(ar_aprime_nobridge));
+ar_for_save = zeros(size(ar_aprime_nobridge));
 
-[ar_a_grid_ceil_principle, ar_a_grid_ceil_wthr, ar_a_grid_floor_principle, ar_a_grid_floor_wthr] = ...
-        ffs_for_br_block_match(ar_aprime_nobridge, ar_forbrblk, ar_forbrblk_r, bl_b_is_principle);
-    
-%% Compute Consumption Values Formal + Informal Borrowing Jointly
-% if right on grid, informal could be zero. 
+%% Find if ar_aprime contains Saving
+% only one savings option, function here meant for borrowing, but can deal
+% with savings as well if they appear.
 
-% Generate c Vectors
-if (bl_b_is_principle)
-    
-    % c_infforb is cost of borrowing in next period consumption
-    b_infforb_inf = (ar_aprime_nobridge - ar_a_grid_ceil_principle);
-    b_infforb_for = -(ar_a_grid_ceil_principle);
-    c_infforb =  (b_infforb_inf.*(1+fl_r_inf) + ar_a_grid_ceil_wthr);
-    
-else
-    
-    % c_infforb is the gain from borrowing in current period consumption       
-    b_infforb_inf = ar_aprime_nobridge - ar_a_grid_ceil_wthr;
-    b_infforb_for = ar_a_grid_ceil_wthr;
-    c_infforb = -1*((b_infforb_inf./(1+fl_r_inf) + ar_a_grid_ceil_principle));
-    
-end
+ar_aprime_nobridge_pos_idx = (ar_aprime_nobridge >= 0);
+ar_aprime_nobridge_br = ar_aprime_nobridge(~ar_aprime_nobridge_pos_idx);
 
-% Display
-if (bl_display_minccost)
-    tab_c_infforb = table(ar_aprime_nobridge, b_infforb_for, b_infforb_inf, c_infforb);
-    disp(['formal block size (ar_forbrblk):', num2str(ar_forbrblk)]);
-    disp(['formal borrow interest (ar_forbrblk_r):', num2str(ar_forbrblk_r)]); 
-    disp(['informal borrow interest (fl_r_inf):', num2str(fl_r_inf)]);
-    disp(tab_c_infforb);    
-end
+%% Get consumption and savings choices if savings
+% When households overall save, they could still have had to first pay
+% informal lender for bridge loan. For households with positive
+% cash-on-hand, if they save, they are only savings, and not borrowing at
+% the same time. In practice, some households coule borrow from one sector
+% and lend/save in another. This is not a mechanism in this model, but is
+% discussed in <https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3316939 Wang (2019)>
+%
 
-%% Compute Consumption Values Formal Borrowing + Formal Savings
+if (sum(ar_aprime_nobridge_pos_idx))
+    
+    % savings = savings (including or not interest rates)
+    ar_for_save(ar_aprime_nobridge_pos_idx) = ar_aprime_nobridge(ar_aprime_nobridge_pos_idx);
 
-% Generate c Vectors
-if (bl_b_is_principle)
-    
-    % c_forbrsv is cost of borrowing in next period consumption
-    b_forbrsv_sav = (ar_aprime_nobridge - ar_a_grid_floor_principle);
-    b_forbrsv_brr = -(ar_a_grid_floor_principle);
-    c_forbrsv = (b_forbrsv_sav*(1+fl_r_fsv) + ar_a_grid_floor_wthr);
-    
-else
-    
-    % c_forbrsv is the gain from borrowing in current period consumption       
-    b_forbrsv_sav = ar_aprime_nobridge - ar_a_grid_floor_wthr;
-    b_forbrsv_brr = ar_a_grid_floor_wthr;
-    c_forbrsv = -1*((b_forbrsv_sav./(1+fl_r_fsv) + ar_a_grid_floor_principle));
+    if (bl_b_is_principle)
+
+        % consumption gain next period due to savings
+        ar_max_c_nobridge(ar_aprime_nobridge_pos_idx) = ...
+            ar_aprime_nobridge(ar_aprime_nobridge_pos_idx)*(1+fl_r_fsv);
+
+    else
+
+        % consumption loss today due to savings
+        ar_max_c_nobridge(ar_aprime_nobridge_pos_idx) = ...
+            (-1)*ar_aprime_nobridge(ar_aprime_nobridge_pos_idx)./(1+fl_r_fsv);
+
+    end
     
 end
 
-% Display
-if (bl_display_minccost)
-    tab_c_forbrsv = table(ar_aprime_nobridge, b_forbrsv_brr, b_forbrsv_sav, c_forbrsv);
-    disp(['formal block size (ar_forbrblk):', num2str(ar_forbrblk)]);
-    disp(['formal borrow interest (ar_forbrblk_r):', num2str(ar_forbrblk_r)]); 
-    disp(['savings interest (fl_r_fsv):', num2str(fl_r_fsv)]);    
-    disp(tab_c_forbrsv);    
+%% Proceed to Process Borrowing if aprime Array has borrowing
+
+if (sum(~ar_aprime_nobridge_pos_idx))
+    
+    %% Compute Consumption Informal Borrowing only
+    
+    % Generate c Vectors
+    if (bl_b_is_principle)
+        
+        % c_infonly is cost of borrowing in next period consumption
+        b_infonly_inf = (ar_aprime_nobridge_br);
+        c_infonly = b_infonly_inf.*(1+fl_r_inf);
+        
+    else
+        
+        % c_infonly is the gain from borrowing in current period consumption
+        b_infonly_inf = (ar_aprime_nobridge_br);
+        c_infonly = (-1).*b_infonly_inf./(1+fl_r_inf);
+        
+    end
+    
+    % Display
+    if (bl_display_minccost)
+        tab_c_infonly = table(ar_aprime_nobridge_br, b_infonly_inf, c_infonly);
+        disp(['informal borrow interest (fl_r_inf):', num2str(fl_r_inf)]);
+        disp(tab_c_infonly);
+    end
+    
+    %% Compute Formal Block Sizes
+    % Divide each asset choice by each element of the formal choice grid. The
+    % numbers closest to 1 above and below indicates the floor and ceil formal
+    % borrowing quantity for joint credit market participation choices.
+    
+    [ar_a_grid_ceil_principle, ar_a_grid_ceil_wthr, ar_a_grid_floor_principle, ar_a_grid_floor_wthr] = ...
+        ffs_for_br_block_match(ar_aprime_nobridge_br, ar_forbrblk, ar_forbrblk_r, bl_b_is_principle);
+    
+    %% Compute Consumption Values Formal + Informal Borrowing Jointly
+    % if right on grid, informal could be zero.
+    
+    % Generate c Vectors
+    if (bl_b_is_principle)
+        
+        % c_infforb is cost of borrowing in next period consumption
+        b_infforb_inf = (ar_aprime_nobridge_br - ar_a_grid_ceil_principle);
+        b_infforb_for = -(ar_a_grid_ceil_principle);
+        c_infforb =  (b_infforb_inf.*(1+fl_r_inf) + ar_a_grid_ceil_wthr);
+        
+    else
+        
+        % c_infforb is the gain from borrowing in current period consumption
+        b_infforb_inf = ar_aprime_nobridge_br - ar_a_grid_ceil_wthr;
+        b_infforb_for = ar_a_grid_ceil_wthr;
+        c_infforb = -1*((b_infforb_inf./(1+fl_r_inf) + ar_a_grid_ceil_principle));
+        
+    end
+    
+    % Display
+    if (bl_display_minccost)
+        tab_c_infforb = table(ar_aprime_nobridge_br, b_infforb_for, b_infforb_inf, c_infforb);
+        disp(['formal block size (ar_forbrblk):', num2str(ar_forbrblk)]);
+        disp(['formal borrow interest (ar_forbrblk_r):', num2str(ar_forbrblk_r)]);
+        disp(['informal borrow interest (fl_r_inf):', num2str(fl_r_inf)]);
+        disp(tab_c_infforb);
+    end
+    
+    %% Compute Consumption Values Formal Borrowing + Formal Savings
+    
+    % Generate c Vectors
+    if (bl_b_is_principle)
+        
+        % c_forbrsv is cost of borrowing in next period consumption
+        b_forbrsv_sav = (ar_aprime_nobridge_br - ar_a_grid_floor_principle);
+        b_forbrsv_brr = -(ar_a_grid_floor_principle);
+        c_forbrsv = (b_forbrsv_sav*(1+fl_r_fsv) + ar_a_grid_floor_wthr);
+        
+    else
+        
+        % c_forbrsv is the gain from borrowing in current period consumption
+        b_forbrsv_sav = ar_aprime_nobridge_br - ar_a_grid_floor_wthr;
+        b_forbrsv_brr = ar_a_grid_floor_wthr;
+        c_forbrsv = -1*((b_forbrsv_sav./(1+fl_r_fsv) + ar_a_grid_floor_principle));
+        
+    end
+    
+    % if b_forbrsv_sav < 0, largest formal borrow grid not large enough. set to
+    % 0 so addition of different formal and informal choice categories work.
+    b_forbrsv_brr(b_forbrsv_sav < 0) = 0;
+    c_forbrsv(b_forbrsv_sav < 0) = nan;
+    b_forbrsv_sav(b_forbrsv_sav < 0) = 0;
+    
+    % Display
+    if (bl_display_minccost)
+        tab_c_forbrsv = table(ar_aprime_nobridge_br, b_forbrsv_brr, b_forbrsv_sav, c_forbrsv);
+        disp(['formal block size (ar_forbrblk):', num2str(ar_forbrblk)]);
+        disp(['formal borrow interest (ar_forbrblk_r):', num2str(ar_forbrblk_r)]);
+        disp(['savings interest (fl_r_fsv):', num2str(fl_r_fsv)]);
+        disp(tab_c_forbrsv);
+    end
+    
+    %% Maximize Consumption For non-Bridge Loan Component
+    % Trying to minimize consumption costs
+    
+    if (bl_b_is_principle)
+        
+        % minimize consumption cost to the future
+        [ar_max_c_nobridge_br, max_idx] = min([c_infonly c_infforb c_forbrsv],[], 2);
+        
+    else
+        
+        % maximum consumption today
+        [ar_max_c_nobridge_br, max_idx] = max([c_infonly c_infforb c_forbrsv],[], 2);
+        
+    end
+    
+    if (bl_display_minccost)
+        tab_c_max = table(ar_aprime_nobridge_br, ar_max_c_nobridge_br, max_idx, c_infonly, c_infforb, c_forbrsv);
+        disp(tab_c_max);
+    end
+    
+    %% Borrowing count up borrowing from different sources
+    % Informal borrowing comes from informal only or inffor both
+
+    % Consumption when borrowing
+    ar_max_c_nobridge(~ar_aprime_nobridge_pos_idx) = ar_max_c_nobridge_br;
+
+    % Informal Borrowing
+    ar_inf_borr_nobridge(~ar_aprime_nobridge_pos_idx) = ...
+        b_infonly_inf.*(max_idx == 1) + b_infforb_inf.*(max_idx == 2);
+
+    % Formal Borrowing
+    ar_for_borr(~ar_aprime_nobridge_pos_idx) = ...
+        b_infforb_for.*(max_idx == 2) + b_forbrsv_brr.*(max_idx == 3);
+
+    % Formal Savings
+    ar_for_save(~ar_aprime_nobridge_pos_idx) = ...
+        b_forbrsv_sav.*(max_idx == 3);
+    
 end
 
-%% Maximize Consumption For non-Bridge Loan Component
-% Trying to minimize consumption costs
 
-[ar_max_c_nobridge, max_idx] = max([c_infonly c_infforb c_forbrsv],[], 2);
-
-if (bl_display_minccost)
-    tab_c_max = table(ar_aprime_nobridge, ar_max_c_nobridge, max_idx, c_infonly, c_infforb, c_forbrsv);
-    disp(tab_c_max);    
-end
-
-%% Count up borrowing from different sources
-% Informal borrowing comes from informal only or inffor both
-
-ar_inf_borr_nobridge = b_infonly_inf.*(max_idx == 1) + b_infforb_inf.*(max_idx == 2);
-ar_for_borr =          b_infforb_for.*(max_idx == 2) + b_forbrsv_brr.*(max_idx == 3);
-ar_for_save =                                          b_forbrsv_sav.*(max_idx == 3);
-
-
-% Display
+%% Display Final 
 if (bl_display_minccost)
     ar_average_r = (-1)*(ar_aprime_nobridge./ar_max_c_nobridge);
     tab_opti_borrow = table(ar_aprime_nobridge, ar_max_c_nobridge, ...
-                            ar_average_r, max_idx, ...
-                            ar_inf_borr_nobridge, ar_for_borr, ar_for_save);
-    disp(tab_opti_borrow);    
+        ar_average_r, ar_inf_borr_nobridge, ar_for_borr, ar_for_save);
+    disp(tab_opti_borrow);
 end
 
 
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ##### SOURCE END #####
 --></body></html>
