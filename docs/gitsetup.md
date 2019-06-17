@@ -3,15 +3,15 @@ Back to [Fan](https://fanwangecon.github.io)'s
 
 # Setting up GIT to pull from this repository
 
-To view the R and html files, you can pull from the repository following instructions below.
-Alternatively, can click on *Clone or Download* and click *Download Zip*, which will download all files in CodeDynaAsset repository.
-Additionally, if you open one of the HTML files on github.com and would like to view it directly, append this to the beginning of the current HTML page's full URL: *http://htmlpreview.github.io/?* (see https://github.com/htmlpreview/htmlpreview.github.com for more information on how)
+To view the various files, you can pull from the repository following instructions below. Alternatively, can click on *Clone or Download* and click *Download Zip*, which will download all files in CodeDynaAsset repository.
+
+Additionally, *HTML* links are directly viewable on the github pages site: *[https://fanwangecon.github.io/CodeDynaAsset/](https://fanwangecon.github.io/CodeDynaAsset/)*. To view *HTML* files inside the repository page *[https://github.com/FanWangEcon/CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset)* directly, append this to the beginning of the current HTML page's full URL: *http://htmlpreview.github.io/?* (see https://github.com/htmlpreview/htmlpreview.github.com for more information on how)
 
 You can set up your own github account if you would like. That is however not necessary for completing the following steps. Github allows us to host and share codes in the form of git repositories. git is a type of repository.
 
 ## Installing and Open up Git:
-1. Download Git from [here](https://git-scm.com/downloads). Install the git program, follow on-screen instructions
-2. Search for the **git bash** program on your computer, open it. A window with black background opens up
+1. Download Git from [here](https://git-scm.com/downloads). Install the git program, follow on-screen instructions.
+2. Search for the **git bash** program on your computer, open it. A window with black background opens up.
 3. Type in: *cd ~/*, press enter, this takes your to the user directory on your computer. Type in: *pwd*, press enter, this shows you the path to your user directory, for me, it is for example:
   ```console
   /c/Users/fan

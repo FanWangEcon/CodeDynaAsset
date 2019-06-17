@@ -1,10 +1,28 @@
-%% Tests the ABZ_VF_VECSV Algorithm with several simulations
-% 1. benchmark: benchmark not very accurate but useful for comparing against latnerative algorithms
-% 2. operational
-% 3. most precise
+%% Quick vs Benchmark vs More Precise (Save + Borr Dynamic Programming Problem)
+% Testing the
+% <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv>
+% program for solving the savings and borrowing dynamic programming problem.
+%
+% Computational speed is determined by the number of asset and shock grid
+% points. Here we run the model with quick, benchmark and more precise
+% simulations with increasing grid points for shocks and asset.
+%
+% # quick: fast run
+% # benchmark: default as set in <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param>
+% # more precise: increase grid count for shocks and asset
+%
+% @seealso
+%
+% * _BORROW GRID_: borrowing choice grid with default: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ffs_abz_get_funcgrid/test_borr/html/ffs_abz_get_funcgrid_defnodfalt.html ffs_abz_get_funcgrid_defnodfalt>
+% * _BORROW_: borrow and default small grid testing: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_abz_vf_vecsv/test_borr/html/ff_abz_vf_vecsv_default_small.html ff_abz_vf_vecsv_default_small>
+% * _BORROW_: borrow and default large grid testing: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_abz_vf_vecsv/test_borr/html/ff_abz_vf_vecsv_default_large.html ff_abz_vf_vecsv_default_large>
+% * _PRECISION_: borr + save quick vs benchmark testing: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_abz_vf_vecsv/test_precision/html/fsi_abz_vf_vecsv_main.html fsi_abz_vf_vecsv_main>
+% * _PRECISION_: borr + save asset grid count testing: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_abz_vf_vecsv/test_precision/html/fsi_abz_vf_vecsv_a_n.html fsi_abz_vf_vecsv_a_n>
+% * _PRECISION_: borr + save shock grid count testing: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_abz_vf_vecsv/test_precision/html/fsi_abz_vf_vecsv_z_n.html fsi_abz_vf_vecsv_z_n>
+%
 
-%% Benchmark Simulation, used in Main Testing Files
-% benchmark not very accurate but useful for comparing against latnerative algorithms
+
+%% Quick Solution
 
 it_param_set = 4;
 [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
@@ -23,8 +41,7 @@ support_map('bl_profile') = false;
 ff_abz_vf_vecsv(param_map, support_map);
 
 
-%% Operational Simulation
-% fast and accurate enough as main simulation parameters
+%% Benchmark Solution
 
 it_param_set = 4;
 [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
@@ -42,7 +59,7 @@ support_map('bl_profile') = false;
 % Call Program
 ff_abz_vf_vecsv(param_map, support_map);
 
-%% High Precision Simulation
+%% More Precise Solution
 
 it_param_set = 4;
 [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
