@@ -89,6 +89,25 @@ if (strcmp(st_forbrblk_type, 'seg3'))
     ar_forbrblk =[ar_seg1, ar_seg2, ar_seg3];
 end
 
+%% Set Formal Borrowing Grid Three Segment
+% An example grid with three segments, the first segement has
+% fl_forbrblk_gap as gap, the second segment gap is twice, the third
+% segement the gap is 3 times as large as fl_forbrblk_gap. Respect
+% fl_forbrblk_brmost fl_forbrblk_brleast, which means divided into three
+% parts based on them as much as possible
+
+if (strcmp(st_forbrblk_type, 'testfx'))
+    fl_most_least_gap = (fl_forbrblk_brmost - fl_forbrblk_brleast);
+    fl_most_least_seg3_interval = fl_most_least_gap/3;
+    
+    ar_seg1 = fl_forbrblk_brleast:fl_forbrblk_gap:fl_most_least_seg3_interval;
+    ar_seg2 = max(ar_seg1):(fl_forbrblk_gap*2):fl_most_least_seg3_interval*2;
+    ar_seg3 = max(ar_seg2):(fl_forbrblk_gap*3):fl_forbrblk_brmost;
+    
+    ar_forbrblk =[-3 -6];
+end
+
+
 %% Sort Borrowing Blocks
 
 % add zero because formal borrowing = 0 should be an option

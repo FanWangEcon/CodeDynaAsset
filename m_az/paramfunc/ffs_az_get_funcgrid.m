@@ -1,8 +1,9 @@
-%%
+%% Generate States, Choices and Shocks Grids and Get Functions
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
+%%
 function [armt_map, func_map] = ffs_az_get_funcgrid(varargin)
 %% FFS_AZ_GET_FUNCGRID get funcs, params, states choices shocks grids
 % centralized gateway for retrieving parameters, and solution grids and
@@ -32,7 +33,7 @@ function [armt_map, func_map] = ffs_az_get_funcgrid(varargin)
 %
 % @include
 %
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/paramfunc/ffs_az_set_functions.m ffs_az_set_functions>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_set_functions.html ffs_az_set_functions>
 % * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/ffto_gen_tauchen_jhl.m ffto_gen_tauchen_jhl>
 % * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/fft_gen_grid_loglin.m fft_gen_grid_loglin>
 %

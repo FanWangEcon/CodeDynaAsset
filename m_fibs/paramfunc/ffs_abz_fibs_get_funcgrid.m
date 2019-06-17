@@ -3,6 +3,7 @@
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
+%%
 function [armt_map, func_map] = ffs_abz_fibs_get_funcgrid(varargin)
 %% FFS_ABZ_FIBS_GET_FUNCGRID get funcs, params, states choices shocks grids
 % centralized gateway for retrieving parameters, and solution grids and

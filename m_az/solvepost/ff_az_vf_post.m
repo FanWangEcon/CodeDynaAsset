@@ -1,8 +1,9 @@
-%% 
+%% Tabulate Value and Policy Iteration Results, Store to Mat, Graph Results
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository> 
 % Table of Content.*
 
+%%
 function [result_map] = ff_az_vf_post(varargin)
 %% FF_AZ_VF_POST post ff_az_vf graphs, tables, mats.
 % Given the solution form ff_az_vf, graphs, tables, mats. Graphing code is
@@ -34,13 +35,13 @@ function [result_map] = ff_az_vf_post(varargin)
 %    result_map('ar_val_diff_norm') = ar_val_diff_norm(1:it_iter_last);
 %    result_map('ar_pol_diff_norm') = ar_pol_diff_norm(1:it_iter_last);
 %    result_map('mt_pol_perc_change') = mt_pol_perc_change(1:it_iter_last, :);
-%    result_map = ff_az_vf_post(param_map, support_map, armt_map, func_map, result_map,    bl_input_override);
+%    result_map = ff_az_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
 %
 % @include
 %
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solvepost/ff_az_vf_post_graph.m ff_az_vf_post_graph>
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/paramfunc/ffs_az_set_default_param.m ffs_az_set_default_param>
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/paramfunc/ffs_az_get_funcgrid.m ffs_az_get_funcgrid>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_vf_post_graph.html ff_az_vf_post_graph>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_set_default_param.html ffs_az_set_default_param>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_get_funcgrid.html ffs_az_get_funcgrid>
 %
 
 %% Default
@@ -131,6 +132,13 @@ if (bl_mat)
     save(strcat(st_mat_path, st_file_name));
 end
 
+%% Generate and Save Graphs
+
+if (bl_graph)
+    bl_input_override = true;
+    ff_az_vf_post_graph(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+end
+
 %% Display Val Pol Iter Table
 
 if (bl_display_final)
@@ -197,13 +205,6 @@ if (bl_display_final)
     result_map('tb_valpol_alliter') = tb_valpol_alliter;
     result_map('tb_val') = tb_val;
     result_map('tb_pol_a') = tb_pol_a;
-end
-
-%% Generate and Save Graphs
-
-if (bl_graph)
-    bl_input_override = true;
-    ff_az_vf_post_graph(param_map, support_map, armt_map, result_map, bl_input_override);
 end
 
 end

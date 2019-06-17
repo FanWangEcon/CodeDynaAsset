@@ -1,8 +1,9 @@
-%%
+%% Set Parameters One Asset Borrowing and Savings
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
+%%
 function [param_map, support_map] = ffs_abz_set_default_param(varargin)
 %% FFS_ABZ_SET_DEFAULT_PARAM setting model default parameters
 % two groups of default parameters stored in container maps
@@ -105,6 +106,7 @@ support_map('bl_graph_onebyones') = true;
 support_map('bl_graph_val') = true;
 support_map('bl_graph_pol_lvl') = true;
 support_map('bl_graph_pol_pct') = true;
+support_map('bl_graph_coh_t_coh') = true;
 % Image Saving Controls (given graphing)
 support_map('st_title_prefix') = '';
 support_map('bl_img_save') = false;
@@ -136,6 +138,8 @@ if (ismember(it_subset, [1,2,3,4]))
         support_map('it_display_every') = 1;
     end
     if (ismember(it_subset, [2, 4]))
+        % close figures
+        close all;        
         % Main Run
         support_map('bl_time') = true;
         support_map('bl_display') = true;
@@ -143,11 +147,13 @@ if (ismember(it_subset, [1,2,3,4]))
 
         support_map('bl_post') = true;
         support_map('bl_display_final') = true;
-        support_map('bl_mat') = true;
+        support_map('bl_mat') = false;
         support_map('bl_graph') = true;
         support_map('bl_graph_onebyones') = false;
         support_map('bl_img_save') = true;
         if (ismember(it_subset, [4]))
+            support_map('bl_time') = false;
+            support_map('bl_display') = false;
             support_map('bl_graph_onebyones') = true;
             support_map('bl_img_save') = false;
         end

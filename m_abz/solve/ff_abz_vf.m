@@ -1,12 +1,14 @@
-%%
+%% Solve Save + Borr Dynamic Programming Problem (Loop)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
+%%
 function result_map = ff_abz_vf(varargin)
 %% FF_ABZ_VF solve infinite horizon exo shock + endo asset problem
 % This program solves the infinite horizon dynamic single asset and single
-% shock problem with loops. This file contains codes that processes borrowing 
+% shock problem with loops. This file contains codes that processes
+% borrowing.
 %
 % @param param_map container parameter container
 %
@@ -36,13 +38,40 @@ function result_map = ff_abz_vf(varargin)
 %
 % @example
 %
+%    % Get Default Parameters
+%    it_param_set = 4;
+%    [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
+%    % Chnage param_map keys for borrowing
+%    param_map('fl_b_bd') = -20; % borrow bound
+%    param_map('bl_default') = false; % true if allow for default
+%    param_map('fl_c_min') = 0.0001; % u(c_min) when default
+%    % Change Keys in param_map
+%    param_map('it_a_n') = 500;
+%    param_map('it_z_n') = 11;
+%    param_map('fl_a_max') = 100;
+%    param_map('fl_w') = 1.3;
+%    % Change Keys support_map
+%    support_map('bl_display') = false;
+%    support_map('bl_post') = true;
+%    support_map('bl_display_final') = false;
+%    % Call Program with external parameters that override defaults.
+%    ff_abz_vf(param_map, support_map);
+%
 % @include
 %
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/paramfunc/ffs_abz_set_default_param.m ffs_abz_set_default_param>
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/paramfunc/ffs_abz_get_funcgrid.m ffs_abz_get_funcgrid>
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solvepost/ff_az_vf_post.m ff_az_vf_post>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_vf_post.html ff_az_vf_post>
 %
-
+% @seealso
+%
+% * save loop: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf.html ff_az_vf>
+% * save vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vec.html ff_az_vf_vec>
+% * save optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html ff_az_vf_vecsv>
+% * save + borr loop: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf.html ff_abz_vf>
+% * save + borr vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vec.html ff_abz_vf_vec>
+% * save + borr optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv>
+%
 
 %% Default
 % * it_param_set = 1: quick test
@@ -50,9 +79,14 @@ function result_map = ff_abz_vf(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 1;
+it_param_set = 4;
 bl_input_override = true;
 [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
+
+% Note: param_map and support_map can be adjusted here or outside to override defaults
+% param_map('it_a_n') = 750;
+% param_map('it_z_n') = 15;
+
 [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 default_params = {param_map support_map armt_map func_map};
 

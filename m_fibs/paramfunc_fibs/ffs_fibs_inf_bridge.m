@@ -75,6 +75,10 @@ else
     % Testing COH and Aprime Vectors
     ar_aprime =    [-20. -5,-5, -4.5,-4.5, -0.1,-0.1]';
     ar_coh_today = [-19, 1, -1,   1,-1,      1,0 ]';
+    
+%     % Testing COH and Aprime coh is row vector, aprime is column vector
+%     ar_aprime =    linspace(-5, 10, 5)';
+%     ar_coh_today = linspace(-10, 0, 10);
 
     % Set Display Control
     bl_display_infbridge = true;

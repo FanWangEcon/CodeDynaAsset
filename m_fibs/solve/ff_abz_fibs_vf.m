@@ -1,8 +1,9 @@
-%% FF_ABZ_FIBS_VF
+%% Solve For+Inf+Borr+Save Dynamic Programming Problem (Loop)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
+%%
 function result_map = ff_abz_fibs_vf(varargin)
 %% FF_ABZ_FIBS_VF borr + save one asset formal informal + loop
 % This program solves the infinite horizon dynamic single asset and single
@@ -55,11 +56,13 @@ function result_map = ff_abz_fibs_vf(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 2;
+it_param_set = 1;
 bl_input_override = true;
 [param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
-param_map('it_a_n') = 100;
-param_map('it_z_n') = 5;
+
+% Note: param_map and support_map can be adjusted here or outside to override defaults
+% param_map('it_a_n') = 50;
+% param_map('it_z_n') = 15;
 
 [armt_map, func_map] = ffs_abz_fibs_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 default_params = {param_map support_map armt_map func_map};
@@ -200,7 +203,6 @@ while bl_vfi_continue
             ar_for_borr = zeros(size(ar_a));
             ar_for_save = zeros(size(ar_a));
             
-            
             % calculate cash on hand
             fl_coh = f_coh(fl_z, fl_a);
             
@@ -211,6 +213,24 @@ while bl_vfi_continue
                 fl_ap = ar_a(it_ap_k);
                 
                 %% Compute Consumption given Borrowing and Savings
+                % find the today's consumption maximizing formal and informal
+                % choices given a' and coh. The formal and informal choices need to
+                % generate exactly a', but depending on which formal and informal
+                % joint choice is used, the consumption cost today a' is different.
+                % Note here, a is principle + interests. Three areas:
+                %
+                % * *CASE A* a' > 0: savings, do not need to optimize over formal and
+                % informal choices
+                % * *CASE B* a' < 0 & coh < 0: need bridge loan to pay for unpaid debt, and
+                % borrowing over-all, need to first pick bridge loan to pay for
+                % debt, if bridge loan is insufficient, go into default. After
+                % bridge loan, optimize over formal+informal, borrow+save joint
+                % choices.
+                % * *CASE C* $ a' < 0 & coh > 0: do not need to get informal bridge loans,
+                % optimize over for+inf save, for+save+borr, inf+borr only, for
+                % borrow only.
+                %
+                
                 if (fl_ap < 0)
                     
                     % Calculate Bridge Loan Borrowing
@@ -253,16 +273,7 @@ while bl_vfi_continue
                     [fl_b_bridge, fl_inf_borr_nobridge, fl_for_borr, fl_for_save] = deal(0, 0, 0, fl_ap);
                     
                 end
-                
-                % Store consumption
-                ar_c_cur(it_ap_k) = fl_c;
-                
-                % Save/Update Borrowing Information
-                ar_b_bridge(it_ap_k) = fl_b_bridge;
-                ar_inf_borr_nobridge(it_ap_k) = fl_inf_borr_nobridge;
-                ar_for_borr(it_ap_k) = fl_for_borr;
-                ar_for_save(it_ap_k) = fl_for_save;
-                
+                                                
                 %% Compute Utility With Default
                 % assign u(c)
                 if (fl_c <= fl_c_min)
@@ -277,14 +288,21 @@ while bl_vfi_continue
                         end
                         
                         % Replace Consumption if default cmin
-                        ar_c_cur(it_ap_k) = fl_c_min;
+                        fl_c = fl_c_min;
                     else
                         % if default is not allowed: v = fl_nan_replace
                         ar_val_cur(it_ap_k) = fl_nan_replace;
                         
                         % Replace Consumption if no default nan
-                        ar_c_cur(it_ap_k) = 0;
+                        fl_c = 0;
                     end
+                    
+                    % no action, defaulting
+                    fl_b_bridge = 0;
+                    fl_inf_borr_nobridge = 0;
+                    fl_for_borr = 0;
+                    fl_for_save = 0;
+                    
                 else
                     % Solve Optimization Problem: max_{a'} u(c(a,a',z)) + beta*EV(a',z')
                     % borrowed enough to pay debt (and borrowing limit not exceeded)
@@ -301,10 +319,28 @@ while bl_vfi_continue
                             fl_beta*mt_z_trans(it_z_i, it_az_q)*mt_val_cur(it_ap_k, it_az_q);
                     end
                 end
+                
+                %% Store Values
+                
+                % Could get the formal and informal values from
+                % ffs_fibs_min_c_cost_bridge.m
+%                 bl_input_override = true;
+%                 [fl_c, fl_b_bridge, fl_inf_borr_nobridge, fl_for_borr, fl_for_save] = ...
+%                     ffs_fibs_min_c_cost_bridge(fl_ap, fl_coh, ...
+%                     param_map, support_map, armt_map, func_map, bl_input_override);
+                
+                % Store consumption
+                ar_c_cur(it_ap_k) = fl_c;
+                
+                % Save/Update Borrowing Information
+                ar_b_bridge(it_ap_k) = fl_b_bridge;
+                ar_inf_borr_nobridge(it_ap_k) = fl_inf_borr_nobridge;
+                ar_for_borr(it_ap_k) = fl_for_borr;
+                ar_for_save(it_ap_k) = fl_for_save;
+                
             end
             
             %% Optimize over Next Period Asset Choices
-            
             % optimal choice value
             [fl_opti_val_z, fl_opti_idx_z] = max(ar_val_cur);
             fl_opti_aprime_z = ar_a(fl_opti_idx_z);
@@ -412,7 +448,7 @@ result_map('mt_pol_b_bridge') = mt_pol_b_bridge;
 result_map('mt_pol_inf_borr_nobridge') = mt_pol_inf_borr_nobridge;
 result_map('mt_pol_for_borr') = mt_pol_for_borr;
 result_map('mt_pol_for_save') = mt_pol_for_save;
-
+mt_pol_for_save
 if (bl_post)
     bl_input_override = true;
     result_map('ar_val_diff_norm') = ar_val_diff_norm(1:it_iter_last);

@@ -89,7 +89,7 @@ Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_
 Using three algorithm that provide identical solutions:
 
 1. *abz* model [looped solution](https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/solve/ff_abz_vf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/profile/ff_abz_vf_default_p3/file0.html)
-    * speed: **9765.7** seconds
+    * speed: **22153.2** seconds
 2. *abz* model [vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vec.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/solve/ff_abz_vf_vec.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vec.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/profile/ff_abz_vf_vec_default_p3/file0.html)    
     * speed: **48.3** seconds
 3. *abz* model [optimized vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/solve/ff_abz_vf_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/profile/ff_abz_vf_vecsv_default_p3/file0.html)    
@@ -104,9 +104,11 @@ Solving for the asset distribution.
 The key addition here for *abz* vs *az* before are parameters [*bl_default*](https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_default_param.html) and [*fl_default_aprime*](https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_default_param.html). They control if default is allowed and next period asset level if default happens.
 
 **Parameters and Function Definitions**:
+
 1. *abz* model [set default parameters](https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_default_param.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/paramfunc/ffs_abz_set_default_param.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_default_param.html)
 2. *abz* model [set functions](https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_functions.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/paramfunc/ffs_abz_set_functions.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_functions.html)
-3. *abz* model [generate states, choices, and shocks grids](https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_get_funcgrid.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/paramfunc/ffs_abz_get_funcgrid.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_get_funcgrid.html)
+3. *abz* model [borrowing and savings grid](https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_gen_borrsave_grid.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/paramfunc/ffs_abz_gen_borrsave_grid.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_gen_borrsave_grid.html)
+4. *abz* model [generate states, choices, and shocks grids](https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_get_funcgrid.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/paramfunc/ffs_abz_get_funcgrid.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_get_funcgrid.html)
 
 **Output Analysis**: shared files with *az*.
 

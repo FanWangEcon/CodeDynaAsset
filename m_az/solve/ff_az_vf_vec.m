@@ -1,10 +1,11 @@
-%%
+%% Solve One Asset Dynamic Programming Problem (Vectorized)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
+%%
 function result_map = ff_az_vf_vec(varargin)
-%% FF_AZ_VF_VECSV solve infinite horizon exo shock + endo asset problem
+%% FF_AZ_VF_VEC solve infinite horizon exo shock + endo asset problem
 % This program solves the infinite horizon dynamic single asset and single
 % shock problem with vectorized codes.
 % <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf.html
@@ -38,11 +39,35 @@ function result_map = ff_az_vf_vec(varargin)
 %
 % @example
 %
+%    % Get Default Parameters
+%    it_param_set = 4;
+%    [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
+%    % Change Keys in param_map
+%    param_map('it_a_n') = 500;
+%    param_map('it_z_n') = 11;
+%    param_map('fl_a_max') = 100;
+%    param_map('fl_w') = 1.3;
+%    % Change Keys support_map
+%    support_map('bl_display') = false;
+%    support_map('bl_post') = true;
+%    support_map('bl_display_final') = false;
+%    % Call Program with external parameters that override defaults.
+%    ff_az_vf_vec(param_map, support_map);
+%
 % @include
 %
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/paramfunc/ffs_az_set_default_param.m ffs_az_set_default_param>
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/paramfunc/ffs_az_get_funcgrid.m ffs_az_get_funcgrid>
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solvepost/ff_az_vf_post.m ff_az_vf_post>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_set_default_param.html ffs_az_set_default_param>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_get_funcgrid.html ffs_az_get_funcgrid>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_vf_post.html ff_az_vf_post>
+%
+% @seealso
+%
+% * save loop: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf.html ff_az_vf>
+% * save vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vec.html ff_az_vf_vec>
+% * save optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html ff_az_vf_vecsv>
+% * save + borr loop: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf.html ff_abz_vf>
+% * save + borr vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vec.html ff_abz_vf_vec>
+% * save + borr optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv>
 %
 
 
@@ -55,6 +80,11 @@ function result_map = ff_az_vf_vec(varargin)
 it_param_set = 4;
 bl_input_override = true;
 [param_map, support_map] = ffs_az_set_default_param(it_param_set);
+
+% Note: param_map and support_map can be adjusted here or outside to override defaults
+% param_map('it_a_n') = 750;
+% param_map('it_z_n') = 15;
+
 [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 default_params = {param_map support_map armt_map func_map};
 
@@ -177,7 +207,7 @@ while bl_vfi_continue
         % Note: matrix multiply not dot multiply
         mt_evzp_condi_z = mt_val_cur * ar_z_trans_condi';
 
-        % EVAL add on future utility, N by N + N by 1, bradcast again
+        % EVAL add on future utility, N by N + N by 1, broadcast again
         mt_utility = mt_utility + fl_beta*mt_evzp_condi_z;
         mt_utility(mt_c <= 0) = fl_nan_replace;
 

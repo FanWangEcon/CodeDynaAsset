@@ -1,15 +1,14 @@
-%%
+%% Set Model Functions
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
+%%
 function [f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons] = ffs_az_set_functions(varargin)
 %% FFS_AZ_SET_FUNCTIONS setting model functions
 % define functions here to avoid copy paste mistakes
 %
 % @param fl_crra float crra utility
-%
-% @param fl_c_min float minimum consumption
 %
 % @param fl_r_save float savings interest rate
 %
@@ -30,7 +29,7 @@ function [f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons] = ffs_a
 % @example
 %
 %   [f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons] = ...
-%        ffs_az_set_functions(fl_crra, fl_c_min, fl_r_save, fl_w);
+%        ffs_az_set_functions(fl_crra, fl_r_save, fl_w);
 %
 
 %% Default

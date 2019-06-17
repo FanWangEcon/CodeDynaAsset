@@ -1,0 +1,1146 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Solve For+Inf+Borr+Save Dynamic Programming Problem (Vectorized)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-16"><meta name="DC.source" content="ff_abz_fibs_vf_vec.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Solve For+Inf+Borr+Save Dynamic Programming Problem (Vectorized)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_ABZ_FIBS_VF_VEC solve infinite horizon exo shock + endo asset problem</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1</a></li><li><a href="#5">Parse Parameters 2</a></li><li><a href="#6">Initialize Output Matrixes</a></li><li><a href="#7">Initialize Convergence Conditions</a></li><li><a href="#8">Iterate Value Function</a></li><li><a href="#10">Solve Optimization Problem Current Iteration</a></li><li><a href="#12">Solve the Formal Informal Problem for each a' and coh: c_forinf(a')</a></li><li><a href="#13">Update Consumption Matrix <b>CASE A + B + C</b> Consumptions</a></li><li><a href="#14">Solve Optimization Problem: max_{a'} (u(c_forinf(a')) + EV(a',z'))</a></li><li><a href="#15">Store Optimal Choices Current Iteration</a></li><li><a href="#17">Check Tolerance and Continuation</a></li><li><a href="#19">Process Optimal Choices</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> result_map = ff_abz_fibs_vf_vec(varargin)
+</pre><h2 id="2">FF_ABZ_FIBS_VF_VEC solve infinite horizon exo shock + endo asset problem</h2><p>This program solves the infinite horizon dynamic single asset and single shock problem with vectorized codes. <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_fibs_vf.html">ff_abz_fibs_vf</a> shows looped codes. The solution is the same.</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@param func_map container container with function handles for consumption cash-on-hand etc.</p><p>@return result_map container contains policy function matrix, value function matrix, iteration results, and policy function, value function and iteration results tables.</p><p>keys included in result_map:</p><div><ul><li>mt_val matrix states_n by shock_n matrix of converged value function grid</li><li>mt_pol_a matrix states_n by shock_n matrix of converged policy function grid</li><li>ar_val_diff_norm array if bl_post = true it_iter_last by 1 val function difference between iteration</li><li>ar_pol_diff_norm array if bl_post = true it_iter_last by 1 policy function difference between iterations</li><li>mt_pol_perc_change matrix if bl_post = true it_iter_last by shock_n the proportion of grid points at which policy function changed between current and last iteration for each element of shock</li></ul></div><p>@example</p><pre>  % Get Default Parameters
+  it_param_set = 4;
+  [param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
+  % Chnage param_map keys for borrowing
+  param_map('fl_b_bd') = -20; % borrow bound
+  param_map('bl_default') = false; % true if allow for default
+  param_map('fl_c_min') = 0.0001; % u(c_min) when default
+  % Change Keys in param_map
+  param_map('it_a_n') = 500;
+  param_map('it_z_n') = 11;
+  param_map('fl_a_max') = 100;
+  param_map('fl_w') = 1.3;
+  % Change Keys support_map
+  support_map('bl_display') = false;
+  support_map('bl_post') = true;
+  support_map('bl_display_final') = false;
+  % Call Program with external parameters that override defaults.
+  ff_abz_fibs_vf_vec(param_map, support_map);</pre><p>@include</p><div><ul><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_set_default_param.html">ffs_abz_fibs_set_default_param</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_get_funcgrid.html">ffs_abz_fibs_get_funcgrid</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_vf_post.html">ff_az_vf_post</a></li></ul></div><p>@seealso</p><h2 id="3">Default</h2><div><ul><li>it_param_set = 1: quick test</li><li>it_param_set = 2: benchmark run</li><li>it_param_set = 3: benchmark profile</li><li>it_param_set = 4: press publish button</li></ul></div><pre class="codeinput">it_param_set = 4;
+bl_input_override = true;
+[param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
+
+<span class="comment">% Note: param_map and support_map can be adjusted here or outside to override defaults</span>
+<span class="comment">% param_map('it_a_n') = 750;</span>
+<span class="comment">% param_map('it_z_n') = 15;</span>
+
+[armt_map, func_map] = ffs_abz_fibs_get_funcgrid(param_map, support_map, bl_input_override); <span class="comment">% 1 for override</span>
+default_params = {param_map support_map armt_map func_map};
+</pre><h2 id="4">Parse Parameters 1</h2><pre class="codeinput"><span class="comment">% if varargin only has param_map and support_map,</span>
+params_len = length(varargin);
+[default_params{1:params_len}] = varargin{:};
+param_map = [param_map; default_params{1}];
+support_map = [support_map; default_params{2}];
+<span class="keyword">if</span> params_len &gt;= 1 &amp;&amp; params_len &lt;= 2
+    <span class="comment">% If override param_map, re-generate armt and func if they are not</span>
+    <span class="comment">% provided</span>
+    bl_input_override = true;
+    [armt_map, func_map] = ffs_abz_fibs_get_funcgrid(param_map, support_map, bl_input_override);
+<span class="keyword">else</span>
+    <span class="comment">% Override all</span>
+    armt_map = [armt_map; default_params{3}];
+    func_map = [func_map; default_params{4}];
+<span class="keyword">end</span>
+
+<span class="comment">% append function name</span>
+st_func_name = <span class="string">'ff_abz_fibs_vf_vec'</span>;
+support_map(<span class="string">'st_profile_name_main'</span>) = [st_func_name support_map(<span class="string">'st_profile_name_main'</span>)];
+support_map(<span class="string">'st_mat_name_main'</span>) = [st_func_name support_map(<span class="string">'st_mat_name_main'</span>)];
+support_map(<span class="string">'st_img_name_main'</span>) = [st_func_name support_map(<span class="string">'st_img_name_main'</span>)];
+</pre><h2 id="5">Parse Parameters 2</h2><pre class="codeinput"><span class="comment">% armt_map</span>
+params_group = values(armt_map, {<span class="string">'ar_a'</span>, <span class="string">'mt_z_trans'</span>, <span class="string">'ar_z'</span>});
+[ar_a, mt_z_trans, ar_z] = params_group{:};
+
+<span class="comment">% Formal choice Menu/Grid and Interest Rate Menu/Grid</span>
+params_group = values(armt_map, {<span class="string">'ar_forbrblk_r'</span>, <span class="string">'ar_forbrblk'</span>});
+[ar_forbrblk_r, ar_forbrblk] = params_group{:};
+
+<span class="comment">% func_map</span>
+params_group = values(func_map, {<span class="string">'f_util_log'</span>, <span class="string">'f_util_crra'</span>, <span class="string">'f_coh'</span>, <span class="string">'f_cons_coh_fbis'</span>, <span class="string">'f_cons_coh_save'</span>});
+[f_util_log, f_util_crra, f_coh, f_cons_coh_fbis, f_cons_coh_save] = params_group{:};
+
+<span class="comment">% param_map</span>
+params_group = values(param_map, {<span class="string">'it_a_n'</span>, <span class="string">'it_z_n'</span>, <span class="string">'fl_crra'</span>, <span class="string">'fl_beta'</span>, <span class="string">'fl_c_min'</span>,<span class="keyword">...</span>
+    <span class="string">'fl_nan_replace'</span>, <span class="string">'bl_default'</span>, <span class="string">'fl_default_aprime'</span>});
+[it_a_n, it_z_n, fl_crra, fl_beta, fl_c_min, <span class="keyword">...</span>
+    fl_nan_replace, bl_default, fl_default_aprime] = params_group{:};
+params_group = values(param_map, {<span class="string">'it_maxiter_val'</span>, <span class="string">'fl_tol_val'</span>, <span class="string">'fl_tol_pol'</span>, <span class="string">'it_tol_pol_nochange'</span>});
+[it_maxiter_val, fl_tol_val, fl_tol_pol, it_tol_pol_nochange] = params_group{:};
+
+<span class="comment">% param_map, Formal informal</span>
+params_group = values(param_map, {<span class="string">'fl_r_inf'</span>, <span class="string">'fl_r_fsv'</span>, <span class="string">'bl_b_is_principle'</span>});
+[fl_r_inf, fl_r_fsv, bl_b_is_principle] = params_group{:};
+
+<span class="comment">% support_map</span>
+params_group = values(support_map, {<span class="string">'bl_profile'</span>, <span class="string">'st_profile_path'</span>, <span class="keyword">...</span>
+    <span class="string">'st_profile_prefix'</span>, <span class="string">'st_profile_name_main'</span>, <span class="string">'st_profile_suffix'</span>,<span class="keyword">...</span>
+    <span class="string">'bl_display_minccost'</span>, <span class="string">'bl_display_infbridge'</span>, <span class="keyword">...</span>
+    <span class="string">'bl_time'</span>, <span class="string">'bl_display'</span>, <span class="string">'it_display_every'</span>, <span class="string">'bl_post'</span>});
+[bl_profile, st_profile_path, <span class="keyword">...</span>
+    st_profile_prefix, st_profile_name_main, st_profile_suffix, <span class="keyword">...</span>
+    bl_display_minccost, bl_display_infbridge, <span class="keyword">...</span>
+    bl_time, bl_display, it_display_every, bl_post] = params_group{:};
+</pre><h2 id="6">Initialize Output Matrixes</h2><p>include mt_pol_idx which we did not have in looped code</p><pre class="codeinput">mt_val_cur = zeros(length(ar_a),length(ar_z));
+mt_val = mt_val_cur - 1;
+mt_pol_a = zeros(length(ar_a),length(ar_z));
+mt_pol_a_cur = mt_pol_a - 1;
+mt_pol_cons = zeros(length(ar_a),length(ar_z));
+
+<span class="comment">% collect optimal borrowing formal and informal choices</span>
+mt_pol_b_bridge = zeros(length(ar_a),length(ar_z));
+mt_pol_inf_borr_nobridge = zeros(length(ar_a),length(ar_z));
+mt_pol_for_borr = zeros(length(ar_a),length(ar_z));
+mt_pol_for_save = zeros(length(ar_a),length(ar_z));
+</pre><h2 id="7">Initialize Convergence Conditions</h2><pre class="codeinput">bl_vfi_continue = true;
+it_iter = 0;
+ar_val_diff_norm = zeros([it_maxiter_val, 1]);
+ar_pol_diff_norm = zeros([it_maxiter_val, 1]);
+mt_pol_perc_change = zeros([it_maxiter_val, it_z_n]);
+</pre><h2 id="8">Iterate Value Function</h2><p>Loop solution with 4 nested loops</p><div><ol><li>loop 1: over exogenous states</li><li>loop 2: over endogenous states</li><li>loop 3: over choices</li><li>loop 4: add future utility, integration--loop over future shocks</li></ol></div><pre class="codeinput"><span class="comment">% Start Profile</span>
+<span class="keyword">if</span> (bl_profile)
+    close <span class="string">all</span>;
+    profile <span class="string">off</span>;
+    profile <span class="string">on</span>;
+<span class="keyword">end</span>
+
+<span class="comment">% Start Timer</span>
+<span class="keyword">if</span> (bl_time)
+    tic;
+<span class="keyword">end</span>
+
+<span class="comment">% Value Function Iteration</span>
+<span class="keyword">while</span> bl_vfi_continue
+</pre><pre class="codeinput">    it_iter = it_iter + 1;
+</pre><h2 id="10">Solve Optimization Problem Current Iteration</h2><pre class="codeinput">    <span class="comment">% loop 1: over exogenous states</span>
+    <span class="keyword">for</span> it_z_i = 1:length(ar_z)
+</pre><h2 id="12">Solve the Formal Informal Problem for each a' and coh: c_forinf(a')</h2><p>find the today's consumption maximizing formal and informal choices given a' and coh. The formal and informal choices need to generate exactly a', but depending on which formal and informal joint choice is used, the consumption cost today a' is different. Note here, a is principle + interests. Three areas:</p><div><ul><li><b>CASE A</b> a' &gt; 0: savings, do not need to optimize over formal and informal choices</li><li><b>CASE B</b> a' &lt; 0 &amp; coh &lt; 0: need bridge loan to pay for unpaid debt, and borrowing over-all, need to first pick bridge loan to pay for debt, if bridge loan is insufficient, go into default. After bridge loan, optimize over formal+informal, borrow+save joint choices.</li><li><b>CASE C</b> a' &lt; 0 &amp; coh &gt; 0: do not need to get informal bridge loans, optimize over for+inf save, for+save+borr, inf+borr only, for borrow only.</li></ul></div><pre class="codeinput">        <span class="comment">% 1. Current Shock</span>
+        fl_z = ar_z(it_z_i);
+
+        <span class="comment">% 2. cash-on-hand</span>
+        ar_coh = f_coh(fl_z, ar_a);
+
+        <span class="comment">% 3. *CASE A* initiate consumption matrix as if all save</span>
+        mt_c = f_cons_coh_save(ar_coh, ar_a');
+
+        <span class="comment">% 4. *CASE B+C* get negative coh index and get borrowing choices index</span>
+        ar_coh_neg_idx = (ar_coh &lt;= fl_c_min);
+        ar_a_neg_idx = (ar_a &lt; 0);
+        ar_coh_neg = ar_coh(ar_coh_neg_idx);
+        ar_a_neg = ar_a(ar_a_neg_idx);
+
+        <span class="comment">% 5. if coh &gt; 0 and ap &lt; 0, can allow same for+inf result to all coh.</span>
+        <span class="comment">% The procedure below works regardless of how ar_coh is sorted. get</span>
+        <span class="comment">% the index of all negative coh elements as well as first</span>
+        <span class="comment">% non-negative element. We solve the formal and informal problem at</span>
+        <span class="comment">% these points, note that we only need to solve the formal and</span>
+        <span class="comment">% informal problem for positive coh level once.</span>
+        ar_coh_first_pos_idx = (cumsum(ar_coh_neg_idx == 0) == 1);
+        ar_coh_forinfsolve_idx = (ar_coh_first_pos_idx | ar_coh_neg_idx);
+        ar_coh_forinfsolve_a_neg_idx = (ar_coh(ar_coh_forinfsolve_idx) &lt;= fl_c_min);
+
+        <span class="comment">% 6. *CASE B + C* Negative asset choices (borrowing), 1 col Case C</span>
+        <span class="comment">% negp1: negative coh + 1, 1 meaning 1 positive coh, first positive</span>
+        <span class="comment">% coh column index element grabbed.</span>
+        mt_coh_negp1_mesh_neg_aprime = zeros(size(ar_a_neg')) + ar_coh(ar_coh_forinfsolve_idx);
+        mt_neg_aprime_mesh_coh_negp1 = zeros(size(mt_coh_negp1_mesh_neg_aprime)) + ar_a_neg';
+
+        <span class="comment">%         mt_neg_aprime_mesh_coh_1col4poscoh = zeros([length(ar_a_neg), (length(ar_coh_neg)+1)]) + ar_a_neg';</span>
+        <span class="comment">%         ar_coh_neg_idx_1col4poscoh = ar_coh_neg_idx(1:(length(ar_coh_neg)+1));</span>
+
+        <span class="comment">% 6. *CASE B* Solve for: if (fl_ap &lt; 0) and if (fl_coh &lt; 0)</span>
+        [mt_aprime_nobridge_negcoh, ~, mt_c_bridge_negcoh] = ffs_fibs_inf_bridge(<span class="keyword">...</span>
+            bl_b_is_principle, fl_r_inf, <span class="keyword">...</span>
+            mt_neg_aprime_mesh_coh_negp1(:,ar_coh_forinfsolve_a_neg_idx), <span class="keyword">...</span>
+            mt_coh_negp1_mesh_neg_aprime(:,ar_coh_forinfsolve_a_neg_idx), <span class="keyword">...</span>
+            bl_display_infbridge, bl_input_override);
+
+        <span class="comment">% generate mt_aprime_nobridge</span>
+        mt_neg_aprime_mesh_coh_negp1(:, ar_coh_forinfsolve_a_neg_idx) = mt_aprime_nobridge_negcoh;
+
+        <span class="comment">% 7. *CASE B + C* formal and informal joint choices, 1 col Case C</span>
+        bl_input_override = true;
+        [ar_max_c_nobridge, ~, ~, ~] = <span class="keyword">...</span>
+            ffs_fibs_min_c_cost(<span class="keyword">...</span>
+            bl_b_is_principle, fl_r_inf, fl_r_fsv, <span class="keyword">...</span>
+            ar_forbrblk_r, ar_forbrblk, <span class="keyword">...</span>
+            mt_neg_aprime_mesh_coh_negp1(:), <span class="keyword">...</span>
+            bl_display_minccost, bl_input_override);
+</pre><h2 id="13">Update Consumption Matrix <b>CASE A + B + C</b> Consumptions</h2><p>Current mt_c is assuming all to be case A</p><div><ul><li>Update Columns for case B (negative coh)</li><li>Update Columns for case C (1 column): ar_coh_first_pos_idx, included in ar_coh_forinfsolve_idx</li><li>Update Columns for all case C: ~ar_coh_neg_idx using 1 column result</li></ul></div><pre class="codeinput">        <span class="comment">% 1. Initalize all Neg Aprime consumption cost of aprime inputs</span>
+        <span class="comment">% Initialize</span>
+        mt_max_c_nobridge_a_neg = zeros([length(ar_a_neg), length(ar_coh)]) + 0;
+        mt_c_bridge_coh_a_neg = zeros(size(mt_max_c_nobridge_a_neg)) + 0;
+
+        <span class="comment">% 2. Fill in *Case B* Bridge C-cost</span>
+        mt_c_bridge_coh_a_neg(:, ar_coh_neg_idx) = mt_c_bridge_negcoh;
+
+        <span class="comment">% 2. Fill in *Case B* and *Case C* (one column) Other C-cost</span>
+        mt_max_c_nobridge_negcohp1 = reshape(ar_max_c_nobridge, [size(mt_neg_aprime_mesh_coh_negp1)]);
+        mt_max_c_nobridge_a_neg(:, ar_coh_forinfsolve_idx) = mt_max_c_nobridge_negcohp1;
+        mt_max_c_nobridge_a_neg(:, ~ar_coh_forinfsolve_idx) = <span class="keyword">...</span>
+            zeros(size(mt_c(ar_a_neg_idx, ~ar_coh_forinfsolve_idx))) <span class="keyword">...</span>
+            + mt_max_c_nobridge_negcohp1(:, ~ar_coh_forinfsolve_a_neg_idx);
+
+        <span class="comment">% 3. Consumption for B + C Cases</span>
+        <span class="comment">% note, the c cost of aprime is the same for all coh &gt; 0, but mt_c</span>
+        <span class="comment">% is different still for each coh and aprime.</span>
+        mt_c_forinfsolve = f_cons_coh_fbis(ar_coh, mt_c_bridge_coh_a_neg + mt_max_c_nobridge_a_neg);
+
+        <span class="comment">% 4. Update with Case B and C</span>
+        mt_c(ar_a_neg_idx, :) = mt_c_forinfsolve;
+</pre><h2 id="14">Solve Optimization Problem: max_{a'} (u(c_forinf(a')) + EV(a',z'))</h2><p>1. EVAL current utility: N by N, f_util defined earlier</p><pre class="codeinput">        <span class="keyword">if</span> (fl_crra == 1)
+            mt_utility = f_util_log(mt_c);
+            fl_u_cmin = f_util_log(fl_c_min);
+        <span class="keyword">else</span>
+            mt_utility = f_util_crra(mt_c);
+            fl_u_cmin = f_util_crra(fl_c_min);
+        <span class="keyword">end</span>
+
+        <span class="comment">% 2. f(z'|z)</span>
+        ar_z_trans_condi = mt_z_trans(it_z_i,:);
+
+        <span class="comment">% 3. EVAL EV((A',K'),Z'|Z) = V((A',K'),Z') x p(z'|z)', (N by Z) x (Z by 1) = N by 1</span>
+        <span class="comment">% Note: transpose ar_z_trans_condi from 1 by Z to Z by 1</span>
+        <span class="comment">% Note: matrix multiply not dot multiply</span>
+        mt_evzp_condi_z = mt_val_cur * ar_z_trans_condi';
+
+        <span class="comment">% 4. EVAL add on future utility, N by N + N by 1, broadcast again</span>
+        mt_utility = mt_utility + fl_beta*mt_evzp_condi_z;
+
+        <span class="keyword">if</span> (bl_default)
+            <span class="comment">% if default: only today u(cmin), transition out next period, debt wiped out</span>
+            mt_utility(mt_c &lt;= fl_c_min) = fl_u_cmin + fl_beta*mt_evzp_condi_z(ar_a == fl_default_aprime);
+        <span class="keyword">else</span>
+            <span class="comment">% if default is not allowed: v = fl_nan_replace</span>
+            mt_utility(mt_c &lt;= fl_c_min) = fl_nan_replace;
+        <span class="keyword">end</span>
+
+        <span class="comment">% 5. Optimization: remember matlab is column major, rows must be</span>
+        <span class="comment">% choices, columns must be states</span>
+        <span class="comment">% &lt;https://en.wikipedia.org/wiki/Row-_and_column-major_order COLUMN-MAJOR&gt;</span>
+        <span class="comment">% mt_utility is N by N, rows are choices, cols are states.</span>
+        [ar_opti_val_z, ar_opti_idx_z] = max(mt_utility);
+        [it_choies_n, it_states_n] = size(mt_utility);
+        ar_add_grid = linspace(0, it_choies_n*(it_states_n-1), it_states_n);
+        ar_opti_linear_idx_z = ar_opti_idx_z + ar_add_grid;
+        ar_opti_aprime_z = ar_a(ar_opti_idx_z);
+        ar_opti_c_z = mt_c(ar_opti_linear_idx_z);
+
+        <span class="comment">% 6. Handle Default is optimal or not</span>
+        <span class="keyword">if</span> (bl_default)
+            <span class="comment">% if defaulting is optimal choice, at these states, not required</span>
+            <span class="comment">% to default, non-default possible, but default could be optimal</span>
+            ar_opti_aprime_z(ar_opti_c_z &lt;= fl_c_min) = fl_default_aprime;
+        <span class="keyword">else</span>
+            <span class="comment">% if default is not allowed, then next period same state as now</span>
+            <span class="comment">% this is absorbing state, this is the limiting case, single</span>
+            <span class="comment">% state space point, lowest a and lowest shock has this.</span>
+            ar_opti_aprime_z(ar_opti_c_z &lt;= fl_c_min) = ar_a(ar_opti_c_z &lt;= fl_c_min);
+        <span class="keyword">end</span>
+</pre><h2 id="15">Store Optimal Choices Current Iteration</h2><pre class="codeinput">        mt_val(:,it_z_i) = ar_opti_val_z;
+        mt_pol_a(:,it_z_i) = ar_opti_aprime_z;
+        mt_pol_cons(:,it_z_i) = ar_opti_c_z;
+
+        <span class="keyword">if</span> (it_iter == (it_maxiter_val + 1))
+            mt_pol_idx(:,it_z_i) = ar_opti_idx_z;
+        <span class="keyword">end</span>
+</pre><pre class="codeinput">    <span class="keyword">end</span>
+</pre><h2 id="17">Check Tolerance and Continuation</h2><pre class="codeinput">    <span class="comment">% Difference across iterations</span>
+    ar_val_diff_norm(it_iter) = norm(mt_val - mt_val_cur);
+    ar_pol_diff_norm(it_iter) = norm(mt_pol_a - mt_pol_a_cur);
+    mt_pol_perc_change(it_iter, :) = sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n);
+
+    <span class="comment">% Update</span>
+    mt_val_cur = mt_val;
+    mt_pol_a_cur = mt_pol_a;
+
+    <span class="comment">% Print Iteration Results</span>
+    <span class="keyword">if</span> (bl_display &amp;&amp; (rem(it_iter, it_display_every)==0))
+        fprintf(<span class="string">'VAL it_iter:%d, fl_diff:%d, fl_diff_pol:%d\n'</span>, <span class="keyword">...</span>
+            it_iter, ar_val_diff_norm(it_iter), ar_pol_diff_norm(it_iter));
+        tb_valpol_iter = array2table([mean(mt_val_cur,1); mean(mt_pol_a_cur,1); <span class="keyword">...</span>
+            mt_val_cur(it_a_n,:); mt_pol_a_cur(it_a_n,:)]);
+        tb_valpol_iter.Properties.VariableNames = strcat(<span class="string">'z'</span>, string((1:size(mt_val_cur,2))));
+        tb_valpol_iter.Properties.RowNames = {<span class="string">'mval'</span>, <span class="string">'map'</span>, <span class="string">'Hval'</span>, <span class="string">'Hap'</span>};
+        disp(<span class="string">'mval = mean(mt_val_cur,1), average value over a'</span>)
+        disp(<span class="string">'map  = mean(mt_pol_a_cur,1), average choice over a'</span>)
+        disp(<span class="string">'Hval = mt_val_cur(it_a_n,:), highest a state val'</span>)
+        disp(<span class="string">'Hap = mt_pol_a_cur(it_a_n,:), highest a state choice'</span>)
+        disp(tb_valpol_iter);
+    <span class="keyword">end</span>
+
+    <span class="comment">% Continuation Conditions:</span>
+    <span class="comment">% 1. if value function convergence criteria reached</span>
+    <span class="comment">% 2. if policy function variation over iterations is less than</span>
+    <span class="comment">% threshold</span>
+    <span class="keyword">if</span> (it_iter == (it_maxiter_val + 1))
+        bl_vfi_continue = false;
+    <span class="keyword">elseif</span> ((it_iter == it_maxiter_val) || <span class="keyword">...</span>
+            (ar_val_diff_norm(it_iter) &lt; fl_tol_val) || <span class="keyword">...</span>
+            (sum(ar_pol_diff_norm(max(1, it_iter-it_tol_pol_nochange):it_iter)) &lt; fl_tol_pol))
+        <span class="comment">% Fix to max, run again to save results if needed</span>
+        it_iter_last = it_iter;
+        it_iter = it_maxiter_val;
+    <span class="keyword">end</span>
+</pre><pre class="codeinput"><span class="keyword">end</span>
+
+<span class="comment">% End Timer</span>
+<span class="keyword">if</span> (bl_time)
+    toc;
+<span class="keyword">end</span>
+
+<span class="comment">% End Profile</span>
+<span class="keyword">if</span> (bl_profile)
+    profile <span class="string">off</span>
+    profile <span class="string">viewer</span>
+    st_file_name = [st_profile_prefix st_profile_name_main st_profile_suffix];
+    profsave(profile(<span class="string">'info'</span>), strcat(st_profile_path, st_file_name));
+<span class="keyword">end</span>
+</pre><h2 id="19">Process Optimal Choices</h2><pre class="codeinput">result_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
+result_map(<span class="string">'mt_val'</span>) = mt_val;
+result_map(<span class="string">'mt_pol_a'</span>) = mt_pol_a;
+result_map(<span class="string">'mt_cons'</span>) = mt_pol_cons;
+
+<span class="keyword">if</span> (bl_post)
+    bl_input_override = true;
+    result_map(<span class="string">'ar_val_diff_norm'</span>) = ar_val_diff_norm(1:it_iter_last);
+    result_map(<span class="string">'ar_pol_diff_norm'</span>) = ar_pol_diff_norm(1:it_iter_last);
+    result_map(<span class="string">'mt_pol_perc_change'</span>) = mt_pol_perc_change(1:it_iter_last, :);
+    result_map = ff_az_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">valgap = norm(mt_val - mt_val_cur)
+polgap = norm(mt_pol_a - mt_pol_a_cur)
+z1 = z1 perc change: sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n)
+                 valgap       polgap        z1          z2          z3          z4          z5           z6          z7          z8          z9         z10          z11         z12         z13         z14         z15   
+                _________    ________    ________    ________    ________    ________    _________    ________    ________    ________    ________    ________    _________    ________    ________    ________    ________
+
+    iter=1         354.35        2010           1           1           1           1            1           1           1           1           1           1            1           1           1           1           1
+    iter=2         255.99      2152.9     0.98533       0.988     0.99067     0.99333      0.99467     0.99467     0.99733     0.99867           1           1            1           1           1           1           1
+    iter=3          188.8      705.28     0.98267     0.98267     0.98533       0.988      0.98667       0.988     0.99467     0.99333     0.99733     0.99867            1           1           1           1           1
+    iter=4         147.31      352.77       0.976     0.97333     0.97733     0.98133        0.984     0.98133     0.98533     0.99067     0.99333     0.99733            1           1           1           1           1
+    iter=5         119.86      210.74       0.968       0.968       0.968       0.972      0.97467     0.97467       0.976       0.984     0.98933     0.99067      0.99733           1           1           1           1
+    iter=6         100.69       141.5     0.96267     0.96667     0.95867     0.96267      0.96667     0.97067     0.96933       0.976       0.984       0.988        0.992     0.99867           1           1           1
+    iter=7         86.577      101.99       0.952     0.95733     0.95067       0.956      0.95867     0.96133     0.96267       0.972     0.97467     0.98133      0.98667     0.99467           1           1           1
+    iter=8         75.669      74.431     0.94267     0.94667     0.94267     0.94533      0.95067     0.95467     0.95333       0.964     0.96533       0.972      0.98133       0.988     0.99333     0.99867           1
+    iter=9         66.931      57.675       0.932     0.93733       0.932     0.94133      0.94267     0.94533     0.94533        0.96     0.95733     0.96267        0.972     0.97867       0.988     0.99067     0.99867
+    iter=10        59.704      46.319     0.91733     0.92133       0.916     0.92267        0.928       0.932     0.93467     0.94667     0.94267       0.952      0.96533       0.972        0.98       0.988       0.992
+    iter=11        53.614      37.404         0.9       0.908     0.90667     0.91067      0.91333     0.91467       0.924     0.93067     0.93333        0.94      0.94933       0.956     0.96933       0.976       0.984
+    iter=12        48.408      30.563     0.87867       0.884     0.88133       0.892      0.89733     0.90267     0.90667     0.91467       0.916     0.92533      0.93467     0.94267       0.952     0.96667       0.976
+    iter=13        43.891      25.875     0.85333     0.87067     0.86667       0.868        0.872       0.876     0.88533     0.89733       0.896       0.904        0.924     0.92133     0.94133        0.94       0.956
+    iter=14        39.932      22.005       0.836       0.848     0.84267       0.852        0.848     0.86133        0.86     0.87733     0.86533     0.87467      0.89067     0.90533     0.91067        0.94     0.94133
+    iter=15        36.445      21.657       0.816       0.812     0.82133     0.82667      0.83067     0.83333     0.84267       0.836     0.85333     0.86533      0.88533       0.888         0.9     0.90267     0.91067
+    iter=16        33.352       16.27       0.796        0.78     0.79067     0.79067      0.81467     0.81333     0.81067     0.82533     0.82267     0.82533        0.844     0.85333     0.86133     0.88933       0.904
+    iter=17        30.595      14.116       0.756     0.77067     0.75333     0.76133      0.77733     0.77867     0.78267       0.808     0.80267     0.80667      0.83867       0.824     0.83733     0.84667     0.85867
+    iter=18        28.128      12.399     0.71467     0.73067     0.74667       0.736      0.73067     0.73867     0.75333       0.764     0.77067       0.796        0.804     0.80933       0.812        0.82     0.84133
+    iter=19         25.91       10.92     0.69733        0.68     0.70133     0.70533      0.72667       0.732       0.736     0.74267     0.74133     0.74533        0.744     0.77867     0.77333     0.78667       0.812
+    iter=20         23.91      9.6269       0.628     0.66667     0.64933     0.67867         0.66     0.67467       0.668     0.67733     0.70133     0.70267      0.72933     0.71867       0.748     0.76667     0.77067
+    iter=21        22.102      8.5961     0.61333       0.604       0.624     0.61067      0.63467        0.64       0.648     0.67867     0.65067       0.672      0.68267     0.69867     0.69333       0.716     0.73067
+    iter=22        20.463       7.686        0.56     0.57867        0.58        0.58      0.57733     0.58667         0.6       0.596     0.62533     0.62533      0.65333     0.64267        0.68       0.684     0.69733
+    iter=23        18.974      6.8909     0.50133     0.52133     0.52667     0.53867      0.54533     0.55067     0.55067       0.576       0.572     0.58667        0.592       0.624     0.61333       0.632     0.66133
+    iter=24        17.619      6.1779     0.47733     0.46933     0.49467     0.46667      0.49333       0.504     0.51333     0.51867     0.52267        0.54      0.56267     0.56267     0.58267         0.6     0.59333
+    iter=25        16.383      5.5733     0.42667     0.41733     0.43467     0.44533        0.428     0.44267     0.46133     0.46133       0.484     0.48533      0.49733     0.50533       0.536     0.54933     0.56667
+    iter=26        15.253       5.074     0.36933     0.39467     0.37867       0.404      0.40933     0.40533     0.40667     0.42267     0.43733     0.43867      0.44933     0.47467     0.46933     0.47867     0.51733
+    iter=27        14.219      4.6712     0.33867     0.34933     0.34533       0.356      0.37467       0.372       0.368     0.38533       0.388     0.40933      0.41333     0.41733     0.43067     0.45333     0.45333
+    iter=28         13.27      4.2833     0.31067     0.30667       0.316         0.3      0.31867       0.332     0.33867     0.33733     0.34533     0.35467      0.36533     0.37733     0.39067     0.41333       0.416
+    iter=29          12.4      3.9736       0.272        0.28     0.28933       0.288        0.288     0.29333     0.29733     0.30667     0.31733     0.31333      0.32667     0.33867       0.356     0.36133     0.38133
+    iter=30        11.599      3.7015     0.25333       0.264     0.26133     0.26667      0.25333     0.26267     0.26933     0.29733     0.28933     0.29067      0.30267     0.30267     0.30933       0.328     0.34933
+    iter=31        10.862      3.3964        0.22     0.22933     0.22533        0.24      0.24533     0.24533       0.248     0.25867     0.26133     0.25867      0.28133     0.29067     0.28533     0.30133       0.304
+    iter=32        10.182      3.1656     0.19867     0.21733     0.20533     0.21867      0.22267     0.22133     0.22533     0.23467     0.23067     0.25467        0.272     0.25467     0.26667     0.27333       0.284
+    iter=33        9.5528      2.8428     0.19467     0.19467     0.21733     0.19067        0.204     0.20267     0.20533       0.208     0.21733       0.216        0.224     0.23467       0.236     0.24933     0.24933
+    iter=34         8.971       2.631     0.16933     0.17333     0.17733     0.17067      0.18133       0.192     0.18933     0.19467     0.20933       0.204        0.216     0.20933     0.22267     0.23467       0.232
+    iter=35        8.4315      2.3698     0.17333     0.14667       0.168     0.15867        0.164       0.172     0.19467       0.176     0.18267       0.196        0.188     0.19333     0.20667     0.20667       0.208
+    iter=36        7.9299      2.1586     0.14667       0.136     0.15333     0.14667      0.14133     0.14933     0.14667       0.156     0.16267     0.16267      0.16933     0.17333     0.19467     0.19067     0.20667
+    iter=37         7.463      2.0261       0.136        0.14     0.13733     0.15733      0.13067     0.13467        0.14     0.14667       0.144       0.156      0.17067       0.176       0.172       0.176     0.17867
+    iter=38        7.0282      1.8121       0.116        0.12     0.12267     0.11733        0.128     0.12133     0.12667       0.132     0.13733     0.13067      0.13867     0.14533     0.14933     0.15867     0.16667
+    iter=39        6.6227      1.6998     0.10133       0.108     0.11333     0.11067        0.132       0.132     0.11467        0.12     0.12533     0.12667      0.12933        0.14        0.14     0.14267     0.16667
+    iter=40         6.244      1.5657       0.092       0.104    0.097333     0.10933        0.104     0.10667     0.10267     0.11467       0.116     0.11867      0.12133     0.11733     0.12133     0.13333     0.13867
+    iter=41        5.8903      1.4501    0.085333    0.082667    0.085333    0.093333     0.093333    0.098667       0.096     0.10267    0.097333       0.108        0.112       0.112       0.112     0.11733     0.12533
+    iter=42        5.5595      1.3877    0.082667    0.089333    0.082667       0.084     0.089333    0.086667       0.092    0.093333    0.090667       0.092     0.097333     0.10267       0.112     0.10533     0.11467
+    iter=43        5.2495      1.2855       0.072    0.073333    0.078667    0.073333     0.078667    0.078667    0.081333       0.084       0.088    0.085333     0.090667    0.097333    0.090667     0.10267       0.112
+    iter=44        4.9588       1.147    0.066667    0.074667    0.070667       0.068     0.065333       0.072    0.074667    0.073333       0.084    0.085333     0.078667    0.081333    0.086667    0.089333    0.086667
+    iter=45        4.6857      1.1154    0.057333    0.078667    0.061333    0.066667     0.070667    0.066667    0.066667    0.069333    0.077333    0.069333        0.084        0.08    0.081333     0.10533    0.086667
+    iter=46        4.4286      1.0273    0.057333    0.062667    0.061333    0.053333        0.056    0.062667    0.058667       0.068    0.073333       0.072        0.068    0.069333    0.070667    0.073333        0.08
+    iter=47        4.1867     0.95408       0.048    0.054667    0.050667       0.052     0.057333    0.049333    0.053333       0.064    0.062667    0.058667     0.065333       0.064    0.065333    0.073333    0.070667
+    iter=48        3.9588     0.92624    0.046667    0.046667    0.053333        0.04        0.052    0.050667    0.057333    0.054667    0.058667       0.056        0.052    0.062667    0.058667       0.068    0.070667
+    iter=49        3.7438      0.8425    0.042667    0.037333    0.046667       0.048     0.050667       0.048    0.041333    0.049333    0.045333    0.050667     0.058667    0.058667    0.058667    0.057333        0.06
+    iter=50         3.541      0.7949    0.038667        0.04        0.04    0.037333     0.037333    0.041333       0.044    0.041333       0.052    0.041333     0.046667       0.048       0.048    0.050667    0.049333
+    iter=128     0.038661           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=129     0.036389           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=130      0.03425           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=131     0.032235           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=132     0.030337           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=133      0.02855           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=134     0.026867           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=135     0.025283           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=136     0.023791    0.093458           0           0           0           0    0.0013333           0           0           0           0           0            0           0           0           0           0
+    iter=137     0.022386           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=138     0.021063           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=139     0.019818           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=140     0.018646           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=141     0.017543           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=142     0.016505           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=143     0.015527           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=144     0.014607           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=145     0.013741           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=146     0.012926           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=147      0.01216           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=148     0.011438           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=149     0.010759           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=150      0.01012           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=151    0.0095186    0.093458           0           0           0           0            0           0           0           0           0           0    0.0013333           0           0           0           0
+    iter=152    0.0089529           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=153    0.0084206           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=154    0.0079198           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=155    0.0074486           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=156    0.0070053           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=157    0.0065883           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=158     0.006196           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=159     0.005827           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=160    0.0054798           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=161    0.0051533           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=162    0.0048461           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=163    0.0045572           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=164    0.0042854           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=165    0.0040298           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=166    0.0037894           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=167    0.0035633           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=168    0.0033506           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=169    0.0031506           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=170    0.0029624           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=171    0.0027855           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=172    0.0026192           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=173    0.0024627           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=174    0.0023156           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=175    0.0021772           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=176    0.0020471           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+    iter=177    0.0019247           0           0           0           0           0            0           0           0           0           0           0            0           0           0           0           0
+
+tb_val
+                    z1_0_34741    z2_0_40076    z3_0_4623    z4_0_5333    z5_0_61519    z6_0_70966    z10_1_2567    z11_1_4496    z12_1_6723    z13_1_9291    z14_2_2253    z15_2_567
+                    __________    __________    _________    _________    __________    __________    __________    __________    __________    __________    __________    _________
+
+    a1=-20           -60.183       -59.927       -59.644      -59.346      -59.037       -58.721       -40.853       -35.214       -30.003       -25.122       -20.641       -16.644 
+    a2=-19.9065      -60.183       -59.927       -59.644      -59.346      -59.037       -58.721       -40.124       -34.629       -29.516       -24.712       -20.295       -16.352 
+    a3=-19.8131      -60.183       -59.927       -59.644      -59.346      -59.037       -58.721       -39.419       -34.059       -29.039       -24.308       -19.953       -16.063 
+    a4=-19.7196      -60.183       -59.927       -59.644      -59.346      -59.037       -58.721       -38.737       -33.505       -28.571       -23.911       -19.616       -15.778 
+    a5=-19.6262      -60.183       -59.927       -59.644      -59.346      -59.037       -56.922        -38.09       -32.963        -28.11        -23.52       -19.284       -15.498 
+    a6=-19.5327      -60.183       -59.927       -59.644      -59.346      -58.559       -55.813        -37.46       -32.434       -27.657       -23.135       -18.956        -15.22 
+    a7=-19.4393      -60.183       -59.927       -59.644      -59.346       -57.15       -55.205       -36.852       -31.916       -27.212       -22.755       -18.633       -14.945 
+    a8=-19.3458      -60.183       -59.927       -59.644      -57.837      -56.443       -54.582       -36.257       -31.407       -26.774       -22.381       -18.315       -14.674 
+    a9=-19.2523      -60.183       -59.562       -58.138      -57.079      -55.999       -53.923        -35.68       -30.907       -26.343       -22.012           -18       -14.407 
+    a10=-19.1589     -59.285       -58.229       -57.392      -56.613      -55.687       -53.054       -35.116       -30.417       -25.918       -21.649        -17.69       -14.143 
+    a11=-19.0654     -58.206       -57.545       -56.931      -56.288      -55.302       -52.252       -34.562       -29.934         -25.5        -21.29       -17.384       -13.882 
+    a12=-18.972       -57.61       -57.112       -56.609      -56.037      -54.634       -51.457       -34.019        -29.46       -25.088       -20.937       -17.082       -13.625 
+    a13=-18.8785     -57.219       -56.806        -56.36      -55.841      -53.888       -50.674       -33.483       -28.994       -24.683       -20.588       -16.784       -13.371 
+    a14=-18.785      -56.934       -56.565       -56.165      -55.647      -53.092       -49.971       -32.958       -28.534       -24.283       -20.245        -16.49       -13.121 
+    a15=-18.6916     -56.709       -56.377       -56.008      -54.903       -52.39       -49.284       -32.441       -28.082       -23.889       -19.906         -16.2       -12.873 
+    a16=-18.5981     -56.532       -56.225       -55.878       -54.17      -51.747       -48.631       -31.933       -27.636         -23.5       -19.571       -15.913       -12.629 
+    a17=-18.5047     -56.388       -56.099       -55.415      -53.551      -51.152       -47.957       -31.433       -27.197       -23.118       -19.241       -15.631       -12.388 
+    a18=-18.4112     -56.267       -55.992       -54.757      -52.971      -50.523       -47.285        -30.94       -26.765        -22.74       -18.916       -15.352        -12.15 
+    a19=-18.3178     -56.165       -55.533       -54.184      -52.453      -49.895       -46.636       -30.455       -26.339       -22.368       -18.595       -15.076       -11.915 
+    a20=-18.2243     -56.049        -54.98       -53.689      -51.916      -49.285       -45.976       -29.977       -25.919       -22.001       -18.278       -14.804       -11.683 
+    a21=-18.1308     -55.395       -54.461       -53.228       -51.39      -48.631       -45.341       -29.507       -25.505        -21.64       -17.965       -14.536       -11.454 
+    a22=-18.0374     -54.932       -54.039       -52.802       -50.79      -48.005       -44.715       -29.044       -25.098       -21.283       -17.656       -14.271       -11.227 
+    a23=-17.9439       -54.5       -53.684       -52.388      -50.209      -47.391       -44.093       -28.588       -24.696       -20.931       -17.352       -14.008       -11.004 
+    a24=-17.8505     -54.172       -53.345       -51.884      -49.627      -46.768       -43.477       -28.138       -24.299       -20.584       -17.051       -13.749       -10.783 
+    a25=-17.757      -53.861       -52.962       -51.372      -49.025      -46.166       -42.865       -27.696       -23.908       -20.241       -16.754       -13.494       -10.565 
+    a26=-17.6636      -53.59       -52.588       -50.819      -48.441      -45.568       -42.264       -27.259       -23.523       -19.903       -16.461       -13.241        -10.35 
+    a27=-17.5701     -53.289       -52.146        -50.27      -47.863      -44.971       -41.671       -26.829       -23.143       -19.569       -16.172       -12.992       -10.138 
+    a28=-17.4766     -52.991       -51.651       -49.726      -47.283       -44.38       -41.081       -26.405       -22.768        -19.24       -15.885       -12.746       -9.9277 
+    a29=-17.3832     -52.616       -51.155        -49.17      -46.707      -43.799       -40.499       -25.987       -22.398       -18.915       -15.602       -12.503       -9.7205 
+    a30=-17.2897     -52.189       -50.616       -48.627      -46.145      -43.216       -39.926       -25.575       -22.033       -18.594       -15.323       -12.263       -9.5159 
+    a31=-17.1963     -51.647       -50.113       -48.102      -45.573      -42.638        -39.36       -25.168       -21.672       -18.277       -15.047       -12.027       -9.3138 
+    a32=-17.1028     -51.177       -49.635       -47.564      -45.003      -42.059       -38.799       -24.767       -21.317       -17.965       -14.775       -11.793       -9.1142 
+    a33=-17.0093     -50.738       -49.147       -47.021      -44.437      -41.482       -38.246       -24.371       -20.966       -17.656       -14.507       -11.562       -8.9171 
+    a34=-16.9159     -50.306       -48.649       -46.479      -43.873      -40.913       -37.701       -23.981       -20.619       -17.351       -14.242       -11.334       -8.7224 
+    a35=-16.8224     -49.865       -48.153       -45.933       -43.31      -40.351       -37.161       -23.595       -20.277        -17.05        -13.98       -11.109       -8.5302 
+    a36=-16.729      -49.429       -47.644       -45.386      -42.745      -39.794       -36.626       -23.215       -19.939       -16.753       -13.722       -10.887       -8.3403 
+    a37=-16.6355     -48.971       -47.118        -44.83      -42.182       -39.24       -36.098       -22.839       -19.605        -16.46       -13.467       -10.668       -8.1528 
+    a38=-16.5421     -48.473       -46.575       -44.273      -41.622      -38.692       -35.576       -22.468       -19.276       -16.171       -13.215       -10.451       -7.9676 
+    a39=-16.4486     -47.955        -46.03        -43.72      -41.066      -38.151       -35.061       -22.101        -18.95       -15.885       -12.966       -10.237       -7.7846 
+    a40=-16.3551     -47.423       -45.496        -43.17      -40.516      -37.615       -34.551        -21.74       -18.628       -15.602       -12.721       -10.026       -7.6039 
+    a41=-16.2617     -46.912       -44.964       -42.624       -39.97      -37.083       -34.046       -21.383        -18.31       -15.323       -12.479       -9.8176       -7.4254 
+    a42=-16.1682     -46.407       -44.435        -42.08      -39.426      -36.556       -33.547       -21.031       -17.996       -15.048       -12.239       -9.6117        -7.249 
+    a43=-16.0748     -45.903       -43.905       -41.537      -38.885      -36.034       -33.055       -20.684       -17.686       -14.776       -12.003       -9.4084       -7.0748 
+    a44=-15.9813     -45.397       -43.375       -40.993      -38.348      -35.518       -32.567       -20.341        -17.38       -14.507        -11.77       -9.2076       -6.9027 
+    a45=-15.8879     -44.889       -42.839       -40.449      -37.816      -35.008       -32.084       -20.002       -17.079       -14.242       -11.539       -9.0093       -6.7327 
+    a46=-15.7944     -44.371       -42.297       -39.909      -37.289      -34.502       -31.607       -19.668       -16.781        -13.98       -11.312       -8.8135       -6.5647 
+    a47=-15.7009      -43.84       -41.758       -39.374      -36.767      -34.002       -31.135       -19.338       -16.487       -13.722       -11.087       -8.6201       -6.3987 
+    a48=-15.6075     -43.307       -41.221       -38.844       -36.25      -33.506       -30.668       -19.013       -16.196       -13.466       -10.865       -8.4291       -6.2347 
+    a49=-15.514      -42.774       -40.691       -38.318      -35.738      -33.016       -30.207       -18.691       -15.909       -13.214       -10.646       -8.2404       -6.0727 
+    a50=-15.4206     -42.244       -40.165       -37.796      -35.229      -32.531       -29.751       -18.374       -15.626       -12.965        -10.43       -8.0541       -5.9126 
+    a701=45.4206      12.416        12.469        12.529       12.595       12.665         12.74        13.093        13.197        13.308        13.425        13.546        13.669 
+    a702=45.514       12.427         12.48        12.539       12.605       12.675         12.75        13.103        13.206        13.317        13.434        13.555        13.677 
+    a703=45.6075      12.437         12.49         12.55       12.615       12.685         12.76        13.112        13.216        13.326        13.443        13.564        13.686 
+    a704=45.7009      12.448          12.5         12.56       12.625       12.695         12.77        13.122        13.225        13.335        13.451        13.573        13.694 
+    a705=45.7944      12.458        12.511        12.571       12.636       12.705         12.78        13.131        13.234        13.344         13.46        13.581        13.703 
+    a706=45.8879      12.469        12.521        12.581       12.646       12.715         12.79         13.14        13.243        13.353        13.469         13.59        13.711 
+    a707=45.9813      12.479        12.532        12.591       12.656       12.725          12.8         13.15        13.252        13.362        13.478        13.599         13.72 
+    a708=46.0748       12.49        12.542        12.601       12.666       12.735        12.809        13.159        13.262        13.371        13.487        13.607        13.728 
+    a709=46.1682        12.5        12.552        12.612       12.676       12.745        12.819        13.168        13.271         13.38        13.496        13.616        13.736 
+    a710=46.2617       12.51        12.563        12.622       12.686       12.755        12.829        13.178         13.28        13.389        13.504        13.624        13.745 
+    a711=46.3551      12.521        12.573        12.632       12.696       12.765        12.839        13.187        13.289        13.398        13.513        13.633        13.753 
+    a712=46.4486      12.531        12.583        12.642       12.706       12.775        12.849        13.196        13.298        13.407        13.522        13.642        13.762 
+    a713=46.5421      12.542        12.594        12.652       12.716       12.785        12.859        13.206        13.307        13.416        13.531         13.65         13.77 
+    a714=46.6355      12.552        12.604        12.663       12.727       12.795        12.869        13.215        13.316        13.425        13.539        13.659        13.779 
+    a715=46.729       12.562        12.614        12.673       12.737       12.805        12.878        13.224        13.325        13.434        13.548        13.667        13.787 
+    a716=46.8224      12.573        12.624        12.683       12.747       12.815        12.888        13.233        13.335        13.443        13.557        13.676        13.795 
+    a717=46.9159      12.583        12.634        12.693       12.757       12.825        12.898        13.242        13.344        13.451        13.566        13.684        13.804 
+    a718=47.0093      12.593        12.645        12.703       12.767       12.835        12.908        13.252        13.353         13.46        13.574        13.693        13.812 
+    a719=47.1028      12.603        12.655        12.713       12.777       12.845        12.917        13.261        13.362        13.469        13.583        13.701         13.82 
+    a720=47.1963      12.614        12.665        12.723       12.786       12.854        12.927         13.27        13.371        13.478        13.592         13.71        13.829 
+    a721=47.2897      12.624        12.675        12.733       12.796       12.864        12.937        13.279         13.38        13.487          13.6        13.718        13.837 
+    a722=47.3832      12.634        12.685        12.743       12.806       12.874        12.946        13.288        13.389        13.496        13.609        13.727        13.845 
+    a723=47.4766      12.644        12.695        12.753       12.816       12.884        12.956        13.297        13.398        13.504        13.618        13.735        13.853 
+    a724=47.5701      12.654        12.705        12.763       12.826       12.894        12.966        13.306        13.406        13.513        13.626        13.744        13.862 
+    a725=47.6636      12.665        12.715        12.773       12.836       12.903        12.975        13.315        13.415        13.522        13.635        13.752         13.87 
+    a726=47.757       12.675        12.726        12.783       12.846       12.913        12.985        13.325        13.424        13.531        13.643        13.761        13.878 
+    a727=47.8505      12.685        12.736        12.793       12.856       12.923        12.995        13.334        13.433        13.539        13.652        13.769        13.886 
+    a728=47.9439      12.695        12.746        12.803       12.865       12.933        13.004        13.343        13.442        13.548         13.66        13.777        13.895 
+    a729=48.0374      12.705        12.756        12.813       12.875       12.942        13.014        13.352        13.451        13.557        13.669        13.786        13.903 
+    a730=48.1308      12.715        12.766        12.823       12.885       12.952        13.023        13.361         13.46        13.566        13.678        13.794        13.911 
+    a731=48.2243      12.725        12.775        12.833       12.895       12.961        13.033         13.37        13.469        13.574        13.686        13.802        13.919 
+    a732=48.3178      12.735        12.785        12.842       12.904       12.971        13.042        13.379        13.478        13.583        13.695        13.811        13.927 
+    a733=48.4112      12.745        12.795        12.852       12.914       12.981        13.052        13.388        13.486        13.592        13.703        13.819        13.936 
+    a734=48.5047      12.755        12.805        12.862       12.924        12.99        13.061        13.397        13.495          13.6        13.712        13.827        13.944 
+    a735=48.5981      12.765        12.815        12.872       12.934           13        13.071        13.406        13.504        13.609         13.72        13.836        13.952 
+    a736=48.6916      12.775        12.825        12.882       12.943        13.01         13.08        13.415        13.513        13.618        13.728        13.844         13.96 
+    a737=48.785       12.785        12.835        12.891       12.953       13.019         13.09        13.423        13.522        13.626        13.737        13.852        13.968 
+    a738=48.8785      12.795        12.845        12.901       12.963       13.029        13.099        13.432         13.53        13.635        13.745        13.861        13.976 
+    a739=48.972       12.805        12.855        12.911       12.972       13.038        13.109        13.441        13.539        13.643        13.754        13.869        13.984 
+    a740=49.0654      12.815        12.864        12.921       12.982       13.048        13.118         13.45        13.548        13.652        13.762        13.877        13.992 
+    a741=49.1589      12.825        12.874         12.93       12.991       13.057        13.127        13.459        13.556         13.66        13.771        13.885            14 
+    a742=49.2523      12.834        12.884         12.94       13.001       13.067        13.137        13.468        13.565        13.669        13.779        13.893        14.008 
+    a743=49.3458      12.844        12.894         12.95       13.011       13.076        13.146        13.477        13.574        13.678        13.787        13.902        14.016 
+    a744=49.4393      12.854        12.903        12.959        13.02       13.086        13.155        13.485        13.583        13.686        13.796         13.91        14.024 
+    a745=49.5327      12.864        12.913        12.969        13.03       13.095        13.165        13.494        13.591        13.695        13.804        13.918        14.033 
+    a746=49.6262      12.874        12.923        12.979       13.039       13.104        13.174        13.503          13.6        13.703        13.812        13.926        14.041 
+    a747=49.7196      12.883        12.933        12.988       13.049       13.114        13.183        13.512        13.608        13.712        13.821        13.934        14.049 
+    a748=49.8131      12.893        12.942        12.998       13.058       13.123        13.193        13.521        13.617         13.72        13.829        13.943        14.057 
+    a749=49.9065      12.903        12.952        13.007       13.068       13.133        13.202        13.529        13.626        13.728        13.837        13.951        14.064 
+    a750=50           12.913        12.962        13.017       13.077       13.142        13.211        13.538        13.634        13.737        13.846        13.959        14.072 
+
+tb_pol_a
+                    z1_0_34741    z2_0_40076    z3_0_4623    z4_0_5333    z5_0_61519    z6_0_70966    z10_1_2567    z11_1_4496    z12_1_6723    z13_1_9291    z14_2_2253    z15_2_567
+                    __________    __________    _________    _________    __________    __________    __________    __________    __________    __________    __________    _________
+
+    a1=-20                 0             0             0            0            0             0        -19.72       -19.533       -19.252       -18.972       -18.598       -18.224 
+    a2=-19.9065            0             0             0            0            0             0       -19.626       -19.439       -19.159       -18.879       -18.505       -18.131 
+    a3=-19.8131            0             0             0            0            0             0       -19.533       -19.346       -19.065       -18.785       -18.411       -18.037 
+    a4=-19.7196            0             0             0            0            0             0       -19.533       -19.252       -18.972       -18.692       -18.318       -17.944 
+    a5=-19.6262            0             0             0            0            0           -20       -19.439       -19.159       -18.879       -18.598       -18.224        -17.85 
+    a6=-19.5327            0             0             0            0          -20           -20       -19.346       -19.065       -18.785       -18.505       -18.131       -17.757 
+    a7=-19.4393            0             0             0            0          -20           -20       -19.252       -18.972       -18.692       -18.411       -18.037       -17.664 
+    a8=-19.3458            0             0             0          -20          -20       -19.813       -19.159       -18.879       -18.598       -18.318       -17.944        -17.57 
+    a9=-19.2523            0           -20           -20          -20          -20        -19.72       -19.065       -18.785       -18.505       -18.224        -17.85       -17.477 
+    a10=-19.1589         -20           -20           -20          -20          -20       -19.626       -18.972       -18.692       -18.411       -18.131       -17.757       -17.383 
+    a11=-19.0654         -20           -20           -20          -20      -19.626       -19.533       -18.879       -18.598       -18.318       -18.037       -17.664        -17.29 
+    a12=-18.972          -20           -20           -20          -20      -19.533       -19.439       -18.692       -18.505       -18.224       -17.944        -17.57       -17.196 
+    a13=-18.8785         -20           -20           -20          -20      -19.439       -19.346       -18.598       -18.411       -18.131        -17.85       -17.477       -17.103 
+    a14=-18.785          -20           -20           -20      -19.533      -19.346       -19.252       -18.505       -18.318       -18.037       -17.757       -17.383       -17.009 
+    a15=-18.6916         -20           -20           -20      -19.346      -19.252       -19.159       -18.411       -18.224       -17.944       -17.664        -17.29       -16.916 
+    a16=-18.5981         -20           -20           -20      -19.252      -19.159       -19.065       -18.318       -18.131        -17.85        -17.57       -17.196       -16.822 
+    a17=-18.5047         -20           -20       -19.252      -19.159      -19.065       -18.972       -18.224       -18.037       -17.757       -17.477       -17.103       -16.729 
+    a18=-18.4112         -20           -20       -19.159      -19.159      -18.972       -18.879       -18.131       -17.944       -17.664       -17.383       -17.009       -16.636 
+    a19=-18.3178         -20       -19.159       -19.159      -19.065      -18.879       -18.785       -18.037        -17.85        -17.57        -17.29       -16.916       -16.542 
+    a20=-18.2243     -19.159       -19.065       -19.065      -18.972      -18.785       -18.692       -17.944       -17.757       -17.477       -17.196       -16.822       -16.449 
+    a21=-18.1308     -19.065       -19.065       -18.972      -18.879      -18.692       -18.598        -17.85       -17.664       -17.383       -17.103       -16.729       -16.355 
+    a22=-18.0374     -19.065       -18.972       -18.879      -18.692      -18.598       -18.411       -17.757        -17.57        -17.29       -17.009       -16.636       -16.262 
+    a23=-17.9439     -18.972       -18.879       -18.692      -18.598      -18.505       -18.318       -17.664       -17.477       -17.196       -16.916       -16.542       -16.168 
+    a24=-17.8505     -18.879       -18.879       -18.692      -18.505      -18.411       -18.224        -17.57       -17.383       -17.103       -16.822       -16.449       -16.075 
+    a25=-17.757      -18.879       -18.692       -18.505      -18.411      -18.318       -18.131       -17.477        -17.29       -17.009       -16.729       -16.355       -15.981 
+    a26=-17.6636     -18.692       -18.598       -18.411      -18.318      -18.224       -18.037       -17.383       -17.196       -16.916       -16.636       -16.262       -15.888 
+    a27=-17.5701     -18.692       -18.411       -18.318      -18.224      -18.131       -17.944        -17.29       -17.103       -16.822       -16.542       -16.168       -15.794 
+    a28=-17.4766     -18.505       -18.318       -18.224      -18.131      -18.037        -17.85       -17.196       -17.009       -16.729       -16.449       -16.075       -15.701 
+    a29=-17.3832     -18.318       -18.224       -18.131      -18.037      -17.944       -17.757       -17.103       -16.916       -16.636       -16.355       -15.981       -15.607 
+    a30=-17.2897     -18.224       -18.131       -18.037      -17.944       -17.85       -17.664       -17.009       -16.822       -16.542       -16.262       -15.888       -15.514 
+    a31=-17.1963     -18.131       -18.037       -17.944       -17.85      -17.757        -17.57       -16.916       -16.729       -16.449       -16.168       -15.794       -15.421 
+    a32=-17.1028     -18.037       -17.944        -17.85      -17.757       -17.57       -17.477       -16.822       -16.636       -16.355       -16.075       -15.701       -15.327 
+    a33=-17.0093     -17.944        -17.85       -17.757      -17.664      -17.477       -17.383       -16.729       -16.542       -16.262       -15.981       -15.607       -15.234 
+    a34=-16.9159      -17.85       -17.757       -17.664       -17.57      -17.383        -17.29       -16.636       -16.449       -16.168       -15.888       -15.514        -15.14 
+    a35=-16.8224     -17.757       -17.664        -17.57      -17.477       -17.29       -17.196       -16.542       -16.355       -16.075       -15.794       -15.421       -15.047 
+    a36=-16.729      -17.664        -17.57       -17.477       -17.29      -17.196       -17.103       -16.449       -16.262       -15.981       -15.701       -15.327       -14.953 
+    a37=-16.6355      -17.57       -17.383        -17.29      -17.196      -17.103       -17.009       -16.355       -16.168       -15.888       -15.607       -15.234        -14.86 
+    a38=-16.5421     -17.383        -17.29       -17.196      -17.103      -17.009       -16.916       -16.262       -16.075       -15.794       -15.514        -15.14       -14.766 
+    a39=-16.4486      -17.29       -17.196       -17.103      -17.009      -16.916       -16.822       -16.168       -15.888       -15.701       -15.421       -15.047       -14.673 
+    a40=-16.3551     -17.196       -17.103       -17.009      -16.916      -16.822       -16.729       -16.075       -15.794       -15.607       -15.327       -14.953       -14.579 
+    a41=-16.2617     -17.103       -17.009       -16.916      -16.822      -16.729       -16.636       -15.981       -15.701       -15.514       -15.234        -14.86       -14.486 
+    a42=-16.1682     -17.009       -16.916       -16.822      -16.729      -16.636       -16.542       -15.888       -15.607       -15.421        -15.14       -14.766       -14.393 
+    a43=-16.0748     -16.916       -16.822       -16.729      -16.636      -16.542       -16.449       -15.794       -15.514       -15.327       -15.047       -14.673       -14.299 
+    a44=-15.9813     -16.822       -16.729       -16.636      -16.542      -16.449       -16.355       -15.701       -15.421       -15.234       -14.953       -14.579       -14.206 
+    a45=-15.8879     -16.729       -16.636       -16.542      -16.449      -16.355       -16.262       -15.607       -15.327        -15.14        -14.86       -14.486       -14.112 
+    a46=-15.7944     -16.636       -16.542       -16.449      -16.355      -16.262       -16.168       -15.514       -15.234       -15.047       -14.766       -14.393       -14.019 
+    a47=-15.7009     -16.542       -16.449       -16.355      -16.262      -16.168       -16.075       -15.421        -15.14       -14.953       -14.673       -14.299       -13.925 
+    a48=-15.6075     -16.449       -16.355       -16.262      -16.168      -16.075       -15.981       -15.327       -15.047        -14.86       -14.579       -14.206       -13.832 
+    a49=-15.514      -16.355       -16.262       -16.168      -16.075      -15.981       -15.888       -15.234       -14.953       -14.766       -14.486       -14.112       -13.738 
+    a50=-15.4206     -16.168       -16.168       -16.075      -15.981      -15.888       -15.794        -15.14        -14.86       -14.673       -14.393       -14.019       -13.645 
+    a701=45.4206      41.963        42.056        42.056        42.15       42.243        42.336        42.804        42.991        43.271        43.551        43.832        44.206 
+    a702=45.514       42.056         42.15         42.15       42.243       42.336         42.43        42.897        43.084        43.364        43.645        43.925        44.299 
+    a703=45.6075       42.15        42.243        42.243       42.336        42.43        42.523        42.991        43.178        43.458        43.738        44.019        44.393 
+    a704=45.7009      42.243        42.336        42.336        42.43       42.523        42.617        43.084        43.271        43.551        43.832        44.112        44.486 
+    a705=45.7944      42.336         42.43         42.43       42.523       42.617         42.71        43.178        43.364        43.645        43.925        44.206        44.579 
+    a706=45.8879       42.43        42.523        42.523       42.617        42.71        42.804        43.271        43.458        43.738        44.019        44.299        44.673 
+    a707=45.9813      42.523        42.617        42.617        42.71       42.804        42.897        43.364        43.551        43.832        44.112        44.393        44.766 
+    a708=46.0748      42.617         42.71         42.71       42.804       42.897        42.897        43.458        43.645        43.925        44.112        44.486         44.86 
+    a709=46.1682       42.71        42.804        42.804       42.897       42.991        42.991        43.551        43.738        44.019        44.206        44.579        44.953 
+    a710=46.2617      42.804        42.897        42.897       42.991       42.991        43.084        43.645        43.832        44.112        44.299        44.673        45.047 
+    a711=46.3551      42.897        42.897        42.991       43.084       43.084        43.178        43.738        43.925        44.112        44.393        44.766         45.14 
+    a712=46.4486      42.991        42.991        43.084       43.178       43.178        43.271        43.832        44.019        44.206        44.486         44.86        45.234 
+    a713=46.5421      43.084        43.084        43.178       43.271       43.271        43.364        43.925        44.112        44.299        44.579        44.953        45.327 
+    a714=46.6355      43.178        43.178        43.271       43.364       43.364        43.458        44.019        44.206        44.393        44.673        45.047        45.421 
+    a715=46.729       43.271        43.271        43.364       43.364       43.458        43.551        44.112        44.299        44.486        44.766         45.14        45.514 
+    a716=46.8224      43.364        43.364        43.458       43.458       43.551        43.645        44.206        44.393        44.579         44.86         45.14        45.514 
+    a717=46.9159      43.458        43.458        43.551       43.551       43.645        43.738        44.299        44.486        44.673        44.953        45.234        45.607 
+    a718=47.0093      43.551        43.551        43.645       43.645       43.738        43.832        44.393        44.579        44.766        45.047        45.327        45.701 
+    a719=47.1028      43.645        43.645        43.738       43.738       43.832        43.925        44.486        44.673         44.86         45.14        45.421        45.794 
+    a720=47.1963      43.738        43.738        43.832       43.832       43.925        44.019        44.579        44.766        44.953        45.234        45.514        45.888 
+    a721=47.2897      43.832        43.832        43.925       43.925       44.019        44.112        44.673         44.86        45.047        45.327        45.607        45.981 
+    a722=47.3832      43.925        43.925        44.019       44.019       44.112        44.206        44.673        44.953         45.14        45.421        45.701        46.075 
+    a723=47.4766      43.925        44.019        44.019       44.112       44.206        44.299        44.766        44.953        45.234        45.514        45.794        46.168 
+    a724=47.5701      44.019        44.112        44.112       44.206       44.299        44.393         44.86        45.047        45.327        45.607        45.888        46.262 
+    a725=47.6636      44.112        44.206        44.206       44.299       44.393        44.486        44.953         45.14        45.421        45.701        45.981        46.355 
+    a726=47.757       44.206        44.299        44.299       44.393       44.486        44.579        45.047        45.234        45.514        45.794        46.075        46.449 
+    a727=47.8505      44.299        44.393        44.393       44.486       44.579        44.673         45.14        45.327        45.607        45.888        46.168        46.542 
+    a728=47.9439      44.393        44.486        44.486       44.579       44.673        44.766        45.234        45.421        45.701        45.981        46.262        46.636 
+    a729=48.0374      44.486        44.579        44.579       44.673       44.766         44.86        45.327        45.514        45.794        46.075        46.355        46.729 
+    a730=48.1308      44.579        44.673        44.673       44.766        44.86         44.86        45.421        45.607        45.888        46.168        46.449        46.822 
+    a731=48.2243      44.673        44.766        44.766        44.86       44.953        44.953        45.514        45.701        45.981        46.168        46.542        46.916 
+    a732=48.3178      44.766         44.86         44.86       44.953       45.047        45.047        45.607        45.794        46.075        46.262        46.636        47.009 
+    a733=48.4112       44.86        44.953        44.953       45.047       45.047         45.14        45.701        45.888        46.168        46.355        46.729        47.103 
+    a734=48.5047      44.953        44.953        45.047        45.14        45.14        45.234        45.794        45.981        46.168        46.449        46.822        47.196 
+    a735=48.5981      45.047        45.047         45.14       45.234       45.234        45.327        45.888        46.075        46.262        46.542        46.916         47.29 
+    a736=48.6916       45.14         45.14        45.234       45.327       45.327        45.421        45.981        46.168        46.355        46.636        47.009        47.383 
+    a737=48.785       45.234        45.234        45.327       45.421       45.421        45.514        46.075        46.262        46.449        46.729        47.103        47.477 
+    a738=48.8785      45.327        45.327        45.421       45.421       45.514        45.607        46.168        46.355        46.542        46.822        47.196         47.57 
+    a739=48.972       45.421        45.421        45.514       45.514       45.607        45.701        46.262        46.449        46.636        46.916        47.196         47.57 
+    a740=49.0654      45.514        45.514        45.607       45.607       45.701        45.794        46.355        46.542        46.729        47.009         47.29        47.664 
+    a741=49.1589      45.607        45.607        45.701       45.701       45.794        45.888        46.449        46.636        46.822        47.103        47.383        47.757 
+    a742=49.2523      45.701        45.701        45.794       45.794       45.888        45.981        46.542        46.729        46.916        47.196        47.477         47.85 
+    a743=49.3458      45.794        45.794        45.888       45.888       45.981        46.075        46.636        46.822        47.009         47.29         47.57        47.944 
+    a744=49.4393      45.888        45.888        45.981       45.981       46.075        46.168        46.729        46.916        47.103        47.383        47.664        48.037 
+    a745=49.5327      45.981        45.981        46.075       46.075       46.168        46.262        46.729        47.009        47.196        47.477        47.757        48.131 
+    a746=49.6262      45.981        46.075        46.075       46.168       46.262        46.355        46.822        47.103         47.29         47.57         47.85        48.224 
+    a747=49.7196      46.075        46.168        46.168       46.262       46.355        46.449        46.916        47.103        47.383        47.664        47.944        48.318 
+    a748=49.8131      46.168        46.262        46.262       46.355       46.449        46.542        47.009        47.196        47.477        47.757        48.037        48.411 
+    a749=49.9065      46.262        46.355        46.355       46.449       46.542        46.636        47.103         47.29         47.57         47.85        48.131        48.505 
+    a750=50           46.355        46.449        46.449       46.542       46.636        46.729        47.196        47.383        47.664        47.944        48.224        48.598 
+
+</pre><img vspace="5" hspace="5" src="ff_abz_fibs_vf_vec_01.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vec_02.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vec_03.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vec_04.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vec_05.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vec_06.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vec_07.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vec_08.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vec_09.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vec_10.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vec_11.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vec_12.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
+</pre><pre class="codeoutput">
+ans = 
+
+  Map with properties:
+
+        Count: 10
+      KeyType: char
+    ValueType: any
+
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Solve For+Inf+Borr+Save Dynamic Programming Problem (Vectorized)
+% *back to <https://fanwangecon.github.io Fan>'s
+% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
+% Table of Content.*
+
+%%
+function result_map = ff_abz_fibs_vf_vec(varargin)
+%% FF_ABZ_FIBS_VF_VEC solve infinite horizon exo shock + endo asset problem
+% This program solves the infinite horizon dynamic single asset and single
+% shock problem with vectorized codes.
+% <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_fibs_vf.html
+% ff_abz_fibs_vf> shows looped codes. The solution is the same.
+%
+% @param param_map container parameter container
+%
+% @param support_map container support container
+%
+% @param armt_map container container with states, choices and shocks
+% grids that are inputs for grid based solution algorithm
+%
+% @param func_map container container with function handles for
+% consumption cash-on-hand etc.
+%
+% @return result_map container contains policy function matrix, value
+% function matrix, iteration results, and policy function, value function
+% and iteration results tables.
+%
+% keys included in result_map:
+%
+% * mt_val matrix states_n by shock_n matrix of converged value function grid
+% * mt_pol_a matrix states_n by shock_n matrix of converged policy function grid
+% * ar_val_diff_norm array if bl_post = true it_iter_last by 1 val function
+% difference between iteration
+% * ar_pol_diff_norm array if bl_post = true it_iter_last by 1 policy
+% function difference between iterations
+% * mt_pol_perc_change matrix if bl_post = true it_iter_last by shock_n the
+% proportion of grid points at which policy function changed between
+% current and last iteration for each element of shock
+%
+% @example
+%
+%    % Get Default Parameters
+%    it_param_set = 4;
+%    [param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
+%    % Chnage param_map keys for borrowing
+%    param_map('fl_b_bd') = -20; % borrow bound
+%    param_map('bl_default') = false; % true if allow for default
+%    param_map('fl_c_min') = 0.0001; % u(c_min) when default
+%    % Change Keys in param_map
+%    param_map('it_a_n') = 500;
+%    param_map('it_z_n') = 11;
+%    param_map('fl_a_max') = 100;
+%    param_map('fl_w') = 1.3;
+%    % Change Keys support_map
+%    support_map('bl_display') = false;
+%    support_map('bl_post') = true;
+%    support_map('bl_display_final') = false;
+%    % Call Program with external parameters that override defaults.
+%    ff_abz_fibs_vf_vec(param_map, support_map);
+%
+% @include
+%
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_set_default_param.html ffs_abz_fibs_set_default_param>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_get_funcgrid.html ffs_abz_fibs_get_funcgrid>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_vf_post.html ff_az_vf_post>
+%
+% @seealso
+%
+
+%% Default
+% * it_param_set = 1: quick test
+% * it_param_set = 2: benchmark run
+% * it_param_set = 3: benchmark profile
+% * it_param_set = 4: press publish button
+
+it_param_set = 4;
+bl_input_override = true;
+[param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
+
+% Note: param_map and support_map can be adjusted here or outside to override defaults
+% param_map('it_a_n') = 750;
+% param_map('it_z_n') = 15;
+
+[armt_map, func_map] = ffs_abz_fibs_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
+default_params = {param_map support_map armt_map func_map};
+
+%% Parse Parameters 1
+
+% if varargin only has param_map and support_map,
+params_len = length(varargin);
+[default_params{1:params_len}] = varargin{:};
+param_map = [param_map; default_params{1}];
+support_map = [support_map; default_params{2}];
+if params_len >= 1 && params_len <= 2
+    % If override param_map, re-generate armt and func if they are not
+    % provided
+    bl_input_override = true;
+    [armt_map, func_map] = ffs_abz_fibs_get_funcgrid(param_map, support_map, bl_input_override);
+else
+    % Override all
+    armt_map = [armt_map; default_params{3}];
+    func_map = [func_map; default_params{4}];
+end
+
+% append function name
+st_func_name = 'ff_abz_fibs_vf_vec';
+support_map('st_profile_name_main') = [st_func_name support_map('st_profile_name_main')];
+support_map('st_mat_name_main') = [st_func_name support_map('st_mat_name_main')];
+support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')];
+
+%% Parse Parameters 2
+
+% armt_map
+params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z'});
+[ar_a, mt_z_trans, ar_z] = params_group{:};
+
+% Formal choice Menu/Grid and Interest Rate Menu/Grid
+params_group = values(armt_map, {'ar_forbrblk_r', 'ar_forbrblk'});
+[ar_forbrblk_r, ar_forbrblk] = params_group{:};
+
+% func_map
+params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_coh', 'f_cons_coh_fbis', 'f_cons_coh_save'});
+[f_util_log, f_util_crra, f_coh, f_cons_coh_fbis, f_cons_coh_save] = params_group{:};
+
+% param_map
+params_group = values(param_map, {'it_a_n', 'it_z_n', 'fl_crra', 'fl_beta', 'fl_c_min',...
+    'fl_nan_replace', 'bl_default', 'fl_default_aprime'});
+[it_a_n, it_z_n, fl_crra, fl_beta, fl_c_min, ...
+    fl_nan_replace, bl_default, fl_default_aprime] = params_group{:};
+params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol', 'it_tol_pol_nochange'});
+[it_maxiter_val, fl_tol_val, fl_tol_pol, it_tol_pol_nochange] = params_group{:};
+
+% param_map, Formal informal
+params_group = values(param_map, {'fl_r_inf', 'fl_r_fsv', 'bl_b_is_principle'});
+[fl_r_inf, fl_r_fsv, bl_b_is_principle] = params_group{:};
+
+% support_map
+params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
+    'st_profile_prefix', 'st_profile_name_main', 'st_profile_suffix',...
+    'bl_display_minccost', 'bl_display_infbridge', ...
+    'bl_time', 'bl_display', 'it_display_every', 'bl_post'});
+[bl_profile, st_profile_path, ...
+    st_profile_prefix, st_profile_name_main, st_profile_suffix, ...
+    bl_display_minccost, bl_display_infbridge, ...
+    bl_time, bl_display, it_display_every, bl_post] = params_group{:};
+
+%% Initialize Output Matrixes
+% include mt_pol_idx which we did not have in looped code
+
+mt_val_cur = zeros(length(ar_a),length(ar_z));
+mt_val = mt_val_cur - 1;
+mt_pol_a = zeros(length(ar_a),length(ar_z));
+mt_pol_a_cur = mt_pol_a - 1;
+mt_pol_cons = zeros(length(ar_a),length(ar_z));
+
+% collect optimal borrowing formal and informal choices
+mt_pol_b_bridge = zeros(length(ar_a),length(ar_z));
+mt_pol_inf_borr_nobridge = zeros(length(ar_a),length(ar_z));
+mt_pol_for_borr = zeros(length(ar_a),length(ar_z));
+mt_pol_for_save = zeros(length(ar_a),length(ar_z));
+
+%% Initialize Convergence Conditions
+
+bl_vfi_continue = true;
+it_iter = 0;
+ar_val_diff_norm = zeros([it_maxiter_val, 1]);
+ar_pol_diff_norm = zeros([it_maxiter_val, 1]);
+mt_pol_perc_change = zeros([it_maxiter_val, it_z_n]);
+
+%% Iterate Value Function
+% Loop solution with 4 nested loops
+%
+% # loop 1: over exogenous states
+% # loop 2: over endogenous states
+% # loop 3: over choices
+% # loop 4: add future utility, integrationREPLACE_WITH_DASH_DASHloop over future shocks
+%
+
+% Start Profile
+if (bl_profile)
+    close all;
+    profile off;
+    profile on;
+end
+
+% Start Timer
+if (bl_time)
+    tic;
+end
+
+% Value Function Iteration
+while bl_vfi_continue
+    it_iter = it_iter + 1;
+    
+    %% Solve Optimization Problem Current Iteration
+    
+    % loop 1: over exogenous states
+    for it_z_i = 1:length(ar_z)
+        
+        %% Solve the Formal Informal Problem for each a' and coh: c_forinf(a')
+        % find the today's consumption maximizing formal and informal
+        % choices given a' and coh. The formal and informal choices need to
+        % generate exactly a', but depending on which formal and informal
+        % joint choice is used, the consumption cost today a' is different.
+        % Note here, a is principle + interests. Three areas:
+        %
+        % * *CASE A* a' > 0: savings, do not need to optimize over formal and
+        % informal choices
+        % * *CASE B* a' < 0 & coh < 0: need bridge loan to pay for unpaid debt, and
+        % borrowing over-all, need to first pick bridge loan to pay for
+        % debt, if bridge loan is insufficient, go into default. After
+        % bridge loan, optimize over formal+informal, borrow+save joint
+        % choices.
+        % * *CASE C* a' < 0 & coh > 0: do not need to get informal bridge loans,
+        % optimize over for+inf save, for+save+borr, inf+borr only, for
+        % borrow only.
+        %
+        
+        % 1. Current Shock
+        fl_z = ar_z(it_z_i);
+        
+        % 2. cash-on-hand
+        ar_coh = f_coh(fl_z, ar_a);
+        
+        % 3. *CASE A* initiate consumption matrix as if all save
+        mt_c = f_cons_coh_save(ar_coh, ar_a');
+        
+        % 4. *CASE B+C* get negative coh index and get borrowing choices index
+        ar_coh_neg_idx = (ar_coh <= fl_c_min);
+        ar_a_neg_idx = (ar_a < 0);
+        ar_coh_neg = ar_coh(ar_coh_neg_idx);
+        ar_a_neg = ar_a(ar_a_neg_idx);
+        
+        % 5. if coh > 0 and ap < 0, can allow same for+inf result to all coh.
+        % The procedure below works regardless of how ar_coh is sorted. get
+        % the index of all negative coh elements as well as first
+        % non-negative element. We solve the formal and informal problem at
+        % these points, note that we only need to solve the formal and
+        % informal problem for positive coh level once.
+        ar_coh_first_pos_idx = (cumsum(ar_coh_neg_idx == 0) == 1);
+        ar_coh_forinfsolve_idx = (ar_coh_first_pos_idx | ar_coh_neg_idx);
+        ar_coh_forinfsolve_a_neg_idx = (ar_coh(ar_coh_forinfsolve_idx) <= fl_c_min);
+        
+        % 6. *CASE B + C* Negative asset choices (borrowing), 1 col Case C
+        % negp1: negative coh + 1, 1 meaning 1 positive coh, first positive
+        % coh column index element grabbed.
+        mt_coh_negp1_mesh_neg_aprime = zeros(size(ar_a_neg')) + ar_coh(ar_coh_forinfsolve_idx);
+        mt_neg_aprime_mesh_coh_negp1 = zeros(size(mt_coh_negp1_mesh_neg_aprime)) + ar_a_neg';
+        
+        %         mt_neg_aprime_mesh_coh_1col4poscoh = zeros([length(ar_a_neg), (length(ar_coh_neg)+1)]) + ar_a_neg';
+        %         ar_coh_neg_idx_1col4poscoh = ar_coh_neg_idx(1:(length(ar_coh_neg)+1));
+        
+        % 6. *CASE B* Solve for: if (fl_ap < 0) and if (fl_coh < 0)
+        [mt_aprime_nobridge_negcoh, ~, mt_c_bridge_negcoh] = ffs_fibs_inf_bridge(...
+            bl_b_is_principle, fl_r_inf, ...
+            mt_neg_aprime_mesh_coh_negp1(:,ar_coh_forinfsolve_a_neg_idx), ...
+            mt_coh_negp1_mesh_neg_aprime(:,ar_coh_forinfsolve_a_neg_idx), ...
+            bl_display_infbridge, bl_input_override);
+        
+        % generate mt_aprime_nobridge
+        mt_neg_aprime_mesh_coh_negp1(:, ar_coh_forinfsolve_a_neg_idx) = mt_aprime_nobridge_negcoh;
+        
+        % 7. *CASE B + C* formal and informal joint choices, 1 col Case C
+        bl_input_override = true;
+        [ar_max_c_nobridge, ~, ~, ~] = ...
+            ffs_fibs_min_c_cost(...
+            bl_b_is_principle, fl_r_inf, fl_r_fsv, ...
+            ar_forbrblk_r, ar_forbrblk, ...
+            mt_neg_aprime_mesh_coh_negp1(:), ...
+            bl_display_minccost, bl_input_override);
+        
+        %% Update Consumption Matrix *CASE A + B + C* Consumptions
+        % Current mt_c is assuming all to be case A
+        %
+        % * Update Columns for case B (negative coh)
+        % * Update Columns for case C (1 column): ar_coh_first_pos_idx,
+        % included in ar_coh_forinfsolve_idx
+        % * Update Columns for all case C: ~ar_coh_neg_idx using 1 column
+        % result
+        %
+        
+        % 1. Initalize all Neg Aprime consumption cost of aprime inputs
+        % Initialize
+        mt_max_c_nobridge_a_neg = zeros([length(ar_a_neg), length(ar_coh)]) + 0;
+        mt_c_bridge_coh_a_neg = zeros(size(mt_max_c_nobridge_a_neg)) + 0;
+        
+        % 2. Fill in *Case B* Bridge C-cost
+        mt_c_bridge_coh_a_neg(:, ar_coh_neg_idx) = mt_c_bridge_negcoh;
+        
+        % 2. Fill in *Case B* and *Case C* (one column) Other C-cost
+        mt_max_c_nobridge_negcohp1 = reshape(ar_max_c_nobridge, [size(mt_neg_aprime_mesh_coh_negp1)]);
+        mt_max_c_nobridge_a_neg(:, ar_coh_forinfsolve_idx) = mt_max_c_nobridge_negcohp1;
+        mt_max_c_nobridge_a_neg(:, ~ar_coh_forinfsolve_idx) = ...
+            zeros(size(mt_c(ar_a_neg_idx, ~ar_coh_forinfsolve_idx))) ...
+            + mt_max_c_nobridge_negcohp1(:, ~ar_coh_forinfsolve_a_neg_idx);
+        
+        % 3. Consumption for B + C Cases
+        % note, the c cost of aprime is the same for all coh > 0, but mt_c
+        % is different still for each coh and aprime.
+        mt_c_forinfsolve = f_cons_coh_fbis(ar_coh, mt_c_bridge_coh_a_neg + mt_max_c_nobridge_a_neg);
+        
+        % 4. Update with Case B and C
+        mt_c(ar_a_neg_idx, :) = mt_c_forinfsolve;
+        
+        %% Solve Optimization Problem: max_{a'} (u(c_forinf(a')) + EV(a',z'))
+        % 1. EVAL current utility: N by N, f_util defined earlier
+        if (fl_crra == 1)
+            mt_utility = f_util_log(mt_c);
+            fl_u_cmin = f_util_log(fl_c_min);
+        else
+            mt_utility = f_util_crra(mt_c);
+            fl_u_cmin = f_util_crra(fl_c_min);
+        end
+        
+        % 2. f(z'|z)
+        ar_z_trans_condi = mt_z_trans(it_z_i,:);
+        
+        % 3. EVAL EV((A',K'),Z'|Z) = V((A',K'),Z') x p(z'|z)', (N by Z) x (Z by 1) = N by 1
+        % Note: transpose ar_z_trans_condi from 1 by Z to Z by 1
+        % Note: matrix multiply not dot multiply
+        mt_evzp_condi_z = mt_val_cur * ar_z_trans_condi';
+        
+        % 4. EVAL add on future utility, N by N + N by 1, broadcast again
+        mt_utility = mt_utility + fl_beta*mt_evzp_condi_z;
+        
+        if (bl_default)
+            % if default: only today u(cmin), transition out next period, debt wiped out
+            mt_utility(mt_c <= fl_c_min) = fl_u_cmin + fl_beta*mt_evzp_condi_z(ar_a == fl_default_aprime);
+        else
+            % if default is not allowed: v = fl_nan_replace
+            mt_utility(mt_c <= fl_c_min) = fl_nan_replace;
+        end
+        
+        % 5. Optimization: remember matlab is column major, rows must be
+        % choices, columns must be states
+        % <https://en.wikipedia.org/wiki/Row-_and_column-major_order COLUMN-MAJOR>
+        % mt_utility is N by N, rows are choices, cols are states.
+        [ar_opti_val_z, ar_opti_idx_z] = max(mt_utility);
+        [it_choies_n, it_states_n] = size(mt_utility);
+        ar_add_grid = linspace(0, it_choies_n*(it_states_n-1), it_states_n);
+        ar_opti_linear_idx_z = ar_opti_idx_z + ar_add_grid;
+        ar_opti_aprime_z = ar_a(ar_opti_idx_z);
+        ar_opti_c_z = mt_c(ar_opti_linear_idx_z);
+        
+        % 6. Handle Default is optimal or not
+        if (bl_default)
+            % if defaulting is optimal choice, at these states, not required
+            % to default, non-default possible, but default could be optimal
+            ar_opti_aprime_z(ar_opti_c_z <= fl_c_min) = fl_default_aprime;
+        else
+            % if default is not allowed, then next period same state as now
+            % this is absorbing state, this is the limiting case, single
+            % state space point, lowest a and lowest shock has this.
+            ar_opti_aprime_z(ar_opti_c_z <= fl_c_min) = ar_a(ar_opti_c_z <= fl_c_min);
+        end
+        
+        %% Store Optimal Choices Current Iteration
+        mt_val(:,it_z_i) = ar_opti_val_z;
+        mt_pol_a(:,it_z_i) = ar_opti_aprime_z;
+        mt_pol_cons(:,it_z_i) = ar_opti_c_z;
+        
+        if (it_iter == (it_maxiter_val + 1))
+            mt_pol_idx(:,it_z_i) = ar_opti_idx_z;
+        end
+    end
+    
+    %% Check Tolerance and Continuation
+    
+    % Difference across iterations
+    ar_val_diff_norm(it_iter) = norm(mt_val - mt_val_cur);
+    ar_pol_diff_norm(it_iter) = norm(mt_pol_a - mt_pol_a_cur);
+    mt_pol_perc_change(it_iter, :) = sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n);
+    
+    % Update
+    mt_val_cur = mt_val;
+    mt_pol_a_cur = mt_pol_a;
+    
+    % Print Iteration Results
+    if (bl_display && (rem(it_iter, it_display_every)==0))
+        fprintf('VAL it_iter:%d, fl_diff:%d, fl_diff_pol:%d\n', ...
+            it_iter, ar_val_diff_norm(it_iter), ar_pol_diff_norm(it_iter));
+        tb_valpol_iter = array2table([mean(mt_val_cur,1); mean(mt_pol_a_cur,1); ...
+            mt_val_cur(it_a_n,:); mt_pol_a_cur(it_a_n,:)]);
+        tb_valpol_iter.Properties.VariableNames = strcat('z', string((1:size(mt_val_cur,2))));
+        tb_valpol_iter.Properties.RowNames = {'mval', 'map', 'Hval', 'Hap'};
+        disp('mval = mean(mt_val_cur,1), average value over a')
+        disp('map  = mean(mt_pol_a_cur,1), average choice over a')
+        disp('Hval = mt_val_cur(it_a_n,:), highest a state val')
+        disp('Hap = mt_pol_a_cur(it_a_n,:), highest a state choice')
+        disp(tb_valpol_iter);
+    end
+    
+    % Continuation Conditions:
+    % 1. if value function convergence criteria reached
+    % 2. if policy function variation over iterations is less than
+    % threshold
+    if (it_iter == (it_maxiter_val + 1))
+        bl_vfi_continue = false;
+    elseif ((it_iter == it_maxiter_val) || ...
+            (ar_val_diff_norm(it_iter) < fl_tol_val) || ...
+            (sum(ar_pol_diff_norm(max(1, it_iter-it_tol_pol_nochange):it_iter)) < fl_tol_pol))
+        % Fix to max, run again to save results if needed
+        it_iter_last = it_iter;
+        it_iter = it_maxiter_val;
+    end
+    
+end
+
+% End Timer
+if (bl_time)
+    toc;
+end
+
+% End Profile
+if (bl_profile)
+    profile off
+    profile viewer
+    st_file_name = [st_profile_prefix st_profile_name_main st_profile_suffix];
+    profsave(profile('info'), strcat(st_profile_path, st_file_name));
+end
+
+%% Process Optimal Choices
+
+result_map = containers.Map('KeyType','char', 'ValueType','any');
+result_map('mt_val') = mt_val;
+result_map('mt_pol_a') = mt_pol_a;
+result_map('mt_cons') = mt_pol_cons;
+
+if (bl_post)
+    bl_input_override = true;
+    result_map('ar_val_diff_norm') = ar_val_diff_norm(1:it_iter_last);
+    result_map('ar_pol_diff_norm') = ar_pol_diff_norm(1:it_iter_last);
+    result_map('mt_pol_perc_change') = mt_pol_perc_change(1:it_iter_last, :);
+    result_map = ff_az_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+end
+
+end
+
+##### SOURCE END #####
+--></body></html>

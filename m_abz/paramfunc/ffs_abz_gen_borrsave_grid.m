@@ -1,8 +1,9 @@
-%% 
+%% Generate Borrowing and Savings Grid
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository> 
 % Table of Content.*
 
+%%
 function [ar_a, fl_borr_yminbd, fl_borr_ymaxbd] = ffs_abz_gen_borrsave_grid(varargin)
 %% FFS_ABZ_GEN_BORRSAVE_GRID get funcs, params, states choices shocks grids
 % Generate savings and borrowing states/choice grids. There are three types

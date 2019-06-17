@@ -16,7 +16,7 @@ function [mt_ev_condi_z_max, mt_ev_condi_z_max_idx, mt_ev_condi_z_max_kp, mt_ev_
 %
 % This means we can solve for the optimal relative allocation of risky and
 % safe asset conditional on total savings. Note that we still need the
-% value function *mt_val*, which is required to find EV. 
+% value function *mt_val*, which is required to find EV.
 %
 % @param mt_val matrix state_n ((I-1)*J/2+I) by shock_n. This is the value
 % matrix each row is a feasible reachable state given the choice
@@ -67,22 +67,22 @@ if (bl_input_override)
 else
     clear all;
     close all;
-    
+
     % Not default parameters, but parameters that generate defaults
     it_param_set = 4;
     bl_input_override = true;
     [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
     support_map('bl_graph_evf') = true;
     support_map('bl_display_evf') = true;
-        
+
     [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
-    
+
     % Generating Defaults
     params_group = values(armt_map, {'ar_a_meshk', 'ar_k_mesha', 'ar_z'});
     [ar_a_meshk, ar_k_mesha, ar_z] = params_group{:};
     params_group = values(func_map, {'f_util_standin'});
     [f_util_standin] = params_group{:};
-    mt_val = f_util_standin(ar_z, ar_a_meshk, ar_k_mesha);    
+    mt_val = f_util_standin(ar_z, ar_a_meshk, ar_k_mesha);
 end
 
 %% Parse Parameters
@@ -110,7 +110,7 @@ st_img_name_main = [st_func_name st_img_name_main];
 % <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html
 % ffs_akz_set_functions> code where we loop over current z, and for each
 % current z, grab out a particular row from the mt_z_trans that corresponds
-% to a current shock's transition into all future states. 
+% to a current shock's transition into all future states.
 %
 % here, each column of mt_val corresponds to a state z, think of that as
 % future state z. The input mt_val is *V(coh, z)*, we need to integrate to
@@ -118,7 +118,7 @@ st_img_name_main = [st_func_name st_img_name_main];
 %
 
 mt_ev_condi_z = mt_val*mt_z_trans';
-if(bl_display_evf)
+if (bl_display_evf)
     disp('mt_ev_condi_z: Q by M');
     disp(size(mt_ev_condi_z));
     summary(array2table(mt_ev_condi_z));
@@ -139,7 +139,7 @@ mt_ev_condi_z_full = reshape(mt_ev_condi_z_full, [it_mt_bp_rown, it_mt_bp_coln*i
 [ar_ev_condi_z_max, ar_ev_condi_z_max_idx] = max(mt_ev_condi_z_full);
 mt_ev_condi_z_max = reshape(ar_ev_condi_z_max, [it_mt_bp_coln, it_z_n]);
 mt_ev_condi_z_max_idx = reshape(ar_ev_condi_z_max_idx, [it_mt_bp_coln, it_z_n]);
-if(bl_display_evf)
+if (bl_display_evf)
     disp('mt_ev_condi_z_full: J by IxM');
     disp(size(mt_ev_condi_z_full));
 %     disp(mt_ev_condi_z_full);
@@ -157,14 +157,14 @@ end
 
 ar_add_grid = linspace(0, it_mt_bp_rown*(it_mt_bp_coln-1), it_mt_bp_coln);
 mt_ev_condi_z_max_idx = mt_ev_condi_z_max_idx + ar_add_grid';
-if(bl_display_evf)
+if (bl_display_evf)
     disp('mt_ev_condi_z_max_idx: I by M');
     disp(size(mt_ev_condi_z_max_idx));
 %     disp(mt_ev_condi_z_max_idx(1:it_mt_bp_coln,:));
 end
 mt_ev_condi_z_max_kp = reshape(ar_k_mw_wth_na(mt_ev_condi_z_max_idx(:)), [it_mt_bp_coln, it_z_n]);
 mt_ev_condi_z_max_bp = reshape(ar_a_mw_wth_na(mt_ev_condi_z_max_idx(:)), [it_mt_bp_coln, it_z_n]);
-if(bl_display_evf)
+if (bl_display_evf)
     disp('mt_ev_condi_z_max_kp: I by M');
     disp(size(mt_ev_condi_z_max_kp));
     summary(array2table(mt_ev_condi_z_max_kp));
@@ -178,45 +178,45 @@ end
 %% Graph
 
 if (bl_graph_evf)
-    
+
     %% Graph 1, V and EV
     if (~bl_graph_onebyones)
         figure('PaperPosition', [0 0 14 4]);
         hold on;
     end
-    
-    
+
+
     for subplot_j=1:1:2
-        
+
         if (~bl_graph_onebyones)
             hAxis(subplot_j) = subplot(1,2,subplot_j);
         else
             figure('PaperPosition', [0 0 7 4]);
         end
-        
+
         if (subplot_j==1)
             chart = plot(mt_val);
         end
         if (subplot_j==2)
             chart = plot(mt_ev_condi_z);
         end
-        
+
         clr = jet(numel(chart));
         for m = 1:numel(chart)
             set(chart(m),'Color',clr(m,:))
         end
-        
+
         legend2plot = fliplr([1 round(numel(chart)/3) round((2*numel(chart))/3)  numel(chart)]);
         legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
         legend(chart(legend2plot), legendCell(legend2plot), 'Location','southeast');
-        
+
         if (subplot_j==1)
             title('V(coh,zp); w(k+b),k,z');
         end
         if (subplot_j==2)
             title('E_z(V(coh,zp|z))');
         end
-        
+
         ylabel('Next Period Value');
         xlabel({'Index of Cash-on-Hand Discrete Point'...
                 'Each Segment is a w=k+b; within segment increasing k'...
@@ -224,39 +224,39 @@ if (bl_graph_evf)
         grid on;
         grid minor;
     end
-    
+
     % Share y axis
     if (~bl_graph_onebyones)
         linkaxes(hAxis,'y');
     end
-    
+
     % save file
     if (bl_img_save)
         mkdir(support_map('st_img_path'));
         st_file_name = [st_img_prefix st_img_name_main '_vev' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
-    
+
     %% Graph 2, max(EV)
-    
-    if(~bl_graph_onebyones)
+
+    if (~bl_graph_onebyones)
         figure('PaperPosition', [0 0 7 4]);
     end
-    
+
     for sub_j=1:1:1
-        
-        if(sub_j==1)
+
+        if (sub_j==1)
             mt_outcome = mt_ev_condi_z_max;
             st_y_label = 'max_{k''}(E(V(coh(k'',b''=w-k''),z''|z,w))';
         end
-        
-        if(~bl_graph_onebyones)
+
+        if (~bl_graph_onebyones)
             subplot(1,1,sub_j)
         else
             figure('PaperPosition', [0 0 7 4]);
         end
         hold on;
-        
+
         ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)) (it_z_n)]);
         clr = jet(length(ar_it_z_graph));
         i_ctr = 0;
@@ -268,40 +268,40 @@ if (bl_graph_evf)
                 'MarkerEdgeColor', clr(i_ctr,:), ...
                 'MarkerFaceColor', clr(i_ctr,:));
         end
-        
+
         grid on;
         grid minor;
         title(['2nd Stage Exp Value at Optimal K given W=K''+B'''])
         ylabel(st_y_label)
         xlabel({'Aggregate Savings'})
-        
+
         legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
         legendCell{length(legendCell) + 1} = 'max-agg-save';
         legend(legendCell([ar_it_z_graph length(legendCell)]), 'Location','southeast');
-        
+
         xline0 = xline(0);
         xline0.HandleVisibility = 'off';
         yline0 = yline(0);
         yline0.HandleVisibility = 'off';
-        
+
     end
-    
+
     % save file
     if (bl_img_save)
         mkdir(support_map('st_img_path'));
         st_file_name = [st_img_prefix st_img_name_main '_maxev' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
-    
+
     %% Graph 3, max(EV), color regions, borrow save
-    
+
     % Borrow Vs Save
     [ar_z_mw, ar_w_mz] = meshgrid(ar_z, ar_w);
     mt_it_borr_idx = (mt_ev_condi_z_max_bp < 0);
     mt_it_riskyhalf_idx = ((mt_ev_condi_z_max_kp./mt_ev_condi_z_max_bp) > 0.5);
     mt_it_kzero_idx = (mt_ev_condi_z_max_kp == 0);
     mt_it_isnan_idx = (isnan(mt_ev_condi_z_max_kp));
-    
+
     figure('PaperPosition', [0 0 7 4]);
     % States: ar_w, ar_z
     % Choices: mt_ev_condi_z_max_kp, mt_ev_condi_z_max_bp
@@ -328,39 +328,39 @@ if (bl_graph_evf)
     ylabel('Shocks')
     xlabel({'Total Savings w=k+b'})
     grid on;
-    
+
     % save file
     if (bl_img_save)
         mkdir(support_map('st_img_path'));
         st_file_name = [st_img_prefix st_img_name_main '_maxbrsv' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
-    
+
     %% Graph 4, Optimal K' and B' Levels
-    
+
     [~, ar_w_mz] = meshgrid(ar_z, ar_w);
     for sub_j=1:1:4
-        
+
         if (bl_graph_onebyones)
             figure('PaperPosition', [0 0 7 4]);
         end
-        
+
         if (sub_j==1)
-            if(~bl_graph_onebyones)
+            if (~bl_graph_onebyones)
                 figure('PaperPosition', [0 0 14 4]);
                 subplot(1,2,sub_j);
             end
             mt_y = mt_ev_condi_z_max_bp;
         end
         if (sub_j==2)
-            if(~bl_graph_onebyones)
+            if (~bl_graph_onebyones)
                 subplot(1,2,sub_j);
             end
-            
+
             mt_y = mt_ev_condi_z_max_kp;
         end
         if (sub_j==3)
-            if(~bl_graph_onebyones)
+            if (~bl_graph_onebyones)
                 figure('PaperPosition', [0 0 14 4]);
                 subplot(1,2,sub_j-2);
             end
@@ -370,26 +370,26 @@ if (bl_graph_evf)
             mt_y(~mt_it_borr_idx) = mt_ev_condi_z_max_bp(~mt_it_borr_idx)./ar_w_mz(~mt_it_borr_idx);
         end
         if (sub_j==4)
-            if(~bl_graph_onebyones)
+            if (~bl_graph_onebyones)
                 subplot(1,2,sub_j-2);
             end
             mt_y = mt_ev_condi_z_max_kp./(ar_w'-fl_b_bd);
         end
-        
+
         hold on;
         chart = plot(ar_w, mt_y);
         clr = jet(numel(chart));
-        
+
         if (length(ar_w) <= 50)
             scatter(ar_w_mz(:), mt_y(:), 5, 'filled');
         end
-        
+
         for m = 1:numel(chart)
             set(chart(m),'Color',clr(m,:))
         end
         legend2plot = fliplr([1 round(numel(chart)/3) round((2*numel(chart))/3)  numel(chart)]);
         legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
-        
+
         xline0 = xline(0);
         xline0.HandleVisibility = 'off';
         yline0 = yline(0);
@@ -401,7 +401,7 @@ if (bl_graph_evf)
             hline.LineStyle = ':';
             hline.HandleVisibility = 'off';
         end
-        
+
         if (sub_j==1)
             title('B Choices of W');
             ylabel('B Choices');
@@ -414,7 +414,7 @@ if (bl_graph_evf)
             xlabel({'Total Savings w=k+b'});
             legend(chart(legend2plot), legendCell(legend2plot), 'Location','northwest');
         end
-        
+
         if (sub_j==3)
             title('B Fraction of Borrow Max and Save');
             ylabel('B/bar(B) if br or B/W if sv');
@@ -431,16 +431,16 @@ if (bl_graph_evf)
             ylim([0 1.1]);
             legend(chart(legend2plot), legendCell(legend2plot), 'Location','northeast');
         end
-        
+
     end
-    
+
     % save file
     if (bl_img_save)
         mkdir(support_map('st_img_path'));
         st_file_name = [st_img_prefix st_img_name_main '_wkbopti' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
-    
+
 end
 
 end

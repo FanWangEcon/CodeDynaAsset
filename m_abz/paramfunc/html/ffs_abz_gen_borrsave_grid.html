@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>ffs_abz_gen_borrsave_grid</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-11"><meta name="DC.source" content="ffs_abz_gen_borrsave_grid.m"><style type="text/css">
+      --><title>Generate Borrowing and Savings Grid</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-16"><meta name="DC.source" content="ffs_abz_gen_borrsave_grid.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">FFS_ABZ_GEN_BORRSAVE_GRID get funcs, params, states choices shocks grids</a></li><li><a href="#3">Default Folder Parameters</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Min and Max Income</a></li><li><a href="#6">Savings Only</a></li><li><a href="#7">Borrowing</a></li><li><a href="#9">Borrowing not allowing for default</a></li><li><a href="#10">Borrowing allowing for default</a></li><li><a href="#12">Grid</a></li><li><a href="#13">Add Zero</a></li></ul></div><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><pre class="codeinput"><span class="keyword">function</span> [ar_a, fl_borr_yminbd, fl_borr_ymaxbd] = ffs_abz_gen_borrsave_grid(varargin)
+  </style></head><body><div class="content"><h1>Generate Borrowing and Savings Grid</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FFS_ABZ_GEN_BORRSAVE_GRID get funcs, params, states choices shocks grids</a></li><li><a href="#3">Default Folder Parameters</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Min and Max Income</a></li><li><a href="#6">Savings Only</a></li><li><a href="#7">Borrowing</a></li><li><a href="#9">Borrowing not allowing for default</a></li><li><a href="#10">Borrowing allowing for default</a></li><li><a href="#12">Grid</a></li><li><a href="#13">Add Zero</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [ar_a, fl_borr_yminbd, fl_borr_ymaxbd] = ffs_abz_gen_borrsave_grid(varargin)
 </pre><h2 id="2">FFS_ABZ_GEN_BORRSAVE_GRID get funcs, params, states choices shocks grids</h2><p>Generate savings and borrowing states/choice grids. There are three types of grids: # savings choice/state grid # borrowing choice/state grid when default is not allowed # borrowing choice/state grid when default is allowed</p><p>The parameters for this function and the role of cmin, ymin, default, etc are discussed on this page: <a href="https://fanwangecon.github.io/CodeDynaAsset/docs/README_cminymin_borrsave.html">cmin ymin borr save</a>.</p><p>@param fl_b_bd float exogenously set borrowing bound. If zero, borrowing is not allowed. If lower than zero, means borrowing is allowed. When borrowing is allowed fl_b_bd is only the actual bound on borrowing if it is tighter than the natural borrowing constraint based on minimum income in the case where defaults are not allowed. And if it is tighther than the defaults borrowing constraint based on maximium income in the case where defaults are allowed.</p><p>@param bl_default boolean if fl_b_bd is below zero, then is defaults allowed or not? What does default mean? No-default means households under all shocks, can always repay existing debts and interests with new debts. This means banks do not have to worry about non-repayment. Households always pay back what they are owed. Note that debt roll-over is allowed here. What does default mean, it means under some states of shocks, households face debt that they can not repay, so they go to minimum consumption, which is utility for default. Their optimal choice is savings = 0 for the next period.</p><p>@param ar_z array array of exogenous income shocks for the exogeous shocks to inelastic labor supply</p><p>@return fl_w float wage</p><p>@return fl_a_max float maximum savings level</p><p>@return it_a_n integer number of save/borrow grid points</p><p>@example</p><pre class="language-matlab">ar_a = ffs_abz_gen_borrsave_grid(fl_b_bd, bl_default, ar_z, <span class="keyword">...</span>
                                  fl_w, fl_r_borr, fl_a_max, it_a_n);
 @include
@@ -177,11 +177,12 @@ ans =
 
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
-%% 
+%% Generate Borrowing and Savings Grid
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository> 
 % Table of Content.*
 
+%%
 function [ar_a, fl_borr_yminbd, fl_borr_ymaxbd] = ffs_abz_gen_borrsave_grid(varargin)
 %% FFS_ABZ_GEN_BORRSAVE_GRID get funcs, params, states choices shocks grids
 % Generate savings and borrowing states/choice grids. There are three types

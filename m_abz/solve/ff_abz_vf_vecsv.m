@@ -1,15 +1,16 @@
-%%
+%% Solve For+Inf+Borr+Save Dynamic Programming Problem (Optimized-Vectorized)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
+%%
 function result_map = ff_abz_vf_vecsv(varargin)
 %% FF_ABZ_VF_VECSV solve infinite horizon exo shock + endo asset problem
 % This program solves the infinite horizon dynamic single asset and single
 % shock problem with vectorized codes.
-% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf.html
+% <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf.html
 % ff_abz_vf> shows looped codes.
-% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vec.html
+% <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vec.html
 % ff_abz_vf_vec> shows vectorized codes. This file shows vectorized codes
 % that is faster but is more memory intensive.
 %
@@ -41,13 +42,40 @@ function result_map = ff_abz_vf_vecsv(varargin)
 %
 % @example
 %
+%    % Get Default Parameters
+%    it_param_set = 4;
+%    [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
+%    % Chnage param_map keys for borrowing
+%    param_map('fl_b_bd') = -20; % borrow bound
+%    param_map('bl_default') = false; % true if allow for default
+%    param_map('fl_c_min') = 0.0001; % u(c_min) when default
+%    % Change Keys in param_map
+%    param_map('it_a_n') = 500;
+%    param_map('it_z_n') = 11;
+%    param_map('fl_a_max') = 100;
+%    param_map('fl_w') = 1.3;
+%    % Change Keys support_map
+%    support_map('bl_display') = false;
+%    support_map('bl_post') = true;
+%    support_map('bl_display_final') = false;
+%    % Call Program with external parameters that override defaults.
+%    ff_abz_vf_vecsv(param_map, support_map);
+%
 % @include
 %
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/paramfunc/ffs_abz_set_default_param.m ffs_abz_set_default_param>
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/paramfunc/ffs_abz_get_funcgrid.m ffs_abz_get_funcgrid>
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solvepost/ff_az_vf_post.m ff_az_vf_post>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_vf_post.html ff_az_vf_post>
 %
-
+% @seealso
+%
+% * save loop: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf.html ff_az_vf>
+% * save vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vec.html ff_az_vf_vec>
+% * save optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html ff_az_vf_vecsv>
+% * save + borr loop: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf.html ff_abz_vf>
+% * save + borr vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vec.html ff_abz_vf_vec>
+% * save + borr optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv>
+%
 
 %% Default
 %
@@ -66,8 +94,11 @@ function result_map = ff_abz_vf_vecsv(varargin)
 it_param_set = 4;
 bl_input_override = true;
 [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
-param_map('it_a_n') = 100;
-param_map('it_z_n') = 5;
+
+% Note: param_map and support_map can be adjusted here or outside to override defaults
+% param_map('it_a_n') = 750;
+% param_map('it_z_n') = 15;
+
 [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 default_params = {param_map support_map armt_map func_map};
 
@@ -187,7 +218,8 @@ while bl_vfi_continue
         % Consumption and u(c) only need to be evaluated once
         if (it_iter == 1)
 
-            % Consumption
+            % Consumption: fl_z = 1 by 1, ar_a = 1 by N, ar_a' = N by 1
+            % mt_c is N by N: matrix broadcasting, expand to matrix from arrays
             mt_c = f_cons_coh(ar_coh, ar_a');
 
             % EVAL current utility: N by N, f_util defined earlier
@@ -217,6 +249,8 @@ while bl_vfi_continue
         ar_z_trans_condi = mt_z_trans(it_z_i,:);
 
         % EVAL EV((A',K'),Z'|Z) = V((A',K'),Z') x p(z'|z)', (N by Z) x (Z by 1) = N by 1
+        % Note: transpose ar_z_trans_condi from 1 by Z to Z by 1
+        % Note: matrix multiply not dot multiply        
         mt_evzp_condi_z = mt_val_cur * ar_z_trans_condi';
 
         % EVAL add on future utility, N by N + N by 1
@@ -239,6 +273,7 @@ while bl_vfi_continue
         % Optimization: remember matlab is column major, rows must be
         % choices, columns must be states
         % <https://en.wikipedia.org/wiki/Row-_and_column-major_order COLUMN-MAJOR>
+        % mt_utility is N by N, rows are choices, cols are states.                 
         [ar_opti_val_z, ar_opti_idx_z] = max(mt_utility);
         ar_opti_aprime_z = ar_a(ar_opti_idx_z);
         ar_opti_c_z = f_cons_coh(ar_coh, ar_opti_aprime_z);
