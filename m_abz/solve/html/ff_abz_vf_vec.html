@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Solve For+Inf+Borr+Save Dynamic Programming Problem (Vectorized)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-18"><meta name="DC.source" content="ff_abz_vf_vec.m"><style type="text/css">
+      --><title>Solve Save + Borr Dynamic Programming Problem (Vectorized)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-19"><meta name="DC.source" content="ff_abz_vf_vec.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Solve For+Inf+Borr+Save Dynamic Programming Problem (Vectorized)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_ABZ_VF_VEC solve infinite horizon exo shock + endo asset problem</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1</a></li><li><a href="#5">Parse Parameters 2</a></li><li><a href="#6">Initialize Output Matrixes</a></li><li><a href="#7">Initialize Convergence Conditions</a></li><li><a href="#8">Iterate Value Function</a></li><li><a href="#10">Solve Optimization Problem Current Iteration</a></li><li><a href="#11">Check Tolerance and Continuation</a></li><li><a href="#13">Process Optimal Choices</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> result_map = ff_abz_vf_vec(varargin)
+  </style></head><body><div class="content"><h1>Solve Save + Borr Dynamic Programming Problem (Vectorized)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_ABZ_VF_VEC solve infinite horizon exo shock + endo asset problem</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1</a></li><li><a href="#5">Parse Parameters 2</a></li><li><a href="#6">Initialize Output Matrixes</a></li><li><a href="#7">Initialize Convergence Conditions</a></li><li><a href="#8">Iterate Value Function</a></li><li><a href="#10">Solve Optimization Problem Current Iteration</a></li><li><a href="#11">Check Tolerance and Continuation</a></li><li><a href="#13">Process Optimal Choices</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> result_map = ff_abz_vf_vec(varargin)
 </pre><h2 id="2">FF_ABZ_VF_VEC solve infinite horizon exo shock + endo asset problem</h2><p>This program solves the infinite horizon dynamic single asset and single shock problem with vectorized codes. <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf.html">ff_abz_vf</a> shows looped codes. The solution is the same.</p><p>The borrowing problem is very similar to the savings problem. The code could be identical if one does not have to deal with default. The main addition here in comparison to the savings only code <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vec.html">ff_az_vf_vec</a> is the ability to deal with default.</p><p>The vectorization takes advantage of implicit parallization that modern computers have when <a href="https://en.wikipedia.org/wiki/SIMD">same instructions are given for different blocks of data</a> With vectorization, we face a tradeoff between memory and speed. Suppose we have many shock points and many states points, if we build all states and choices into one single matrix and compute consumption, utility, etc over that entire matrix, that might be more efficient than computing consumption, utility, etc by subset of that matrix over a loop, but there is time required for generating that large input matrix, and if there are too many states, a computer could run out of memory.</p><p>The design philosophy here is that we vectorize the endogenous states and choices into matrixes, but do not include the exogeous states (shocks). The exogenous shocks remain looped. This means we can potentially have multiple shock variables discretized over a large number of shock states, and the computer would not run into memory problems. The speed gain from vectoring the rest of the problem conditional on shocks is very large compared to the pure looped version of the problem. Even if more memory is available, including the exogenous states in the vectorization process might not be speed improving.</p><p>Note one key issue is whether a programming language is <a href="https://en.wikipedia.org/wiki/Row-_and_column-major_order">row or column major</a> depending on which, states should be rows or columns.</p><p>Another programming issue is the idea of <b>broadcasting</b> vs matrix algebra, both are used here. Since Matlab R2016b, <a href="https://blogs.mathworks.com/loren/2016/10/24/matlab-arithmetic-expands-in-r2016b/">matrix broadcasting</a> has been allowed, which means the sum of a N by 1 and 1 by M is N by M. This is unrelated to matrix algebra. Matrix array broadcasting is very useful because it reduces the dimensionality of our model input state and choice and shock vectors, offering greater code clarity.</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@param func_map container container with function handles for consumption cash-on-hand etc.</p><p>@return result_map container contains policy function matrix, value function matrix, iteration results, and policy function, value function and iteration results tables.</p><p>keys included in result_map:</p><div><ul><li>mt_val matrix states_n by shock_n matrix of converged value function grid</li><li>mt_pol_a matrix states_n by shock_n matrix of converged policy function grid</li><li>ar_val_diff_norm array if bl_post = true it_iter_last by 1 val function difference between iteration</li><li>ar_pol_diff_norm array if bl_post = true it_iter_last by 1 policy function difference between iterations</li><li>mt_pol_perc_change matrix if bl_post = true it_iter_last by shock_n the proportion of grid points at which policy function changed between current and last iteration for each element of shock</li></ul></div><p>@example</p><pre>  % Get Default Parameters
   it_param_set = 2;
   [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
@@ -302,9 +302,9 @@ result_map(<span class="string">'ar_st_pol_names'</span>) = [<span class="string
     result_map(<span class="string">'mt_pol_perc_change'</span>) = mt_pol_perc_change(1:it_iter_last, :);
     result_map = ff_az_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
 <span class="keyword">end</span>
-</pre><pre class="codeoutput">valgap = norm(mt_val - mt_val_cur)
-polgap = norm(mt_pol_a - mt_pol_a_cur)
-z1 = z1 perc change: sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n)
+</pre><pre class="codeoutput">valgap = norm(mt_val - mt_val_cur): value function difference across iterations
+polgap = norm(mt_pol_a - mt_pol_a_cur): policy function difference across iterations
+z1 = z1 perc change: sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n): percentage of state space points conditional on shock where the policy function is changing across iterations
                  valgap       polgap        z1           z2           z3           z4           z5           z6           z7           z8           z9           z10          z11          z12          z13          z14          z15   
                 _________    ________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________
 
@@ -409,7 +409,7 @@ z1 = z1 perc change: sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n)
     iter=152    0.0080595           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
     iter=153    0.0075767           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
 
-tb_val
+tb_val: V(a,z) value at each state space point
                     z1_0_34741    z2_0_40076    z3_0_4623    z4_0_5333    z5_0_61519    z6_0_70966    z10_1_2567    z11_1_4496    z12_1_6723    z13_1_9291    z14_2_2253    z15_2_567
                     __________    __________    _________    _________    __________    __________    __________    __________    __________    __________    __________    _________
 
@@ -514,7 +514,7 @@ tb_val
     a749=49.9065      13.971        14.018        14.071       14.129       14.192        14.259        14.578        14.673        14.774        14.882        14.994        15.108 
     a750=50           13.981        14.028        14.081       14.139       14.201        14.268        14.587        14.682        14.783        14.891        15.003        15.116 
 
-tb_pol_a
+tb_pol_a: optimal asset choice for each state space point
                     z1_0_34741    z2_0_40076    z3_0_4623    z4_0_5333    z5_0_61519    z6_0_70966    z10_1_2567    z11_1_4496    z12_1_6723    z13_1_9291    z14_2_2253    z15_2_567
                     __________    __________    _________    _________    __________    __________    __________    __________    __________    __________    __________    _________
 
@@ -631,7 +631,7 @@ ans =
 
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
-%% Solve For+Inf+Borr+Save Dynamic Programming Problem (Vectorized)
+%% Solve Save + Borr Dynamic Programming Problem (Vectorized)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*

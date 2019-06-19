@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Solve One Asset Dynamic Programming Problem (Vectorized)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-18"><meta name="DC.source" content="ff_az_vf_vec.m"><style type="text/css">
+      --><title>Solve One Asset Dynamic Programming Problem (Vectorized)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-19"><meta name="DC.source" content="ff_az_vf_vec.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -90,15 +90,6 @@ bl_input_override = true;
 
 [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override); <span class="comment">% 1 for override</span>
 default_params = {param_map support_map armt_map func_map};
-</pre><pre class="codeoutput">Warning:
-"C:\Users\fan\CodeDynaAsset\m_az\solve\html"
-not found in path. 
-Warning:
-"C:\Users\fan\CodeDynaAsset\m_az\solve\profile\ff_az_vf_vec_default_p3"
-not found in path. 
-Warning:
-"C:\Users\fan\CodeDynaAsset\m_az\solve\profile\ff_az_vf_vecsv_default_p3"
-not found in path. 
 </pre><h2 id="4">Parse Parameters 1</h2><pre class="codeinput"><span class="comment">% if varargin only has param_map and support_map,</span>
 params_len = length(varargin);
 [default_params{1:params_len}] = varargin{:};
@@ -258,12 +249,14 @@ mt_pol_perc_change = zeros([it_maxiter_val, it_z_n]);
     st_file_name = [st_profile_prefix st_profile_name_main st_profile_suffix];
     profsave(profile(<span class="string">'info'</span>), strcat(st_profile_path, st_file_name));
 <span class="keyword">end</span>
-</pre><h2 id="13">Process Optimal Choices</h2><pre class="codeinput">result_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
+</pre><h2 id="13">Process Optimal Choices</h2><p>for choices outcomes, store as cell with two elements, first element is the y(a,z), outcome given states, the second element will be solved found in <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_ds_vf.html">ff_ds_vf</a> and other distributions files. It stores what are the probability mass function of y, along with sorted unique values of y.</p><pre class="codeinput">result_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
 result_map(<span class="string">'mt_val'</span>) = mt_val;
-result_map(<span class="string">'mt_pol_a'</span>) = mt_pol_a;
-result_map(<span class="string">'mt_pol_c'</span>) = f_coh(ar_z, ar_a') - mt_pol_a
-result_map(<span class="string">'ar_st_pol_names'</span>) = [<span class="string">'mt_pol_a'</span>, <span class="string">'mt_pol_c'</span>];
 result_map(<span class="string">'mt_pol_idx'</span>) = mt_pol_idx;
+
+result_map(<span class="string">'cl_mt_pol_a'</span>) = {mt_pol_a, zeros(1)};
+result_map(<span class="string">'cl_mt_pol_coh'</span>) = {f_coh(ar_z, ar_a'), zeros(1)};
+result_map(<span class="string">'cl_mt_pol_c'</span>) = {f_coh(ar_z, ar_a') - mt_pol_a, zeros(1)};
+result_map(<span class="string">'ar_st_pol_names'</span>) = [<span class="string">"cl_mt_pol_a"</span>, <span class="string">"cl_mt_pol_coh"</span>, <span class="string">"cl_mt_pol_c"</span>];
 
 <span class="keyword">if</span> (bl_post)
     bl_input_override = true;
@@ -272,18 +265,9 @@ result_map(<span class="string">'mt_pol_idx'</span>) = mt_pol_idx;
     result_map(<span class="string">'mt_pol_perc_change'</span>) = mt_pol_perc_change(1:it_iter_last, :);
     result_map = ff_az_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
 <span class="keyword">end</span>
-</pre><pre class="codeoutput">
-result_map = 
-
-  Map with properties:
-
-        Count: 3
-      KeyType: char
-    ValueType: any
-
-valgap = norm(mt_val - mt_val_cur)
-polgap = norm(mt_pol_a - mt_pol_a_cur)
-z1 = z1 perc change: sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n)
+</pre><pre class="codeoutput">valgap = norm(mt_val - mt_val_cur): value function difference across iterations
+polgap = norm(mt_pol_a - mt_pol_a_cur): policy function difference across iterations
+z1 = z1 perc change: sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n): percentage of state space points conditional on shock where the policy function is changing across iterations
                  valgap      polgap        z1           z2           z3           z4           z5           z6           z7           z8           z9           z10          z11          z12          z13          z14          z15   
                 ________    ________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________
 
@@ -388,7 +372,7 @@ z1 = z1 perc change: sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n)
     iter=104    0.030841           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
     iter=105     0.02899           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
 
-tb_val
+tb_val: V(a,z) value at each state space point
                     z1_0_34741    z2_0_40076    z3_0_4623    z4_0_5333    z5_0_61519    z6_0_70966    z10_1_2567    z11_1_4496    z12_1_6723    z13_1_9291    z14_2_2253    z15_2_567
                     __________    __________    _________    _________    __________    __________    __________    __________    __________    __________    __________    _________
 
@@ -493,7 +477,7 @@ tb_val
     a749=49.9332       13.832        13.881        13.936      13.996       14.061         14.13         14.46        14.558        14.662        14.773        14.889       15.006  
     a750=50             13.84        13.888        13.943      14.003       14.068        14.137        14.467        14.565        14.669         14.78        14.895       15.012  
 
-tb_pol_a
+tb_pol_a: optimal asset choice for each state space point
                     z1_0_34741    z2_0_40076    z3_0_4623    z4_0_5333    z5_0_61519    z6_0_70966    z10_1_2567    z11_1_4496    z12_1_6723    z13_1_9291    z14_2_2253    z15_2_567
                     __________    __________    _________    _________    __________    __________    __________    __________    __________    __________    __________    _________
 
@@ -604,7 +588,7 @@ ans =
 
   Map with properties:
 
-        Count: 13
+        Count: 14
       KeyType: char
     ValueType: any
 
@@ -925,13 +909,21 @@ if (bl_profile)
 end
 
 %% Process Optimal Choices
+% for choices outcomes, store as cell with two elements, first element is
+% the y(a,z), outcome given states, the second element will be solved found
+% in
+% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_ds_vf.html
+% ff_ds_vf> and other distributions files. It stores what are the
+% probability mass function of y, along with sorted unique values of y.
 
 result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
-result_map('mt_pol_a') = mt_pol_a;
-result_map('mt_pol_c') = f_coh(ar_z, ar_a') - mt_pol_a
-result_map('ar_st_pol_names') = ['mt_pol_a', 'mt_pol_c'];
 result_map('mt_pol_idx') = mt_pol_idx;
+
+result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
+result_map('cl_mt_pol_coh') = {f_coh(ar_z, ar_a'), zeros(1)};
+result_map('cl_mt_pol_c') = {f_coh(ar_z, ar_a') - mt_pol_a, zeros(1)};
+result_map('ar_st_pol_names') = ["cl_mt_pol_a", "cl_mt_pol_coh", "cl_mt_pol_c"];
 
 if (bl_post)
     bl_input_override = true;

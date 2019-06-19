@@ -169,9 +169,10 @@ if (bl_display_final)
     tb_valpol_alliter.Properties.VariableDescriptions{'polgap'} = 'norm(mt_pol_a - mt_pol_a_cur)';
     tb_valpol_alliter.Properties.VariableDescriptions{'z1'} = 'z1 perc change: sum((mt_pol_a ~= mt_pol_a_cur))/(it_ameshk_n)';
 
-    disp('valgap = norm(mt_val - mt_val_cur)');
-    disp('polgap = norm(mt_pol_a - mt_pol_a_cur)');
-    disp('z1 = z1 perc change: sum((mt_pol_a ~= mt_pol_a_cur))/(it_ameshk_n)');
+    disp('valgap = norm(mt_val - mt_val_cur): value function difference across iterations');
+    disp('polgap = norm(mt_pol_a - mt_pol_a_cur): policy function difference across iterations');
+    disp(['z1 = z1 perc change: (sum((mt_pol_a ~= mt_pol_a_cur))+sum((mt_pol_k ~= mt_pol_k_cur)))/(2*it_ameshk_n):' ...
+          'percentage of state space points conditional on shock where the policy function is changing across iterations']);
     disp(tb_valpol_alliter);
 
     % Display Values by States
@@ -201,7 +202,7 @@ if (bl_display_final)
                                         ':k=', string(ar_a_meshk(ar_it_rows)'),...
                                         ',b=', string(ar_k_mesha(ar_it_rows)'));
     tb_val.Properties.VariableNames = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));
-    disp('tb_val');
+    disp('tb_val: V(a,z) value at each state space point');
     disp(tb_val);
 
     % Display Optimal Choices for a
@@ -210,7 +211,7 @@ if (bl_display_final)
                                         ':k=', string(ar_a_meshk(ar_it_rows)'),...
                                         ',b=', string(ar_k_mesha(ar_it_rows)'));
     tb_pol_a.Properties.VariableNames = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));
-    disp('tb_pol_a');
+    disp('tb_pol_a: optimal safe savings choice for each state space point');
     disp(tb_pol_a);
 
     % Display Optimal Choices for k
@@ -219,7 +220,7 @@ if (bl_display_final)
                                         ':k=', string(ar_a_meshk(ar_it_rows)'),...
                                         ',b=', string(ar_k_mesha(ar_it_rows)'));
     tb_pol_k.Properties.VariableNames = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));
-    disp('tb_pol_k');
+    disp('tb_pol_k: optimal risky investment choice for each state space point');
     disp(tb_pol_k);
 
     % Display Optimal Choices for k+a
@@ -228,7 +229,7 @@ if (bl_display_final)
                                         ':k=', string(ar_a_meshk(ar_it_rows)'),...
                                         ',b=', string(ar_k_mesha(ar_it_rows)'));
     tb_pol_w.Properties.VariableNames = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));
-    disp('tb_pol_w');
+    disp('tb_pol_w: risky + safe investment choices (first stage choice, choose within risky vs safe)');
     disp(tb_pol_w);
 
     % Save to result map

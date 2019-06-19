@@ -14,6 +14,7 @@ function [ds_stats_map] = fft_disc_rand_var_stats(varargin)
 % * $\mu_Y = E(Y) = \sum_{y} p(Y=y) \cdot y $
 % * $\sigma_Y = \sqrt{ \sum_{y} p(Y=y) \cdot \left( y - \mu_y \right)^2}$
 % * $p(y=0)$
+% * $p(y=\min(y))$
 % * $p(y=\max(y))$
 % * percentiles: $min_{y} \left\{ P(Y \le y) - percentile \mid P(Y \le y) \ge percentile \right\}$
 % * fraction of outcome held by up to percentiles: $E(Y<y)/E(Y)$
@@ -89,6 +90,12 @@ fl_choice_mean = ar_choice_prob*ar_choice_unique_sorted';
 fl_choice_sd = sqrt(ar_choice_prob*((ar_choice_unique_sorted'-fl_choice_mean).^2));
 % Coef of Variation of discrete random variable
 fl_choice_coefofvar = fl_choice_sd/fl_choice_mean;
+% Coef of Variation of discrete random variable
+fl_choice_min = min(ar_choice_unique_sorted);
+% Coef of Variation of discrete random variable
+fl_choice_max = max(ar_choice_unique_sorted);
+% prob(outcome=min(outcome)), fraction of people not saving for example
+fl_choice_prob_min = sum(ar_choice_prob(ar_choice_unique_sorted == min(ar_choice_unique_sorted)));
 % prob(outcome=0), fraction of people not saving for example
 fl_choice_prob_zero = sum(ar_choice_prob(ar_choice_unique_sorted == 0));
 % prob(outcome=max(outcome)), fraction of people saving up to max of grid,
@@ -136,7 +143,10 @@ ds_stats_map = containers.Map('KeyType','char', 'ValueType','any');
 ds_stats_map('fl_choice_mean') = fl_choice_mean;
 ds_stats_map('fl_choice_sd') = fl_choice_sd;
 ds_stats_map('fl_choice_coefofvar') = fl_choice_coefofvar;
+ds_stats_map('fl_choice_min') = fl_choice_min;
+ds_stats_map('fl_choice_max') = fl_choice_max;
 ds_stats_map('fl_choice_prob_zero') = fl_choice_prob_zero;
+ds_stats_map('fl_choice_prob_min') = fl_choice_prob_min;
 ds_stats_map('fl_choice_prob_max') = fl_choice_prob_max;
 
 % distributional array stats

@@ -1,0 +1,424 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Compute Probability Mass for Outcome based on Mass of States</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-19"><meta name="DC.source" content="fft_disc_rand_var_mass2outcomes.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Compute Probability Mass for Outcome based on Mass of States</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FFT_DISC_RAND_VAR_MASS2OUTCOMES find f(y) based on f(a,z), and y(a,z)</a></li><li><a href="#3">Default</a></li><li><a href="#4">Generate Y(a) and Y(a,z)</a></li><li><a href="#5">Display</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [tb_choice_drv_cur_byY, ar_choice_prob_byY, ar_choice_unique_sorted_byY, mt_choice_prob_byYZ] <span class="keyword">...</span>
+    = fft_disc_rand_var_mass2outcomes(varargin)
+</pre><h2 id="2">FFT_DISC_RAND_VAR_MASS2OUTCOMES find f(y) based on f(a,z), and y(a,z)</h2><p>Having derived f(a,z) the probability mass function of the joint discrete random variables, we now obtain distributional statistics. Note that we know f(a,z), and we also know relevant policy functions a'(a,z), c(a,z), or other policy functions. We can simulate any choices that are a function of the random variables (a,z), using f(a,z).</p><p>The procedure here has these steps:</p><div><ol><li>Sort [c(a,z), f(a,z)] by c(a,z)</li><li>Generate unique IDs of sorted c(a,z): unique</li><li>sum(f(a,z)|c) for each unique c(a,z): accumarray, this generates f(c)</li><li>calculate statistics based on f(c), the discrete distribution of c.</li></ol></div><p>Outputs are:</p><div><ul><li>unique sorted outcomes, note different (a,z) can generate the same outcomes and not in order</li><li>find total probabiliy for p(outcome, z) = sum_{a}( 1{outcome(a)==outcome}*f(a,z))</li></ul></div><p><img src="fft_disc_rand_var_mass2outcomes_eq07860812722477683876.png" alt="$$ p(y,z) = \sum_{a} \left(1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$$" style="width:242px;height:31px;"></p><div><ul><li>find total probabiliy for p(outcome) = sum_{a,z}( 1{outcome(a,z)==outcome}*f(a,z) )</li></ul></div><p><img src="fft_disc_rand_var_mass2outcomes_eq16910297080260075404.png" alt="$$ p(Y=y) = \sum_{a,z} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$$" style="width:259px;height:33px;"></p><h2 id="3">Default</h2><p>use binomial as test case, z maps to binomial win prob, remember binom approximates normal.</p><pre class="codeinput">params_len = length(varargin);
+bl_input_override = 0;
+<span class="keyword">if</span> (params_len == 4)
+    bl_input_override = varargin{4};
+<span class="keyword">end</span>
+
+<span class="keyword">if</span> (bl_input_override)
+    <span class="comment">% if invoked from outside overrid fully</span>
+    [st_var_name, mt_choice_bystates, mt_dist_bystates, ~] = varargin{:};
+    bl_display_drvm2outcomes = false;
+<span class="keyword">else</span>
+    clear <span class="string">all</span>;
+    close <span class="string">all</span>;
+
+    it_states = 10;
+    it_shocks = 5;
+    fl_binom_n = it_states-1;
+    ar_binom_p = (1:(it_shocks))./(it_shocks+2);
+    ar_binom_x = 0:1:(it_states-1);
+
+    <span class="comment">% a</span>
+    ar_choice_unique_sorted_byY = ar_binom_x;
+    <span class="comment">% f(z)</span>
+    ar_binom_p_prob = binopdf(0:(it_shocks-1), it_shocks-1, 0.5);
+    <span class="comment">% f(a,z), mass for a, z</span>
+    mt_dist_bystates = zeros([it_states, it_shocks]);
+    <span class="keyword">for</span> it_z=1:it_shocks
+        <span class="comment">% f(a|z)</span>
+        f_a_condi_z = binopdf(ar_binom_x, fl_binom_n, ar_binom_p(it_z));
+        <span class="comment">% f(z)</span>
+        f_z = ar_binom_p_prob(it_z);
+        <span class="comment">% f(a,z)=f(a|z)*f(z)</span>
+        mt_dist_bystates(:, it_z) = f_a_condi_z*f_z;
+    <span class="keyword">end</span>
+
+    <span class="comment">% y(a,z), some non-smooth structure</span>
+    mt_choice_bystates = ar_binom_x' - 0.01*ar_binom_x'.^2  + ar_binom_p - 0.5*ar_binom_p.^2 + rand([it_states, it_shocks]);
+    mt_choice_bystates = round(mt_choice_bystates*2);
+
+    <span class="comment">% display</span>
+    st_var_name = <span class="string">'binomtest'</span>;
+
+    <span class="comment">% display</span>
+    bl_display_drvm2outcomes = true;
+<span class="keyword">end</span>
+</pre><h2 id="4">Generate Y(a) and Y(a,z)</h2><p>1. Get Choice Matrix (choice or outcomes given choices) see end of <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a> outcomes in result_map are cells with two elements, first element is y(a,z), second element will be f(y) and y, generated here.</p><pre class="codeinput">ar_choice_cur_bystates = mt_choice_bystates(:);
+
+<span class="comment">% 2. Sort and Generate Unique</span>
+ar_choice_bystates_sorted = sort(ar_choice_cur_bystates);
+ar_choice_unique_sorted_byY = unique(ar_choice_bystates_sorted);
+
+<span class="comment">% 3. Sum up Density at each element of ar_choice</span>
+ar_choice_prob_byY = zeros([length(ar_choice_unique_sorted_byY),1]);
+mt_choice_prob_byYZ = zeros([length(ar_choice_unique_sorted_byY), size(mt_dist_bystates,2)]);
+<span class="keyword">for</span> it_z_i = 1:size(mt_dist_bystates,2)
+    <span class="keyword">for</span> it_a_j = 1:size(mt_dist_bystates,1)
+
+        <span class="comment">% get f(a,z) and c(a,z)</span>
+        fl_mass_curstate = mt_dist_bystates(it_a_j, it_z_i);
+        fl_choice_cur = mt_choice_bystates(it_a_j, it_z_i);
+
+        <span class="comment">% add f(a,z) to f(c(a,z))</span>
+        ar_choice_in_unique_idx = (ar_choice_unique_sorted_byY == fl_choice_cur);
+
+        <span class="comment">% add probability to p(y)</span>
+        ar_choice_prob_byY(ar_choice_in_unique_idx) = ar_choice_prob_byY(ar_choice_in_unique_idx) + fl_mass_curstate;
+
+        <span class="comment">% add probability to p(y,z)</span>
+        mt_choice_prob_byYZ(ar_choice_in_unique_idx, it_z_i) = mt_choice_prob_byYZ(ar_choice_in_unique_idx, it_z_i) + fl_mass_curstate;
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="comment">% 4. Store into second cell of the outcome's key's value in results_map</span>
+<span class="comment">% drv: discrete random variable</span>
+tb_choice_drv_cur_byY = array2table([ar_choice_unique_sorted_byY ar_choice_prob_byY]);
+tb_choice_drv_cur_byY.Properties.VariableNames = matlab.lang.makeValidName([string([char(st_var_name) <span class="string">' outcomes'</span>]), <span class="string">'prob mass function'</span>]);
+</pre><h2 id="5">Display</h2><pre class="codeinput"><span class="keyword">if</span> (bl_display_drvm2outcomes)
+
+    disp(<span class="string">'INPUT f(a,z): mt_dist_bystates'</span>);
+    disp(mt_dist_bystates);
+
+    disp(<span class="string">'INPUT y(a,z): mt_choice_bystates'</span>);
+    disp(mt_choice_bystates);
+
+    disp(<span class="string">'OUTPUT f(y): ar_choice_prob'</span>);
+    disp(ar_choice_prob_byY);
+
+    disp(<span class="string">'OUTPUT f(y,z): mt_choice_prob'</span>);
+    disp(mt_choice_prob_byYZ);
+
+    disp(<span class="string">'OUTPUT f(y) and y in table: tb_choice_drv_cur'</span>);
+    disp(tb_choice_drv_cur_byY);
+
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">INPUT f(a,z): mt_dist_bystates
+    0.0156    0.0121    0.0024    0.0001    0.0000
+    0.0234    0.0436    0.0164    0.0015    0.0000
+    0.0156    0.0697    0.0493    0.0078    0.0002
+    0.0061    0.0650    0.0863    0.0243    0.0010
+    0.0015    0.0390    0.0971    0.0486    0.0039
+    0.0003    0.0156    0.0728    0.0647    0.0098
+    0.0000    0.0042    0.0364    0.0576    0.0163
+    0.0000    0.0007    0.0117    0.0329    0.0174
+    0.0000    0.0001    0.0022    0.0110    0.0109
+    0.0000    0.0000    0.0002    0.0016    0.0030
+
+INPUT y(a,z): mt_choice_bystates
+     2     2     2     2     2
+     4     3     5     4     4
+     6     6     5     6     6
+     6     8     7     8     7
+     8     9     8     9     9
+    11    11    11    11    12
+    13    13    13    13    13
+    14    14    15    15    14
+    17    16    17    16    17
+    17    18    18    19    18
+
+OUTPUT f(y): ar_choice_prob
+    0.0303
+    0.0436
+    0.0249
+    0.0658
+    0.0994
+    0.0874
+    0.1880
+    0.0915
+    0.1535
+    0.0098
+    0.1144
+    0.0181
+    0.0446
+    0.0110
+    0.0131
+    0.0032
+    0.0016
+
+OUTPUT f(y,z): mt_choice_prob
+    0.0156    0.0121    0.0024    0.0001    0.0000
+         0    0.0436         0         0         0
+    0.0234         0         0    0.0015    0.0000
+         0         0    0.0658         0         0
+    0.0217    0.0697         0    0.0078    0.0002
+         0         0    0.0863         0    0.0010
+    0.0015    0.0650    0.0971    0.0243         0
+         0    0.0390         0    0.0486    0.0039
+    0.0003    0.0156    0.0728    0.0647         0
+         0         0         0         0    0.0098
+    0.0000    0.0042    0.0364    0.0576    0.0163
+    0.0000    0.0007         0         0    0.0174
+         0         0    0.0117    0.0329         0
+         0    0.0001         0    0.0110         0
+    0.0000         0    0.0022         0    0.0109
+         0    0.0000    0.0002         0    0.0030
+         0         0         0    0.0016         0
+
+OUTPUT f(y) and y in table: tb_choice_drv_cur
+    binomtestOutcomes    probMassFunction
+    _________________    ________________
+
+            2                0.030267    
+            3                 0.04356    
+            4                0.024894    
+            5                0.065774    
+            6                0.099357    
+            7                0.087369    
+            8                 0.18797    
+            9                0.091492    
+           11                 0.15345    
+           12               0.0097575    
+           13                 0.11443    
+           14                 0.01814    
+           15                0.044593    
+           16                0.011034    
+           17                0.013085    
+           18               0.0032111    
+           19                0.001624    
+
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><pre class="codeoutput">
+ans =
+
+  17&times;2 table
+
+    binomtestOutcomes    probMassFunction
+    _________________    ________________
+
+            2                0.030267    
+            3                 0.04356    
+            4                0.024894    
+            5                0.065774    
+            6                0.099357    
+            7                0.087369    
+            8                 0.18797    
+            9                0.091492    
+           11                 0.15345    
+           12               0.0097575    
+           13                 0.11443    
+           14                 0.01814    
+           15                0.044593    
+           16                0.011034    
+           17                0.013085    
+           18               0.0032111    
+           19                0.001624    
+
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Compute Probability Mass for Outcome based on Mass of States
+% *back to <https://fanwangecon.github.io Fan>'s
+% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
+% Table of Content.*
+
+%%
+function [tb_choice_drv_cur_byY, ar_choice_prob_byY, ar_choice_unique_sorted_byY, mt_choice_prob_byYZ] ...
+    = fft_disc_rand_var_mass2outcomes(varargin)
+%% FFT_DISC_RAND_VAR_MASS2OUTCOMES find f(y) based on f(a,z), and y(a,z)
+% Having derived f(a,z) the probability mass function of the joint discrete
+% random variables, we now obtain distributional statistics. Note that we
+% know f(a,z), and we also know relevant policy functions a'(a,z), c(a,z),
+% or other policy functions. We can simulate any choices that are a
+% function of the random variables (a,z), using f(a,z).
+%
+% The procedure here has these steps:
+%
+% # Sort [c(a,z), f(a,z)] by c(a,z)
+% # Generate unique IDs of sorted c(a,z): unique
+% # sum(f(a,z)|c) for each unique c(a,z): accumarray, this generates f(c)
+% # calculate statistics based on f(c), the discrete distribution of c. 
+%
+% Outputs are:
+%
+% * unique sorted outcomes, note different (a,z) can generate the same
+% outcomes and not in order
+% * find total probabiliy for p(outcome, z) = sum_{a}( 1{outcome(a)==outcome}*f(a,z))
+%
+% $$ p(y,z) = \sum_{a} \left(1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$$
+%
+% * find total probabiliy for p(outcome) = sum_{a,z}( 1{outcome(a,z)==outcome}*f(a,z) )
+%
+% $$ p(Y=y) = \sum_{a,z} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$$
+%
+%
+
+%% Default
+% use binomial as test case, z maps to binomial win prob, remember binom
+% approximates normal.
+
+params_len = length(varargin);
+bl_input_override = 0;
+if (params_len == 4)
+    bl_input_override = varargin{4};
+end
+
+if (bl_input_override)
+    % if invoked from outside overrid fully
+    [st_var_name, mt_choice_bystates, mt_dist_bystates, ~] = varargin{:};
+    bl_display_drvm2outcomes = false;    
+else
+    clear all;
+    close all;
+    
+    it_states = 10;
+    it_shocks = 5;
+    fl_binom_n = it_states-1;
+    ar_binom_p = (1:(it_shocks))./(it_shocks+2);
+    ar_binom_x = 0:1:(it_states-1);
+    
+    % a
+    ar_choice_unique_sorted_byY = ar_binom_x;
+    % f(z)
+    ar_binom_p_prob = binopdf(0:(it_shocks-1), it_shocks-1, 0.5);
+    % f(a,z), mass for a, z
+    mt_dist_bystates = zeros([it_states, it_shocks]);
+    for it_z=1:it_shocks
+        % f(a|z)
+        f_a_condi_z = binopdf(ar_binom_x, fl_binom_n, ar_binom_p(it_z));
+        % f(z)
+        f_z = ar_binom_p_prob(it_z);
+        % f(a,z)=f(a|z)*f(z)
+        mt_dist_bystates(:, it_z) = f_a_condi_z*f_z;
+    end
+    
+    % y(a,z), some non-smooth structure
+    mt_choice_bystates = ar_binom_x' - 0.01*ar_binom_x'.^2  + ar_binom_p - 0.5*ar_binom_p.^2 + rand([it_states, it_shocks]);
+    mt_choice_bystates = round(mt_choice_bystates*2);
+    
+    % display
+    st_var_name = 'binomtest';
+    
+    % display
+    bl_display_drvm2outcomes = true;
+end
+
+%% Generate Y(a) and Y(a,z)
+% 1. Get Choice Matrix (choice or outcomes given choices)
+% see end of
+% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html
+% ff_az_vf_vecsv> outcomes in result_map are cells with two elements,
+% first element is y(a,z), second element will be f(y) and y, generated
+% here.
+ar_choice_cur_bystates = mt_choice_bystates(:);
+
+% 2. Sort and Generate Unique
+ar_choice_bystates_sorted = sort(ar_choice_cur_bystates);
+ar_choice_unique_sorted_byY = unique(ar_choice_bystates_sorted);
+
+% 3. Sum up Density at each element of ar_choice
+ar_choice_prob_byY = zeros([length(ar_choice_unique_sorted_byY),1]);
+mt_choice_prob_byYZ = zeros([length(ar_choice_unique_sorted_byY), size(mt_dist_bystates,2)]);
+for it_z_i = 1:size(mt_dist_bystates,2)
+    for it_a_j = 1:size(mt_dist_bystates,1)
+        
+        % get f(a,z) and c(a,z)
+        fl_mass_curstate = mt_dist_bystates(it_a_j, it_z_i);
+        fl_choice_cur = mt_choice_bystates(it_a_j, it_z_i);
+        
+        % add f(a,z) to f(c(a,z))
+        ar_choice_in_unique_idx = (ar_choice_unique_sorted_byY == fl_choice_cur);
+        
+        % add probability to p(y)
+        ar_choice_prob_byY(ar_choice_in_unique_idx) = ar_choice_prob_byY(ar_choice_in_unique_idx) + fl_mass_curstate;
+        
+        % add probability to p(y,z)
+        mt_choice_prob_byYZ(ar_choice_in_unique_idx, it_z_i) = mt_choice_prob_byYZ(ar_choice_in_unique_idx, it_z_i) + fl_mass_curstate;
+    end
+end
+
+% 4. Store into second cell of the outcome's key's value in results_map
+% drv: discrete random variable
+tb_choice_drv_cur_byY = array2table([ar_choice_unique_sorted_byY ar_choice_prob_byY]);
+tb_choice_drv_cur_byY.Properties.VariableNames = matlab.lang.makeValidName([string([char(st_var_name) ' outcomes']), 'prob mass function']);
+
+%% Display
+if (bl_display_drvm2outcomes)
+
+    disp('INPUT f(a,z): mt_dist_bystates');
+    disp(mt_dist_bystates);
+
+    disp('INPUT y(a,z): mt_choice_bystates');
+    disp(mt_choice_bystates);
+    
+    disp('OUTPUT f(y): ar_choice_prob');
+    disp(ar_choice_prob_byY);
+    
+    disp('OUTPUT f(y,z): mt_choice_prob');
+    disp(mt_choice_prob_byYZ);
+    
+    disp('OUTPUT f(y) and y in table: tb_choice_drv_cur');
+    disp(tb_choice_drv_cur_byY);
+    
+end
+end
+##### SOURCE END #####
+--></body></html>

@@ -12,7 +12,7 @@ Functions are written with default parameters and are directly callable. See [**
 
 The *az* problem: standard model with an asset and one shock, exogenous incomplete savings only, wage shocks follow AR1.
 
-## 1.1 Main Optimization Solution Files (AZ)
+## 1.1 Main Dynamic Programming Files (AZ)
 
 > Files for this section are in the [/m_az/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_az) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository.
 
@@ -37,15 +37,28 @@ Using three algorithm that provide identical solutions:
 
 ## 1.2 Asset Distributions (AZ)
 
+### 1.2.a Deriving Asset Distributions
+
 Solve for the stationary probability mass function over discrete states (endogenous assets and exogenous shocks). Since codes from *1.1* provide identical solutions, the benchmark *optimized-vectorized* code is called. The distributional codes compute, with benchmark parameters outcomes, for each outcome *y* (consumption, savings, cash-on-hand):
 
 - joint and marginal probability mass functions: *P(y,z)* and *P(y)*
-- *E(Y)*, *var(Y)*, *P(Y=0)*, *P(Y=max(Y))*
+- *E(Y)*, *var(Y)*, *P(Y=0)*, *P(Y=max(Y))*, etc
 - percentiles and fraction of *y* held by households up to current percentile
 
 1. *az* model asset distribution [looped](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solve/ff_az_ds.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/profile/ff_az_ds_default_p7/file0.html)
     * speed: **5.0** seconds
-    * loops: 1 for VFI, 1 for shocks, 1 for asset state, (no more loop for asset choice), 1 for future shocks
+    * loops: 1 for VFI, 1 for shocks, 1 for asset state, 1 for future shocks
+
+
+### 1.2.b Statistics Support Functions
+
+Deriving asset distributions relies on two functions from the [/tools/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/tools) folder for computing pmf for choice/outcome as well as distributional statistics based on pmf which apply to all models:
+
+1. all model [f(y) from f(a,z) and y(a,z)](https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/fft_disc_rand_var_mass2outcomes.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html)
+    * from probability mass function *f(a,z)* over states and policy/outcome function *y(a,z)*, derive probability mass function *f(y)*
+2. all model [distributional statistics](https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/fft_disc_rand_var_stats.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html)
+    * table: mean, sd, percentiles, fraction of outcome/asset held by household up to x percentile
+
 
 ## 1.3 Solution Support Files (AZ)
 
@@ -71,16 +84,12 @@ Solve for the stationary probability mass function over discrete states (endogen
     * graph: consumption and asset logged levels
     * graph: consumption and asset as percentages of coh and assets
 
-**Statistics**:
-1. all model [distributional statistics](https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/fft_disc_rand_var_stats.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html)
-    * table: mean, sd, percentiles, fraction of outcome/asset held by household up to x percentile
-
 
 # 2. The Savings + Borrowing Problem (ABZ)
 
 Codes from *1.1-1.3* are adjusted slightly to deal with both savings as well as borrowing for the household (not a firm's static borrowing problem given shock). *abz* supersedes the *az* code. The programs allow for default.
 
-## 2.1 Main Optimization Solution Files (ABZ)
+## 2.1 Main Dynamic Programming Files (ABZ)
 
 > Files for this section are in the [/m_abz/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_abz) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository.
 
@@ -413,7 +422,7 @@ We solve the joint asset choice problem using the *optimized-vectorized* method 
 
 An application of the codes developed in sections (1) through (5) is the paper: *A Choice Amongst Many: Household Borrowing in a Setting with Multiple Providers* ([**Robert M. Townsend**](http://www.robertmtownsend.net/) and [**Fan Wang**](https://fanwangecon.github.io/) 2019). Below, earlier models are augmented to allow for (a) formal borrowing choice menu, (b) bridge loans, and (c) defaults.
 
-## 6.1 Optimization Solution Files (FIBS)
+## 6.1 Dynamic Programming Files (FIBS)
 
 We have a sequence of files that are specific to solving the joint formal and informal problem.
 

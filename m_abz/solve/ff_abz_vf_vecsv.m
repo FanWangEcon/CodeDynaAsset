@@ -1,4 +1,4 @@
-%% Solve For+Inf+Borr+Save Dynamic Programming Problem (Optimized-Vectorized)
+%% Solve Save + Borr Dynamic Programming Problem (Optimized-Vectorized)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*

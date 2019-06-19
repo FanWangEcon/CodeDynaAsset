@@ -190,8 +190,8 @@ if (bl_graph_coh_t_coh)
             mt_outcome = log(mt_coh_next - min(ar_a_meshk) + 1);
             ar_xvar = log(ar_coh_full - min(ar_a_meshk) + 1);
             
-            st_y_label = 'log(coh'' - min(a'') + 1)';
-            st_x_label = 'log(coh)';
+            st_y_label = 'log(coh''(a'',k'',z'') - min(a'') + 1)';
+            st_x_label = 'log(coh(a,k,z) - min(a) + 1)';
             st_title = 'coh(a'',k'', z''): reachable coh'' given coh';
             st_legend_loc = 'southeast';
             
@@ -432,7 +432,7 @@ if (bl_graph_pol_lvl)
             st_x_label = 'Cash-on-Hand';
         end
         if (sub_j==3)
-            st_y_label = 'Consumption (br cmin set to 0)';
+            st_y_label = 'Consumption';
             st_x_label = 'Cash-on-Hand';
         end
         if (sub_j==4)
@@ -444,7 +444,7 @@ if (bl_graph_pol_lvl)
             st_x_label = 'log(COH - borrbound + 1)';
         end
         if (sub_j==6)
-            st_y_label = 'log(Consumption + 1) (br cmin set to 0)';
+            st_y_label = 'log(Consumption + 1)';
             st_x_label = 'log(COH - borrbound + 1)';
         end
 

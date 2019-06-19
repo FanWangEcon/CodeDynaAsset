@@ -183,8 +183,8 @@ if (bl_graph_coh_t_coh)
             mt_outcome = log(mt_coh_next - min(ar_a) + 1);
             ar_xvar = log(ar_coh_full - min(ar_a) + 1);
 
-            st_y_label = 'log(coh'' - min(a'') + 1)';
-            st_x_label = 'log(coh)';
+            st_y_label = 'log(coh''(a'',z'') - min(a'') + 1)';
+            st_x_label = 'log(coh(a,z) - min(a) + 1)';
             st_title = 'coh(a''(coh(a,z),z), z''): reachable coh'' given coh';
             st_legend_loc = 'southeast';
 
@@ -423,7 +423,7 @@ if (bl_graph_pol_lvl)
                 'if a''(a,z)<=a for all z, dist. shifts down'};
         end
         if (sub_j==2)
-            st_y_label = 'Consumption (br cmin set to 0)';
+            st_y_label = 'Consumption';
             st_x_label = 'Asset (a) State';
         end
         if (sub_j==3)
@@ -433,7 +433,7 @@ if (bl_graph_pol_lvl)
                 'if a''(a,z)<=a for all z, dist. shifts down'};
         end
         if (sub_j==4)
-            st_y_label = 'log(Consumption + 1) (br cmin set to 0)';
+            st_y_label = 'log(Consumption + 1)';
             st_x_label = 'log(Asset State - min(a) + 1)';
         end
 

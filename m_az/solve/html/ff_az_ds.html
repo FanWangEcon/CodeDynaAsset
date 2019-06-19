@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Derive Savings Distribution (Loop)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-18"><meta name="DC.source" content="ff_az_ds.m"><style type="text/css">
+      --><title>Derive Savings Distribution (Loop)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-19"><meta name="DC.source" content="ff_az_ds.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,8 +66,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Derive Savings Distribution (Loop)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_AZ_DS finds the stationarz savings distribution</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1</a></li><li><a href="#5">Obtain Result Map By Solving Value/Pol Function</a></li><li><a href="#6">Parse Parameters 2</a></li><li><a href="#7">Start Profiler and Timer</a></li><li><a href="#8"><b>f(a,z)</b>: Initialize Output Matrixes</a></li><li><a href="#9"><b>f(a,z)</b>: Initialize Convergence Conditions</a></li><li><a href="#10"><b>f(a,z)</b>: Derive Stationary Distribution</a></li><li><a href="#12"><b>f(a,z)</b>: Iterate over Probability mass for Discrete Random Variable</a></li><li><a href="#13"><b>f(a,z)</b>: Check Tolerance and Continuation</a></li><li><a href="#15">End Time and Profiler</a></li><li><a href="#16"><b>f(y), f(c), f(a)</b>: Generate Key Distributional Statistics for Each outcome</a></li><li><a href="#18"><b>f(y), f(c), f(a)</b>: Find p(outcome(states)), proability mass function for each outcome</a></li><li><a href="#19"><b>f(y), f(c), f(a)</b>: Compute Statistics for outcomes</a></li><li><a href="#20"><b>f(y), f(c), f(a)</b>: Store Statistics Specific to Each Outcome</a></li><li><a href="#22"><b>f(y), f(c), f(a)</b>: Store Statistics Shared Table All Outcomes</a></li><li><a href="#23">Process Optimal Choices</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [result_map] = ff_az_ds(varargin)
-</pre><h2 id="2">FF_AZ_DS finds the stationarz savings distribution</h2><p>Building on the Asset Dynamic Programming Problem <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a>, here we solve for the asset distribution.</p><p>This is the iterative looped solution to derive the asset distribution determined by the policy functions. Note that the asset distribution is a joint discrete random variable. We derive f(a,z), where f is the joint discrete random variables probability mass. Then we can derive f(a'(a,z)), f(c(a,z)) directly. The procedure here does not involve simulation. Simulation could also be used to derive these distributions, but given the discrete grid based solution algorithm, there is no need to introduce simulation and associated errors once we have fixed the shock process that generates randomness.</p><p>The function here accomplishes two tasks: (1) deriving the asset distribution as a discrete random variable over the states (2) calculating various statistics based on the discrete joint random variable's probability mass function for various outcomes of the model</p><p>Distributions of Interest:</p><div><ul><li><img src="ff_az_ds_eq08795144712269443427.png" alt="$p(a,z)$" style="width:39px;height:15px;"></li><li><img src="ff_az_ds_eq11786329523256587778.png" alt="$p(Y=y) = \sum_{a,z} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$" style="width:268px;height:17px;"></li></ul></div><p>Statistics include:</p><div><ul><li><img src="ff_az_ds_eq03016783485460700593.png" alt="$\mu_y = \sum_{y} p(Y=y) \cdot y$" style="width:134px;height:17px;"></li><li><img src="ff_az_ds_eq13414381062043947873.png" alt="$\sigma_y = \sqrt{ \sum_{y} p(Y=y) \cdot \left( y - \mu_y \right)^2}$" style="width:199px;height:27px;"></li><li><img src="ff_az_ds_eq05433369603455155594.png" alt="$p(y=0)$" style="width:53px;height:15px;"></li><li><img src="ff_az_ds_eq09585247606302904929.png" alt="$p(y=\max(y))$" style="width:91px;height:15px;"></li><li>percentiles: <img src="ff_az_ds_eq09488738859326996168.png" alt="$min_{y} \left\{ P(Y \le y) - percentile \mid P(Y \le y) \ge percentile \right\}$" style="width:352px;height:15px;"></li><li>fraction of outcome held by up to percentiles: <img src="ff_az_ds_eq11722476300337688867.png" alt="$E(Y<y)/E(Y)$" style="width:103px;height:15px;"></li></ul></div><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@param func_map container container with function handles for consumption cash-on-hand etc.</p><p>@return result_map container contains policy function matrix, value function matrix, iteration results, and policy function, value function and iteration results tables.</p><p>new keys included in result_map in addition to the output from <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a> are various distribution statistics for each model outcome, keys include <b>cl_mt_pol_a</b>, <b>cl_mt_pol_c</b>, <b>cl_mt_pol_coh</b>, etc, these include:</p><div><ul><li>the first element of each of these cell array is y(a,z), the outcome/choice at the state space points</li><li>the second element of the cell is another container, which contains statistics computed for f(y) based on y(a,z) and f(a,z), f(y) is the probability mass function for outcome y given the stationary distribution f(a,z). The second element container also includes f(y) itself as well as f(y,z).</li><li>additionally, result_map also stores some of the statistics for different variables jointly together. (a) <b>tb_outcomes_meansdperc</b>: where each row is a different outcome of the model, and each table column stores a different statistics of interest. (b) <b>tb_outcomes_fracheld</b>: which measures the fraction of asset held by different people.</li></ul></div><p>@example</p><pre>  % Get Default Parameters
+  </style></head><body><div class="content"><h1>Derive Savings Distribution (Loop)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_AZ_DS finds the stationarz savings distribution</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1</a></li><li><a href="#5">Obtain Result Map By Solving Value/Pol Function</a></li><li><a href="#6">Parse Parameters 2</a></li><li><a href="#7">Start Profiler and Timer</a></li><li><a href="#8"><b>f(a,z)</b>: Initialize Output Matrixes</a></li><li><a href="#9"><b>f(a,z)</b>: Initialize Convergence Conditions</a></li><li><a href="#10"><b>f(a,z)</b>: Derive Stationary Distribution</a></li><li><a href="#12"><b>f(a,z)</b>: Iterate over Probability mass for Discrete Random Variable</a></li><li><a href="#13"><b>f(a,z)</b>: Check Tolerance and Continuation</a></li><li><a href="#15">End Time and Profiler</a></li><li><a href="#16"><b>f(y), f(c), f(a)</b>: Generate Key Distributional Statistics for Each outcome</a></li><li><a href="#18"><b>f(y), f(c), f(a)</b>: Find p(outcome(states)), proability mass function for each outcome</a></li><li><a href="#19"><b>f(y), f(c), f(a)</b>: Compute Statistics for outcomes</a></li><li><a href="#20"><b>f(y), f(c), f(a)</b>: Store Statistics Specific to Each Outcome</a></li><li><a href="#22">Process Optimal Choices</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [result_map] = ff_az_ds(varargin)
+</pre><h2 id="2">FF_AZ_DS finds the stationarz savings distribution</h2><p>Building on the Asset Dynamic Programming Problem <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a>, here we solve for the asset distribution.</p><p>This is the iterative looped solution to derive the asset distribution determined by the policy functions. Note that the asset distribution is a joint discrete random variable. We derive f(a,z), where f is the joint discrete random variables probability mass. Then we can derive f(a'(a,z)), f(c(a,z)) directly. The procedure here does not involve simulation. Simulation could also be used to derive these distributions, but given the discrete grid based solution algorithm, there is no need to introduce simulation and associated errors once we have fixed the shock process that generates randomness.</p><p>The function here accomplishes two tasks: (1) deriving the asset distribution as a discrete random variable over the states (2) calculating various statistics based on the discrete joint random variable's probability mass function for various outcomes of the model</p><p>Distributions of Interest:</p><div><ul><li><img src="ff_az_ds_eq08795144712269443427.png" alt="$p(a,z)$" style="width:39px;height:15px;"></li><li><img src="ff_az_ds_eq04843764051820646606.png" alt="$p(Y=y, z) = \sum_{a} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$" style="width:273px;height:15px;"></li><li><img src="ff_az_ds_eq11786329523256587778.png" alt="$p(Y=y) = \sum_{a,z} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$" style="width:268px;height:17px;"></li></ul></div><p>Statistics include:</p><div><ul><li><img src="ff_az_ds_eq03016783485460700593.png" alt="$\mu_y = \sum_{y} p(Y=y) \cdot y$" style="width:134px;height:17px;"></li><li><img src="ff_az_ds_eq13414381062043947873.png" alt="$\sigma_y = \sqrt{ \sum_{y} p(Y=y) \cdot \left( y - \mu_y \right)^2}$" style="width:199px;height:27px;"></li><li><img src="ff_az_ds_eq05433369603455155594.png" alt="$p(y=0)$" style="width:53px;height:15px;"></li><li><img src="ff_az_ds_eq09585247606302904929.png" alt="$p(y=\max(y))$" style="width:91px;height:15px;"></li><li>percentiles: <img src="ff_az_ds_eq09488738859326996168.png" alt="$min_{y} \left\{ P(Y \le y) - percentile \mid P(Y \le y) \ge percentile \right\}$" style="width:352px;height:15px;"></li><li>fraction of outcome held by up to percentiles: <img src="ff_az_ds_eq11722476300337688867.png" alt="$E(Y<y)/E(Y)$" style="width:103px;height:15px;"></li></ul></div><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@param func_map container container with function handles for consumption cash-on-hand etc.</p><p>@return result_map container contains policy function matrix, value function matrix, iteration results, and policy function, value function and iteration results tables.</p><p>new keys included in result_map in addition to the output from <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a> are various distribution statistics for each model outcome, keys include <b>cl_mt_pol_a</b>, <b>cl_mt_pol_c</b>, <b>cl_mt_pol_coh</b>, etc, these include:</p><div><ul><li>the first element of each of these cell array is y(a,z), the outcome/choice at the state space points</li><li>the second element of the cell is another container, which contains statistics computed for f(y) based on y(a,z) and f(a,z), f(y) is the probability mass function for outcome y given the stationary distribution f(a,z). The second element container also includes f(y) itself as well as f(y,z).</li><li>additionally, result_map also stores some of the statistics for different variables jointly together. (a) <b>tb_outcomes_meansdperc</b>: where each row is a different outcome of the model, and each table column stores a different statistics of interest. (b) <b>tb_outcomes_fracheld</b>: which measures the fraction of asset held by different people.</li></ul></div><p>@example</p><pre>  % Get Default Parameters
   it_param_set = 6;
   [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
   % Change Keys in param_map
@@ -298,72 +298,123 @@ Hdist = mt_dist_az_cur(it_a_n,:) = p(max(a)|z)
     st_file_name = [st_profile_prefix st_profile_name_main st_profile_suffix];
     profsave(profile(<span class="string">'info'</span>), strcat(st_profile_path, st_file_name));
 <span class="keyword">end</span>
-</pre><h2 id="16"><b>f(y), f(c), f(a)</b>: Generate Key Distributional Statistics for Each outcome</h2><p>Having derived f(a,z) the probability mass function of the joint discrete random variables, we now obtain distributional statistics. Note that we know f(a,z), and we also know relevant policy functions a'(a,z), c(a,z), or other policy functions. We can simulate any choices that are a function of the random variables (a,z), using f(a,z)</p><p>parameter structure provides a list of</p><div><ol><li>from result_map('ar_st_pol_names'), get list of outcome matrix on state space</li><li>simulate each outcome using f(a,z) for probability draws</li><li>compute key statistics: (1) mean (expectation=sum) (2) sd (3) min and max (4) iqr (5) fraction = 0 (6) percentiles including: 99.9, 99, 95, every 5 in between 5, 1, 0.01.</li></ol></div><p>The procedure here has these steps:</p><div><ol><li>Sort [c(a,z), f(a,z)] by c(a,z)</li><li>Generate unique IDs of sorted c(a,z): unique</li><li>sum(f(a,z)|c) for each unique c(a,z): accumarray, this generates f(c)</li><li>calculate statistics based on f(c), the discrete distribution of c.</li></ol></div><p>How to store?</p><div><ol><li>result_map</li></ol></div><pre class="codeinput"><span class="comment">% Initiate Storage for stats</span>
-
+</pre><h2 id="16"><b>f(y), f(c), f(a)</b>: Generate Key Distributional Statistics for Each outcome</h2><p>Having derived f(a,z) the probability mass function of the joint discrete random variables, we now obtain distributional statistics. Note that we know f(a,z), and we also know relevant policy functions a'(a,z), c(a,z), or other policy functions. We can simulate any choices that are a function of the random variables (a,z), using f(a,z)</p><p>parameter structure provides a list of</p><div><ol><li>from result_map('ar_st_pol_names'), get list of outcome matrix on state space</li><li>simulate each outcome using f(a,z) for probability draws</li><li>compute key statistics: (1) mean (expectation=sum) (2) sd (3) min and max (4) iqr (5) fraction = 0 (6) percentiles including: 99.9, 99, 95, every 5 in between 5, 1, 0.01.</li></ol></div><pre class="codeinput"><span class="comment">% Loop over outcomes, see end of</span>
+<span class="comment">% &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html</span>
+<span class="comment">% ff_az_vf_vecsv&gt; where these are created</span>
 <span class="keyword">for</span> it_outcome_ctr=1:length(ar_st_pol_names)
-</pre><h2 id="18"><b>f(y), f(c), f(a)</b>: Find p(outcome(states)), proability mass function for each outcome</h2><div><ul><li>unique sorted outcomes, note different (a,z) can generate the same outcomes and not in order</li><li>find total probabiliy for p(outcome) = sum_{a,z}( 1{outcome(a,z)==outcome}*f(a,z) )</li></ul></div><p><img src="ff_az_ds_eq10873339437764681257.png" alt="$$ p(Y=y) = \sum_{a,z} \left( P( 1\left\{Y(a,z)=y\right\} \cdot p(a,z)) \right)$$" style="width:282px;height:33px;"></p><div><ul><li>also find total probabiliy for p(outcome, z) = sum_{a}( 1{outcome(a)==outcome}*f(a,z))</li></ul></div><p><img src="ff_az_ds_eq08060787818546361153.png" alt="$$ p(y,z) = \sum_{a} \left( P( 1\left\{Y(a,z)=y\right\} \cdot p(a,z)) \right)$$" style="width:265px;height:31px;"></p><p>note: sum(mt_dist_az, 2) = result_map('cl_mt_pol_a'){2}, but not at small simulation grids. These two might be different because pol_a is based on a choices, mt_dist_az is based on a states</p><pre class="codeinput">    st_cur_output_key = ar_st_pol_names(it_outcome_ctr);
-
-    <span class="comment">% 1. Get Choice Matrix (choice or outcomes given choices)</span>
-    <span class="comment">% see end of</span>
-    <span class="comment">% &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html</span>
-    <span class="comment">% ff_az_vf_vecsv&gt; outcomes in result_map are cells with two elements,</span>
-    <span class="comment">% first element is y(a,z), second element will be f(y) and y, generated</span>
-    <span class="comment">% here.</span>
+</pre><h2 id="18"><b>f(y), f(c), f(a)</b>: Find p(outcome(states)), proability mass function for each outcome</h2><p>Using from tools: <a href="https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html">fft_disc_rand_var_mass2outcomes</a>, compute unique sorted outcomes for y(a,z) and find:</p><p><img src="ff_az_ds_eq07860812722477683876.png" alt="$$ p(y,z) = \sum_{a} \left(1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$$" style="width:242px;height:31px;"></p><p><img src="ff_az_ds_eq16910297080260075404.png" alt="$$ p(Y=y) = \sum_{a,z} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$$" style="width:259px;height:33px;"></p><p>note: sum(mt_dist_az, 2) = result_map('cl_mt_pol_a'){2}, but not at small simulation grids. These two might be different because pol_a is based on a choices, mt_dist_az is based on a states</p><p>see end of <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a> outcomes in result_map are cells with two elements, first element is y(a,z), second element will be f(y) and y, generated here.</p><pre class="codeinput">    st_cur_output_key = ar_st_pol_names(it_outcome_ctr);
     cl_mt_choice_cur = result_map(st_cur_output_key);
     mt_choice_cur = cl_mt_choice_cur{1};
-    ar_choice_cur_bystates = mt_choice_cur(:);
 
-    <span class="comment">% 2. Sort and Generate Unique</span>
-    ar_choice_bystates_sorted = sort(ar_choice_cur_bystates);
-    ar_choice_unique_sorted = unique(ar_choice_bystates_sorted);
+    <span class="comment">% run function from tools: fft_disc_rand_var_mass2outcomes</span>
+    <span class="comment">% &lt;https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html&gt;</span>
+    bl_input_override = true;
+    [tb_choice_drv_cur_byY, ar_choice_prob_byY, ar_choice_unique_sorted_byY, mt_choice_prob_byYZ] = <span class="keyword">...</span>
+        fft_disc_rand_var_mass2outcomes(st_cur_output_key, mt_choice_cur, mt_dist_az, bl_input_override);
+</pre><h2 id="19"><b>f(y), f(c), f(a)</b>: Compute Statistics for outcomes</h2><p>Using from tools: <a href="https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html">fft_disc_rand_var_stats</a>, compute these outcomes:</p><div><ul><li>$\mu_Y = E(Y) = \sum_{y} p(Y=y) \cdot y $</li><li><img src="ff_az_ds_eq03728111283668325077.png" alt="$\sigma_Y = \sqrt{ \sum_{y} p(Y=y) \cdot \left( y - \mu_y \right)^2}$" style="width:202px;height:27px;"></li><li><img src="ff_az_ds_eq05433369603455155594.png" alt="$p(y=0)$" style="width:53px;height:15px;"></li><li><img src="ff_az_ds_eq09585247606302904929.png" alt="$p(y=\max(y))$" style="width:91px;height:15px;"></li><li>percentiles: <img src="ff_az_ds_eq09488738859326996168.png" alt="$min_{y} \left\{ P(Y \le y) - percentile \mid P(Y \le y) \ge percentile \right\}$" style="width:352px;height:15px;"></li><li>fraction of outcome held by up to percentiles: <img src="ff_az_ds_eq11722476300337688867.png" alt="$E(Y<y)/E(Y)$" style="width:103px;height:15px;"></li></ul></div><pre class="codeinput">    <span class="comment">% run function fft_disc_rand_var_stats.m from tools:</span>
+    <span class="comment">% &lt;https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html&gt;</span>
+    [ds_stats_map] = fft_disc_rand_var_stats(st_cur_output_key, ar_choice_unique_sorted_byY', ar_choice_prob_byY');
 
-    <span class="comment">% 3. Sum up Density at each element of ar_choice</span>
-    ar_choice_prob = zeros([length(ar_choice_unique_sorted),1]);
-    mt_choice_prob = zeros([length(ar_choice_unique_sorted), length(ar_z)]);
-    <span class="keyword">for</span> it_z_i = 1:length(ar_z)
-        <span class="keyword">for</span> it_a_j = 1:length(ar_a)
-
-            <span class="comment">% get f(a,z) and c(a,z)</span>
-            fl_mass_curstate = mt_dist_az(it_a_j, it_z_i);
-            fl_choice_cur = mt_choice_cur(it_a_j, it_z_i);
-
-            <span class="comment">% add f(a,z) to f(c(a,z))</span>
-            ar_choice_in_unique_idx = (ar_choice_unique_sorted == fl_choice_cur);
-
-            <span class="comment">% add probability to p(y)</span>
-            ar_choice_prob(ar_choice_in_unique_idx) = ar_choice_prob(ar_choice_in_unique_idx) + fl_mass_curstate;
-
-            <span class="comment">% add probability to p(y,z)</span>
-            mt_choice_prob(ar_choice_in_unique_idx, it_z_i) = mt_choice_prob(ar_choice_in_unique_idx, it_z_i) + fl_mass_curstate;
-        <span class="keyword">end</span>
-    <span class="keyword">end</span>
-
-    <span class="comment">% 4. Store into second cell of the outcome's key's value in results_map</span>
-    <span class="comment">% drv: discrete random variable</span>
-    tb_choice_drv_cur = array2table([ar_choice_unique_sorted ar_choice_prob]);
-    tb_choice_drv_cur.Properties.VariableNames = matlab.lang.makeValidName([st_cur_output_key, <span class="string">'prob mass function'</span>]);
-</pre><h2 id="19"><b>f(y), f(c), f(a)</b>: Compute Statistics for outcomes</h2><p>Compute these outcomes:</p><div><ul><li>$\mu_Y = E(Y) = \sum_{y} p(Y=y) \cdot y $</li><li><img src="ff_az_ds_eq03728111283668325077.png" alt="$\sigma_Y = \sqrt{ \sum_{y} p(Y=y) \cdot \left( y - \mu_y \right)^2}$" style="width:202px;height:27px;"></li><li><img src="ff_az_ds_eq05433369603455155594.png" alt="$p(y=0)$" style="width:53px;height:15px;"></li><li><img src="ff_az_ds_eq09585247606302904929.png" alt="$p(y=\max(y))$" style="width:91px;height:15px;"></li><li>percentiles: <img src="ff_az_ds_eq09488738859326996168.png" alt="$min_{y} \left\{ P(Y \le y) - percentile \mid P(Y \le y) \ge percentile \right\}$" style="width:352px;height:15px;"></li><li>fraction of outcome held by up to percentiles: <img src="ff_az_ds_eq11722476300337688867.png" alt="$E(Y<y)/E(Y)$" style="width:103px;height:15px;"></li></ul></div><pre class="codeinput">    <span class="comment">% run function</span>
-    [ds_stats_map] = fft_disc_rand_var_stats(st_cur_output_key, ar_choice_unique_sorted', ar_choice_prob');
+    <span class="comment">% prcess results</span>
     <span class="comment">% retrieve scalar statistics:</span>
     fl_choice_mean = ds_stats_map(<span class="string">'fl_choice_mean'</span>);
     fl_choice_sd = ds_stats_map(<span class="string">'fl_choice_sd'</span>);
     fl_choice_coefofvar = ds_stats_map(<span class="string">'fl_choice_coefofvar'</span>);
+    fl_choice_min = ds_stats_map(<span class="string">'fl_choice_min'</span>);
+    fl_choice_max = ds_stats_map(<span class="string">'fl_choice_max'</span>);
     fl_choice_prob_zero = ds_stats_map(<span class="string">'fl_choice_prob_zero'</span>);
+    fl_choice_prob_min = ds_stats_map(<span class="string">'fl_choice_prob_min'</span>);
     fl_choice_prob_max = ds_stats_map(<span class="string">'fl_choice_prob_max'</span>);
     <span class="comment">% retrieve distributional array stats</span>
     tb_prob_drv = ds_stats_map(<span class="string">'tb_prob_drv'</span>);
     ar_choice_percentiles = tb_prob_drv{:,2};
     ar_choice_perc_fracheld = tb_prob_drv{:,3};
+
+    <span class="comment">% Display</span>
+    <span class="keyword">if</span> (bl_display_final_dist)
+        disp([<span class="string">'tb_prob_drv, Percentiles of Y, and Share of Y Held by Households up to this Percentile: '</span>, st_cur_output_key])
+        disp(tb_prob_drv);
+    <span class="keyword">end</span>
+</pre><pre class="codeoutput">    "tb_prob_drv, Percentiles of Y, &#8230;"    "cl_mt_pol_a"
+
+    percentiles    cl_mt_pol_aPercentileValues    fracOfSumHeldBelowThisPercentile
+    ___________    ___________________________    ________________________________
+
+        0.1                        0                                0             
+          1                        0                                0             
+          5                        0                                0             
+         10                        0                                0             
+         15                        0                                0             
+         20                        0                                0             
+         25                        0                                0             
+         35                  0.13351                          0.01087             
+         50                  0.33378                          0.04828             
+         65                  0.73431                          0.14685             
+         75                   1.1348                          0.25996             
+         80                   1.4686                          0.35468             
+         85                   1.8024                          0.43783             
+         90                   2.3364                          0.56644             
+         95                    3.271                          0.73086             
+         99                   5.3405                          0.92153             
+       99.9                   8.0774                          0.98949             
+
+</pre><pre class="codeoutput">    "tb_prob_drv, Percentiles of Y, &#8230;"    "cl_mt_pol_coh"
+
+    percentiles    cl_mt_pol_cohPercentileValues    fracOfSumHeldBelowThisPercentile
+    ___________    _____________________________    ________________________________
+
+        0.1                   0.44468                          0.00046931           
+          1                   0.59175                           0.0056855           
+          5                   0.68262                            0.014805           
+         10                   0.85587                            0.035362           
+         15                   0.90837                            0.060387           
+         20                    1.0479                            0.098878           
+         25                    1.1136                             0.10377           
+         35                    1.2772                             0.15913           
+         50                    1.6681                             0.26465           
+         65                    2.1977                             0.39975           
+         75                    2.6879                             0.51052           
+         80                    3.0188                             0.57781           
+         85                    3.4471                             0.65507           
+         90                    4.0585                             0.74042           
+         95                     5.109                             0.84688           
+         99                    7.4642                             0.95916           
+       99.9                    10.402                             0.99463           
+
+</pre><pre class="codeoutput">    "tb_prob_drv, Percentiles of Y, &#8230;"    "cl_mt_pol_c"
+
+    percentiles    cl_mt_pol_cPercentileValues    fracOfSumHeldBelowThisPercentile
+    ___________    ___________________________    ________________________________
+
+        0.1                  0.44468                         0.00076903           
+          1                  0.59175                          0.0093392           
+          5                  0.68262                           0.024372           
+         10                  0.81947                           0.054869           
+         15                  0.90837                            0.10332           
+         20                   1.0364                            0.12492           
+         25                   1.0479                            0.17674           
+         35                   1.1964                            0.25332           
+         50                   1.3276                            0.41338           
+         65                   1.4161                            0.55319           
+         75                   1.5268                            0.66718           
+         80                   1.5952                            0.72753           
+         85                   1.6619                            0.78829           
+         90                   1.7521                            0.85351           
+         95                   1.8668                            0.92266           
+         99                   2.1241                            0.98296           
+       99.9                   2.3562                            0.99811           
+
 </pre><h2 id="20"><b>f(y), f(c), f(a)</b>: Store Statistics Specific to Each Outcome</h2><p>see intro section</p><pre class="codeinput">    <span class="comment">% Append prob mass functions to ds_stats_map</span>
-    ds_stats_map(<span class="string">'mt_choice_prob'</span>) = mt_choice_prob;
-    ds_stats_map(<span class="string">'ar_choice_prob'</span>) = ar_choice_prob;
+    ds_stats_map(<span class="string">'mt_choice_prob_byYZ'</span>) = mt_choice_prob_byYZ;
+    ds_stats_map(<span class="string">'tb_choice_prob_byY'</span>) = tb_choice_drv_cur_byY;
     <span class="comment">% ds_stats_map is second element of cell for the key for the variable</span>
     <span class="comment">% in result_map</span>
     cl_mt_choice_cur{2} = ds_stats_map;
     result_map(st_cur_output_key) = cl_mt_choice_cur;
 
     <span class="comment">% key stats</span>
-    ar_keystats = [fl_choice_mean fl_choice_sd fl_choice_coefofvar fl_choice_prob_zero fl_choice_prob_max ar_choice_percentiles'];
+    ar_keystats = [fl_choice_mean fl_choice_sd fl_choice_coefofvar fl_choice_min fl_choice_max <span class="keyword">...</span>
+        fl_choice_prob_zero fl_choice_prob_min fl_choice_prob_max ar_choice_percentiles'];
     cl_outcome_names(it_outcome_ctr) = st_cur_output_key;
     <span class="keyword">if</span> (it_outcome_ctr == 1)
         mt_outcomes_meansdperc = ar_keystats;
@@ -373,10 +424,13 @@ Hdist = mt_dist_az_cur(it_a_n,:) = p(max(a)|z)
         mt_outcomes_fracheld = [mt_outcomes_fracheld; ar_choice_perc_fracheld'];
     <span class="keyword">end</span>
 </pre><pre class="codeinput"><span class="keyword">end</span>
-</pre><h2 id="22"><b>f(y), f(c), f(a)</b>: Store Statistics Shared Table All Outcomes</h2><pre class="codeinput"><span class="comment">% Process mean and and percentiles</span>
+
+<span class="comment">% *f(y), f(c), f(a)*: Store Statistics Shared Table All Outcomes</span>
+<span class="comment">% Process mean and and percentiles</span>
 tb_outcomes_meansdperc = array2table(mt_outcomes_meansdperc);
 ar_fl_percentiles = tb_prob_drv{:,1};
-cl_col_names = [<span class="string">'mean'</span>, <span class="string">'sd'</span>, <span class="string">'coefofvar'</span> <span class="string">'pYis0'</span>, <span class="string">'pYisMAXY'</span>, strcat(<span class="string">'p'</span>, string(ar_fl_percentiles'))];
+cl_col_names = [<span class="string">'mean'</span>, <span class="string">'sd'</span>, <span class="string">'coefofvar'</span>, <span class="string">'min'</span>, <span class="string">'max'</span>, <span class="keyword">...</span>
+                <span class="string">'pYis0'</span>, <span class="string">'pYisMINY'</span>, <span class="string">'pYisMAXY'</span>, strcat(<span class="string">'p'</span>, string(ar_fl_percentiles'))];
 tb_outcomes_meansdperc.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
 tb_outcomes_meansdperc.Properties.RowNames = matlab.lang.makeValidName(cl_outcome_names);
 
@@ -402,12 +456,12 @@ result_map(<span class="string">'mt_outcomes_fracheld'</span>) = mt_outcomes_fra
 
 <span class="keyword">end</span>
 </pre><pre class="codeoutput">tb_outcomes_meansdperc: mean, sd, percentiles
-                      mean        sd       coefofvar     pYis0     pYisMAXY     p0_1        p1         p5         p10        p15       p20       p25        p35        p50        p65       p75       p80       p85       p90       p95       p99      p99_9 
-                     _______    _______    _________    _______    ________    _______    _______    _______    _______    _______    ______    ______    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______
+                      mean        sd       coefofvar      min       max       pYis0     pYisMINY     pYisMAXY     p0_1        p1         p5         p10        p15       p20       p25        p35        p50        p65       p75       p80       p85       p90       p95       p99      p99_9 
+                     _______    _______    _________    _______    ______    _______    _________    ________    _______    _______    _______    _______    _______    ______    ______    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______
 
-    cl_mt_pol_a      0.83075     1.1783      1.4183     0.28147       0              0          0          0          0          0         0         0    0.13351    0.33378    0.73431    1.1348    1.4686    1.8024    2.3364     3.271    5.3405    8.0774
-    cl_mt_pol_coh     2.1316     1.4662     0.68783           0       0        0.44468    0.59175    0.68262    0.85587    0.90837    1.0479    1.1136     1.2772     1.6681     2.1977    2.6879    3.0188    3.4471    4.0585     5.109    7.4642    10.402
-    cl_mt_pol_c       1.3008    0.34504     0.26524           0       0        0.44468    0.59175    0.68262    0.81947    0.90837    1.0364    1.0479     1.1964     1.3276     1.4161    1.5268    1.5952    1.6619    1.7521    1.8668    2.1241    2.3562
+    cl_mt_pol_a      0.83075     1.1783      1.4183           0    49.599    0.28147      0.28147       0              0          0          0          0          0         0         0    0.13351    0.33378    0.73431    1.1348    1.4686    1.8024    2.3364     3.271    5.3405    8.0774
+    cl_mt_pol_coh     2.1316     1.4662     0.68783     0.44468    54.536          0    0.0022497       0        0.44468    0.59175    0.68262    0.85587    0.90837    1.0479    1.1136     1.2772     1.6681     2.1977    2.6879    3.0188    3.4471    4.0585     5.109    7.4642    10.402
+    cl_mt_pol_c       1.3008    0.34504     0.26524     0.44468    4.9363          0    0.0022497       0        0.44468    0.59175    0.68262    0.81947    0.90837    1.0364    1.0479     1.1964     1.3276     1.4161    1.5268    1.5952    1.6619    1.7521    1.8668    2.1241    2.3562
 
 tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
                      fracByP0_1    fracByP1     fracByP5    fracByP10    fracByP15    fracByP20    fracByP25    fracByP35    fracByP50    fracByP65    fracByP75    fracByP80    fracByP85    fracByP90    fracByP95    fracByP99    fracByP99_9
@@ -417,7 +471,7 @@ tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percent
     cl_mt_pol_coh    0.00046931    0.0056855    0.014805    0.035362     0.060387     0.098878      0.10377      0.15913      0.26465      0.39975      0.51052      0.57781      0.65507      0.74042      0.84688      0.95916       0.99463  
     cl_mt_pol_c      0.00076903    0.0093392    0.024372    0.054869      0.10332      0.12492      0.17674      0.25332      0.41338      0.55319      0.66718      0.72753      0.78829      0.85351      0.92266      0.98296       0.99811  
 
-</pre><h2 id="23">Process Optimal Choices</h2><pre class="codeinput"><span class="comment">%</span>
+</pre><h2 id="22">Process Optimal Choices</h2><pre class="codeinput"><span class="comment">%</span>
 <span class="comment">% if (bl_post)</span>
 <span class="comment">%     bl_input_override = true;</span>
 <span class="comment">%     result_map('ar_dist_diff_norm') = ar_dist_diff_norm(1:it_iter_last);</span>
@@ -467,6 +521,7 @@ function [result_map] = ff_az_ds(varargin)
 % Distributions of Interest:
 %
 % * $p(a,z)$
+% * $p(Y=y, z) = \sum_{a} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$
 % * $p(Y=y) = \sum_{a,z} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$
 %
 % Statistics include:
@@ -753,83 +808,47 @@ end
 % max (4) iqr (5) fraction = 0 (6) percentiles including: 99.9, 99, 95,
 % every 5 in between 5, 1, 0.01. 
 %
-% The procedure here has these steps:
-%
-% # Sort [c(a,z), f(a,z)] by c(a,z)
-% # Generate unique IDs of sorted c(a,z): unique
-% # sum(f(a,z)|c) for each unique c(a,z): accumarray, this generates f(c)
-% # calculate statistics based on f(c), the discrete distribution of c. 
-%
-% How to store?
-%
-% # result_map
-%
 
-% Initiate Storage for stats
-
+% Loop over outcomes, see end of
+% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html
+% ff_az_vf_vecsv> where these are created
 for it_outcome_ctr=1:length(ar_st_pol_names)
     
     %% *f(y), f(c), f(a)*: Find p(outcome(states)), proability mass function for each outcome
+    % Using from tools:
+    % <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html
+    % fft_disc_rand_var_mass2outcomes>, compute unique sorted outcomes for
+    % y(a,z) and find:
     %
-    % * unique sorted outcomes, note different (a,z) can generate the same
-    % outcomes and not in order
-    % * find total probabiliy for p(outcome) = sum_{a,z}( 1{outcome(a,z)==outcome}*f(a,z) )
-    % 
-    % $$ p(Y=y) = \sum_{a,z} \left( P( 1\left\{Y(a,z)=y\right\} \cdot p(a,z)) \right)$$    
+    % $$ p(y,z) = \sum_{a} \left(1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$$
     %
-    % * also find total probabiliy for p(outcome, z) = sum_{a}( 1{outcome(a)==outcome}*f(a,z))
-    % 
-    % $$ p(y,z) = \sum_{a} \left( P( 1\left\{Y(a,z)=y\right\} \cdot p(a,z)) \right)$$
+    % $$ p(Y=y) = \sum_{a,z} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$$
     %
     % note: sum(mt_dist_az, 2) = result_map('cl_mt_pol_a'){2}, but not at
     % small simulation grids. These two might be different because pol_a is
     % based on a choices, mt_dist_az is based on a states
-    %
-    
-    st_cur_output_key = ar_st_pol_names(it_outcome_ctr);
-    
-    % 1. Get Choice Matrix (choice or outcomes given choices)
+    %        
     % see end of
     % <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html
     % ff_az_vf_vecsv> outcomes in result_map are cells with two elements,
     % first element is y(a,z), second element will be f(y) and y, generated
-    % here.    
+    % here.
+    %
+    
+    st_cur_output_key = ar_st_pol_names(it_outcome_ctr);
     cl_mt_choice_cur = result_map(st_cur_output_key);
     mt_choice_cur = cl_mt_choice_cur{1};
-    ar_choice_cur_bystates = mt_choice_cur(:);
-        
-    % 2. Sort and Generate Unique
-    ar_choice_bystates_sorted = sort(ar_choice_cur_bystates);
-    ar_choice_unique_sorted = unique(ar_choice_bystates_sorted);
     
-    % 3. Sum up Density at each element of ar_choice
-    ar_choice_prob = zeros([length(ar_choice_unique_sorted),1]);
-    mt_choice_prob = zeros([length(ar_choice_unique_sorted), length(ar_z)]);
-    for it_z_i = 1:length(ar_z)
-        for it_a_j = 1:length(ar_a)
-            
-            % get f(a,z) and c(a,z)
-            fl_mass_curstate = mt_dist_az(it_a_j, it_z_i);
-            fl_choice_cur = mt_choice_cur(it_a_j, it_z_i);
-            
-            % add f(a,z) to f(c(a,z))
-            ar_choice_in_unique_idx = (ar_choice_unique_sorted == fl_choice_cur);
-            
-            % add probability to p(y)
-            ar_choice_prob(ar_choice_in_unique_idx) = ar_choice_prob(ar_choice_in_unique_idx) + fl_mass_curstate;
-            
-            % add probability to p(y,z)
-            mt_choice_prob(ar_choice_in_unique_idx, it_z_i) = mt_choice_prob(ar_choice_in_unique_idx, it_z_i) + fl_mass_curstate;
-        end
-    end
-    
-    % 4. Store into second cell of the outcome's key's value in results_map    
-    % drv: discrete random variable
-    tb_choice_drv_cur = array2table([ar_choice_unique_sorted ar_choice_prob]);    
-    tb_choice_drv_cur.Properties.VariableNames = matlab.lang.makeValidName([st_cur_output_key, 'prob mass function']);
+    % run function from tools: fft_disc_rand_var_mass2outcomes
+    % <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html>
+    bl_input_override = true;
+    [tb_choice_drv_cur_byY, ar_choice_prob_byY, ar_choice_unique_sorted_byY, mt_choice_prob_byYZ] = ...
+        fft_disc_rand_var_mass2outcomes(st_cur_output_key, mt_choice_cur, mt_dist_az, bl_input_override);
     
     %% *f(y), f(c), f(a)*: Compute Statistics for outcomes
-    % Compute these outcomes:
+    % Using from tools:
+    % <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html
+    % fft_disc_rand_var_stats>, compute these outcomes:
     %
     % * $\mu_Y = E(Y) = \sum_{y} p(Y=y) \cdot y $
     % * $\sigma_Y = \sqrt{ \sum_{y} p(Y=y) \cdot \left( y - \mu_y \right)^2}$
@@ -839,32 +858,45 @@ for it_outcome_ctr=1:length(ar_st_pol_names)
     % * fraction of outcome held by up to percentiles: $E(Y<y)/E(Y)$
     %
     
-    % run function
-    [ds_stats_map] = fft_disc_rand_var_stats(st_cur_output_key, ar_choice_unique_sorted', ar_choice_prob');
+    % run function fft_disc_rand_var_stats.m from tools:
+    % <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html>
+    [ds_stats_map] = fft_disc_rand_var_stats(st_cur_output_key, ar_choice_unique_sorted_byY', ar_choice_prob_byY');
+    
+    % prcess results
     % retrieve scalar statistics: 
     fl_choice_mean = ds_stats_map('fl_choice_mean');
     fl_choice_sd = ds_stats_map('fl_choice_sd');
-    fl_choice_coefofvar = ds_stats_map('fl_choice_coefofvar');    
+    fl_choice_coefofvar = ds_stats_map('fl_choice_coefofvar');
+    fl_choice_min = ds_stats_map('fl_choice_min');
+    fl_choice_max = ds_stats_map('fl_choice_max');
     fl_choice_prob_zero = ds_stats_map('fl_choice_prob_zero');
+    fl_choice_prob_min = ds_stats_map('fl_choice_prob_min');
     fl_choice_prob_max = ds_stats_map('fl_choice_prob_max');
     % retrieve distributional array stats
     tb_prob_drv = ds_stats_map('tb_prob_drv');
     ar_choice_percentiles = tb_prob_drv{:,2};
     ar_choice_perc_fracheld = tb_prob_drv{:,3};   
+
+    % Display
+    if (bl_display_final_dist)
+        disp(['tb_prob_drv, Percentiles of Y, and Share of Y Held by Households up to this Percentile: ', st_cur_output_key])
+        disp(tb_prob_drv);
+    end
     
     %% *f(y), f(c), f(a)*: Store Statistics Specific to Each Outcome
     % see intro section
     
     % Append prob mass functions to ds_stats_map
-    ds_stats_map('mt_choice_prob') = mt_choice_prob;
-    ds_stats_map('ar_choice_prob') = ar_choice_prob;
+    ds_stats_map('mt_choice_prob_byYZ') = mt_choice_prob_byYZ;
+    ds_stats_map('tb_choice_prob_byY') = tb_choice_drv_cur_byY;
     % ds_stats_map is second element of cell for the key for the variable
     % in result_map
     cl_mt_choice_cur{2} = ds_stats_map;    
     result_map(st_cur_output_key) = cl_mt_choice_cur;
     
     % key stats
-    ar_keystats = [fl_choice_mean fl_choice_sd fl_choice_coefofvar fl_choice_prob_zero fl_choice_prob_max ar_choice_percentiles'];
+    ar_keystats = [fl_choice_mean fl_choice_sd fl_choice_coefofvar fl_choice_min fl_choice_max ...
+        fl_choice_prob_zero fl_choice_prob_min fl_choice_prob_max ar_choice_percentiles'];
     cl_outcome_names(it_outcome_ctr) = st_cur_output_key;
     if (it_outcome_ctr == 1)
         mt_outcomes_meansdperc = ar_keystats;
@@ -876,12 +908,12 @@ for it_outcome_ctr=1:length(ar_st_pol_names)
     
 end
 
-%% *f(y), f(c), f(a)*: Store Statistics Shared Table All Outcomes
-
+% *f(y), f(c), f(a)*: Store Statistics Shared Table All Outcomes
 % Process mean and and percentiles
 tb_outcomes_meansdperc = array2table(mt_outcomes_meansdperc);
 ar_fl_percentiles = tb_prob_drv{:,1};
-cl_col_names = ['mean', 'sd', 'coefofvar' 'pYis0', 'pYisMAXY', strcat('p', string(ar_fl_percentiles'))];
+cl_col_names = ['mean', 'sd', 'coefofvar', 'min', 'max', ...
+                'pYis0', 'pYisMINY', 'pYisMAXY', strcat('p', string(ar_fl_percentiles'))];
 tb_outcomes_meansdperc.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
 tb_outcomes_meansdperc.Properties.RowNames = matlab.lang.makeValidName(cl_outcome_names);
 
