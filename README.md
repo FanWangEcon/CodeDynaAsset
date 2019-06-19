@@ -1,4 +1,4 @@
-This is a work-in-progress [website](https://fanwangecon.github.io/CodeDynaAsset/) of code for solving several infinite-horizon exogenously-incomplete dynamic assets models in discrete-time. Section **(1)** solves the savings problem. Section **(2)** solves the borrowing and savings problem. Section **(3)** solve the risky and safe asset problem (risky entrepreneur). Section **(4)** solves the same problem as (3) with percentage choice grids and interpolation. Section **(5)** analyzes the risky and safe asset problem allowing for risky asset investment financing through borrowing. Section **(6)** is an application/extension of the earlier models: models from (1) through (5) are augmented following *A Choice Amongst Many: Household Borrowing in a Setting with Multiple Providers* ([**Robert M. Townsend**](http://www.robertmtownsend.net/) and [**Fan Wang**](https://fanwangecon.github.io/) 2019).
+This is a work-in-progress [website](https://fanwangecon.github.io/CodeDynaAsset/) of code for solving several infinite-horizon exogenously-incomplete dynamic assets models in discrete-time. Section **(1)** solves the [savings problem](https://fanwangecon.github.io/CodeDynaAsset/#1-the-dynamic-savings-problem-az). Section **(2)** solves the [borrowing and savings problem](https://fanwangecon.github.io/CodeDynaAsset/#2-the-savings--borrowing-problem-abz). Section **(3)** solve the [risky and safe asset problem (risky entrepreneur)](https://fanwangecon.github.io/CodeDynaAsset/#3-the-risky--safe-asset-problem-part-1). Section **(4)** solves the same problem as (3) with [percentage choice grids and interpolation](https://fanwangecon.github.io/CodeDynaAsset/#4-the-risky--safe-asset-problem-part-2). Section **(5)** analyzes the risky and safe asset problem allowing for [risky asset investment financing through borrowing](https://fanwangecon.github.io/CodeDynaAsset/#5-the-risky--safe-asset-problem-part-3). Section **(6)** is an application/extension of the earlier models: models from (1) through (5) are augmented following [*A Choice Amongst Many: Household Borrowing in a Setting with Multiple Providers*](https://fanwangecon.github.io/CodeDynaAsset/#6-formal--informal-problem-fibs) ([**Robert M. Townsend**](http://www.robertmtownsend.net/) and [**Fan Wang**](https://fanwangecon.github.io/) 2019).
 
 Generally, in sections (1) through (5), looped, vectorized, and optimized-vectorized implementations of the same solution algorithm with tabular, graphical and profiling results are shown. Separate subsections show files that solve policy functions and derive asset distributions. Looped codes are shown for clarity, vectorized codes are shown for speed. Codes are designed to not require special hardware or explicit parallelization. Codes tested on Windows 10 with [Matlab 2019a](https://www.mathworks.com/company/newsroom/mathworks-announces-release-2019a-of-matlab-and-simulink.html) for replicability. Please contact [FanWangEcon](https://fanwangecon.github.io/) for problems.
 
@@ -10,11 +10,11 @@ Functions are written with default parameters and are directly callable. See [**
 
 # 1. The Dynamic Savings Problem (AZ)
 
+> Files for this section are in the [/m_az/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_az) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository. links: (1) [savings problem](https://fanwangecon.github.io/CodeDynaAsset/#1-the-dynamic-savings-problem-az) (2) [borrowing and savings problem](https://fanwangecon.github.io/CodeDynaAsset/#2-the-savings--borrowing-problem-abz) (3) [risky and safe asset problem (risky entrepreneur)](https://fanwangecon.github.io/CodeDynaAsset/#3-the-risky--safe-asset-problem-part-1) (4) [percentage choice grids and interpolation](https://fanwangecon.github.io/CodeDynaAsset/#4-the-risky--safe-asset-problem-part-2) (5) [risky asset investment financing through borrowing](https://fanwangecon.github.io/CodeDynaAsset/#5-the-risky--safe-asset-problem-part-3) (6) [Townsend Wang 2019](https://fanwangecon.github.io/CodeDynaAsset/#6-formal--informal-problem-fibs).
+
 The *az* problem: standard model with an asset and one shock, exogenous incomplete savings only, wage shocks follow AR1.
 
 ## 1.1 Main Dynamic Programming Files (AZ)
-
-> Files for this section are in the [/m_az/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_az) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository.
 
 Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_set_default_param.html), for the benchmark simulation:
 
@@ -87,11 +87,11 @@ Deriving asset distributions relies on two functions from the [/tools/](https://
 
 # 2. The Savings + Borrowing Problem (ABZ)
 
+> Files for this section are in the [/m_abz/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_abz) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository. links: (1) [savings problem](https://fanwangecon.github.io/CodeDynaAsset/#1-the-dynamic-savings-problem-az) (2) [borrowing and savings problem](https://fanwangecon.github.io/CodeDynaAsset/#2-the-savings--borrowing-problem-abz) (3) [risky and safe asset problem (risky entrepreneur)](https://fanwangecon.github.io/CodeDynaAsset/#3-the-risky--safe-asset-problem-part-1) (4) [percentage choice grids and interpolation](https://fanwangecon.github.io/CodeDynaAsset/#4-the-risky--safe-asset-problem-part-2) (5) [risky asset investment financing through borrowing](https://fanwangecon.github.io/CodeDynaAsset/#5-the-risky--safe-asset-problem-part-3) (6) [Townsend Wang 2019](https://fanwangecon.github.io/CodeDynaAsset/#6-formal--informal-problem-fibs).
+
 Codes from *1.1-1.3* are adjusted slightly to deal with both savings as well as borrowing for the household (not a firm's static borrowing problem given shock). *abz* supersedes the *az* code. The programs allow for default.
 
 ## 2.1 Main Dynamic Programming Files (ABZ)
-
-> Files for this section are in the [/m_abz/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_abz) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository.
 
 Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_default_param.html), for the benchmark simulation:
 
@@ -141,7 +141,7 @@ We solved the exogenously incomplete borrowing and savings problem in *1.4*. Now
 
 # 3. The Risky + Safe Asset Problem (Part 1)
 
-> Files for this section are in the [/m_akz/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_akz) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository.
+> Files for this section are in the [/m_akz/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_akz) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository. links: (1) [savings problem](https://fanwangecon.github.io/CodeDynaAsset/#1-the-dynamic-savings-problem-az) (2) [borrowing and savings problem](https://fanwangecon.github.io/CodeDynaAsset/#2-the-savings--borrowing-problem-abz) (3) [risky and safe asset problem (risky entrepreneur)](https://fanwangecon.github.io/CodeDynaAsset/#3-the-risky--safe-asset-problem-part-1) (4) [percentage choice grids and interpolation](https://fanwangecon.github.io/CodeDynaAsset/#4-the-risky--safe-asset-problem-part-2) (5) [risky asset investment financing through borrowing](https://fanwangecon.github.io/CodeDynaAsset/#5-the-risky--safe-asset-problem-part-3) (6) [Townsend Wang 2019](https://fanwangecon.github.io/CodeDynaAsset/#6-formal--informal-problem-fibs).
 
 Two endogenous assets, one safe one risky. Risky asset could be stocks with constant return to scale, or physical capital investment with depreciation and decreasing return to scale (risky entrepreneur). The risky asset choice is made ex-ante the realization of the shock for that risky asset, hence risky. This contrasts with a firm's within period optimal physical capital choice problem, which is made after the realization of shocks. Note that the utility function is CRRA, however, households do not have constant share of risky investment for any wealth (cash-on-hand) levels when risky asset has decreasing return to scale and/or shock is persistent and/or there is minimum income.
 
@@ -269,7 +269,7 @@ We solve the joint asset choice problem using the *optimized-vectorized* method 
 
 # 4. The Risky + Safe Asset Problem (Part 2)
 
-> Files for this section are in the [/m_ipwkz/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_ipwkz) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository.
+> Files for this section are in the [/m_ipwkz/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_ipwkz) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository. links: (1) [savings problem](https://fanwangecon.github.io/CodeDynaAsset/#1-the-dynamic-savings-problem-az) (2) [borrowing and savings problem](https://fanwangecon.github.io/CodeDynaAsset/#2-the-savings--borrowing-problem-abz) (3) [risky and safe asset problem (risky entrepreneur)](https://fanwangecon.github.io/CodeDynaAsset/#3-the-risky--safe-asset-problem-part-1) (4) [percentage choice grids and interpolation](https://fanwangecon.github.io/CodeDynaAsset/#4-the-risky--safe-asset-problem-part-2) (5) [risky asset investment financing through borrowing](https://fanwangecon.github.io/CodeDynaAsset/#5-the-risky--safe-asset-problem-part-3) (6) [Townsend Wang 2019](https://fanwangecon.github.io/CodeDynaAsset/#6-formal--informal-problem-fibs).
 
 In Section 3, we solved the two asset problem in levels. Here, the same model is solved, but using an alternative algorithm. Now the model is solved in percentages. Households choose the percentage of cash-on-hand to allocate to aggregate savings, and then given that the percentage of total savings to allocate to safe vs risky asset.
 
@@ -362,7 +362,7 @@ We solve the joint asset choice problem using the *optimized-vectorized* method 
 
 # 5. The Risky + Safe Asset Problem (Part 3)
 
-> Files for this section are in the [/m_ipwkbz/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_ipwkbz) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository.
+> Files for this section are in the [/m_ipwkbz/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_ipwkbz) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository. links: (1) [savings problem](https://fanwangecon.github.io/CodeDynaAsset/#1-the-dynamic-savings-problem-az) (2) [borrowing and savings problem](https://fanwangecon.github.io/CodeDynaAsset/#2-the-savings--borrowing-problem-abz) (3) [risky and safe asset problem (risky entrepreneur)](https://fanwangecon.github.io/CodeDynaAsset/#3-the-risky--safe-asset-problem-part-1) (4) [percentage choice grids and interpolation](https://fanwangecon.github.io/CodeDynaAsset/#4-the-risky--safe-asset-problem-part-2) (5) [risky asset investment financing through borrowing](https://fanwangecon.github.io/CodeDynaAsset/#5-the-risky--safe-asset-problem-part-3) (6) [Townsend Wang 2019](https://fanwangecon.github.io/CodeDynaAsset/#6-formal--informal-problem-fibs).
 
 Now we set up the model with borrowing, allowing for defaults. The *ipwkz* code works with borrowing as well,
 
@@ -418,7 +418,7 @@ We solve the joint asset choice problem using the *optimized-vectorized* method 
 
 # 6. Formal + Informal Problem (FIBS)
 
-> Files for this section are in the [/m_fibs/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_fibs) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository.
+> Files for this section are in the [/m_fibs/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_fibs) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository. links: (1) [savings problem](https://fanwangecon.github.io/CodeDynaAsset/#1-the-dynamic-savings-problem-az) (2) [borrowing and savings problem](https://fanwangecon.github.io/CodeDynaAsset/#2-the-savings--borrowing-problem-abz) (3) [risky and safe asset problem (risky entrepreneur)](https://fanwangecon.github.io/CodeDynaAsset/#3-the-risky--safe-asset-problem-part-1) (4) [percentage choice grids and interpolation](https://fanwangecon.github.io/CodeDynaAsset/#4-the-risky--safe-asset-problem-part-2) (5) [risky asset investment financing through borrowing](https://fanwangecon.github.io/CodeDynaAsset/#5-the-risky--safe-asset-problem-part-3) (6) [Townsend Wang 2019](https://fanwangecon.github.io/CodeDynaAsset/#6-formal--informal-problem-fibs).
 
 An application of the codes developed in sections (1) through (5) is the paper: *A Choice Amongst Many: Household Borrowing in a Setting with Multiple Providers* ([**Robert M. Townsend**](http://www.robertmtownsend.net/) and [**Fan Wang**](https://fanwangecon.github.io/) 2019). Below, earlier models are augmented to allow for (a) formal borrowing choice menu, (b) bridge loans, and (c) defaults.
 
