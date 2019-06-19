@@ -1,7 +1,7 @@
 Back to [Fan](https://fanwangecon.github.io)'s
 [Dynamic Assets Repository](https://fanwangecon.github.io/CodeDynaAsset/) Table of Content.
 
-# The AZ (BZ) model
+# The AZ model
 
 - *a*: asset state/choice (a > 0 only)
 - *z*: shock

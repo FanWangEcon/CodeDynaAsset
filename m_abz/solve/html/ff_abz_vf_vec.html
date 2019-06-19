@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Solve Save + Borr Dynamic Programming Problem (Vectorized)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-16"><meta name="DC.source" content="ff_abz_vf_vec.m"><style type="text/css">
+      --><title>Solve For+Inf+Borr+Save Dynamic Programming Problem (Vectorized)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-18"><meta name="DC.source" content="ff_abz_vf_vec.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,9 +66,9 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Solve Save + Borr Dynamic Programming Problem (Vectorized)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_ABZ_VF_VEC solve infinite horizon exo shock + endo asset problem</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1</a></li><li><a href="#5">Parse Parameters 2</a></li><li><a href="#6">Initialize Output Matrixes</a></li><li><a href="#7">Initialize Convergence Conditions</a></li><li><a href="#8">Iterate Value Function</a></li><li><a href="#10">Solve Optimization Problem Current Iteration</a></li><li><a href="#11">Check Tolerance and Continuation</a></li><li><a href="#13">Process Optimal Choices</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> result_map = ff_abz_vf_vec(varargin)
-</pre><h2 id="2">FF_ABZ_VF_VEC solve infinite horizon exo shock + endo asset problem</h2><p>This program solves the infinite horizon dynamic single asset and single shock problem with vectorized codes. <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf.html">ff_abz_vf</a> shows looped codes. The solution is the same.</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@param func_map container container with function handles for consumption cash-on-hand etc.</p><p>@return result_map container contains policy function matrix, value function matrix, iteration results, and policy function, value function and iteration results tables.</p><p>keys included in result_map:</p><div><ul><li>mt_val matrix states_n by shock_n matrix of converged value function grid</li><li>mt_pol_a matrix states_n by shock_n matrix of converged policy function grid</li><li>ar_val_diff_norm array if bl_post = true it_iter_last by 1 val function difference between iteration</li><li>ar_pol_diff_norm array if bl_post = true it_iter_last by 1 policy function difference between iterations</li><li>mt_pol_perc_change matrix if bl_post = true it_iter_last by shock_n the proportion of grid points at which policy function changed between current and last iteration for each element of shock</li></ul></div><p>@example</p><pre>  % Get Default Parameters
-  it_param_set = 4;
+  </style></head><body><div class="content"><h1>Solve For+Inf+Borr+Save Dynamic Programming Problem (Vectorized)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_ABZ_VF_VEC solve infinite horizon exo shock + endo asset problem</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1</a></li><li><a href="#5">Parse Parameters 2</a></li><li><a href="#6">Initialize Output Matrixes</a></li><li><a href="#7">Initialize Convergence Conditions</a></li><li><a href="#8">Iterate Value Function</a></li><li><a href="#10">Solve Optimization Problem Current Iteration</a></li><li><a href="#11">Check Tolerance and Continuation</a></li><li><a href="#13">Process Optimal Choices</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> result_map = ff_abz_vf_vec(varargin)
+</pre><h2 id="2">FF_ABZ_VF_VEC solve infinite horizon exo shock + endo asset problem</h2><p>This program solves the infinite horizon dynamic single asset and single shock problem with vectorized codes. <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf.html">ff_abz_vf</a> shows looped codes. The solution is the same.</p><p>The borrowing problem is very similar to the savings problem. The code could be identical if one does not have to deal with default. The main addition here in comparison to the savings only code <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vec.html">ff_az_vf_vec</a> is the ability to deal with default.</p><p>The vectorization takes advantage of implicit parallization that modern computers have when <a href="https://en.wikipedia.org/wiki/SIMD">same instructions are given for different blocks of data</a> With vectorization, we face a tradeoff between memory and speed. Suppose we have many shock points and many states points, if we build all states and choices into one single matrix and compute consumption, utility, etc over that entire matrix, that might be more efficient than computing consumption, utility, etc by subset of that matrix over a loop, but there is time required for generating that large input matrix, and if there are too many states, a computer could run out of memory.</p><p>The design philosophy here is that we vectorize the endogenous states and choices into matrixes, but do not include the exogeous states (shocks). The exogenous shocks remain looped. This means we can potentially have multiple shock variables discretized over a large number of shock states, and the computer would not run into memory problems. The speed gain from vectoring the rest of the problem conditional on shocks is very large compared to the pure looped version of the problem. Even if more memory is available, including the exogenous states in the vectorization process might not be speed improving.</p><p>Note one key issue is whether a programming language is <a href="https://en.wikipedia.org/wiki/Row-_and_column-major_order">row or column major</a> depending on which, states should be rows or columns.</p><p>Another programming issue is the idea of <b>broadcasting</b> vs matrix algebra, both are used here. Since Matlab R2016b, <a href="https://blogs.mathworks.com/loren/2016/10/24/matlab-arithmetic-expands-in-r2016b/">matrix broadcasting</a> has been allowed, which means the sum of a N by 1 and 1 by M is N by M. This is unrelated to matrix algebra. Matrix array broadcasting is very useful because it reduces the dimensionality of our model input state and choice and shock vectors, offering greater code clarity.</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@param func_map container container with function handles for consumption cash-on-hand etc.</p><p>@return result_map container contains policy function matrix, value function matrix, iteration results, and policy function, value function and iteration results tables.</p><p>keys included in result_map:</p><div><ul><li>mt_val matrix states_n by shock_n matrix of converged value function grid</li><li>mt_pol_a matrix states_n by shock_n matrix of converged policy function grid</li><li>ar_val_diff_norm array if bl_post = true it_iter_last by 1 val function difference between iteration</li><li>ar_pol_diff_norm array if bl_post = true it_iter_last by 1 policy function difference between iterations</li><li>mt_pol_perc_change matrix if bl_post = true it_iter_last by shock_n the proportion of grid points at which policy function changed between current and last iteration for each element of shock</li></ul></div><p>@example</p><pre>  % Get Default Parameters
+  it_param_set = 2;
   [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
   % Chnage param_map keys for borrowing
   param_map('fl_b_bd') = -20; % borrow bound
@@ -288,8 +288,12 @@ mt_pol_perc_change = zeros([it_maxiter_val, it_z_n]);
 <span class="keyword">end</span>
 </pre><h2 id="13">Process Optimal Choices</h2><pre class="codeinput">result_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
 result_map(<span class="string">'mt_val'</span>) = mt_val;
-result_map(<span class="string">'mt_pol_a'</span>) = mt_pol_a;
 result_map(<span class="string">'mt_pol_idx'</span>) = mt_pol_idx;
+
+result_map(<span class="string">'cl_mt_pol_a'</span>) = {mt_pol_a, zeros(1)};
+result_map(<span class="string">'cl_mt_pol_coh'</span>) = {f_coh(ar_z, ar_a'), zeros(1)};
+result_map(<span class="string">'cl_mt_pol_c'</span>) = {f_cons(ar_z, ar_a', mt_pol_a), zeros(1)};
+result_map(<span class="string">'ar_st_pol_names'</span>) = [<span class="string">"cl_mt_pol_a"</span>, <span class="string">"cl_mt_pol_coh"</span>, <span class="string">"cl_mt_pol_c"</span>];
 
 <span class="keyword">if</span> (bl_post)
     bl_input_override = true;
@@ -621,13 +625,13 @@ ans =
 
   Map with properties:
 
-        Count: 11
+        Count: 14
       KeyType: char
     ValueType: any
 
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
-%% Solve Save + Borr Dynamic Programming Problem (Vectorized)
+%% Solve For+Inf+Borr+Save Dynamic Programming Problem (Vectorized)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
@@ -639,6 +643,46 @@ function result_map = ff_abz_vf_vec(varargin)
 % shock problem with vectorized codes.
 % <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf.html
 % ff_abz_vf> shows looped codes. The solution is the same.
+%
+% The borrowing problem is very similar to the savings problem. The code
+% could be identical if one does not have to deal with default. The main
+% addition here in comparison to the savings only code
+% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vec.html
+% ff_az_vf_vec> is the ability to deal with default. 
+%
+% The vectorization takes advantage of implicit parallization that modern
+% computers have when <https://en.wikipedia.org/wiki/SIMD same instructions
+% are given for different blocks of data> With vectorization, we face a
+% tradeoff between memory and speed. Suppose we have many shock points and
+% many states points, if we build all states and choices into one single
+% matrix and compute consumption, utility, etc over that entire matrix,
+% that might be more efficient than computing consumption, utility, etc by
+% subset of that matrix over a loop, but there is time required for
+% generating that large input matrix, and if there are too many states, a
+% computer could run out of memory.
+%
+% The design philosophy here is that we vectorize the endogenous states and
+% choices into matrixes, but do not include the exogeous states (shocks).
+% The exogenous shocks remain looped. This means we can potentially have
+% multiple shock variables discretized over a large number of shock states,
+% and the computer would not run into memory problems. The speed gain from
+% vectoring the rest of the problem conditional on shocks is very large
+% compared to the pure looped version of the problem. Even if more memory
+% is available, including the exogenous states in the vectorization process
+% might not be speed improving.
+%
+% Note one key issue is whether a programming language is
+% <https://en.wikipedia.org/wiki/Row-_and_column-major_order row or column
+% major> depending on which, states should be rows or columns.
+%
+% Another programming issue is the idea of *broadcasting* vs matrix
+% algebra, both are used here. Since Matlab R2016b,
+% <https://blogs.mathworks.com/loren/2016/10/24/matlab-arithmetic-expands-in-r2016b/
+% matrix broadcasting> has been allowed, which means the sum of a N by 1
+% and 1 by M is N by M. This is unrelated to matrix algebra. Matrix array
+% broadcasting is very useful because it reduces the dimensionality of our
+% model input state and choice and shock vectors, offering greater code
+% clarity.
 %
 % @param param_map container parameter container
 %
@@ -669,7 +713,7 @@ function result_map = ff_abz_vf_vec(varargin)
 % @example
 %
 %    % Get Default Parameters
-%    it_param_set = 4;
+%    it_param_set = 2;
 %    [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
 %    % Chnage param_map keys for borrowing
 %    param_map('fl_b_bd') = -20; % borrow bound
@@ -947,8 +991,12 @@ end
 
 result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
-result_map('mt_pol_a') = mt_pol_a;
 result_map('mt_pol_idx') = mt_pol_idx;
+
+result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
+result_map('cl_mt_pol_coh') = {f_coh(ar_z, ar_a'), zeros(1)};
+result_map('cl_mt_pol_c') = {f_cons(ar_z, ar_a', mt_pol_a), zeros(1)};
+result_map('ar_st_pol_names') = ["cl_mt_pol_a", "cl_mt_pol_coh", "cl_mt_pol_c"];
 
 if (bl_post)
     bl_input_override = true;

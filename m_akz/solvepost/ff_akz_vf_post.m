@@ -1,8 +1,9 @@
-%%
+%% Tabulate Value and Policy Iteration Results, Store to Mat, Graph Results (Risky + Safe Asset)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
+%%
 function [result_map] = ff_akz_vf_post(varargin)
 %% FF_AKZ_VF_POST post ff_akz_vf graphs, tables, mats.
 % Given the solution form ff_akz_vf, graphs, tables, mats. Graphing code is
@@ -35,13 +36,13 @@ function [result_map] = ff_akz_vf_post(varargin)
 %    result_map('ar_val_diff_norm') = ar_val_diff_norm(1:it_iter_last);
 %    result_map('ar_pol_diff_norm') = ar_pol_diff_norm(1:it_iter_last);
 %    result_map('mt_pol_perc_change') = mt_pol_perc_change(1:it_iter_last, :);
-%    result_map = ff_akz_vf_post(param_map, support_map, armt_map, func_map, result_map,    bl_input_override);
+%    result_map = ff_akz_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
 %
 % @include
 %
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solvepost/ff_akz_vf_post_graph.m ff_akz_vf_post_graph>
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ffs_akz_set_default_param.m ffs_akz_set_default_param>
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ffs_akz_get_funcgrid.m ffs_akz_get_funcgrid>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_vf_post_graph.html ff_akz_vf_post_graph>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html ffs_akz_set_default_param>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html ffs_akz_get_funcgrid>
 %
 
 %% Default
@@ -56,8 +57,10 @@ if (bl_input_override)
     % if invoked from outside overrid fully
     [param_map, support_map, armt_map, func_map, result_map, ~] = varargin{:};
 
-    params_group = values(result_map, {'mt_val', 'mt_pol_a', 'mt_pol_k'});
-    [mt_val, mt_pol_a, mt_pol_k] = params_group{:};
+    params_group = values(result_map, {'mt_val', 'cl_mt_pol_a', 'cl_mt_pol_k'});    
+    [mt_val, cl_mt_pol_a, cl_mt_pol_k] = params_group{:};
+    [mt_pol_a, mt_pol_k] = deal(cl_mt_pol_a{1}, cl_mt_pol_k{1});
+    
     params_group = values(result_map, {'ar_val_diff_norm', 'ar_pol_diff_norm', 'mt_pol_perc_change'});
     [ar_val_diff_norm, ar_pol_diff_norm, mt_pol_perc_change] = params_group{:};
 
@@ -100,8 +103,9 @@ else
     % Set Results Map
     result_map = containers.Map('KeyType','char', 'ValueType','any');
     result_map('mt_val') = mt_val;
-    result_map('mt_pol_a') = mt_pol_a;
-    result_map('mt_pol_k') = mt_pol_k;
+    result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
+    result_map('cl_mt_pol_k') = {mt_pol_k, zeros(1)};
+    
 end
 
 %% Parse Parameter
@@ -114,16 +118,17 @@ params_group = values(support_map, {'bl_graph', 'bl_graph_onebyones'});
 params_group = values(support_map, {'bl_mat', 'st_mat_path', 'st_mat_prefix', 'st_mat_name_main', 'st_mat_suffix'});
 [bl_mat, st_mat_path, st_mat_prefix, st_mat_name_main, st_mat_suffix] = params_group{:};
 
-% func_map
-params_group = values(func_map, {'f_inc', 'f_cons', 'f_coh'});
-[f_inc, f_cons, f_coh] = params_group{:};
-
 %% Generate Consumption and Income Matrix
-
-mt_cons = f_cons(mt_coh_wkb, mt_pol_a, mt_pol_k);
-mt_incm = f_inc(ar_z, ar_a_meshk, ar_k_mesha);
-result_map('mt_cons') = mt_cons;
-result_map('mt_incm') = mt_incm;
+if (~isKey(result_map, 'cl_mt_cons'))
+    f_cons = func_map('f_cons');
+    mt_cons = f_cons(mt_coh_wkb, mt_pol_a, mt_pol_k);
+    result_map('cl_mt_cons') = {mt_cons, zeros(1)};
+end
+if (~isKey(result_map, 'cl_mt_coh'))
+    f_coh = func_map('f_coh');
+    mt_coh = f_coh(ar_z, ar_a_meshk, ar_k_mesha);
+    result_map('cl_mt_coh') = {mt_coh, zeros(1)};
+end
 
 %% Save Mat
 
@@ -131,6 +136,13 @@ if (bl_mat)
     mkdir(support_map('st_mat_path'));
     st_file_name = [st_mat_prefix st_mat_name_main st_mat_suffix];
     save(strcat(st_mat_path, st_file_name));
+end
+
+%% Generate and Save Graphs
+
+if (bl_graph)
+    bl_input_override = true;
+    ff_akz_vf_post_graph(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
 end
 
 %% Display Val Pol Iter Table
@@ -223,13 +235,6 @@ if (bl_display_final)
     result_map('tb_valpol_alliter') = tb_valpol_alliter;
     result_map('tb_val') = tb_val;
     result_map('tb_pol_a') = tb_pol_a;
-end
-
-%% Generate and Save Graphs
-
-if (bl_graph)
-    bl_input_override = true;
-    ff_akz_vf_post_graph(param_map, support_map, armt_map, result_map, bl_input_override);
 end
 
 end

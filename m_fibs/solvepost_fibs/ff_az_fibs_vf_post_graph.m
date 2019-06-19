@@ -1,4 +1,4 @@
-%% Graphing for For Inf Borr Save Outcomes for One Endo Asset Model
+%% Graph for For Inf Borr Save Outcomes for One Endo Asset Model
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
@@ -17,7 +17,7 @@ function ff_az_fibs_vf_post_graph(varargin)
 %
 % # Percentage credit market choices: similar file as above, except that
 % now, rather than showing levels. Show percentages. divide each by
-% aggregate asset level. Same graphing strategy. if 4 subplots, plotting
+% aggregate asset level. Same Graph strategy. if 4 subplots, plotting
 % with four levels of shocks. 
 %
 % # Participation regions, come up with all the possible formal and
@@ -91,8 +91,8 @@ params_group = values(param_map, {'it_z_n'});
 [it_z_n] = params_group{:};
 
 % support_map
-params_group = values(support_map, {'bl_graph_onebyones', 'bl_graph_val', 'bl_graph_pol_lvl', 'bl_graph_pol_pct'});
-[bl_graph_onebyones, bl_graph_val, bl_graph_pol_lvl, bl_graph_pol_pct] = params_group{:};
+params_group = values(support_map, {'bl_graph_onebyones', 'bl_graph_discrete', 'bl_graph_pol_lvl', 'bl_graph_pol_pct'});
+[bl_graph_onebyones, bl_graph_discrete, bl_graph_pol_lvl, bl_graph_pol_pct] = params_group{:};
 params_group = values(support_map, {'bl_img_save', 'st_img_path', 'st_img_prefix', 'st_img_name_main', 'st_img_suffix'});
 [bl_img_save, st_img_path, st_img_prefix, st_img_name_main, st_img_suffix] = params_group{:};
 params_group = values(support_map, {'st_title_prefix'});
@@ -103,87 +103,115 @@ params_group = values(armt_map, {'ar_a', 'ar_z'});
 [ar_a, ar_z] = params_group{:};
 
 % result_map
-params_group = values(result_map, {'mt_cons', 'mt_coh', 'mt_val', 'mt_pol_a'});
-[mt_cons, mt_coh, mt_val, mt_pol_a] = params_group{:};
+params_group = values(result_map, {'mt_cons', 'mt_coh', 'mt_val', 'mt_pol_a',...
+    'mt_pol_b_bridge', 'mt_pol_inf_borr_nobridge', 'mt_pol_for_borr', 'mt_pol_for_save'});
+[mt_cons, mt_coh, mt_val, mt_pol_a, ...
+    mt_pol_b_bridge, mt_pol_inf_borr_nobridge, mt_pol_for_borr, mt_pol_for_save] = params_group{:};
 
 % How many zs to Graph
 ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)) (it_z_n)]);
 
-%% Graphing Values
+%% Graph Optimal Discrete
+% States: cash-on-hand, shock
+% Choices: discrete optimal choices
 
-if (bl_graph_val)
+if (bl_graph_discrete)
 
     if (~bl_graph_onebyones)
         figure('PaperPosition', [0 0 14 4]);
     end
 
-    for sub_j=1:1:2
-
-        mt_outcome = mt_val;
-        st_y_label = 'V(a, z)';
-
-        if (~bl_graph_onebyones)
-            subplot(1,2,sub_j)
-        else
-            figure('PaperPosition', [0 0 7 4]);
+    % start figure
+    figure('PaperPosition', [0 0 7 4]);
+    hold on;
+    
+    %% Graph Optimal Discrete Gen Discrete Outcomes    
+    % * formal only (no bridge)
+    % * Informal borrow only (no bridge)
+    % * formal + informal borrow (no bridge)
+    % * formal save + borrow (no bridge)
+    % * bridge loan areas
+    
+    % Generate Binary Outcomes
+    mt_it_for_borr_idx = (mt_pol_for_borr ~= 0);
+    mt_it_for_save_idx = (mt_pol_for_save ~= 0);
+    mt_it_inf_borr_nobridge_idx = (mt_pol_inf_borr_nobridge ~= 0);
+    mt_it_b_bridge_idx = (mt_pol_b_bridge ~= 0);    
+    
+    % Generate Multinomial Outcomes
+    mt_it_for_only_nbdg = ( mt_it_for_borr_idx & ~mt_it_for_save_idx & ~mt_it_inf_borr_nobridge_idx);
+    mt_it_inf_only_nbdg = (~mt_it_for_borr_idx & ~mt_it_for_save_idx &  mt_it_inf_borr_nobridge_idx);
+    mt_it_frin_brr_nbdg = ( mt_it_for_borr_idx & ~mt_it_for_save_idx &  mt_it_inf_borr_nobridge_idx);
+    mt_it_fr_brrsv_nbdg = ( mt_it_for_borr_idx &  mt_it_for_save_idx & ~mt_it_inf_borr_nobridge_idx);
+    
+    % Generate x and y arrays
+    [ar_z_mw, ar_w_mz] = meshgrid(ar_z, ar_a);
+        
+    %% Graph Optimal Discrete Graph Discrete Outcomes
+    
+    % colors etc
+    cl_colors = {'blue', 'red', 'black', 'yellow', 'blue'};
+    cl_legend = {'For Borr', 'Inf Borr', 'For+Inf Br', 'For+Br+Save', 'Bridge Loan'};
+    cl_shapes = {'s','s','s','s','s'};
+    cl_csizes = {10,10,10,10,10};
+    
+    % graphs to run       
+    ar_it_graphs_run = 1:5;
+    it_graph_counter = 0;
+    for it_fig = ar_it_graphs_run
+        
+        % count cur graph
+        it_graph_counter = it_graph_counter + 1;
+        
+        if (it_fig == 1)
+            mt_cur_use_idx = mt_it_for_only_nbdg;
         end
-        hold on;
-
-        clr = jet(length(ar_it_z_graph));
-        i_ctr = 0;
-        for i = ar_it_z_graph
-            i_ctr = i_ctr + 1;
-
-            if (sub_j == 1)
-                ar_x = ar_a;
-            else
-                ar_x = log(ar_a - min(ar_a) + 1);
-            end
-
-            ar_y = mt_outcome(:, i);
-            scatter(ar_x, ar_y, 5, ...
-                'MarkerEdgeColor', clr(i_ctr,:), ...
-                'MarkerFaceColor', clr(i_ctr,:));
+        if (it_fig == 2)
+            mt_cur_use_idx = mt_it_inf_only_nbdg;
         end
-
-        grid on;
-        grid minor;
-        title([st_title_prefix 'V(a, z)'])
-        ylabel(st_y_label)
-
-        if (sub_j == 1)
-            xlabel({'Asset (a) State'})
-        else
-            xlabel({'log(a - min(a) + 1)'})
+        if (it_fig == 3)
+            mt_cur_use_idx = mt_it_frin_brr_nbdg;
         end
-
-        legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
-        legend(legendCell(ar_it_z_graph), 'Location','southeast');
-
-        % mark y = 0
-        yline0 = yline(0);
-        yline0.HandleVisibility = 'off';
-
-        % mark a = 0
-        if (sub_j == 1)
-            xline0 = xline(0);
-        else
-            xline0 = xline(log(0 - min(ar_a) + 1));
+        if (it_fig == 4)
+            mt_cur_use_idx = mt_it_fr_brrsv_nbdg;
         end
-        xline0.HandleVisibility = 'off';
-
+        if (it_fig == 5)
+            mt_cur_use_idx = mt_it_b_bridge_idx;
+        end
+                
+        % Generate x and y
+        ar_x = mt_x(mt_cur_use_idx);
+        ar_y = mt_y(mt_cur_use_idx);
+        
+        % Color and Size etc
+        ar_color = cl_colors{it_fig};
+        st_shape = cl_shapes{it_fig};
+        it_csize = cl_csizes{it_fig};
+        
+        % Figure Collect
+        ls_chart(it_graph_counter) = scatter(ar_x, ar_y, it_csize, ar_color, st_shape);
+        cl_legend{it_graph_counter} = cl_legend{it_fig};
     end
+    
+    % legend
+    legend(ls_chart, cl_legend, 'Location','northeast');
+    
+    % labeling
+    title('Borrow and Save Regions')
+    ylabel('Shocks')
+    xlabel({'Total Savings w=k+b'})
+    grid on;
 
     % save file
     if (bl_img_save)
         mkdir(support_map('st_img_path'));
-        st_file_name = [st_img_prefix st_img_name_main '_val' st_img_suffix];
+        st_file_name = [st_img_prefix st_img_name_main '_fibs5' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
 
 end
 
-%% Graphing Choice Levels
+%% Graph Choice Levels
 
 if (bl_graph_pol_lvl)
 
@@ -310,7 +338,7 @@ if (bl_graph_pol_lvl)
 
 end
 
-%% Graphing Choice Percentages
+%% Graph Choice Percentages
 
 if (bl_graph_pol_pct)
 

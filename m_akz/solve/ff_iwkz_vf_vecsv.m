@@ -53,7 +53,7 @@ function result_map = ff_iwkz_vf_vecsv(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 2;
+it_param_set = 4;
 bl_input_override = true;
 [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
 

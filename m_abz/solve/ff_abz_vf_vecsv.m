@@ -14,6 +14,25 @@ function result_map = ff_abz_vf_vecsv(varargin)
 % ff_abz_vf_vec> shows vectorized codes. This file shows vectorized codes
 % that is faster but is more memory intensive.
 %
+% The borrowing problem is very similar to the savings problem. The code
+% could be identical if one does not have to deal with default. The main
+% addition here in comparison to the savings only code
+% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html
+% ff_az_vf_vec> is the ability to deal with default. 
+%
+% See
+% <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vec.html
+% ff_az_vf_vec> how vectorization works within this structure.
+%
+% This _optimized-vectorized_ solution method provides very large speed
+% improvements for this infinite horizon problem because the u(c(z,a,a'))
+% calculation within each iteration is identical. Generally the idea is to
+% identify inside iteration whether the model is infinite horizon or
+% life-cycle based where repeat calculations are taking place. If such
+% calculations can be identified, then potentially they could be stored and
+% retrieved during future iterations/periods rather than recomputed every
+% time. This saves time. 
+%
 % @param param_map container parameter container
 %
 % @param support_map container support container
@@ -43,7 +62,7 @@ function result_map = ff_abz_vf_vecsv(varargin)
 % @example
 %
 %    % Get Default Parameters
-%    it_param_set = 4;
+%    it_param_set = 2;
 %    [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
 %    % Chnage param_map keys for borrowing
 %    param_map('fl_b_bd') = -20; % borrow bound
@@ -84,12 +103,6 @@ function result_map = ff_abz_vf_vecsv(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 %
-% go to
-% <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_set_default_param.html
-% ffs_abz_set_default_param> to change parameters in param_map container.
-% The parameters can also be updated here directly after obtaining them
-% from ffs_abz_set_default_param as we possibly change it_a_n and it_z_n
-% here.
 
 it_param_set = 4;
 bl_input_override = true;
@@ -358,8 +371,12 @@ end
 
 result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
-result_map('mt_pol_a') = mt_pol_a;
 result_map('mt_pol_idx') = mt_pol_idx;
+
+result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
+result_map('cl_mt_pol_coh') = {f_coh(ar_z, ar_a'), zeros(1)};
+result_map('cl_mt_pol_c') = {f_cons(ar_z, ar_a', mt_pol_a), zeros(1)};
+result_map('ar_st_pol_names') = ["cl_mt_pol_a", "cl_mt_pol_coh", "cl_mt_pol_c"];
 
 if (bl_post)
     bl_input_override = true;

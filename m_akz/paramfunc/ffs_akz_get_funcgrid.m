@@ -1,12 +1,19 @@
-%%
+%% Generate States, Choices and Shocks Grids and Get Functions (Risky + Safe Asset)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
+%%
 function [armt_map, func_map] = ffs_akz_get_funcgrid(varargin)
 %% FFS_AKZ_GET_FUNCGRID get funcs, params, states choices shocks grids
-% centralized gateway for retrieving parameters, and solution grids and
+% Centralized gateway for retrieving parameters, and solution grids and
 % functions.
+%
+% This function services both
+% <https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_akz m_akz> as
+% well as <https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_akbz
+% m_akbz> functions. This means that the function here support solving both
+% the borrowing as well as the savings problems.
 %
 % Note that while we have several versions of algorithms, one version
 % requires interpolation, so there are several matrixes and vectors below
@@ -15,6 +22,14 @@ function [armt_map, func_map] = ffs_akz_get_funcgrid(varargin)
 % when we solve the iwkz problem.
 %
 % For the ikwz problem, we have two cash-on-hand matrixes: mt_coh_wkb
+%
+% Note that in the m_abz problem's funcgrid function, we also called
+% <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_gen_borrsave_grid.html
+% ffs_abz_gen_borrsave_grid> function, which generates borrowing grid
+% depending on if default is allowed or not. In the problem here, the
+% situation is more complicated, because now the maximum borrowing level is
+% a function of the risky investment choice when default is not allowed. We
+% impose a exogenous borrowing bound here.
 %
 % @param param_map container parameter container
 %
@@ -35,16 +50,21 @@ function [armt_map, func_map] = ffs_akz_get_funcgrid(varargin)
 %
 % @example
 %
-%    it_param_set = 2;
-%    bl_input_override = true;
-%    [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
-%    [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override);
+%    it_param_set = 2; bl_input_override = true; [param_map, support_map] =
+%    ffs_akz_set_default_param(it_param_set); [armt_map, func_map] =
+%    ffs_akz_get_funcgrid(param_map, support_map, bl_input_override);
 %
 % @include
 %
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ffs_akz_set_functions.m ffs_akz_set_functions>
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/ffto_gen_tauchen_jhl.m ffto_gen_tauchen_jhl>
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/fft_gen_grid_loglin.m fft_gen_grid_loglin>
+% *
+% <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html
+% ffs_akz_set_functions>
+% *
+% <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/ffto_gen_tauchen_jhl.m
+% ffto_gen_tauchen_jhl>
+% *
+% <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/fft_gen_grid_loglin.m
+% fft_gen_grid_loglin>
 %
 
 %% Default
@@ -62,7 +82,10 @@ else
     support_map('bl_graph_funcgrids') = true;
     support_map('bl_display_funcgrids') = true;
     default_maps = {param_map, support_map};
-
+        
+    % Run Default with Borrowing
+    param_map('fl_b_bd') = -20;
+    
     % numvarargs is the number of varagin inputted
     [default_maps{1:length(varargin)}] = varargin{:};
     param_map = [param_map; default_maps{1}];
@@ -74,11 +97,11 @@ end
 params_group = values(param_map, {'it_z_n', 'fl_z_mu', 'fl_z_rho', 'fl_z_sig'});
 [it_z_n, fl_z_mu, fl_z_rho, fl_z_sig] = params_group{:};
 
-params_group = values(param_map, {'fl_b_bd', 'fl_w_min', 'fl_w_max', 'it_w_n', 'fl_coh_interp_grid_gap'});
-[fl_b_bd, fl_w_min, fl_w_max, it_w_n, fl_coh_interp_grid_gap] = params_group{:};
+params_group = values(param_map, {'fl_b_bd', 'fl_w_max', 'it_w_n', 'fl_coh_interp_grid_gap'});
+[fl_b_bd, fl_w_max, it_w_n, fl_coh_interp_grid_gap] = params_group{:};
 
-params_group = values(param_map, {'fl_k_min', 'fl_k_max', 'it_ak_n'});
-[fl_k_min, fl_k_max, it_ak_n] = params_group{:};
+params_group = values(param_map, {'fl_k_min', 'it_ak_n'});
+[fl_k_min, it_ak_n] = params_group{:};
 
 params_group = values(param_map, {'fl_crra', 'fl_c_min', 'it_c_interp_grid_gap'});
 [fl_crra, fl_c_min, it_c_interp_grid_gap] = params_group{:};
@@ -98,6 +121,9 @@ params_group = values(support_map, {'bl_graph_funcgrids', 'bl_display_funcgrids'
 % how much to put into safe assets. See
 % <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html
 % ffs_akz_set_default_param> for details.
+
+fl_w_min = param_map('fl_b_bd'); 
+fl_k_max = (param_map('fl_w_max') - param_map('fl_b_bd'));
 
 ar_w = linspace(fl_w_min, fl_w_max, it_w_n);
 ar_k = linspace(fl_k_min, fl_k_max, it_ak_n);

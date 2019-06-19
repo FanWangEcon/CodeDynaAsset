@@ -9,12 +9,12 @@ function result_map = ff_az_vf(varargin)
 % This program solves the infinite horizon dynamic single asset and single
 % shock problem with loops. It is useful to have a version of code that is
 % looped for easy debugging. This is the standard dynamic exogenous
-% incomplete savings problem. 
+% incomplete savings problem.
 %
 % See
 % <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf.html
 % ff_abz_vf> for the version of the problem that accommodates both borrowing
-% and savings. 
+% and savings.
 %
 % @param param_map container parameter container
 %
@@ -45,11 +45,11 @@ function result_map = ff_az_vf(varargin)
 % @example
 %
 %    % Get Default Parameters
-%    it_param_set = 4;
+%    it_param_set = 2;
 %    [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
 %    % Change Keys in param_map
-%    param_map('it_a_n') = 500;
-%    param_map('it_z_n') = 11;
+%    param_map('it_a_n') = 50;
+%    param_map('it_z_n') = 5;
 %    param_map('fl_a_max') = 100;
 %    param_map('fl_w') = 1.3;
 %    % Change Keys support_map
@@ -57,6 +57,7 @@ function result_map = ff_az_vf(varargin)
 %    support_map('bl_post') = true;
 %    support_map('bl_display_final') = false;
 %    % Call Program with external parameters that override defaults
+%    % Note this program works very slowly if the grid sizes are too large
 %    ff_az_vf(param_map, support_map);
 %
 % @include
@@ -122,8 +123,8 @@ support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')]
 params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z'});
 [ar_a, mt_z_trans, ar_z] = params_group{:};
 % func_map
-params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons'});
-[f_util_log, f_util_crra, f_cons] = params_group{:};
+params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons', 'f_coh'});
+[f_util_log, f_util_crra, f_cons, f_coh] = params_group{:};
 % param_map
 params_group = values(param_map, {'it_a_n', 'it_z_n', 'fl_crra', 'fl_beta', 'fl_nan_replace'});
 [it_a_n, it_z_n, fl_crra, fl_beta, fl_nan_replace] = params_group{:};
@@ -201,8 +202,8 @@ while bl_vfi_continue
                 end
 
                 % loop 4: add future utility, integration--loop over future shocks
-                for it_az_q = 1:length(ar_z)
-                    ar_val_cur(it_ap_k) = ar_val_cur(it_ap_k) + fl_beta*mt_z_trans(it_z_i,it_az_q)*mt_val_cur(it_ap_k,it_az_q);
+                for it_zp_q = 1:length(ar_z)
+                    ar_val_cur(it_ap_k) = ar_val_cur(it_ap_k) + fl_beta*mt_z_trans(it_z_i,it_zp_q)*mt_val_cur(it_ap_k,it_zp_q);
                 end
 
                 % Replace if negative consumption
@@ -276,10 +277,20 @@ if (bl_profile)
 end
 
 %% Process Optimal Choices
+% for choices outcomes, store as cell with two elements, first element is
+% the y(a,z), outcome given states, the second element will be solved found
+% in
+% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_ds_vf.html
+% ff_ds_vf> and other distributions files. It stores what are the
+% probability mass function of y, along with sorted unique values of y.
 
 result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
-result_map('mt_pol_a') = mt_pol_a;
+
+result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
+result_map('cl_mt_pol_coh') = {f_coh(ar_z, ar_a'), zeros(1)};
+result_map('cl_mt_pol_c') = {f_coh(ar_z, ar_a') - mt_pol_a, zeros(1)};
+result_map('ar_st_pol_names') = ["cl_mt_pol_a", "cl_mt_pol_coh", "cl_mt_pol_c"];
 
 if (bl_post)
     bl_input_override = true;

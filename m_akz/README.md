@@ -5,7 +5,7 @@ Back to [Fan](https://fanwangecon.github.io)'s
 
 ## The AKZ (BKZ) model
 
-- *a/b*: safe asset state/choice
+- *a*: safe asset state/choice
 - *k*: risky asset state/choice
 - *z*: some possibly persistent shock process
 

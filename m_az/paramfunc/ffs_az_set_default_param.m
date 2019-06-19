@@ -61,8 +61,10 @@ param_map('fl_nan_replace') = -9999;
 
 % Solution Accuracy
 param_map('it_maxiter_val') = 1000;
+param_map('it_maxiter_dist') = 1000;
 param_map('fl_tol_val') = 10^-5;
 param_map('fl_tol_pol') = 10^-5;
+param_map('fl_tol_dist') = 10^-5;
 param_map('it_tol_pol_nochange') = 25; % number of iterations where policy does not change
 
 %% Setting support_map container
@@ -74,19 +76,23 @@ st_matimg_path_root = [st_root_path '/m_az/'];
 support_map('st_matimg_path_root') = st_matimg_path_root;
 % timer
 support_map('bl_time') = true;
+support_map('bl_time_dist') = true;
 % Print Controls
 support_map('bl_display') = true;
-support_map('it_display_every') = 5; % how often to print results
+support_map('bl_display_dist') = false;
+support_map('it_display_every') = 5; % how often to print results vf + dist
 % Profile Controls
-support_map('bl_profile') = false;
+support_map('bl_profile') = false; % value function profile
+support_map('bl_profile_dist') = false; % distribution profile
 support_map('st_profile_path') = [st_matimg_path_root '/solve/profile/'];
 support_map('st_profile_prefix') = [''];
 support_map('st_profile_name_main') = ['_default'];
 support_map('st_profile_suffix') = ['_p' num2str(it_subset)];
 
 support_map('bl_post') = false;
-% Final Print
+% Final Print Value Function
 support_map('bl_display_final') = false; % print finalized results
+support_map('bl_display_final_dist') = false; % print finalized results
 support_map('it_display_final_rowmax') = 100; % max row to print (states/iters)
 support_map('it_display_final_colmax') = 12; % max col to print (shocks)
 % Mat File Controls
@@ -114,7 +120,7 @@ support_map('st_img_suffix') = ['_p' num2str(it_subset) '.png'];
 support_map('bl_graph_funcgrids') = false;
 support_map('bl_display_funcgrids') = false;
 
-%% Subset Options
+%% Subset Options for Value Function Solutions
 %
 % # it_subset = 1 is basic invoke quick test
 % # it_subset = 2 is main invoke
@@ -157,6 +163,64 @@ if (ismember(it_subset, [1,2,3,4]))
         % Profile run
         support_map('bl_profile') = true;
         support_map('bl_display') = false; % don't print
+        support_map('bl_time') = true;
+    end
+end
+
+%% Subset Options for Distribution solutions
+%
+% # it_subset = 5 is basic invoke quick test
+% # it_subset = 6 is main invoke
+% # it_subset = 7 is profiling invoke
+% # it_subset = 8 is matlab publish.
+%
+
+if (ismember(it_subset, [5,6,7,8]))
+    if (ismember(it_subset, [5]))
+        % TEST quick (need to enough to have distribution)
+        param_map('it_a_n') = 100;
+        param_map('it_z_n') = 7;
+        param_map('it_maxiter_val') = 50;
+        param_map('it_maxiter_dist') = 50;
+        param_map('it_tol_pol_nochange') = 1000;
+        support_map('bl_display_dist') = true;
+    end
+    if (ismember(it_subset, [6, 8]))
+        % close figures
+        close all;
+        % Main Run
+        support_map('bl_time') = true;
+        support_map('bl_display') = false;
+        support_map('bl_display_dist') = true;
+        support_map('it_display_every') = 5;
+
+        support_map('bl_post') = true;
+        support_map('bl_display_final_dist') = true;
+        support_map('bl_mat') = false;
+        support_map('bl_graph') = true;
+        support_map('bl_graph_onebyones') = false;
+        support_map('bl_img_save') = true;
+
+        % do not generate all graphs when solving for distribution
+        support_map('bl_graph_val') = false;
+        support_map('bl_graph_pol_lvl') = true;
+        support_map('bl_graph_pol_pct') = false;
+        support_map('bl_graph_coh_t_coh') = true;
+
+        if (ismember(it_subset, [8]))
+            support_map('bl_time') = false;
+            support_map('bl_display') = false;
+            support_map('bl_display_dist') = true;
+            support_map('it_display_every') = 20;
+            support_map('bl_graph_onebyones') = true;
+            support_map('bl_img_save') = false;
+        end
+    end
+    if (ismember(it_subset, [7]))
+        % Profile run
+        support_map('bl_profile_dist') = true;
+        support_map('bl_display') = false; % don't print
+        support_map('bl_display_dist') = false; % don't print
         support_map('bl_time') = true;
     end
 end

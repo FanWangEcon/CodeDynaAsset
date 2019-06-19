@@ -37,7 +37,15 @@ Using three algorithm that provide identical solutions:
 
 ## 1.2 Asset Distributions (AZ)
 
-Solving for the asset distribution.
+Solve for the stationary probability mass function over discrete states (endogenous assets and exogenous shocks). Since codes from *1.1* provide identical solutions, the benchmark *optimized-vectorized* code is called. The distributional codes compute, with benchmark parameters outcomes, for each outcome *y* (consumption, savings, cash-on-hand):
+
+- joint and marginal probability mass functions: *P(y,z)* and *P(y)*
+- *E(Y)*, *var(Y)*, *P(Y=0)*, *P(Y=max(Y))*
+- percentiles and fraction of *y* held by households up to current percentile
+
+1. *az* model asset distribution [looped](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solve/ff_az_ds.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/profile/ff_az_ds_default_p7/file0.html)
+    * speed: **5.0** seconds
+    * loops: 1 for VFI, 1 for shocks, 1 for asset state, (no more loop for asset choice), 1 for future shocks
 
 ## 1.3 Solution Support Files (AZ)
 
@@ -62,6 +70,11 @@ Solving for the asset distribution.
     * graph: consumption and asset choice levels
     * graph: consumption and asset logged levels
     * graph: consumption and asset as percentages of coh and assets
+
+**Statistics**:
+1. all model [distributional statistics](https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/fft_disc_rand_var_stats.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html)
+    * table: mean, sd, percentiles, fraction of outcome/asset held by household up to x percentile
+
 
 # 2. The Savings + Borrowing Problem (ABZ)
 

@@ -1,0 +1,377 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Compute Distributional Statistics from a Discrete Random Variable</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-18"><meta name="DC.source" content="fft_disc_rand_var_stats.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Compute Distributional Statistics from a Discrete Random Variable</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FFT_DISCT_RAND_VAR_STATS compute mean, sd, percentiles</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5"><b>f(y), f(c), f(a)</b>: Compute Scalar Statistics for outcomes</a></li><li><a href="#6"><b>f(y), f(c), f(a)</b>: Compute Distributional Statistics for outcomes</a></li><li><a href="#7">Collect Statistics</a></li><li><a href="#8">Display</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [ds_stats_map] = fft_disc_rand_var_stats(varargin)
+</pre><h2 id="2">FFT_DISCT_RAND_VAR_STATS compute mean, sd, percentiles</h2><p>Model simulation generates discrete random variables, to analyze, need to calculate various statistics</p><p>Statistics include:</p><div><ul><li>$\mu_Y = E(Y) = \sum_{y} p(Y=y) \cdot y $</li><li><img src="fft_disc_rand_var_stats_eq03728111283668325077.png" alt="$\sigma_Y = \sqrt{ \sum_{y} p(Y=y) \cdot \left( y - \mu_y \right)^2}$" style="width:202px;height:27px;"></li><li><img src="fft_disc_rand_var_stats_eq05433369603455155594.png" alt="$p(y=0)$" style="width:53px;height:15px;"></li><li><img src="fft_disc_rand_var_stats_eq09585247606302904929.png" alt="$p(y=\max(y))$" style="width:91px;height:15px;"></li><li>percentiles: <img src="fft_disc_rand_var_stats_eq09488738859326996168.png" alt="$min_{y} \left\{ P(Y \le y) - percentile \mid P(Y \le y) \ge percentile \right\}$" style="width:352px;height:15px;"></li><li>fraction of outcome held by up to percentiles: <img src="fft_disc_rand_var_stats_eq11722476300337688867.png" alt="$E(Y<y)/E(Y)$" style="width:103px;height:15px;"></li></ul></div><p>@param ar_choice_unique_sorted array 1 by N elements in the sample space of the discrete random variable ordered. Unique consumption values ordered. Unique asset choices ordered. etc.</p><p>@param ar_choice_prob array 1 by N probability mass function associated with each element ar_choice_unique_sorted</p><p>@param ar_fl_percentiles array 1 by M some vector of percentiles (0 to 100) that we would like to compute based on the discrete random variable's probability mass function and x values.</p><p>@return ds_stats_map container various distributional statistics</p><p>@example</p><pre class="language-matlab"><span class="comment">% run function</span>
+[ds_stats_map] = fft_disc_rand_var_stats(ar_choice_unique_sorted, ar_choice_prob,ar_fl_percentiles);
+<span class="comment">% retrieve scalar statistics</span>
+<span class="comment">% fl_choice_mean = ds_stats_map('fl_choice_mean');</span>
+fl_choice_sd = ds_stats_map(<span class="string">'fl_choice_sd'</span>);
+fl_choice_prob_zero = ds_stats_map(<span class="string">'fl_choice_prob_zero'</span>);
+fl_choice_prob_max = ds_stats_map(<span class="string">'fl_choice_prob_max'</span>);
+<span class="comment">% retrieve distributional array stats</span>
+ar_choice_percentiles = ds_stats_map(<span class="string">'ar_choice_percentiles'</span>);
+ar_choice_perc_fracheld = ds_stats_map(<span class="string">'ar_choice_perc_fracheld'</span>);
+</pre><h2 id="3">Default</h2><p>use binomial as test case</p><pre class="codeinput">fl_binom_n = 30;
+fl_binom_p = 0.3;
+ar_binom_x = 0:1:fl_binom_n;
+
+<span class="comment">% x</span>
+ar_choice_unique_sorted = ar_binom_x;
+<span class="comment">% f(x)</span>
+ar_choice_prob = binopdf(ar_binom_x, fl_binom_n, fl_binom_p);
+<span class="comment">% percentiles of interest</span>
+ar_fl_percentiles = [0.1 1 5:5:95 99 99.9];
+
+<span class="comment">% display</span>
+st_var_name = <span class="string">'binom'</span>;
+
+<span class="comment">% display</span>
+bl_display_drvstats = true;
+
+<span class="comment">% default</span>
+default_params = {st_var_name ar_choice_unique_sorted ar_choice_prob ar_fl_percentiles bl_display_drvstats};
+</pre><h2 id="4">Parse Parameters</h2><pre class="codeinput">[default_params{1:length(varargin)}] = varargin{:};
+[st_var_name, ar_choice_unique_sorted, ar_choice_prob, ar_fl_percentiles, bl_display_drvstats] = default_params{:};
+</pre><h2 id="5"><b>f(y), f(c), f(a)</b>: Compute Scalar Statistics for outcomes</h2><p>Compute these outcomes:</p><div><ul><li>mean: <img src="fft_disc_rand_var_stats_eq03016783485460700593.png" alt="$\mu_y = \sum_{y} p(Y=y) \cdot y$" style="width:134px;height:17px;"></li><li>sd: <img src="fft_disc_rand_var_stats_eq13414381062043947873.png" alt="$\sigma_y = \sqrt{ \sum_{y} p(Y=y) \cdot \left( y - \mu_y \right)^2}$" style="width:199px;height:27px;"></li><li>prob(outcome=0): <img src="fft_disc_rand_var_stats_eq05433369603455155594.png" alt="$p(y=0)$" style="width:53px;height:15px;"></li><li>prob(outcome=max(outcome)): <img src="fft_disc_rand_var_stats_eq09585247606302904929.png" alt="$p(y=\max(y))$" style="width:91px;height:15px;"></li></ul></div><pre class="codeinput"><span class="comment">% Mean of discrete random variable</span>
+fl_choice_mean = ar_choice_prob*ar_choice_unique_sorted';
+<span class="comment">% SD of discrete random variable</span>
+fl_choice_sd = sqrt(ar_choice_prob*((ar_choice_unique_sorted'-fl_choice_mean).^2));
+<span class="comment">% prob(outcome=0), fraction of people not saving for example</span>
+fl_choice_prob_zero = sum(ar_choice_prob(ar_choice_unique_sorted == 0));
+<span class="comment">% prob(outcome=max(outcome)), fraction of people saving up to max of grid,</span>
+<span class="comment">% in principle if this is large, need to increase grid max value</span>
+fl_choice_prob_max = sum(ar_choice_prob(ar_choice_unique_sorted == max(ar_choice_unique_sorted)));
+</pre><h2 id="6"><b>f(y), f(c), f(a)</b>: Compute Distributional Statistics for outcomes</h2><p>Compute these outcomes:</p><div><ul><li>percentiles: <img src="fft_disc_rand_var_stats_eq09488738859326996168.png" alt="$min_{y} \left\{ P(Y \le y) - percentile \mid P(Y \le y) \ge percentile \right\}$" style="width:352px;height:15px;"></li><li>share of outcome (consumption/assets) held by households below this percentile: <img src="fft_disc_rand_var_stats_eq11722476300337688867.png" alt="$E(Y<y)/E(Y)$" style="width:103px;height:15px;"></li></ul></div><pre class="codeinput"><span class="comment">% cumulative share of total outcome held by up to this level for outcomes</span>
+<span class="comment">% like fraction of asset held by lowest highest fractions: E(X&lt;x)</span>
+ar_choice_unique_cumufrac = cumsum(ar_choice_prob.*ar_choice_unique_sorted)/fl_choice_mean;
+
+<span class="comment">% Key Percentile Statistics</span>
+ar_choice_prob_cumsum = cumsum(ar_choice_prob)*100;
+
+<span class="comment">% ar_choice_percentiles: percentiles for the outcome variable</span>
+ar_choice_percentiles = zeros(size(ar_fl_percentiles));
+
+<span class="comment">% fraction of aggregate outcome variable held up to this percentile</span>
+ar_choice_perc_fracheld = zeros(size(ar_fl_percentiles));
+
+<span class="keyword">for</span> it_percentile = 1:length(ar_fl_percentiles)
+    <span class="comment">% get percentile of interest</span>
+    fl_cur_percentile = ar_fl_percentiles(it_percentile);
+    <span class="comment">% in the cumu prob array, first element higher or equal to current</span>
+    <span class="comment">% percentile</span>
+    it_first_higher_idx = (cumsum(ar_choice_prob_cumsum &gt;= fl_cur_percentile) == 1);
+    <span class="comment">% assign percentile</span>
+    ar_choice_percentiles(it_percentile) = ar_choice_unique_sorted(it_first_higher_idx);
+    <span class="comment">% asset held by up to this percentile</span>
+    ar_choice_perc_fracheld(it_percentile) = ar_choice_unique_cumufrac(it_first_higher_idx);
+<span class="keyword">end</span>
+</pre><h2 id="7">Collect Statistics</h2><pre class="codeinput">ds_stats_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
+
+<span class="comment">% scalar statistics</span>
+ds_stats_map(<span class="string">'fl_choice_mean'</span>) = fl_choice_mean;
+ds_stats_map(<span class="string">'fl_choice_sd'</span>) = fl_choice_sd;
+ds_stats_map(<span class="string">'fl_choice_prob_zero'</span>) = fl_choice_prob_zero;
+ds_stats_map(<span class="string">'fl_choice_prob_max'</span>) = fl_choice_prob_max;
+
+<span class="comment">% distributional array stats</span>
+tb_prob_drv = array2table([ar_fl_percentiles' ar_choice_percentiles' ar_choice_perc_fracheld']);
+st_var_name = [char(st_var_name) <span class="string">' percentile values'</span>];
+tb_prob_drv.Properties.VariableNames = matlab.lang.makeValidName([<span class="string">"percentiles"</span>, st_var_name, <span class="string">"frac of sum held below this percentile"</span>]);
+
+ds_stats_map(<span class="string">'tb_prob_drv'</span>) = tb_prob_drv;
+</pre><h2 id="8">Display</h2><pre class="codeinput"><span class="keyword">if</span> (bl_display_drvstats)
+    disp(<span class="string">'fl_choice_mean'</span>);
+    disp(fl_choice_mean);
+    disp(<span class="string">'fl_choice_sd'</span>);
+    disp(fl_choice_sd);
+    disp(<span class="string">'fl_choice_prob_zero'</span>);
+    disp(fl_choice_prob_zero);
+    disp(<span class="string">'fl_choice_prob_max'</span>);
+    disp(fl_choice_prob_max);
+
+    disp(<span class="string">'tb_prob_drv'</span>);
+    disp(tb_prob_drv);
+
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">fl_choice_mean
+     9
+
+fl_choice_sd
+    2.5100
+
+fl_choice_prob_zero
+   2.2539e-05
+
+fl_choice_prob_max
+   2.0589e-16
+
+tb_prob_drv
+    percentiles    binomPercentileValues    fracOfSumHeldBelowThisPercentile
+    ___________    _____________________    ________________________________
+
+        0.1                  2                         0.00043239           
+          1                  4                           0.012095           
+          5                  5                           0.037895           
+         10                  6                            0.09318           
+         15                  6                            0.09318           
+         20                  7                            0.18796           
+         25                  7                            0.18796           
+         30                  8                            0.32141           
+         35                  8                            0.32141           
+         40                  8                            0.32141           
+         45                  9                            0.47871           
+         50                  9                            0.47871           
+         55                  9                            0.47871           
+         60                 10                              0.636           
+         65                 10                              0.636           
+         70                 10                              0.636           
+         75                 11                            0.77082           
+         80                 11                            0.77082           
+         85                 12                            0.87062           
+         90                 12                            0.87062           
+         95                 13                            0.93478           
+         99                 15                            0.98835           
+       99.9                 17                            0.99872           
+
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><pre class="codeoutput">
+ans = 
+
+  Map with properties:
+
+        Count: 5
+      KeyType: char
+    ValueType: any
+
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Compute Distributional Statistics from a Discrete Random Variable
+% *back to <https://fanwangecon.github.io Fan>'s
+% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
+% Table of Content.*
+
+%%
+function [ds_stats_map] = fft_disc_rand_var_stats(varargin)
+%% FFT_DISCT_RAND_VAR_STATS compute mean, sd, percentiles
+% Model simulation generates discrete random variables, to analyze, need to
+% calculate various statistics
+%
+% Statistics include:
+%
+% * $\mu_Y = E(Y) = \sum_{y} p(Y=y) \cdot y $
+% * $\sigma_Y = \sqrt{ \sum_{y} p(Y=y) \cdot \left( y - \mu_y \right)^2}$
+% * $p(y=0)$
+% * $p(y=\max(y))$
+% * percentiles: $min_{y} \left\{ P(Y \le y) - percentile \mid P(Y \le y) \ge percentile \right\}$
+% * fraction of outcome held by up to percentiles: $E(Y<y)/E(Y)$
+%
+% @param ar_choice_unique_sorted array 1 by N elements in the sample space
+% of the discrete random variable ordered. Unique consumption values
+% ordered. Unique asset choices ordered. etc.
+%
+% @param ar_choice_prob array 1 by N probability mass function associated
+% with each element ar_choice_unique_sorted
+%
+% @param ar_fl_percentiles array 1 by M some vector of percentiles (0 to
+% 100) that we would like to compute based on the discrete random
+% variable's probability mass function and x values.
+%
+% @return ds_stats_map container various distributional statistics
+%
+% @example
+%   
+%   % run function
+%   [ds_stats_map] = fft_disc_rand_var_stats(ar_choice_unique_sorted, ar_choice_prob,ar_fl_percentiles);
+%   % retrieve scalar statistics
+%   % fl_choice_mean = ds_stats_map('fl_choice_mean');
+%   fl_choice_sd = ds_stats_map('fl_choice_sd');
+%   fl_choice_prob_zero = ds_stats_map('fl_choice_prob_zero');
+%   fl_choice_prob_max = ds_stats_map('fl_choice_prob_max');
+%   % retrieve distributional array stats
+%   ar_choice_percentiles = ds_stats_map('ar_choice_percentiles');
+%   ar_choice_perc_fracheld = ds_stats_map('ar_choice_perc_fracheld');
+%
+
+%% Default
+% use binomial as test case
+
+fl_binom_n = 30;
+fl_binom_p = 0.3;
+ar_binom_x = 0:1:fl_binom_n;
+
+% x
+ar_choice_unique_sorted = ar_binom_x;
+% f(x)
+ar_choice_prob = binopdf(ar_binom_x, fl_binom_n, fl_binom_p);
+% percentiles of interest
+ar_fl_percentiles = [0.1 1 5:5:95 99 99.9];
+
+% display
+st_var_name = 'binom';
+
+% display
+bl_display_drvstats = true;
+
+% default
+default_params = {st_var_name ar_choice_unique_sorted ar_choice_prob ar_fl_percentiles bl_display_drvstats};
+
+%% Parse Parameters
+
+[default_params{1:length(varargin)}] = varargin{:};
+[st_var_name, ar_choice_unique_sorted, ar_choice_prob, ar_fl_percentiles, bl_display_drvstats] = default_params{:};
+
+%% *f(y), f(c), f(a)*: Compute Scalar Statistics for outcomes
+% Compute these outcomes:
+%
+% * mean: $\mu_y = \sum_{y} p(Y=y) \cdot y$
+% * sd: $\sigma_y = \sqrt{ \sum_{y} p(Y=y) \cdot \left( y - \mu_y
+% \right)^2}$
+% * prob(outcome=0): $p(y=0)$
+% * prob(outcome=max(outcome)): $p(y=\max(y))$
+%
+
+% Mean of discrete random variable
+fl_choice_mean = ar_choice_prob*ar_choice_unique_sorted';
+% SD of discrete random variable
+fl_choice_sd = sqrt(ar_choice_prob*((ar_choice_unique_sorted'-fl_choice_mean).^2));
+% prob(outcome=0), fraction of people not saving for example
+fl_choice_prob_zero = sum(ar_choice_prob(ar_choice_unique_sorted == 0));
+% prob(outcome=max(outcome)), fraction of people saving up to max of grid,
+% in principle if this is large, need to increase grid max value
+fl_choice_prob_max = sum(ar_choice_prob(ar_choice_unique_sorted == max(ar_choice_unique_sorted)));
+
+%% *f(y), f(c), f(a)*: Compute Distributional Statistics for outcomes
+% Compute these outcomes:
+%
+% * percentiles: $min_{y} \left\{ P(Y \le y) - percentile \mid P(Y \le y) \ge percentile \right\}$
+% * share of outcome (consumption/assets) held by households below this
+% percentile: $E(Y<y)/E(Y)$
+%
+
+% cumulative share of total outcome held by up to this level for outcomes
+% like fraction of asset held by lowest highest fractions: E(X<x)
+ar_choice_unique_cumufrac = cumsum(ar_choice_prob.*ar_choice_unique_sorted)/fl_choice_mean;
+
+% Key Percentile Statistics
+ar_choice_prob_cumsum = cumsum(ar_choice_prob)*100;
+
+% ar_choice_percentiles: percentiles for the outcome variable
+ar_choice_percentiles = zeros(size(ar_fl_percentiles));
+
+% fraction of aggregate outcome variable held up to this percentile
+ar_choice_perc_fracheld = zeros(size(ar_fl_percentiles));
+
+for it_percentile = 1:length(ar_fl_percentiles)
+    % get percentile of interest
+    fl_cur_percentile = ar_fl_percentiles(it_percentile);
+    % in the cumu prob array, first element higher or equal to current
+    % percentile
+    it_first_higher_idx = (cumsum(ar_choice_prob_cumsum >= fl_cur_percentile) == 1);
+    % assign percentile
+    ar_choice_percentiles(it_percentile) = ar_choice_unique_sorted(it_first_higher_idx);
+    % asset held by up to this percentile
+    ar_choice_perc_fracheld(it_percentile) = ar_choice_unique_cumufrac(it_first_higher_idx);
+end
+
+%% Collect Statistics
+
+ds_stats_map = containers.Map('KeyType','char', 'ValueType','any');
+
+% scalar statistics
+ds_stats_map('fl_choice_mean') = fl_choice_mean;
+ds_stats_map('fl_choice_sd') = fl_choice_sd;
+ds_stats_map('fl_choice_prob_zero') = fl_choice_prob_zero;
+ds_stats_map('fl_choice_prob_max') = fl_choice_prob_max;
+
+% distributional array stats
+tb_prob_drv = array2table([ar_fl_percentiles' ar_choice_percentiles' ar_choice_perc_fracheld']);
+st_var_name = [char(st_var_name) ' percentile values'];
+tb_prob_drv.Properties.VariableNames = matlab.lang.makeValidName(["percentiles", st_var_name, "frac of sum held below this percentile"]);
+
+ds_stats_map('tb_prob_drv') = tb_prob_drv;
+
+%% Display
+if (bl_display_drvstats)
+    disp('fl_choice_mean');
+    disp(fl_choice_mean);
+    disp('fl_choice_sd');
+    disp(fl_choice_sd);
+    disp('fl_choice_prob_zero');
+    disp(fl_choice_prob_zero);
+    disp('fl_choice_prob_max');
+    disp(fl_choice_prob_max);
+    
+    disp('tb_prob_drv');
+    disp(tb_prob_drv);
+
+end
+end
+
+##### SOURCE END #####
+--></body></html>

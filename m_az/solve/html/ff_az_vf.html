@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Solve One Asset Dynamic Programming Problem (Loop)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-16"><meta name="DC.source" content="ff_az_vf.m"><style type="text/css">
+      --><title>Solve One Asset Dynamic Programming Problem (Loop)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-18"><meta name="DC.source" content="ff_az_vf.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -68,11 +68,11 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
   </style></head><body><div class="content"><h1>Solve One Asset Dynamic Programming Problem (Loop)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_AZ_VF solve infinite horizon exo shock + endo asset problem</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1</a></li><li><a href="#5">Parse Parameters 2</a></li><li><a href="#6">Initialize Output Matrixes</a></li><li><a href="#7">Initialize Convergence Conditions</a></li><li><a href="#8">Iterate Value Function</a></li><li><a href="#10">Solve Optimization Problem Current Iteration</a></li><li><a href="#11">Check Tolerance and Continuation</a></li><li><a href="#13">Process Optimal Choices</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> result_map = ff_az_vf(varargin)
 </pre><h2 id="2">FF_AZ_VF solve infinite horizon exo shock + endo asset problem</h2><p>This program solves the infinite horizon dynamic single asset and single shock problem with loops. It is useful to have a version of code that is looped for easy debugging. This is the standard dynamic exogenous incomplete savings problem.</p><p>See <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf.html">ff_abz_vf</a> for the version of the problem that accommodates both borrowing and savings.</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@param func_map container container with function handles for consumption cash-on-hand etc.</p><p>@return result_map container contains policy function matrix, value function matrix, iteration results, and policy function, value function and iteration results tables.</p><p>keys included in result_map:</p><div><ul><li>mt_val matrix states_n by shock_n matrix of converged value function grid</li><li>mt_pol_a matrix states_n by shock_n matrix of converged policy function grid</li><li>ar_val_diff_norm array if bl_post = true it_iter_last by 1 val function difference between iteration</li><li>ar_pol_diff_norm array if bl_post = true it_iter_last by 1 policy function difference between iterations</li><li>mt_pol_perc_change matrix if bl_post = true it_iter_last by shock_n the proportion of grid points at which policy function changed between current and last iteration for each element of shock</li></ul></div><p>@example</p><pre>  % Get Default Parameters
-  it_param_set = 4;
+  it_param_set = 2;
   [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
   % Change Keys in param_map
-  param_map('it_a_n') = 500;
-  param_map('it_z_n') = 11;
+  param_map('it_a_n') = 50;
+  param_map('it_z_n') = 5;
   param_map('fl_a_max') = 100;
   param_map('fl_w') = 1.3;
   % Change Keys support_map
@@ -80,6 +80,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
   support_map('bl_post') = true;
   support_map('bl_display_final') = false;
   % Call Program with external parameters that override defaults
+  % Note this program works very slowly if the grid sizes are too large
   ff_az_vf(param_map, support_map);</pre><p>@include</p><div><ul><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_set_default_param.html">ffs_az_set_default_param</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_get_funcgrid.html">ffs_az_get_funcgrid</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_vf_post.html">ff_az_vf_post</a></li></ul></div><p>@seealso</p><div><ul><li>save loop: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf.html">ff_az_vf</a></li><li>save vectorized: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vec.html">ff_az_vf_vec</a></li><li>save optimized-vectorized: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a></li><li>save + borr loop: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf.html">ff_abz_vf</a></li><li>save + borr vectorized: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vec.html">ff_abz_vf_vec</a></li><li>save + borr optimized-vectorized: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vecsv.html">ff_abz_vf_vecsv</a></li></ul></div><h2 id="3">Default</h2><div><ul><li>it_param_set = 1: quick test</li><li>it_param_set = 2: benchmark run</li><li>it_param_set = 3: benchmark profile</li><li>it_param_set = 4: press publish button</li></ul></div><pre class="codeinput">it_param_set = 4;
 bl_input_override = true;
 [param_map, support_map] = ffs_az_set_default_param(it_param_set);
@@ -115,8 +116,8 @@ support_map(<span class="string">'st_img_name_main'</span>) = [st_func_name supp
 params_group = values(armt_map, {<span class="string">'ar_a'</span>, <span class="string">'mt_z_trans'</span>, <span class="string">'ar_z'</span>});
 [ar_a, mt_z_trans, ar_z] = params_group{:};
 <span class="comment">% func_map</span>
-params_group = values(func_map, {<span class="string">'f_util_log'</span>, <span class="string">'f_util_crra'</span>, <span class="string">'f_cons'</span>});
-[f_util_log, f_util_crra, f_cons] = params_group{:};
+params_group = values(func_map, {<span class="string">'f_util_log'</span>, <span class="string">'f_util_crra'</span>, <span class="string">'f_cons'</span>, <span class="string">'f_coh'</span>});
+[f_util_log, f_util_crra, f_cons, f_coh] = params_group{:};
 <span class="comment">% param_map</span>
 params_group = values(param_map, {<span class="string">'it_a_n'</span>, <span class="string">'it_z_n'</span>, <span class="string">'fl_crra'</span>, <span class="string">'fl_beta'</span>, <span class="string">'fl_nan_replace'</span>});
 [it_a_n, it_z_n, fl_crra, fl_beta, fl_nan_replace] = params_group{:};
@@ -175,8 +176,8 @@ mt_pol_perc_change = zeros([it_maxiter_val, it_z_n]);
                 <span class="keyword">end</span>
 
                 <span class="comment">% loop 4: add future utility, integration--loop over future shocks</span>
-                <span class="keyword">for</span> it_az_q = 1:length(ar_z)
-                    ar_val_cur(it_ap_k) = ar_val_cur(it_ap_k) + fl_beta*mt_z_trans(it_z_i,it_az_q)*mt_val_cur(it_ap_k,it_az_q);
+                <span class="keyword">for</span> it_zp_q = 1:length(ar_z)
+                    ar_val_cur(it_ap_k) = ar_val_cur(it_ap_k) + fl_beta*mt_z_trans(it_z_i,it_zp_q)*mt_val_cur(it_ap_k,it_zp_q);
                 <span class="keyword">end</span>
 
                 <span class="comment">% Replace if negative consumption</span>
@@ -247,6 +248,8 @@ mt_pol_perc_change = zeros([it_maxiter_val, it_z_n]);
 </pre><h2 id="13">Process Optimal Choices</h2><pre class="codeinput">result_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
 result_map(<span class="string">'mt_val'</span>) = mt_val;
 result_map(<span class="string">'mt_pol_a'</span>) = mt_pol_a;
+result_map(<span class="string">'mt_pol_c'</span>) = f_coh(ar_z, ar_a') - mt_pol_a;
+result_map(<span class="string">'ar_st_pol_names'</span>) = [<span class="string">'mt_pol_a'</span>, <span class="string">'mt_pol_c'</span>];
 
 <span class="keyword">if</span> (bl_post)
     bl_input_override = true;
@@ -578,7 +581,7 @@ ans =
 
   Map with properties:
 
-        Count: 10
+        Count: 12
       KeyType: char
     ValueType: any
 
@@ -595,12 +598,12 @@ function result_map = ff_az_vf(varargin)
 % This program solves the infinite horizon dynamic single asset and single
 % shock problem with loops. It is useful to have a version of code that is
 % looped for easy debugging. This is the standard dynamic exogenous
-% incomplete savings problem. 
+% incomplete savings problem.
 %
 % See
 % <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf.html
 % ff_abz_vf> for the version of the problem that accommodates both borrowing
-% and savings. 
+% and savings.
 %
 % @param param_map container parameter container
 %
@@ -631,11 +634,11 @@ function result_map = ff_az_vf(varargin)
 % @example
 %
 %    % Get Default Parameters
-%    it_param_set = 4;
+%    it_param_set = 2;
 %    [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
 %    % Change Keys in param_map
-%    param_map('it_a_n') = 500;
-%    param_map('it_z_n') = 11;
+%    param_map('it_a_n') = 50;
+%    param_map('it_z_n') = 5;
 %    param_map('fl_a_max') = 100;
 %    param_map('fl_w') = 1.3;
 %    % Change Keys support_map
@@ -643,6 +646,7 @@ function result_map = ff_az_vf(varargin)
 %    support_map('bl_post') = true;
 %    support_map('bl_display_final') = false;
 %    % Call Program with external parameters that override defaults
+%    % Note this program works very slowly if the grid sizes are too large
 %    ff_az_vf(param_map, support_map);
 %
 % @include
@@ -708,8 +712,8 @@ support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')]
 params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z'});
 [ar_a, mt_z_trans, ar_z] = params_group{:};
 % func_map
-params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons'});
-[f_util_log, f_util_crra, f_cons] = params_group{:};
+params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons', 'f_coh'});
+[f_util_log, f_util_crra, f_cons, f_coh] = params_group{:};
 % param_map
 params_group = values(param_map, {'it_a_n', 'it_z_n', 'fl_crra', 'fl_beta', 'fl_nan_replace'});
 [it_a_n, it_z_n, fl_crra, fl_beta, fl_nan_replace] = params_group{:};
@@ -787,8 +791,8 @@ while bl_vfi_continue
                 end
 
                 % loop 4: add future utility, integrationREPLACE_WITH_DASH_DASHloop over future shocks
-                for it_az_q = 1:length(ar_z)
-                    ar_val_cur(it_ap_k) = ar_val_cur(it_ap_k) + fl_beta*mt_z_trans(it_z_i,it_az_q)*mt_val_cur(it_ap_k,it_az_q);
+                for it_zp_q = 1:length(ar_z)
+                    ar_val_cur(it_ap_k) = ar_val_cur(it_ap_k) + fl_beta*mt_z_trans(it_z_i,it_zp_q)*mt_val_cur(it_ap_k,it_zp_q);
                 end
 
                 % Replace if negative consumption
@@ -866,6 +870,8 @@ end
 result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
 result_map('mt_pol_a') = mt_pol_a;
+result_map('mt_pol_c') = f_coh(ar_z, ar_a') - mt_pol_a;
+result_map('ar_st_pol_names') = ['mt_pol_a', 'mt_pol_c'];
 
 if (bl_post)
     bl_input_override = true;

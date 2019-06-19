@@ -47,7 +47,7 @@ param_map('fl_z_sig') = 0.2;
 % fl_default_aprime is the next period asset level
 % households face if they default.
 param_map('fl_b_bd') = -20; % borrow bound, = 0 if save only
-param_map('fl_default_aprime') = 0;
+param_map('fl_default_aprime') = 0; % if default, next period aprime
 param_map('bl_default') = 1; % if borrowing is default allowed
 % Savings
 param_map('fl_a_min') = 0; % if there is minimum savings requirement

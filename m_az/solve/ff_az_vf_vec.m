@@ -11,6 +11,40 @@ function result_map = ff_az_vf_vec(varargin)
 % <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf.html
 % ff_az_vf> shows looped codes. The solution is the same.
 %
+% The vectorization takes advantage of implicit parallization that modern
+% computers have when <https://en.wikipedia.org/wiki/SIMD same instructions
+% are given for different blocks of data> With vectorization, we face a
+% tradeoff between memory and speed. Suppose we have many shock points and
+% many states points, if we build all states and choices into one single
+% matrix and compute consumption, utility, etc over that entire matrix, that
+% might be more efficient than computing consumption, utility, etc by
+% subset of that matrix over a loop, but there is time required for
+% generating that large input matrix, and if there are too many states, a
+% computer could run out of memory.
+%
+% The design philosophy here is that we vectorize the endogenous states and
+% choices into matrixes, but do not include the exogeous states (shocks).
+% The exogenous shocks remain looped. This means we can potentially have
+% multiple shock variables discretized over a large number of shock states,
+% and the computer would not run into memory problems. The speed gain from
+% vectoring the rest of the problem conditional on shocks is very large
+% compared to the pure looped version of the problem. Even if more memory
+% is available, including the exogenous states in the vectorization process
+% might not be speed improving.
+%
+% Note one key issue is whether a programming language is
+% <https://en.wikipedia.org/wiki/Row-_and_column-major_order row or column
+% major> depending on which, states should be rows or columns.
+%
+% Another programming issue is the idea of *broadcasting* vs matrix
+% algebra, both are used here. Since Matlab R2016b,
+% <https://blogs.mathworks.com/loren/2016/10/24/matlab-arithmetic-expands-in-r2016b/
+% matrix broadcasting> has been allowed, which means the sum of a N by 1
+% and 1 by M is N by M. This is unrelated to matrix algebra. Matrix array
+% broadcasting is very useful because it reduces the dimensionality of our
+% model input state and choice and shock vectors, offering greater code
+% clarity.
+%
 % @param param_map container parameter container
 %
 % @param support_map container support container
@@ -40,7 +74,7 @@ function result_map = ff_az_vf_vec(varargin)
 % @example
 %
 %    % Get Default Parameters
-%    it_param_set = 4;
+%    it_param_set = 2;
 %    [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
 %    % Change Keys in param_map
 %    param_map('it_a_n') = 500;
@@ -118,8 +152,8 @@ support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')]
 params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z'});
 [ar_a, mt_z_trans, ar_z] = params_group{:};
 % func_map
-params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons'});
-[f_util_log, f_util_crra, f_cons] = params_group{:};
+params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons', 'f_coh'});
+[f_util_log, f_util_crra, f_cons, f_coh] = params_group{:};
 % param_map
 params_group = values(param_map, {'it_a_n', 'it_z_n', 'fl_crra', 'fl_beta', 'fl_nan_replace'});
 [it_a_n, it_z_n, fl_crra, fl_beta, fl_nan_replace] = params_group{:};
@@ -214,7 +248,7 @@ while bl_vfi_continue
         % Optimization: remember matlab is column major, rows must be
         % choices, columns must be states
         % <https://en.wikipedia.org/wiki/Row-_and_column-major_order COLUMN-MAJOR>
-        % mt_utility is N by N, rows are choices, cols are states. 
+        % mt_utility is N by N, rows are choices, cols are states.
         [ar_opti_val1_z, ar_opti_idx_z] = max(mt_utility);
         mt_val(:,it_z_i) = ar_opti_val1_z;
         mt_pol_a(:,it_z_i) = ar_a(ar_opti_idx_z);
@@ -279,11 +313,21 @@ if (bl_profile)
 end
 
 %% Process Optimal Choices
+% for choices outcomes, store as cell with two elements, first element is
+% the y(a,z), outcome given states, the second element will be solved found
+% in
+% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_ds_vf.html
+% ff_ds_vf> and other distributions files. It stores what are the
+% probability mass function of y, along with sorted unique values of y.
 
 result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
-result_map('mt_pol_a') = mt_pol_a;
 result_map('mt_pol_idx') = mt_pol_idx;
+
+result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
+result_map('cl_mt_pol_coh') = {f_coh(ar_z, ar_a'), zeros(1)};
+result_map('cl_mt_pol_c') = {f_coh(ar_z, ar_a') - mt_pol_a, zeros(1)};
+result_map('ar_st_pol_names') = ["cl_mt_pol_a", "cl_mt_pol_coh", "cl_mt_pol_c"];
 
 if (bl_post)
     bl_input_override = true;

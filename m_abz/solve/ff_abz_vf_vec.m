@@ -11,6 +11,46 @@ function result_map = ff_abz_vf_vec(varargin)
 % <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf.html
 % ff_abz_vf> shows looped codes. The solution is the same.
 %
+% The borrowing problem is very similar to the savings problem. The code
+% could be identical if one does not have to deal with default. The main
+% addition here in comparison to the savings only code
+% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vec.html
+% ff_az_vf_vec> is the ability to deal with default. 
+%
+% The vectorization takes advantage of implicit parallization that modern
+% computers have when <https://en.wikipedia.org/wiki/SIMD same instructions
+% are given for different blocks of data> With vectorization, we face a
+% tradeoff between memory and speed. Suppose we have many shock points and
+% many states points, if we build all states and choices into one single
+% matrix and compute consumption, utility, etc over that entire matrix,
+% that might be more efficient than computing consumption, utility, etc by
+% subset of that matrix over a loop, but there is time required for
+% generating that large input matrix, and if there are too many states, a
+% computer could run out of memory.
+%
+% The design philosophy here is that we vectorize the endogenous states and
+% choices into matrixes, but do not include the exogeous states (shocks).
+% The exogenous shocks remain looped. This means we can potentially have
+% multiple shock variables discretized over a large number of shock states,
+% and the computer would not run into memory problems. The speed gain from
+% vectoring the rest of the problem conditional on shocks is very large
+% compared to the pure looped version of the problem. Even if more memory
+% is available, including the exogenous states in the vectorization process
+% might not be speed improving.
+%
+% Note one key issue is whether a programming language is
+% <https://en.wikipedia.org/wiki/Row-_and_column-major_order row or column
+% major> depending on which, states should be rows or columns.
+%
+% Another programming issue is the idea of *broadcasting* vs matrix
+% algebra, both are used here. Since Matlab R2016b,
+% <https://blogs.mathworks.com/loren/2016/10/24/matlab-arithmetic-expands-in-r2016b/
+% matrix broadcasting> has been allowed, which means the sum of a N by 1
+% and 1 by M is N by M. This is unrelated to matrix algebra. Matrix array
+% broadcasting is very useful because it reduces the dimensionality of our
+% model input state and choice and shock vectors, offering greater code
+% clarity.
+%
 % @param param_map container parameter container
 %
 % @param support_map container support container
@@ -40,7 +80,7 @@ function result_map = ff_abz_vf_vec(varargin)
 % @example
 %
 %    % Get Default Parameters
-%    it_param_set = 4;
+%    it_param_set = 2;
 %    [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
 %    % Chnage param_map keys for borrowing
 %    param_map('fl_b_bd') = -20; % borrow bound
@@ -318,8 +358,12 @@ end
 
 result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
-result_map('mt_pol_a') = mt_pol_a;
 result_map('mt_pol_idx') = mt_pol_idx;
+
+result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
+result_map('cl_mt_pol_coh') = {f_coh(ar_z, ar_a'), zeros(1)};
+result_map('cl_mt_pol_c') = {f_cons(ar_z, ar_a', mt_pol_a), zeros(1)};
+result_map('ar_st_pol_names') = ["cl_mt_pol_a", "cl_mt_pol_coh", "cl_mt_pol_c"];
 
 if (bl_post)
     bl_input_override = true;

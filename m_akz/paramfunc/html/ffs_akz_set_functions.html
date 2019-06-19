@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>ffs_akz_set_functions</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-03"><meta name="DC.source" content="ffs_akz_set_functions.m"><style type="text/css">
+      --><title>Set Model Functions (Risky + Safe Asset)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-18"><meta name="DC.source" content="ffs_akz_set_functions.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,8 +66,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">FFS_AKZ_SET_FUNCTIONS setting model functions</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Equations Utility</a></li><li><a href="#6">Equations Production</a></li><li><a href="#7">Equations Income</a></li><li><a href="#8">Equations Cash-on-Hand</a></li><li><a href="#9">Equations Consumption</a></li><li><a href="#10">Equations Stand-in Fake Utility for Graphs</a></li></ul></div><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><pre class="codeinput"><span class="keyword">function</span> [f_util_log, f_util_crra, f_util_standin, f_prod, f_inc, f_coh, f_cons] = ffs_akz_set_functions(varargin)
-</pre><h2 id="2">FFS_AKZ_SET_FUNCTIONS setting model functions</h2><p>define functions here to avoid copy paste mistakes</p><p>@param fl_crra float crra utility</p><p>@param fl_c_min float minimum consumption</p><p>@param fl_Amean float mean productivity level</p><p>@param fl_alpha float Cobb-Douglas elasticity crs if = 1 and is risky financial investment like stocks, if decreasing return to scales, could be interpreted as risky physical capital investment.</p><p>@param fl_delta float risky capital depreciation if this is risky financial investment, deprecitation could be full, there is no additional return from risky financial investment except for its production function earnings. If we are looking are risky capital investment, there is a production function return, output. Then we can also sell the risky capital with some depreciation. fl_delta = 0.1 means 10 percent depreciation.</p><p>@param fl_r_save float savings interest rate</p><p>@param fl_r_borr float borrowing interest rate</p><p>@param fl_w float wage rate</p><p>@return f_util_log handle log utility</p><p>@return f_util_crra handle crra utility general</p><p>@return f_util_standin handle log utility with coh for testing graphing codes</p><p>@return f_inc income handle equation wage and interests</p><p>@return f_coh handle cash on hand equation given current period shock</p><p>@return f_cons handle consumption equation given coh and asset choice</p><p>@example</p><pre class="language-matlab">[f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons] = <span class="keyword">...</span>
+  </style></head><body><div class="content"><h1>Set Model Functions (Risky + Safe Asset)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FFS_AKZ_SET_FUNCTIONS setting model functions</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Equations Utility</a></li><li><a href="#6">Equations Production</a></li><li><a href="#7">Equations Income</a></li><li><a href="#8">Equations Cash-on-Hand</a></li><li><a href="#9">Equations Consumption</a></li><li><a href="#10">Equations Stand-in Fake Utility for Graphs</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [f_util_log, f_util_crra, f_util_standin, f_prod, f_inc, f_coh, f_cons] = ffs_akz_set_functions(varargin)
+</pre><h2 id="2">FFS_AKZ_SET_FUNCTIONS setting model functions</h2><p>define functions here to avoid copy paste mistakes</p><p>@param fl_crra float crra utility</p><p>@param fl_c_min float minimum consumption</p><p>@param fl_Amean float mean productivity level</p><p>@param fl_alpha float Cobb-Douglas elasticity crs if = 1 and is risky financial investment like stocks, if decreasing return to scales, could be interpreted as risky physical capital investment.</p><p>@param fl_delta float risky capital depreciation if this is risky financial investment, deprecitation could be full, there is no additional return from risky financial investment except for its production function earnings. If we are looking are risky capital investment, there is a production function return, output. Then we can also sell the risky capital with some depreciation. fl_delta = 0.1 means 10 percent depreciation.</p><p>@param fl_r_save float savings interest rate</p><p>@param fl_r_borr float borrowing interest rate</p><p>@param fl_w float wage rate</p><p>@return f_util_log handle log utility</p><p>@return f_util_crra handle crra utility general</p><p>@return f_util_standin handle log utility with coh for testing graphing codes</p><p>@return f_inc income handle equation wage and interests</p><p>@return f_coh handle cash on hand equation given current period shock</p><p>@return f_cons handle consumption equation given coh and asset choice</p><p>@example</p><pre class="language-matlab">[f_util_log, f_util_crra, f_util_standin, f_prod, f_inc, f_coh, f_cons] = <span class="keyword">...</span>
      ffs_akz_set_functions(fl_crra, fl_c_min, fl_Amean, fl_alpha, fl_delta, <span class="keyword">...</span>
                            fl_r_save, fl_r_borr, fl_w);
 </pre><h2 id="3">Default</h2><pre class="codeinput">[fl_crra, fl_c_min] = deal(1.5, 0.001);
@@ -103,11 +103,12 @@ ans =
 
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
-%%
+%% Set Model Functions (Risky + Safe Asset)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
+%%
 function [f_util_log, f_util_crra, f_util_standin, f_prod, f_inc, f_coh, f_cons] = ffs_akz_set_functions(varargin)
 %% FFS_AKZ_SET_FUNCTIONS setting model functions
 % define functions here to avoid copy paste mistakes
@@ -150,7 +151,7 @@ function [f_util_log, f_util_crra, f_util_standin, f_prod, f_inc, f_coh, f_cons]
 %
 % @example
 %
-%   [f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons] = ...
+%   [f_util_log, f_util_crra, f_util_standin, f_prod, f_inc, f_coh, f_cons] = ...
 %        ffs_akz_set_functions(fl_crra, fl_c_min, fl_Amean, fl_alpha, fl_delta, ...
 %                              fl_r_save, fl_r_borr, fl_w);
 %

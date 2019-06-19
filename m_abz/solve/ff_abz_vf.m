@@ -10,6 +10,12 @@ function result_map = ff_abz_vf(varargin)
 % shock problem with loops. This file contains codes that processes
 % borrowing.
 %
+% The borrowing problem is very similar to the savings problem. The code
+% could be identical if one does not have to deal with default. The main
+% addition here in comparison to the savings only code
+% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf.html
+% ff_az_vf> is the ability to deal with default. 
+%
 % @param param_map container parameter container
 %
 % @param support_map container support container
@@ -39,7 +45,7 @@ function result_map = ff_abz_vf(varargin)
 % @example
 %
 %    % Get Default Parameters
-%    it_param_set = 4;
+%    it_param_set = 2;
 %    [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
 %    % Chnage param_map keys for borrowing
 %    param_map('fl_b_bd') = -20; % borrow bound
@@ -79,7 +85,7 @@ function result_map = ff_abz_vf(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 4;
+it_param_set = 2;
 bl_input_override = true;
 [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
 
@@ -121,8 +127,8 @@ params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z'});
 [ar_a, mt_z_trans, ar_z] = params_group{:};
 
 % func_map
-params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_coh', 'f_cons_coh'});
-[f_util_log, f_util_crra, f_coh, f_cons_coh] = params_group{:};
+params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons', 'f_coh', 'f_cons_coh'});
+[f_util_log, f_util_crra, f_cons, f_coh, f_cons_coh] = params_group{:};
 
 % param_map
 params_group = values(param_map, {'it_a_n', 'it_z_n', 'fl_crra', 'fl_beta', 'fl_c_min',...
@@ -367,6 +373,11 @@ end
 result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
 result_map('mt_pol_a') = mt_pol_a;
+
+result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
+result_map('cl_mt_pol_coh') = {f_coh(ar_z, ar_a'), zeros(1)};
+result_map('cl_mt_pol_c') = {f_cons(ar_z, ar_a', mt_pol_a), zeros(1)};
+result_map('ar_st_pol_names') = ["cl_mt_pol_a", "cl_mt_pol_coh", "cl_mt_pol_c"];
 
 if (bl_post)
     bl_input_override = true;

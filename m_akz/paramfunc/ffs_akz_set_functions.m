@@ -1,8 +1,9 @@
-%%
+%% Set Model Functions (Risky + Safe Asset)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
+%%
 function [f_util_log, f_util_crra, f_util_standin, f_prod, f_inc, f_coh, f_cons] = ffs_akz_set_functions(varargin)
 %% FFS_AKZ_SET_FUNCTIONS setting model functions
 % define functions here to avoid copy paste mistakes
@@ -45,7 +46,7 @@ function [f_util_log, f_util_crra, f_util_standin, f_prod, f_inc, f_coh, f_cons]
 %
 % @example
 %
-%   [f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons] = ...
+%   [f_util_log, f_util_crra, f_util_standin, f_prod, f_inc, f_coh, f_cons] = ...
 %        ffs_akz_set_functions(fl_crra, fl_c_min, fl_Amean, fl_alpha, fl_delta, ...
 %                              fl_r_save, fl_r_borr, fl_w);
 %

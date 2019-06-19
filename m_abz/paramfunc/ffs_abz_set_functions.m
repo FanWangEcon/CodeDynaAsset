@@ -1,4 +1,4 @@
-%% Set Functions One Asset Borrowing and Savings
+%% Set Model Functions
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*

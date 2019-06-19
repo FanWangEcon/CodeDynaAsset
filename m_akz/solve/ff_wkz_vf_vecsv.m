@@ -58,9 +58,9 @@ it_param_set = 4;
 bl_input_override = true;
 [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
 
-% parameters can be set inside ffs_akz_set_default_param or updated here
-param_map('it_w_n') = 50;
-param_map('it_z_n') = 15;
+% Note: param_map and support_map can be adjusted here or outside to override defaults
+% param_map('it_w_n') = 50;
+% param_map('it_z_n') = 15;
 
 % get armt and func map
 [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override

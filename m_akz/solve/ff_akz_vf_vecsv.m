@@ -1,15 +1,22 @@
-%% 
+%% Solve Risky + Safe Asset Dynamic Programming Problem (Optimized-Vectorized)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository> 
 % Table of Content.*
 
+%%
 function result_map = ff_akz_vf_vecsv(varargin)
 %% FF_AKZ_VF_VECSV solve infinite horizon exo shock + endo asset problem
 % This program solves the infinite horizon dynamic savings and risky
-% capital asset problem with some ar1 shock. This is the efficient vectorized version
+% capital asset problem with some shocks. This is the optimized-vectorized version
 % of
 % <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf.html
-% ff_akz_vf>. See that file for more descriptions. 
+% ff_akz_vf>. See that file for more descriptions. See
+% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html
+% ff_az_vf_vecsv> for the idea for optimized-vectorized code. This file
+% here is meant to handle savings only or borrowing (without default) will
+% also work as well.
+% <https://fanwangecon.github.io/CodeDynaAsset/m_akbz/solve/html/ff_akbz_vf_vecsv.html
+% ff_akbz_vf_vecsv> version of this code deals with borrowing as well.
 %
 % @param param_map container parameter container
 %
@@ -28,7 +35,10 @@ function result_map = ff_akz_vf_vecsv(varargin)
 % keys included in result_map:
 %
 % * mt_val matrix states_n by shock_n matrix of converged value function grid
-% * mt_pol_a matrix states_n by shock_n matrix of converged policy function grid
+% * mt_pol_a matrix states_n by shock_n matrix of converged policy function
+% grid safe asset
+% * mt_pol_k matrix states_n by shock_n matrix of converged policy function
+% grid risky asset
 % * ar_val_diff_norm array if bl_post = true it_iter_last by 1 val function
 % difference between iteration
 % * ar_pol_diff_norm array if bl_post = true it_iter_last by 1 policy
@@ -39,13 +49,41 @@ function result_map = ff_akz_vf_vecsv(varargin)
 %
 % @example
 %
+%   it_param_set = 2;
+%   [param_map, support_map] = ffs_akz_set_default_param(it_param_set);   
+%   % Simulation Accuracy
+%   param_map('it_w_n') = 750;
+%   param_map('it_ak_n') = param_map('it_w_n');
+%   param_map('it_z_n') = 11;
+%   % Display Parameters
+%   support_map('bl_display') = false;
+%   support_map('bl_display_final') = false;
+%   support_map('bl_time') = true;
+%   support_map('bl_profile') = false;
+%   % Call Program with external parameters that override defaults
+%   ff_akz_vf_vecsv(param_map, support_map);
+% 
 % @include
 %
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ffs_akz_set_default_param.m ffs_akz_set_default_param>
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ffs_akz_get_funcgrid.m ffs_akz_get_funcgrid>
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solvepost/ff_akz_vf_post.m ff_akz_vf_post>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html ffs_akz_set_default_param>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html ffs_akz_get_funcgrid>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_vf_post.html ff_akz_vf_post>
 %
-
+% @seealso
+%
+% * concurrent (safe + risky) loop: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf.html ff_akz_vf>
+% * concurrent (safe + risky) vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vec.html ff_akz_vf_vec>
+% * concurrent (safe + risky) optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vecsv.html ff_akz_vf_vecsv>
+% * concurrent (safe + risky + borr/default) optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_akbz/solve/html/ff_akbz_vf_vecsv.html ff_akbz_vf_vecsv>
+% * two-stage (safe + risky) loop: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf.html ff_wkz_vf>
+% * two-stage (safe + risky) vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf_vec.html ff_wkz_vf_vec>
+% * two-stage (safe + risky) optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf_vecsv.html ff_wkz_vf_vecsv>
+% * two-stage (safe + risky + borr/default) optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_akbz/solve/html/ff_wkbz_vf_vecsv.html ff_wkbz_vf_vecsv>
+% * two-stage + interpolate (safe + risky) loop: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf.html ff_iwkz_vf>
+% * two-stage + interpolate (safe + risky) vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf_vec.html ff_iwkz_vf_vec>
+% * two-stage + interpolate (safe + risky) optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf_vecsv.html ff_iwkz_vf_vecsv>
+% * two-stage + interpolate (safe + risky + borr/default) optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_akbz/solve/html/ff_iwkbz_vf_vecsv.html ff_iwkbz_vf_vecsv>
+%
 
 %% Default
 % * it_param_set = 1: quick test
@@ -53,13 +91,13 @@ function result_map = ff_akz_vf_vecsv(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 3;
+it_param_set = 2;
 bl_input_override = true;
 [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
 
-% parameters can be set inside ffs_akz_set_default_param or updated here
-param_map('it_w_n') = 50;
-param_map('it_z_n') = 15;
+% Note: param_map and support_map can be adjusted here or outside to override defaults
+% param_map('it_w_n') = 50;
+% param_map('it_z_n') = 15;
 
 % get armt and func map
 [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
@@ -97,12 +135,11 @@ params_group = values(armt_map, {'mt_z_trans', 'ar_z'});
 params_group = values(armt_map, {'ar_a_meshk', 'ar_k_mesha', 'mt_coh_wkb', 'it_ameshk_n'});
 [ar_a_meshk, ar_k_mesha, mt_coh_wkb, it_ameshk_n] = params_group{:};
 % func_map
-params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons'});
-[f_util_log, f_util_crra, f_cons] = params_group{:};
+params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons', 'f_coh'});
+[f_util_log, f_util_crra, f_cons, f_coh] = params_group{:};
 % param_map
-params_group = values(param_map, {'fl_r_save', 'fl_r_borr', 'fl_w',...
-    'it_z_n', 'fl_crra', 'fl_beta', 'fl_c_min'});
-[fl_r_save, fl_r_borr, fl_wage, it_z_n, fl_crra, fl_beta, fl_c_min] = params_group{:};
+params_group = values(param_map, {'it_z_n', 'fl_crra', 'fl_beta', 'fl_c_min'});
+[it_z_n, fl_crra, fl_beta, fl_c_min] = params_group{:};
 params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol', 'it_tol_pol_nochange'});
 [it_maxiter_val, fl_tol_val, fl_tol_pol, it_tol_pol_nochange] = params_group{:};
 % support_map
@@ -287,8 +324,13 @@ end
 
 result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
-result_map('mt_pol_a') = mt_pol_a;
-result_map('mt_pol_k') = mt_pol_k;
+
+mt_coh = f_coh(ar_z, ar_a_meshk, ar_k_mesha);
+result_map('cl_mt_pol_coh') = {mt_coh, zeros(1)};
+result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
+result_map('cl_mt_pol_k') = {mt_pol_k, zeros(1)};
+result_map('cl_mt_pol_c') = {f_cons(mt_coh, mt_pol_a, mt_pol_k), zeros(1)};
+result_map('ar_st_pol_names') = ["cl_mt_pol_coh", "cl_mt_pol_a", "cl_mt_pol_k", "cl_mt_pol_c"];
 
 if (bl_post)
     bl_input_override = true;

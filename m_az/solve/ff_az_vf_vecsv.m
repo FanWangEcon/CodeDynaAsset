@@ -14,6 +14,19 @@ function result_map = ff_az_vf_vecsv(varargin)
 % ff_az_vf_vec> shows vectorized codes. This file shows vectorized codes
 % that is faster but is more memory intensive.
 %
+% See
+% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vec.html
+% ff_az_vf_vec> how vectorization works within this structure.
+%
+% This _optimized-vectorized_ solution method provides very large speed
+% improvements for this infinite horizon problem because the u(c(z,a,a'))
+% calculation within each iteration is identical. Generally the idea is to
+% identify inside iteration whether the model is infinite horizon or
+% life-cycle based where repeat calculations are taking place. If such
+% calculations can be identified, then potentially they could be stored and
+% retrieved during future iterations/periods rather than recomputed every
+% time. This saves time. 
+%
 % @param param_map container parameter container
 %
 % @param support_map container support container
@@ -43,7 +56,7 @@ function result_map = ff_az_vf_vecsv(varargin)
 % @example
 %
 %    % Get Default Parameters
-%    it_param_set = 4;
+%    it_param_set = 2;
 %    [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
 %    % Change Keys in param_map
 %    param_map('it_a_n') = 500;
@@ -88,7 +101,7 @@ function result_map = ff_az_vf_vecsv(varargin)
 % from ffs_az_set_default_param as we possibly change it_a_n and it_z_n
 % here.
 
-it_param_set = 4;
+it_param_set = 2;
 bl_input_override = true;
 [param_map, support_map] = ffs_az_set_default_param(it_param_set);
 
@@ -129,8 +142,8 @@ support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')]
 params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z'});
 [ar_a, mt_z_trans, ar_z] = params_group{:};
 % func_map
-params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons'});
-[f_util_log, f_util_crra, f_cons] = params_group{:};
+params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons', 'f_coh'});
+[f_util_log, f_util_crra, f_cons, f_coh] = params_group{:};
 % param_map
 params_group = values(param_map, {'it_a_n', 'it_z_n', 'fl_crra', 'fl_beta', 'fl_nan_replace'});
 [it_a_n, it_z_n, fl_crra, fl_beta, fl_nan_replace] = params_group{:};
@@ -238,7 +251,7 @@ while bl_vfi_continue
 
         % EVAL EV((A',K'),Z'|Z) = V((A',K'),Z') x p(z'|z)', (N by Z) x (Z by 1) = N by 1
         % Note: transpose ar_z_trans_condi from 1 by Z to Z by 1
-        % Note: matrix multiply not dot multiply        
+        % Note: matrix multiply not dot multiply
         mt_evzp_condi_z = mt_val_cur * ar_z_trans_condi';
 
         % EVAL add on future utility, N by N + N by 1
@@ -253,7 +266,7 @@ while bl_vfi_continue
         % Optimization: remember matlab is column major, rows must be
         % choices, columns must be states
         % <https://en.wikipedia.org/wiki/Row-_and_column-major_order COLUMN-MAJOR>
-        % mt_utility is N by N, rows are choices, cols are states.         
+        % mt_utility is N by N, rows are choices, cols are states.
         [ar_opti_val1_z, ar_opti_idx_z] = max(mt_utility);
         mt_val(:,it_z_i) = ar_opti_val1_z;
         mt_pol_a(:,it_z_i) = ar_a(ar_opti_idx_z);
@@ -318,11 +331,21 @@ if (bl_profile)
 end
 
 %% Process Optimal Choices
+% for choices outcomes, store as cell with two elements, first element is
+% the y(a,z), outcome given states, the second element will be solved found
+% in
+% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_ds_vf.html
+% ff_ds_vf> and other distributions files. It stores what are the
+% probability mass function of y, along with sorted unique values of y.
 
 result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
-result_map('mt_pol_a') = mt_pol_a;
 result_map('mt_pol_idx') = mt_pol_idx;
+
+result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
+result_map('cl_mt_pol_coh') = {f_coh(ar_z, ar_a'), zeros(1)};
+result_map('cl_mt_pol_c') = {f_cons(ar_z, ar_a', mt_pol_a), zeros(1)};
+result_map('ar_st_pol_names') = ["cl_mt_pol_a", "cl_mt_pol_coh", "cl_mt_pol_c"];
 
 if (bl_post)
     bl_input_override = true;

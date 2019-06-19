@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Solve Save + Borr Dynamic Programming Problem (Optimized-Vectorized)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-16"><meta name="DC.source" content="ff_abz_vf_vecsv.m"><style type="text/css">
+      --><title>Solve For+Inf+Borr+Save Dynamic Programming Problem (Optimized-Vectorized)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-18"><meta name="DC.source" content="ff_abz_vf_vecsv.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,9 +66,9 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Solve Save + Borr Dynamic Programming Problem (Optimized-Vectorized)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_ABZ_VF_VECSV solve infinite horizon exo shock + endo asset problem</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1</a></li><li><a href="#5">Parse Parameters 2</a></li><li><a href="#6">Initialize Output Matrixes</a></li><li><a href="#7">Initialize Convergence Conditions</a></li><li><a href="#8">Iterate Value Function</a></li><li><a href="#10">Solve Optimization Problem Current Iteration</a></li><li><a href="#11">Check Tolerance and Continuation</a></li><li><a href="#13">Process Optimal Choices</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> result_map = ff_abz_vf_vecsv(varargin)
-</pre><h2 id="2">FF_ABZ_VF_VECSV solve infinite horizon exo shock + endo asset problem</h2><p>This program solves the infinite horizon dynamic single asset and single shock problem with vectorized codes. <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf.html">ff_abz_vf</a> shows looped codes. <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vec.html">ff_abz_vf_vec</a> shows vectorized codes. This file shows vectorized codes that is faster but is more memory intensive.</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@param func_map container container with function handles for consumption cash-on-hand etc.</p><p>@return result_map container contains policy function matrix, value function matrix, iteration results, and policy function, value function and iteration results tables.</p><p>keys included in result_map:</p><div><ul><li>mt_val matrix states_n by shock_n matrix of converged value function grid</li><li>mt_pol_a matrix states_n by shock_n matrix of converged policy function grid</li><li>ar_val_diff_norm array if bl_post = true it_iter_last by 1 val function difference between iteration</li><li>ar_pol_diff_norm array if bl_post = true it_iter_last by 1 policy function difference between iterations</li><li>mt_pol_perc_change matrix if bl_post = true it_iter_last by shock_n the proportion of grid points at which policy function changed between current and last iteration for each element of shock</li></ul></div><p>@example</p><pre>  % Get Default Parameters
-  it_param_set = 4;
+  </style></head><body><div class="content"><h1>Solve For+Inf+Borr+Save Dynamic Programming Problem (Optimized-Vectorized)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_ABZ_VF_VECSV solve infinite horizon exo shock + endo asset problem</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1</a></li><li><a href="#5">Parse Parameters 2</a></li><li><a href="#6">Initialize Output Matrixes</a></li><li><a href="#7">Initialize Convergence Conditions</a></li><li><a href="#8">Iterate Value Function</a></li><li><a href="#10">Solve Optimization Problem Current Iteration</a></li><li><a href="#11">Check Tolerance and Continuation</a></li><li><a href="#13">Process Optimal Choices</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> result_map = ff_abz_vf_vecsv(varargin)
+</pre><h2 id="2">FF_ABZ_VF_VECSV solve infinite horizon exo shock + endo asset problem</h2><p>This program solves the infinite horizon dynamic single asset and single shock problem with vectorized codes. <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf.html">ff_abz_vf</a> shows looped codes. <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vec.html">ff_abz_vf_vec</a> shows vectorized codes. This file shows vectorized codes that is faster but is more memory intensive.</p><p>The borrowing problem is very similar to the savings problem. The code could be identical if one does not have to deal with default. The main addition here in comparison to the savings only code <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vec</a> is the ability to deal with default.</p><p>See <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vec.html">ff_az_vf_vec</a> how vectorization works within this structure.</p><p>This <i>optimized-vectorized</i> solution method provides very large speed improvements for this infinite horizon problem because the u(c(z,a,a')) calculation within each iteration is identical. Generally the idea is to identify inside iteration whether the model is infinite horizon or life-cycle based where repeat calculations are taking place. If such calculations can be identified, then potentially they could be stored and retrieved during future iterations/periods rather than recomputed every time. This saves time.</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@param func_map container container with function handles for consumption cash-on-hand etc.</p><p>@return result_map container contains policy function matrix, value function matrix, iteration results, and policy function, value function and iteration results tables.</p><p>keys included in result_map:</p><div><ul><li>mt_val matrix states_n by shock_n matrix of converged value function grid</li><li>mt_pol_a matrix states_n by shock_n matrix of converged policy function grid</li><li>ar_val_diff_norm array if bl_post = true it_iter_last by 1 val function difference between iteration</li><li>ar_pol_diff_norm array if bl_post = true it_iter_last by 1 policy function difference between iterations</li><li>mt_pol_perc_change matrix if bl_post = true it_iter_last by shock_n the proportion of grid points at which policy function changed between current and last iteration for each element of shock</li></ul></div><p>@example</p><pre>  % Get Default Parameters
+  it_param_set = 2;
   [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
   % Chnage param_map keys for borrowing
   param_map('fl_b_bd') = -20; % borrow bound
@@ -84,7 +84,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
   support_map('bl_post') = true;
   support_map('bl_display_final') = false;
   % Call Program with external parameters that override defaults.
-  ff_abz_vf_vecsv(param_map, support_map);</pre><p>@include</p><div><ul><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_default_param.html">ffs_abz_set_default_param</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_get_funcgrid.html">ffs_abz_get_funcgrid</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_vf_post.html">ff_az_vf_post</a></li></ul></div><p>@seealso</p><div><ul><li>save loop: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf.html">ff_az_vf</a></li><li>save vectorized: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vec.html">ff_az_vf_vec</a></li><li>save optimized-vectorized: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a></li><li>save + borr loop: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf.html">ff_abz_vf</a></li><li>save + borr vectorized: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vec.html">ff_abz_vf_vec</a></li><li>save + borr optimized-vectorized: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vecsv.html">ff_abz_vf_vecsv</a></li></ul></div><h2 id="3">Default</h2><div><ul><li>it_param_set = 1: quick test</li><li>it_param_set = 2: benchmark run</li><li>it_param_set = 3: benchmark profile</li><li>it_param_set = 4: press publish button</li></ul></div><p>go to <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_set_default_param.html">ffs_abz_set_default_param</a> to change parameters in param_map container. The parameters can also be updated here directly after obtaining them from ffs_abz_set_default_param as we possibly change it_a_n and it_z_n here.</p><pre class="codeinput">it_param_set = 4;
+  ff_abz_vf_vecsv(param_map, support_map);</pre><p>@include</p><div><ul><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_default_param.html">ffs_abz_set_default_param</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_get_funcgrid.html">ffs_abz_get_funcgrid</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_vf_post.html">ff_az_vf_post</a></li></ul></div><p>@seealso</p><div><ul><li>save loop: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf.html">ff_az_vf</a></li><li>save vectorized: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vec.html">ff_az_vf_vec</a></li><li>save optimized-vectorized: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a></li><li>save + borr loop: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf.html">ff_abz_vf</a></li><li>save + borr vectorized: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vec.html">ff_abz_vf_vec</a></li><li>save + borr optimized-vectorized: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vecsv.html">ff_abz_vf_vecsv</a></li></ul></div><h2 id="3">Default</h2><div><ul><li>it_param_set = 1: quick test</li><li>it_param_set = 2: benchmark run</li><li>it_param_set = 3: benchmark profile</li><li>it_param_set = 4: press publish button</li></ul></div><pre class="codeinput">it_param_set = 4;
 bl_input_override = true;
 [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
 
@@ -94,6 +94,8 @@ bl_input_override = true;
 
 [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override); <span class="comment">% 1 for override</span>
 default_params = {param_map support_map armt_map func_map};
+</pre><pre class="codeoutput">Warning: "C:\Users\fan\CodeDynaAsset\m_az\solve\profile\ff_az_ds_default_p7" not
+found in path. 
 </pre><h2 id="4">Parse Parameters 1</h2><pre class="codeinput"><span class="comment">% if varargin only has param_map and support_map,</span>
 params_len = length(varargin);
 [default_params{1:params_len}] = varargin{:};
@@ -315,8 +317,12 @@ mt_pol_perc_change = zeros([it_maxiter_val, it_z_n]);
 <span class="keyword">end</span>
 </pre><h2 id="13">Process Optimal Choices</h2><pre class="codeinput">result_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
 result_map(<span class="string">'mt_val'</span>) = mt_val;
-result_map(<span class="string">'mt_pol_a'</span>) = mt_pol_a;
 result_map(<span class="string">'mt_pol_idx'</span>) = mt_pol_idx;
+
+result_map(<span class="string">'cl_mt_pol_a'</span>) = {mt_pol_a, zeros(1)};
+result_map(<span class="string">'cl_mt_pol_coh'</span>) = {f_coh(ar_z, ar_a'), zeros(1)};
+result_map(<span class="string">'cl_mt_pol_c'</span>) = {f_cons(ar_z, ar_a', mt_pol_a), zeros(1)};
+result_map(<span class="string">'ar_st_pol_names'</span>) = [<span class="string">"cl_mt_pol_a"</span>, <span class="string">"cl_mt_pol_coh"</span>, <span class="string">"cl_mt_pol_c"</span>];
 
 <span class="keyword">if</span> (bl_post)
     bl_input_override = true;
@@ -648,13 +654,13 @@ ans =
 
   Map with properties:
 
-        Count: 11
+        Count: 14
       KeyType: char
     ValueType: any
 
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
-%% Solve Save + Borr Dynamic Programming Problem (Optimized-Vectorized)
+%% Solve For+Inf+Borr+Save Dynamic Programming Problem (Optimized-Vectorized)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
@@ -669,6 +675,25 @@ function result_map = ff_abz_vf_vecsv(varargin)
 % <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vec.html
 % ff_abz_vf_vec> shows vectorized codes. This file shows vectorized codes
 % that is faster but is more memory intensive.
+%
+% The borrowing problem is very similar to the savings problem. The code
+% could be identical if one does not have to deal with default. The main
+% addition here in comparison to the savings only code
+% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html
+% ff_az_vf_vec> is the ability to deal with default. 
+%
+% See
+% <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vec.html
+% ff_az_vf_vec> how vectorization works within this structure.
+%
+% This _optimized-vectorized_ solution method provides very large speed
+% improvements for this infinite horizon problem because the u(c(z,a,a'))
+% calculation within each iteration is identical. Generally the idea is to
+% identify inside iteration whether the model is infinite horizon or
+% life-cycle based where repeat calculations are taking place. If such
+% calculations can be identified, then potentially they could be stored and
+% retrieved during future iterations/periods rather than recomputed every
+% time. This saves time. 
 %
 % @param param_map container parameter container
 %
@@ -699,7 +724,7 @@ function result_map = ff_abz_vf_vecsv(varargin)
 % @example
 %
 %    % Get Default Parameters
-%    it_param_set = 4;
+%    it_param_set = 2;
 %    [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
 %    % Chnage param_map keys for borrowing
 %    param_map('fl_b_bd') = -20; % borrow bound
@@ -740,12 +765,6 @@ function result_map = ff_abz_vf_vecsv(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 %
-% go to
-% <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_set_default_param.html
-% ffs_abz_set_default_param> to change parameters in param_map container.
-% The parameters can also be updated here directly after obtaining them
-% from ffs_abz_set_default_param as we possibly change it_a_n and it_z_n
-% here.
 
 it_param_set = 4;
 bl_input_override = true;
@@ -1014,8 +1033,12 @@ end
 
 result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
-result_map('mt_pol_a') = mt_pol_a;
 result_map('mt_pol_idx') = mt_pol_idx;
+
+result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
+result_map('cl_mt_pol_coh') = {f_coh(ar_z, ar_a'), zeros(1)};
+result_map('cl_mt_pol_c') = {f_cons(ar_z, ar_a', mt_pol_a), zeros(1)};
+result_map('ar_st_pol_names') = ["cl_mt_pol_a", "cl_mt_pol_coh", "cl_mt_pol_c"];
 
 if (bl_post)
     bl_input_override = true;
