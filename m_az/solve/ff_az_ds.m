@@ -102,6 +102,7 @@ function [result_map] = ff_az_ds(varargin)
 %
 % * derive distribution loop: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html ff_az_ds>
 % * derive distribution vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html ff_az_ds_vec>
+% * derive distribution semi-analytical: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html ff_az_ds_vecsv>
 %
 
 %% Default
@@ -314,7 +315,14 @@ end
 % random variables, we now obtain distributional statistics. Note that we
 % know f(a,z), and we also know relevant policy functions a'(a,z), c(a,z),
 % or other policy functions. We can simulate any choices that are a
-% function of the random variables (a,z), using f(a,z)
+% function of the random variables (a,z), using f(a,z). We call function
+% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_ds_post_stats.html
+% ff_az_ds_post_stats> which uses
+% <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html
+% fft_disc_rand_var_stats> and
+% <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html
+% fft_disc_rand_var_mass2outcomes> to compute various statistics of
+% interest.
 
 bl_input_override = true;
 result_map = ff_az_ds_post_stats(support_map, result_map, mt_dist_az, bl_input_override);

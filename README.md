@@ -23,7 +23,7 @@ Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_
 - **15** grid points for the AR1 shock
 - [other parameters](https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_set_default_param.html)
 
-Using three algorithm that provide identical solutions:
+Algorithms below provide identical solutions:
 
 1. *az* model [looped solution](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solve/ff_az_vf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/profile/ff_az_vf_default_p3/file0.html)
     * speed: **8634.5** seconds
@@ -40,20 +40,23 @@ Using three algorithm that provide identical solutions:
 
 ### 1.2.a Deriving Asset Distributions
 
-Solve for the stationary probability mass function over discrete states (endogenous assets and exogenous shocks). Since codes from *1.1* provide identical solutions, the benchmark *optimized-vectorized* code is called. The distributional codes compute, with benchmark parameters outcomes, for each outcome *y* (consumption, savings, cash-on-hand):
+Solve for the stationary probability mass function over states using *non-simulation* methods. The first two methods below involve *iteration*, the third is *semi-analytical and iteration-free* (see appendix in [Wang 2019](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3316939) for details). The semi-analytical approach has three implementations, *eigenvector* or *projection* or *power*, and provides the exact stationary distribution induced by the policy functions. The distributional codes compute, with [benchmark parameters](https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_set_default_param.html) and after invoking the *optimized-vectorized* code from above, for each outcome *y*:
 
 - joint and marginal probability mass functions: *P(y,z)* and *P(y)*
 - *E(Y)*, *var(Y)*, *P(Y=0)*, *P(Y=max(Y))*, etc
 - percentiles and fraction of *y* held by households up to current percentile
 
-Similar to before, using algorithms that provide identical solutions. Speed below does not include speed from *1.1*:
+Algorithms below provide identical solutions (speed below does not include speed from *1.1*):
 
 1. *az* model asset distribution [looped](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solve/ff_az_ds.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/profile/ff_az_ds_default_p7/file0.html)
     * speed: **5.0** seconds
-    * loops: 1 for VFI, 1 for shocks, 1 for asset state, 1 for future shocks
+    * loops: 1 for pmf iteration, 1 for shocks, 1 for asset state, 1 for future shocks
 2. *az* model asset distribution [vectorized](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solve/ff_az_ds_vec.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/profile/ff_az_ds_vec_default_p7/file0.html)
     * speed: **0.8** seconds
-    * loops: 1 for VFI, 1 for shocks, unique key mass match
+    * loops: 1 for pmf iteration, 1 for shocks, policy index match
+3. *az* model asset distribution [semi-analytical](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solve/ff_az_ds_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/profile/ff_az_ds_vecsv_default_p7/file0.html)
+    * speed: (a) **5** seconds for **eigenvector** method (b) **8** seconds for **projection** method (c) **54.5** seconds for **power**
+    * iteration free, construct full markov chain, eigenvector
 
 ### 1.2.b Statistics Support Functions
 
@@ -96,13 +99,13 @@ Deriving asset distributions relies on two functions from the [/tools/](https://
 We analyze model features by adjusting parameters.
 
 1. *az* model **value and policy** functions precision
-   * [adjust state/choice grid points](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_vf_vecsv/test_precision/html/fsi_az_vf_vecsv_a_n.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/test/ff_az_vf_vecsv/test_precision/fsi_az_vf_vecsv_a_n.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_vf_vecsv/test_precision/html/fsi_az_vf_vecsv_a_n.html)
-   * [adjust shock grid points](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_vf_vecsv/test_precision/html/fsi_az_vf_vecsv_z_n.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/test/ff_az_vf_vecsv/test_precision/fsi_az_vf_vecsv_z_n.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_vf_vecsv/test_precision/html/fsi_az_vf_vecsv_z_n.html)
-   * [benchmark vs high-precision](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_vf_vecsv/test_precision/html/fsi_az_vf_vecsv_main.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/test/ff_az_vf_vecsv/test_precision/fsi_az_vf_vecsv_main.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_vf_vecsv/test_precision/html/fsi_az_vf_vecsv_main.html)
+    * [adjust state/choice grid points](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_vf_vecsv/test_precision/html/fsi_az_vf_vecsv_a_n.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/test/ff_az_vf_vecsv/test_precision/fsi_az_vf_vecsv_a_n.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_vf_vecsv/test_precision/html/fsi_az_vf_vecsv_a_n.html)
+    * [adjust shock grid points](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_vf_vecsv/test_precision/html/fsi_az_vf_vecsv_z_n.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/test/ff_az_vf_vecsv/test_precision/fsi_az_vf_vecsv_z_n.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_vf_vecsv/test_precision/html/fsi_az_vf_vecsv_z_n.html)
+    * [benchmark vs high-precision](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_vf_vecsv/test_precision/html/fsi_az_vf_vecsv_main.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/test/ff_az_vf_vecsv/test_precision/fsi_az_vf_vecsv_main.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_vf_vecsv/test_precision/html/fsi_az_vf_vecsv_main.html)
 2. *az* preference parameters and **asset distributions**
-  * [adjust discount and risk aversion](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vec/test_pref/html/fsi_az_ds_vec_pref.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/test/ff_az_ds_vec/test_pref/fsi_az_ds_vec_pref.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vec/test_pref/html/fsi_az_ds_vec_pref.html)
+    * [adjust discount and risk aversion](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_pref/html/fsi_az_ds_vecsv_pref.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/test/ff_az_ds_vecsv/test_pref/fsi_az_ds_vecsv_pref.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_pref/html/fsi_az_ds_vecsv_pref.html)
 3. *az* model shock process and **asset distributions**
-  * [adjust shock persistence and variance](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vec/test_shock/html/fsi_az_ds_vec_shock.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/test/ff_az_ds_vec/test_shock/fsi_az_ds_vec_shock.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vec/test_shock/html/fsi_az_ds_vec_shock.html)
+    * [adjust shock persistence and variance](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_shock/html/fsi_az_ds_vecsv_shock.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/test/ff_az_ds_vecsv/test_shock/fsi_az_ds_vecsv_shock.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_shock/html/fsi_az_ds_vecsv_shock.html)
 
 # 2. The Savings + Borrowing Problem (ABZ)
 
@@ -302,7 +305,7 @@ In Section 3, we solved the two asset problem in levels. Here, the same model is
 
 ### 4.1.a Algorithm Description
 
-In the levels solution above, households at different state space points face the same choice set, but almost half of the choice points are invalid because they would lead to negative consumption today. Solving the problem in percentages allow all households to have the same choice grid in terms of percentage levels. This potentially offers much more precise solutions under some model parameters combinations. One could compare testing results from *3.6* above and *4.4* below. Additionally, the levels based grid solution might lead to degenerate steady state asset distributions. This is because at low levels of cash-on-hand, if the risky asset's lowest level of choice is invalid, then an individual could be stuck in that state.
+In the levels solution above, households at different state space points face the same choice set, but almost half of the choice points are invalid because they would lead to negative consumption today. Solving the problem in percentages allow all households to have the same choice grid in terms of percentage levels. This potentially offers much more precise solutions under some model parameters combinations. One could compare testing results from *3.6* above and *4.4* below. Additionally, the levels based grid solution might lead to degenerate steady state asset distributions. This is because at low levels of cash-on-hand, if the risky asset's lowest level of choice is invalid, then an individual could be stuck in that state. (see appendix in [Wang 2019](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3316939) for details)
 
 This is the *ipWKZ* problem: *i* stands for interpolation, *p* stands for percentage, *wk* stand for two stage w=k'+b' first then k' given w. For the *ipWKZ* model, while there is still very substantial gains from the looped to the vectorized algorithm implementation, the speed improvements from moving to the efficient-vectorized implementation is much less substantial. For the small benchmark grids, the speed is actually slower when we use the efficient-vectorized implementation.
 

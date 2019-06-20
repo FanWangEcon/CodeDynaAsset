@@ -62,9 +62,11 @@ param_map('fl_nan_replace') = -9999;
 % Solution Accuracy
 param_map('it_maxiter_val') = 1000;
 param_map('it_maxiter_dist') = 1000;
+param_map('st_analytical_stationary_type') = 'projection'; % could be eigenvector, projection, power
 param_map('fl_tol_val') = 10^-5;
 param_map('fl_tol_pol') = 10^-5;
 param_map('fl_tol_dist') = 10^-5;
+param_map('it_trans_power_dist') = 1000;
 param_map('it_tol_pol_nochange') = 25; % number of iterations where policy does not change
 
 %% Setting support_map container
@@ -178,7 +180,7 @@ end
 if (ismember(it_subset, [5,6,7,8,9]))
     if (ismember(it_subset, [5]))
         % TEST quick (need to enough to have distribution)
-        param_map('it_a_n') = 100;
+        param_map('it_a_n') = 50;
         param_map('it_z_n') = 7;
         param_map('it_maxiter_val') = 50;
         param_map('it_maxiter_dist') = 50;
@@ -203,7 +205,7 @@ if (ismember(it_subset, [5,6,7,8,9]))
 
         % do not generate all graphs when solving for distribution
         support_map('bl_graph_val') = false;
-        support_map('bl_graph_pol_lvl') = true;
+        support_map('bl_graph_pol_lvl') = false;
         support_map('bl_graph_pol_pct') = false;
         support_map('bl_graph_coh_t_coh') = true;
 
@@ -213,16 +215,13 @@ if (ismember(it_subset, [5,6,7,8,9]))
             support_map('bl_display_dist') = false;
             support_map('bl_graph_onebyones') = true;
             support_map('bl_img_save') = false;
-            if (ismember(it_subset, [9]))
-                support_map('bl_graph_pol_lvl') = false;
-            end
         end
 
     end
     if (ismember(it_subset, [7]))
         % Profile run
         support_map('bl_profile_dist') = true;
-        support_map('bl_display') = false; % don't print        
+        support_map('bl_display') = false; % don't print
         support_map('bl_display_dist') = false; % don't print
         support_map('bl_time') = true;
     end

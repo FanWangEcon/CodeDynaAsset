@@ -81,6 +81,7 @@ function [result_map] = ff_az_ds_vec(varargin)
 %
 % * derive distribution loop: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html ff_az_ds>
 % * derive distribution vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html ff_az_ds_vec>
+% * derive distribution semi-analytical: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html ff_az_ds_vecsv>
 %
 
 %% Default
@@ -138,8 +139,8 @@ support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')]
 % result_map
 % ar_st_pol_names is from section _Process Optimal Choices_ in the value
 % function code.
-params_group = values(result_map, {'cl_mt_pol_a', 'mt_pol_idx', 'ar_st_pol_names'});
-[cl_mt_pol_a, mt_pol_idx, ar_st_pol_names] = params_group{:};
+params_group = values(result_map, {'cl_mt_pol_a', 'mt_pol_idx'});
+[cl_mt_pol_a, mt_pol_idx] = params_group{:};
 mt_pol_a = deal(cl_mt_pol_a{1});
 
 % armt_map
@@ -272,7 +273,14 @@ end
 % random variables, we now obtain distributional statistics. Note that we
 % know f(a,z), and we also know relevant policy functions a'(a,z), c(a,z),
 % or other policy functions. We can simulate any choices that are a
-% function of the random variables (a,z), using f(a,z)
+% function of the random variables (a,z), using f(a,z). We call function
+% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_ds_post_stats.html
+% ff_az_ds_post_stats> which uses
+% <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html
+% fft_disc_rand_var_stats> and
+% <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html
+% fft_disc_rand_var_mass2outcomes> to compute various statistics of
+% interest.
 
 bl_input_override = true;
 result_map = ff_az_ds_post_stats(support_map, result_map, mt_dist_az, bl_input_override);

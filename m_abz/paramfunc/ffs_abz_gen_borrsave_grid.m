@@ -1,6 +1,6 @@
 %% Generate Borrowing and Savings Grid
 % *back to <https://fanwangecon.github.io Fan>'s
-% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository> 
+% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
 %%
@@ -23,7 +23,7 @@ function [ar_a, fl_borr_yminbd, fl_borr_ymaxbd] = ffs_abz_gen_borrsave_grid(vara
 % is tighter than the natural borrowing constraint based on minimum income
 % in the case where defaults are not allowed. And if it is tighther than
 % the defaults borrowing constraint based on maximium income in the case
-% where defaults are allowed.  
+% where defaults are allowed.
 %
 % @param bl_default boolean if fl_b_bd is below zero, then is defaults
 % allowed or not? What does default mean? No-default means households under
@@ -33,10 +33,10 @@ function [ar_a, fl_borr_yminbd, fl_borr_ymaxbd] = ffs_abz_gen_borrsave_grid(vara
 % here. What does default mean, it means under some states of shocks,
 % households face debt that they can not repay, so they go to minimum
 % consumption, which is utility for default. Their optimal choice is
-% savings = 0 for the next period. 
+% savings = 0 for the next period.
 %
 % @param ar_z array array of exogenous income shocks for the exogeous
-% shocks to inelastic labor supply 
+% shocks to inelastic labor supply
 %
 % @return fl_w float wage
 %
@@ -81,7 +81,7 @@ it_a_n = cl_params{8};
 
 %% Min and Max Income
 % With the discretized exogenous income process, there are minimum and
-% maximum levels of income next period given the vector of shocks. 
+% maximum levels of income next period given the vector of shocks.
 
 fl_ar_z_min = min(ar_z);
 fl_borr_yminbd = -(fl_ar_z_min*fl_w)/fl_r_borr;
@@ -97,17 +97,17 @@ end
 
 %% Borrowing
 if (fl_b_bd < 0)
-    
+
     %% Borrowing not allowing for default
     if (~bl_default)
         fl_a_min = max(fl_b_bd, fl_borr_yminbd);
     end
-    
+
     %% Borrowing allowing for default
     if (bl_default)
         fl_a_min = max(fl_b_bd, fl_borr_ymaxbd);
-    end    
-    
+    end
+
 end
 
 %% Grid

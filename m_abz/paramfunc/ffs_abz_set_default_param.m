@@ -62,11 +62,12 @@ param_map('fl_r_borr') = 0.035;
 % Minimum Consumption, c_min is for default, when c < 0, replace utility
 % with fl_nan_replace.
 param_map('fl_c_min') = 0.001;
-param_map('fl_nan_replace') = -9999;
+param_map('fl_nan_replace') = -99999;
 
 % Solution Accuracy
 param_map('it_maxiter_val') = 1000;
 param_map('it_maxiter_dist') = 1000;
+param_map('it_trans_power_dist') = 1000;
 param_map('fl_tol_val') = 10^-5;
 param_map('fl_tol_pol') = 10^-5;
 param_map('fl_tol_dist') = 10^-5;
@@ -210,7 +211,7 @@ if (ismember(it_subset, [5,6,7,8,9]))
 
         % do not generate all graphs when solving for distribution
         support_map('bl_graph_val') = false;
-        support_map('bl_graph_pol_lvl') = true;
+        support_map('bl_graph_pol_lvl') = false;
         support_map('bl_graph_pol_pct') = false;
         support_map('bl_graph_coh_t_coh') = true;
 
@@ -220,9 +221,6 @@ if (ismember(it_subset, [5,6,7,8,9]))
             support_map('bl_display_dist') = false;
             support_map('bl_graph_onebyones') = true;
             support_map('bl_img_save') = false;
-            if (ismember(it_subset, [9]))
-                support_map('bl_graph_pol_lvl') = false;
-            end
         end
 
     end

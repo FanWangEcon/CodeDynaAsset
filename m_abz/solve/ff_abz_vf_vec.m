@@ -283,6 +283,7 @@ while bl_vfi_continue
             % if defaulting is optimal choice, at these states, not required
             % to default, non-default possible, but default could be optimal
             ar_opti_aprime_z(ar_opti_c_z <= fl_c_min) = fl_default_aprime;
+            ar_opti_idx_z(ar_opti_c_z <= fl_c_min) = find(ar_a == fl_default_aprime);
         else
             % if default is not allowed, then next period same state as now
             % this is absorbing state, this is the limiting case, single

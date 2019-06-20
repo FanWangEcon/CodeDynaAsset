@@ -45,6 +45,39 @@ ar_fl_z_sig = [0.05, 0.10, 0.3];
 it_a_n = 750;
 it_z_n = 15;
 
+%% Test
+
+% Call Default Parameters <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param>
+bl_input_override = true;
+it_param_set = 9;
+[param_map, support_map] = ffs_abz_set_default_param(it_param_set);
+
+% Simulation Accuracy
+param_map('it_a_n') = it_a_n;
+param_map('it_z_n') = it_z_n;
+param_map('fl_z_rho') = 0.99;
+param_map('fl_z_sig') = 0.1;
+param_map('bl_default') = false;
+
+% Display Parameters
+support_map('bl_display') = false;
+support_map('bl_display_final') = false;
+support_map('bl_time') = true;
+support_map('bl_profile') = false;
+
+% Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
+[armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+
+% Call Dynamic Programming Problem <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv>
+result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
+
+% Call Distribution CProgram
+result_map = ff_az_ds_vec(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+
+% Snap
+snapnow;
+
+
 %% Simulate Model with schok persistence = 0.0, IID
 
 for fl_z_sig = ar_fl_z_sig
