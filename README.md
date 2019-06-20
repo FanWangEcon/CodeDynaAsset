@@ -51,7 +51,7 @@ Similar to before, using algorithms that provide identical solutions. Speed belo
 1. *az* model asset distribution [looped](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solve/ff_az_ds.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/profile/ff_az_ds_default_p7/file0.html)
     * speed: **5.0** seconds
     * loops: 1 for VFI, 1 for shocks, 1 for asset state, 1 for future shocks
-2. *az* model asset distribution [vectorized](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solve/ff_az_ds_vec.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/profile/ff_az_ds_default_p7/file0.html)
+2. *az* model asset distribution [vectorized](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solve/ff_az_ds_vec.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/profile/ff_az_ds_vec_default_p7/file0.html)
     * speed: **0.8** seconds
     * loops: 1 for VFI, 1 for shocks, unique key mass match
 
@@ -100,9 +100,9 @@ We analyze model features by adjusting parameters.
    * [adjust shock grid points](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_vf_vecsv/test_precision/html/fsi_az_vf_vecsv_z_n.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/test/ff_az_vf_vecsv/test_precision/fsi_az_vf_vecsv_z_n.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_vf_vecsv/test_precision/html/fsi_az_vf_vecsv_z_n.html)
    * [benchmark vs high-precision](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_vf_vecsv/test_precision/html/fsi_az_vf_vecsv_main.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/test/ff_az_vf_vecsv/test_precision/fsi_az_vf_vecsv_main.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_vf_vecsv/test_precision/html/fsi_az_vf_vecsv_main.html)
 2. *az* preference parameters and **asset distributions**
-  * [adjust discount and risk aversion](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds/test_pref/html/fsi_az_ds_pref.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/test/test_pref/fsi_az_ds_pref.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds/test_pref/html/fsi_az_ds_pref.html)
+  * [adjust discount and risk aversion](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vec/test_pref/html/fsi_az_ds_vec_pref.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/test/ff_az_ds_vec/test_pref/fsi_az_ds_vec_pref.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vec/test_pref/html/fsi_az_ds_vec_pref.html)
 3. *az* model shock process and **asset distributions**
-  * [adjust shock persistence and variance](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds/test_pref/html/fsi_az_ds_shock.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/test/test_pref/fsi_az_ds_shock.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds/test_pref/html/fsi_az_ds_shock.html)
+  * [adjust shock persistence and variance](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vec/test_shock/html/fsi_az_ds_vec_shock.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/test/ff_az_ds_vec/test_shock/fsi_az_ds_vec_shock.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vec/test_shock/html/fsi_az_ds_vec_shock.html)
 
 # 2. The Savings + Borrowing Problem (ABZ)
 

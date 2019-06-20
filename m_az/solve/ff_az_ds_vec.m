@@ -56,7 +56,7 @@ function [result_map] = ff_az_ds_vec(varargin)
 %
 %    % Get Default Parameters
 %    it_param_set = 6;
-%    [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
+%    [param_map, support_map] = ffs_az_set_default_param(it_param_set);
 %    % Change Keys in param_map
 %    param_map('it_a_n') = 500;
 %    param_map('it_z_n') = 11;
@@ -130,7 +130,7 @@ end
 %% Parse Parameters
 
 % append function name
-st_func_name = 'ff_az_ds';
+st_func_name = 'ff_az_ds_vec';
 support_map('st_profile_name_main') = [st_func_name support_map('st_profile_name_main')];
 support_map('st_mat_name_main') = [st_func_name support_map('st_mat_name_main')];
 support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')];

@@ -78,7 +78,7 @@ function [result_map] = ff_az_ds(varargin)
 %
 %    % Get Default Parameters
 %    it_param_set = 6;
-%    [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
+%    [param_map, support_map] = ffs_az_set_default_param(it_param_set);
 %    % Change Keys in param_map
 %    param_map('it_a_n') = 500;
 %    param_map('it_z_n') = 11;
@@ -129,7 +129,7 @@ else
     % default invoke
     close all;
     
-    it_param_set = 7;
+    it_param_set = 8;
     bl_input_override = true;
 
     % 1. Generate Parameters
@@ -308,120 +308,15 @@ if (bl_profile_dist)
     profsave(profile('info'), strcat(st_profile_path, st_file_name));
 end
 
+
 %% *f(y), f(c), f(a)*: Generate Key Distributional Statistics for Each outcome
-% # from result_map('ar_st_pol_names') get list of outcome matrix on states
-% # simulate each outcome using f(a,z) for probability draws
-% # compute key statistics
+% Having derived f(a,z) the probability mass function of the joint discrete
+% random variables, we now obtain distributional statistics. Note that we
+% know f(a,z), and we also know relevant policy functions a'(a,z), c(a,z),
+% or other policy functions. We can simulate any choices that are a
+% function of the random variables (a,z), using f(a,z)
 
-% Loop over outcomes, see end of
-% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html
-% ff_az_vf_vecsv> where these are created
-for it_outcome_ctr=1:length(ar_st_pol_names)
-    
-    %% *f(y), f(c), f(a)*: Find p(outcome(states)), proability mass function for each outcome
-    % Using <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html
-    % fft_disc_rand_var_mass2outcomes>, compute:
-    %
-    % $$ p(y,z) = \sum_{a} \left(1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$$
-    % $$ p(y,a) = \sum_{z} \left(1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$$
-    % $$ p(Y=y) = \sum_{a,z} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$$
-    %
-    
-    st_cur_output_key = ar_st_pol_names(it_outcome_ctr);
-    cl_mt_choice_cur = result_map(st_cur_output_key);
-    mt_choice_cur = cl_mt_choice_cur{1};
-    
-    % run fft_disc_rand_var_mass2outcomes.,=m
-    bl_input_override = true;
-    [tb_choice_drv_cur_byY, ar_choice_prob_byY, ar_choice_unique_sorted_byY, mt_choice_prob_byYZ, mt_choice_prob_byYA] = ...
-        fft_disc_rand_var_mass2outcomes(st_cur_output_key, mt_choice_cur, mt_dist_az, bl_input_override);
-    
-    %% *f(y), f(c), f(a)*: Compute Statistics for outcomes
-    % Using <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html
-    % fft_disc_rand_var_stats>, compute:
-    %
-    % * $\mu_Y = E(Y) = \sum_{y} p(Y=y) \cdot y $
-    % * $\sigma_Y = \sqrt{ \sum_{y} p(Y=y) \cdot \left( y - \mu_y \right)^2}$
-    % * percentiles: $min_{y} \left\{ P(Y \le y) - percentile \mid P(Y \le y) \ge percentile \right\}$
-    % * fraction of outcome held by up to percentiles: $E(Y<y)/E(Y)$
-    %
-    
-    % run fft_disc_rand_var_stats.m
-    [ds_stats_map] = fft_disc_rand_var_stats(st_cur_output_key, ar_choice_unique_sorted_byY', ar_choice_prob_byY');
+bl_input_override = true;
+result_map = ff_az_ds_post_stats(support_map, result_map, mt_dist_az, bl_input_override);
 
-    % Display
-    if (bl_display_final_dist)
-        disp(['tb_prob_drv, Percentiles of Y, and Share of Y Held by Households up to this Percentile: ', st_cur_output_key])
-        disp(tb_prob_drv);
-    end
-    
-    %% *f(y), f(c), f(a)*: Store Statistics Specific to Each Outcome
-    % see intro section
-    
-    % Append prob mass functions to ds_stats_map
-    ds_stats_map('mt_choice_prob_byYZ') = mt_choice_prob_byYZ;
-    ds_stats_map('mt_choice_prob_byYA') = mt_choice_prob_byYA;    
-    ds_stats_map('tb_choice_prob_byY') = tb_choice_drv_cur_byY;
-    % ds_stats_map is second element of cell for var key in result_map
-    cl_mt_choice_cur{2} = ds_stats_map;    
-    result_map(st_cur_output_key) = cl_mt_choice_cur;
-    
-    % key stats
-    ar_keystats = [ds_stats_map('fl_choice_mean') ds_stats_map('fl_choice_sd') ds_stats_map('fl_choice_coefofvar') ...
-        ds_stats_map('fl_choice_min') ds_stats_map('fl_choice_max') ...
-        ds_stats_map('fl_choice_prob_zero') ds_stats_map('fl_choice_prob_min') ds_stats_map('fl_choice_prob_max') ...
-        ar_choice_percentiles'];
-    cl_outcome_names(it_outcome_ctr) = st_cur_output_key;
-    if (it_outcome_ctr == 1)
-        mt_outcomes_meansdperc = ar_keystats;
-        mt_outcomes_fracheld = ar_choice_perc_fracheld';
-    else
-        mt_outcomes_meansdperc = [mt_outcomes_meansdperc; ar_keystats];
-        mt_outcomes_fracheld = [mt_outcomes_fracheld; ar_choice_perc_fracheld'];
-    end
-    
-end
-
-% *f(y), f(c), f(a)*: Store Statistics Shared Table All Outcomes
-% Process mean and and percentiles
-tb_outcomes_meansdperc = array2table(mt_outcomes_meansdperc);
-ar_fl_percentiles = tb_prob_drv{:,1};
-cl_col_names = ['mean', 'sd', 'coefofvar', 'min', 'max', ...
-                'pYis0', 'pYisMINY', 'pYisMAXY', strcat('p', string(ar_fl_percentiles'))];
-tb_outcomes_meansdperc.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
-tb_outcomes_meansdperc.Properties.RowNames = matlab.lang.makeValidName(cl_outcome_names);
-
-% Process Aset Held by up to percentiles
-tb_outcomes_fracheld = array2table(mt_outcomes_fracheld);
-ar_fl_percentiles = tb_prob_drv{:,1};
-cl_col_names = [strcat('fracByP', string(ar_fl_percentiles'))];
-tb_outcomes_fracheld.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
-tb_outcomes_fracheld.Properties.RowNames = matlab.lang.makeValidName(cl_outcome_names);
-
-% Add to result_map
-result_map('tb_outcomes_meansdperc') = tb_outcomes_meansdperc;
-result_map('mt_outcomes_fracheld') = mt_outcomes_fracheld;
-
-% Display
-if (bl_display_final_dist)
-    
-    disp('tb_outcomes_meansdperc: mean, sd, percentiles')
-    disp(tb_outcomes_meansdperc);
-    
-    disp('tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile')
-    disp(tb_outcomes_fracheld);
-        
-end
-
-
-%% Process Optimal Choices
-
-% 
-% if (bl_post)
-%     bl_input_override = true;
-%     result_map('ar_dist_diff_norm') = ar_dist_diff_norm(1:it_iter_last);
-%     result_map('mt_dist_perc_change') = mt_dist_perc_change(1:it_iter_last, :);
-%     result_map = ff_ds_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
-% end
-% 
 end
