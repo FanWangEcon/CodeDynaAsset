@@ -204,6 +204,5 @@ support_map('bl_display') = bl_display;
 support_map('bl_post') = bl_post;
 support_map('bl_display_final') = bl_display_final;
 
-
 % Call Program
 ff_abz_vf(param_map, support_map);

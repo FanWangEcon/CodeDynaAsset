@@ -4,8 +4,8 @@
 % Table of Content.*
 
 %%
-function [tb_choice_drv_cur_byY, ar_choice_prob_byY, ar_choice_unique_sorted_byY, mt_choice_prob_byYZ] ...
-    = fft_disc_rand_var_mass2outcomes(varargin)
+function [tb_choice_drv_cur_byY, ar_choice_prob_byY, ar_choice_unique_sorted_byY, ...
+    mt_choice_prob_byYZ, mt_choice_prob_byYA] = fft_disc_rand_var_mass2outcomes(varargin)
 %% FFT_DISC_RAND_VAR_MASS2OUTCOMES find f(y) based on f(a,z), and y(a,z)
 % Having derived f(a,z) the probability mass function of the joint discrete
 % random variables, we now obtain distributional statistics. Note that we
@@ -24,7 +24,11 @@ function [tb_choice_drv_cur_byY, ar_choice_prob_byY, ar_choice_unique_sorted_byY
 %
 % * unique sorted outcomes, note different (a,z) can generate the same
 % outcomes and not in order
-% * find total probabiliy for p(outcome, z) = sum_{a}( 1{outcome(a)==outcome}*f(a,z))
+% * find total probabiliy for p(outcome, a) = sum_{z}( 1{outcome(a,z)==outcome}*f(a,z))
+%
+% $$ p(y,a) = \sum_{z} \left(1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$$
+%
+% * find total probabiliy for p(outcome, z) = sum_{a}( 1{outcome(a,z)==outcome}*f(a,z))
 %
 % $$ p(y,z) = \sum_{a} \left(1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$$
 %
@@ -32,6 +36,30 @@ function [tb_choice_drv_cur_byY, ar_choice_prob_byY, ar_choice_unique_sorted_byY
 %
 % $$ p(Y=y) = \sum_{a,z} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$$
 %
+% @param st_var_name string name of the variable (choice/outcome) been analyzed
+%
+% @param mt_choice_bystates matrix N by M of choices along two dimensions,
+% N could be endogenous states, M could be exogenous shocks, or vice-versa
+%
+% @param mt_dist_bystates matrix N by M of probability mass on states, N
+% could be endogenous states, M could be exogenous shocks, or vice versa
+%
+% @return tb_choice_drv_cur_byY table table containing two columns, unique
+% outcomes/choices y from y(a,z) and probability mass associated with each
+% y f(y)
+%
+% @return ar_choice_prob_byY table array probability mass associated with each
+% y f(y), second column from tb_choice_drv_cur_byY, dimension unknown,
+% determined by y(a,z) function
+%
+% @return ar_choice_unique_sorted_byY table array unique Ys, dimension
+% unknown, determined by y(a,z) function
+%
+% @return mt_choice_prob_byYZ matrix f(y,z), meaning for y outcomes along
+% the column dimension. 
+%
+% @return mt_choice_prob_byYA matrix f(y,a), meaning for y outcomes along
+% the row dimension. 
 %
 
 %% Default
@@ -52,7 +80,7 @@ else
     clear all;
     close all;
     
-    it_states = 10;
+    it_states = 6;
     it_shocks = 5;
     fl_binom_n = it_states-1;
     ar_binom_p = (1:(it_shocks))./(it_shocks+2);
@@ -100,6 +128,7 @@ ar_choice_unique_sorted_byY = unique(ar_choice_bystates_sorted);
 % 3. Sum up Density at each element of ar_choice
 ar_choice_prob_byY = zeros([length(ar_choice_unique_sorted_byY),1]);
 mt_choice_prob_byYZ = zeros([length(ar_choice_unique_sorted_byY), size(mt_dist_bystates,2)]);
+mt_choice_prob_byYA = zeros([length(ar_choice_unique_sorted_byY), size(mt_dist_bystates,1)]);
 for it_z_i = 1:size(mt_dist_bystates,2)
     for it_a_j = 1:size(mt_dist_bystates,1)
         
@@ -115,6 +144,9 @@ for it_z_i = 1:size(mt_dist_bystates,2)
         
         % add probability to p(y,z)
         mt_choice_prob_byYZ(ar_choice_in_unique_idx, it_z_i) = mt_choice_prob_byYZ(ar_choice_in_unique_idx, it_z_i) + fl_mass_curstate;
+        
+        % add probability to p(y,a)
+        mt_choice_prob_byYA(ar_choice_in_unique_idx, it_a_j) = mt_choice_prob_byYA(ar_choice_in_unique_idx, it_a_j) + fl_mass_curstate;        
     end
 end
 
@@ -132,13 +164,16 @@ if (bl_display_drvm2outcomes)
     disp('INPUT y(a,z): mt_choice_bystates');
     disp(mt_choice_bystates);
     
-    disp('OUTPUT f(y): ar_choice_prob');
+    disp('OUTPUT f(y): ar_choice_prob_byY');
     disp(ar_choice_prob_byY);
     
-    disp('OUTPUT f(y,z): mt_choice_prob');
+    disp('OUTPUT f(y,z): mt_choice_prob_byYZ');
     disp(mt_choice_prob_byYZ);
     
-    disp('OUTPUT f(y) and y in table: tb_choice_drv_cur');
+    disp('OUTPUT f(y,a): mt_choice_prob_byYA');
+    disp(mt_choice_prob_byYA);
+    
+    disp('OUTPUT f(y) and y in table: tb_choice_drv_cur_byY');
     disp(tb_choice_drv_cur_byY);
     
 end

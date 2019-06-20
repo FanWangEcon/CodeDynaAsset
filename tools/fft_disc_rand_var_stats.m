@@ -19,6 +19,8 @@ function [ds_stats_map] = fft_disc_rand_var_stats(varargin)
 % * percentiles: $min_{y} \left\{ P(Y \le y) - percentile \mid P(Y \le y) \ge percentile \right\}$
 % * fraction of outcome held by up to percentiles: $E(Y<y)/E(Y)$
 %
+% @param st_var_name string name of the variable (choice/outcome) been analyzed
+%
 % @param ar_choice_unique_sorted array 1 by N elements in the sample space
 % of the discrete random variable ordered. Unique consumption values
 % ordered. Unique asset choices ordered. etc.
@@ -90,9 +92,9 @@ fl_choice_mean = ar_choice_prob*ar_choice_unique_sorted';
 fl_choice_sd = sqrt(ar_choice_prob*((ar_choice_unique_sorted'-fl_choice_mean).^2));
 % Coef of Variation of discrete random variable
 fl_choice_coefofvar = fl_choice_sd/fl_choice_mean;
-% Coef of Variation of discrete random variable
+% min of y from policy function, p(y) might be 0
 fl_choice_min = min(ar_choice_unique_sorted);
-% Coef of Variation of discrete random variable
+% max of y from policy function, p(y) might be 0
 fl_choice_max = max(ar_choice_unique_sorted);
 % prob(outcome=min(outcome)), fraction of people not saving for example
 fl_choice_prob_min = sum(ar_choice_prob(ar_choice_unique_sorted == min(ar_choice_unique_sorted)));

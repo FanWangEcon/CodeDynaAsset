@@ -66,8 +66,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Derive Savings Distribution (Loop)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_AZ_DS finds the stationarz savings distribution</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1</a></li><li><a href="#5">Obtain Result Map By Solving Value/Pol Function</a></li><li><a href="#6">Parse Parameters 2</a></li><li><a href="#7">Start Profiler and Timer</a></li><li><a href="#8"><b>f(a,z)</b>: Initialize Output Matrixes</a></li><li><a href="#9"><b>f(a,z)</b>: Initialize Convergence Conditions</a></li><li><a href="#10"><b>f(a,z)</b>: Derive Stationary Distribution</a></li><li><a href="#12"><b>f(a,z)</b>: Iterate over Probability mass for Discrete Random Variable</a></li><li><a href="#13"><b>f(a,z)</b>: Check Tolerance and Continuation</a></li><li><a href="#15">End Time and Profiler</a></li><li><a href="#16"><b>f(y), f(c), f(a)</b>: Generate Key Distributional Statistics for Each outcome</a></li><li><a href="#18"><b>f(y), f(c), f(a)</b>: Find p(outcome(states)), proability mass function for each outcome</a></li><li><a href="#19"><b>f(y), f(c), f(a)</b>: Compute Statistics for outcomes</a></li><li><a href="#20"><b>f(y), f(c), f(a)</b>: Store Statistics Specific to Each Outcome</a></li><li><a href="#22">Process Optimal Choices</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [result_map] = ff_az_ds(varargin)
-</pre><h2 id="2">FF_AZ_DS finds the stationarz savings distribution</h2><p>Building on the Asset Dynamic Programming Problem <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a>, here we solve for the asset distribution.</p><p>This is the iterative looped solution to derive the asset distribution determined by the policy functions. Note that the asset distribution is a joint discrete random variable. We derive f(a,z), where f is the joint discrete random variables probability mass. Then we can derive f(a'(a,z)), f(c(a,z)) directly. The procedure here does not involve simulation. Simulation could also be used to derive these distributions, but given the discrete grid based solution algorithm, there is no need to introduce simulation and associated errors once we have fixed the shock process that generates randomness.</p><p>The function here accomplishes two tasks: (1) deriving the asset distribution as a discrete random variable over the states (2) calculating various statistics based on the discrete joint random variable's probability mass function for various outcomes of the model</p><p>Distributions of Interest:</p><div><ul><li><img src="ff_az_ds_eq08795144712269443427.png" alt="$p(a,z)$" style="width:39px;height:15px;"></li><li><img src="ff_az_ds_eq04843764051820646606.png" alt="$p(Y=y, z) = \sum_{a} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$" style="width:273px;height:15px;"></li><li><img src="ff_az_ds_eq11786329523256587778.png" alt="$p(Y=y) = \sum_{a,z} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$" style="width:268px;height:17px;"></li></ul></div><p>Statistics include:</p><div><ul><li><img src="ff_az_ds_eq03016783485460700593.png" alt="$\mu_y = \sum_{y} p(Y=y) \cdot y$" style="width:134px;height:17px;"></li><li><img src="ff_az_ds_eq13414381062043947873.png" alt="$\sigma_y = \sqrt{ \sum_{y} p(Y=y) \cdot \left( y - \mu_y \right)^2}$" style="width:199px;height:27px;"></li><li><img src="ff_az_ds_eq05433369603455155594.png" alt="$p(y=0)$" style="width:53px;height:15px;"></li><li><img src="ff_az_ds_eq09585247606302904929.png" alt="$p(y=\max(y))$" style="width:91px;height:15px;"></li><li>percentiles: <img src="ff_az_ds_eq09488738859326996168.png" alt="$min_{y} \left\{ P(Y \le y) - percentile \mid P(Y \le y) \ge percentile \right\}$" style="width:352px;height:15px;"></li><li>fraction of outcome held by up to percentiles: <img src="ff_az_ds_eq11722476300337688867.png" alt="$E(Y<y)/E(Y)$" style="width:103px;height:15px;"></li></ul></div><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@param func_map container container with function handles for consumption cash-on-hand etc.</p><p>@return result_map container contains policy function matrix, value function matrix, iteration results, and policy function, value function and iteration results tables.</p><p>new keys included in result_map in addition to the output from <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a> are various distribution statistics for each model outcome, keys include <b>cl_mt_pol_a</b>, <b>cl_mt_pol_c</b>, <b>cl_mt_pol_coh</b>, etc, these include:</p><div><ul><li>the first element of each of these cell array is y(a,z), the outcome/choice at the state space points</li><li>the second element of the cell is another container, which contains statistics computed for f(y) based on y(a,z) and f(a,z), f(y) is the probability mass function for outcome y given the stationary distribution f(a,z). The second element container also includes f(y) itself as well as f(y,z).</li><li>additionally, result_map also stores some of the statistics for different variables jointly together. (a) <b>tb_outcomes_meansdperc</b>: where each row is a different outcome of the model, and each table column stores a different statistics of interest. (b) <b>tb_outcomes_fracheld</b>: which measures the fraction of asset held by different people.</li></ul></div><p>@example</p><pre>  % Get Default Parameters
+  </style></head><body><div class="content"><h1>Derive Savings Distribution (Loop)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_AZ_DS finds the stationarz savings distribution</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Start Profiler and Timer</a></li><li><a href="#6"><b>f(a,z)</b>: Initialize Output Matrixes</a></li><li><a href="#7"><b>f(a,z)</b>: Initialize Convergence Conditions</a></li><li><a href="#8"><b>f(a,z)</b>: Derive Stationary Distribution</a></li><li><a href="#10"><b>f(a,z)</b>: Iterate over Probability mass for Discrete Random Variable</a></li><li><a href="#11"><b>f(a,z)</b>: Check Tolerance and Continuation</a></li><li><a href="#13">End Time and Profiler</a></li><li><a href="#14"><b>f(y), f(c), f(a)</b>: Generate Key Distributional Statistics for Each outcome</a></li><li><a href="#16"><b>f(y), f(c), f(a)</b>: Find p(outcome(states)), proability mass function for each outcome</a></li><li><a href="#17"><b>f(y), f(c), f(a)</b>: Compute Statistics for outcomes</a></li><li><a href="#18"><b>f(y), f(c), f(a)</b>: Store Statistics Specific to Each Outcome</a></li><li><a href="#20">Process Optimal Choices</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [result_map] = ff_az_ds(varargin)
+</pre><h2 id="2">FF_AZ_DS finds the stationarz savings distribution</h2><p>Building on the Asset Dynamic Programming Problem <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a>, here we solve for the asset distribution.</p><p>This is the iterative looped solution to derive the asset distribution determined by the policy functions. Note that the asset distribution is a joint discrete random variable. We derive f(a,z), where f is the joint discrete random variables probability mass. Then we can derive f(a'(a,z)), f(c(a,z)) directly. The procedure here does not involve simulation. Simulation could also be used to derive these distributions, but given the discrete grid based solution algorithm, there is no need to introduce simulation and associated errors once we have fixed the shock process that generates randomness.</p><p>The function here accomplishes two tasks: (1) deriving the asset distribution as a discrete random variable over the states (2) calculating various statistics based on the discrete joint random variable's probability mass function for various outcomes of the model</p><p>Distributions of Interest:</p><div><ul><li><img src="ff_az_ds_eq08795144712269443427.png" alt="$p(a,z)$" style="width:39px;height:15px;"></li><li><img src="ff_az_ds_eq04843764051820646606.png" alt="$p(Y=y, z) = \sum_{a} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$" style="width:273px;height:15px;"></li><li><img src="ff_az_ds_eq00564633710101136588.png" alt="$p(Y=y, a) = \sum_{z} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$" style="width:274px;height:15px;"></li><li><img src="ff_az_ds_eq11786329523256587778.png" alt="$p(Y=y) = \sum_{a,z} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$" style="width:268px;height:17px;"></li></ul></div><p>Statistics include:</p><div><ul><li><img src="ff_az_ds_eq03016783485460700593.png" alt="$\mu_y = \sum_{y} p(Y=y) \cdot y$" style="width:134px;height:17px;"></li><li><img src="ff_az_ds_eq13414381062043947873.png" alt="$\sigma_y = \sqrt{ \sum_{y} p(Y=y) \cdot \left( y - \mu_y \right)^2}$" style="width:199px;height:27px;"></li><li><img src="ff_az_ds_eq05433369603455155594.png" alt="$p(y=0)$" style="width:53px;height:15px;"></li><li><img src="ff_az_ds_eq09585247606302904929.png" alt="$p(y=\max(y))$" style="width:91px;height:15px;"></li><li>percentiles: <img src="ff_az_ds_eq09488738859326996168.png" alt="$min_{y} \left\{ P(Y \le y) - percentile \mid P(Y \le y) \ge percentile \right\}$" style="width:352px;height:15px;"></li><li>fraction of outcome held by up to percentiles: <img src="ff_az_ds_eq11722476300337688867.png" alt="$E(Y<y)/E(Y)$" style="width:103px;height:15px;"></li></ul></div><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@param func_map container container with function handles for consumption cash-on-hand etc.</p><p>@return result_map container contains policy function matrix, value function matrix, iteration results, and policy function, value function and iteration results tables.</p><p>new keys included in result_map in addition to the output from <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a> are various distribution statistics for each model outcome, keys include <b>cl_mt_pol_a</b>, <b>cl_mt_pol_c</b>, <b>cl_mt_pol_coh</b>, etc, these include:</p><div><ul><li>the first element of each of these cell array is y(a,z), the outcome/choice at the state space points</li><li>the second element of the cell is another container, which contains statistics computed for f(y) based on y(a,z) and f(a,z), f(y) is the probability mass function for outcome y given the stationary distribution f(a,z). The second element container also includes f(y) itself as well as f(y,z).</li><li>additionally, result_map also stores some of the statistics for different variables jointly together. (a) <b>tb_outcomes_meansdperc</b>: where each row is a different outcome of the model, and each table column stores a different statistics of interest. (b) <b>tb_outcomes_fracheld</b>: which measures the fraction of asset held by different people.</li></ul></div><p>@example</p><pre>  % Get Default Parameters
   it_param_set = 6;
   [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
   % Change Keys in param_map
@@ -80,39 +80,45 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
   support_map('bl_post') = true;
   support_map('bl_display_final') = false;
   % Call Program with external parameters that override defaults
-  ff_az_ds(param_map, support_map);</pre><p>@include</p><div><ul><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html">fft_disc_rand_var_stats</a></li></ul></div><p>@seealso</p><h2 id="3">Default</h2><div><ol><li>it_subset = 5 is basic invoke quick test</li><li>it_subset = 6 is main invoke</li><li>it_subset = 7 is profiling invoke</li><li>it_subset = 8 is matlab publish.</li></ol></div><pre class="codeinput">it_param_set = 8;
-bl_input_override = true;
-[param_map, support_map] = ffs_az_set_default_param(it_param_set);
-
-<span class="comment">% Note: param_map and support_map can be adjusted here or outside to override defaults</span>
-<span class="comment">% param_map('it_a_n') = 750;</span>
-<span class="comment">% param_map('it_z_n') = 15;</span>
-
-[armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override); <span class="comment">% 1 for override</span>
-default_params = {param_map support_map armt_map func_map};
-</pre><h2 id="4">Parse Parameters 1</h2><pre class="codeinput"><span class="comment">% if varargin only has param_map and support_map,</span>
-params_len = length(varargin);
-[default_params{1:params_len}] = varargin{:};
-param_map = [param_map; default_params{1}];
-support_map = [support_map; default_params{2}];
-<span class="keyword">if</span> params_len &gt;= 1 &amp;&amp; params_len &lt;= 2
-    <span class="comment">% If override param_map, re-generate armt and func if they are not</span>
-    <span class="comment">% provided</span>
-    bl_input_override = true;
-    [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override);
-<span class="keyword">else</span>
-    <span class="comment">% Override all</span>
-    armt_map = [armt_map; default_params{3}];
-    func_map = [func_map; default_params{4}];
+  ff_az_ds(param_map, support_map);</pre><p>@include</p><div><ul><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html">fft_disc_rand_var_stats</a></li></ul></div><p>@seealso</p><h2 id="3">Default</h2><p>for default invokes:</p><div><ol><li>it_subset = 5 is basic invoke quick test</li><li>it_subset = 6 is invoke full test</li><li>it_subset = 7 is profiling invoke</li><li>it_subset = 8 is matlab publish</li><li>it_subset = 9 is invoke operational (only final stats)</li></ol></div><pre class="codeinput">params_len = length(varargin);
+bl_input_override = 0;
+<span class="keyword">if</span> (params_len == 6)
+    bl_input_override = varargin{6};
 <span class="keyword">end</span>
 
-<span class="comment">% append function name</span>
+<span class="keyword">if</span> (bl_input_override)
+    <span class="comment">% if invoked from outside override fully</span>
+    [param_map, support_map, armt_map, func_map, result_map, ~] = varargin{:};
+
+<span class="keyword">else</span>
+    <span class="comment">% default invoke</span>
+    close <span class="string">all</span>;
+
+    it_param_set = 8;
+    bl_input_override = true;
+
+    <span class="comment">% 1. Generate Parameters</span>
+    [param_map, support_map] = ffs_az_set_default_param(it_param_set);
+
+    <span class="comment">% Note: param_map and support_map can be adjusted here or outside to override defaults</span>
+    <span class="comment">% param_map('it_a_n') = 750;</span>
+    <span class="comment">% param_map('it_z_n') = 15;</span>
+
+    <span class="comment">% 2. Generate function and grids</span>
+    [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override); <span class="comment">% 1 for override</span>
+
+    <span class="comment">% 3. Solve value and policy function using az_vf_vecsv, if want to solve</span>
+    <span class="comment">% other models, solve outside then provide result_map as input</span>
+    [result_map] = ff_az_vf_vecsv(param_map, support_map, armt_map, func_map);
+
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="ff_az_ds_01.png" alt=""> <img vspace="5" hspace="5" src="ff_az_ds_02.png" alt=""> <img vspace="5" hspace="5" src="ff_az_ds_03.png" alt=""> <img vspace="5" hspace="5" src="ff_az_ds_04.png" alt=""> <img vspace="5" hspace="5" src="ff_az_ds_05.png" alt=""> <img vspace="5" hspace="5" src="ff_az_ds_06.png" alt=""> <h2 id="4">Parse Parameters</h2><pre class="codeinput"><span class="comment">% append function name</span>
 st_func_name = <span class="string">'ff_az_ds'</span>;
 support_map(<span class="string">'st_profile_name_main'</span>) = [st_func_name support_map(<span class="string">'st_profile_name_main'</span>)];
 support_map(<span class="string">'st_mat_name_main'</span>) = [st_func_name support_map(<span class="string">'st_mat_name_main'</span>)];
 support_map(<span class="string">'st_img_name_main'</span>) = [st_func_name support_map(<span class="string">'st_img_name_main'</span>)];
-</pre><h2 id="5">Obtain Result Map By Solving Value/Pol Function</h2><p>use the optimized-vectorized ff_az_vf_vecsv.m function which works the fastest and produces identical results as ff_az_vf_vec and ff_az_vf.</p><pre class="codeinput">result_map = ff_az_vf_vecsv(param_map, support_map);
-</pre><img vspace="5" hspace="5" src="ff_az_ds_01.png" alt=""> <img vspace="5" hspace="5" src="ff_az_ds_02.png" alt=""> <img vspace="5" hspace="5" src="ff_az_ds_03.png" alt=""> <img vspace="5" hspace="5" src="ff_az_ds_04.png" alt=""> <img vspace="5" hspace="5" src="ff_az_ds_05.png" alt=""> <img vspace="5" hspace="5" src="ff_az_ds_06.png" alt=""> <h2 id="6">Parse Parameters 2</h2><pre class="codeinput"><span class="comment">% result_map</span>
+
+<span class="comment">% result_map</span>
 <span class="comment">% ar_st_pol_names is from section _Process Optimal Choices_ in the value</span>
 <span class="comment">% function code.</span>
 params_group = values(result_map, {<span class="string">'cl_mt_pol_a'</span>, <span class="string">'ar_st_pol_names'</span>});
@@ -136,7 +142,7 @@ params_group = values(support_map, {<span class="string">'bl_profile_dist'</span
 [bl_profile_dist, st_profile_path, <span class="keyword">...</span>
     st_profile_prefix, st_profile_name_main, st_profile_suffix, <span class="keyword">...</span>
     bl_time, bl_display_dist, it_display_every, bl_display_final_dist, bl_post] = params_group{:};
-</pre><h2 id="7">Start Profiler and Timer</h2><pre class="codeinput"><span class="comment">% Start Profile</span>
+</pre><h2 id="5">Start Profiler and Timer</h2><pre class="codeinput"><span class="comment">% Start Profile</span>
 <span class="keyword">if</span> (bl_profile_dist)
     close <span class="string">all</span>;
     profile <span class="string">off</span>;
@@ -147,16 +153,16 @@ params_group = values(support_map, {<span class="string">'bl_profile_dist'</span
 <span class="keyword">if</span> (bl_time)
     tic;
 <span class="keyword">end</span>
-</pre><h2 id="8"><b>f(a,z)</b>: Initialize Output Matrixes</h2><p>Initialize the distribution to be uniform</p><pre class="codeinput">mt_dist_az_init = ones(length(ar_a),length(ar_z))/length(ar_a)/length(ar_z);
+</pre><h2 id="6"><b>f(a,z)</b>: Initialize Output Matrixes</h2><p>Initialize the distribution to be uniform</p><pre class="codeinput">mt_dist_az_init = ones(length(ar_a),length(ar_z))/length(ar_a)/length(ar_z);
 mt_dist_az_cur = mt_dist_az_init;
 mt_dist_az_zeros = zeros(length(ar_a),length(ar_z));
-</pre><h2 id="9"><b>f(a,z)</b>: Initialize Convergence Conditions</h2><pre class="codeinput">bl_histiter_continue = true;
+</pre><h2 id="7"><b>f(a,z)</b>: Initialize Convergence Conditions</h2><pre class="codeinput">bl_histiter_continue = true;
 it_iter = 0;
 ar_dist_diff_norm = zeros([it_maxiter_dist, 1]);
 mt_dist_perc_change = zeros([it_maxiter_dist, it_z_n]);
-</pre><h2 id="10"><b>f(a,z)</b>: Derive Stationary Distribution</h2><p>Iterate over the discrete joint random variable variables (a,z)</p><pre class="codeinput"><span class="keyword">while</span> (bl_histiter_continue)
+</pre><h2 id="8"><b>f(a,z)</b>: Derive Stationary Distribution</h2><p>Iterate over the discrete joint random variable variables (a,z)</p><pre class="codeinput"><span class="keyword">while</span> (bl_histiter_continue)
 </pre><pre class="codeinput">    it_iter = it_iter + 1;
-</pre><h2 id="12"><b>f(a,z)</b>: Iterate over Probability mass for Discrete Random Variable</h2><p>compared to <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf.html">ff_az_vf</a>, we basically have the same set of loops. There, there were four loops, here there are three loops. We eliminated the loop over next period choices, because here we already know optimal choices</p><pre class="codeinput">    <span class="comment">% initialize empty</span>
+</pre><h2 id="10"><b>f(a,z)</b>: Iterate over Probability mass for Discrete Random Variable</h2><p>compared to <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf.html">ff_az_vf</a>, we basically have the same set of loops. There, there were four loops, here there are three loops. We eliminated the loop over next period choices, because here we already know optimal choices</p><pre class="codeinput">    <span class="comment">% initialize empty</span>
     mt_dist_az = mt_dist_az_zeros;
 
     <span class="comment">% loop 1: over exogenous states</span>
@@ -191,7 +197,7 @@ mt_dist_perc_change = zeros([it_maxiter_dist, it_z_n]);
         <span class="keyword">end</span>
 
     <span class="keyword">end</span>
-</pre><h2 id="13"><b>f(a,z)</b>: Check Tolerance and Continuation</h2><pre class="codeinput">    <span class="comment">% Difference across iterations</span>
+</pre><h2 id="11"><b>f(a,z)</b>: Check Tolerance and Continuation</h2><pre class="codeinput">    <span class="comment">% Difference across iterations</span>
     ar_dist_diff_norm(it_iter) = norm(mt_dist_az - mt_dist_az_cur);
     mt_dist_perc_change(it_iter, :) = sum((mt_dist_az ~= mt_dist_az))/(it_a_n);
 
@@ -286,7 +292,7 @@ Hdist = mt_dist_az_cur(it_a_n,:) = p(max(a)|z)
     Hdist              0             0             0            0            0            0            0            0            0             0            0             0             0             0             0
 
 </pre><pre class="codeinput"><span class="keyword">end</span>
-</pre><h2 id="15">End Time and Profiler</h2><pre class="codeinput"><span class="comment">% End Timer</span>
+</pre><h2 id="13">End Time and Profiler</h2><pre class="codeinput"><span class="comment">% End Timer</span>
 <span class="keyword">if</span> (bl_time)
     toc;
 <span class="keyword">end</span>
@@ -298,20 +304,20 @@ Hdist = mt_dist_az_cur(it_a_n,:) = p(max(a)|z)
     st_file_name = [st_profile_prefix st_profile_name_main st_profile_suffix];
     profsave(profile(<span class="string">'info'</span>), strcat(st_profile_path, st_file_name));
 <span class="keyword">end</span>
-</pre><h2 id="16"><b>f(y), f(c), f(a)</b>: Generate Key Distributional Statistics for Each outcome</h2><p>Having derived f(a,z) the probability mass function of the joint discrete random variables, we now obtain distributional statistics. Note that we know f(a,z), and we also know relevant policy functions a'(a,z), c(a,z), or other policy functions. We can simulate any choices that are a function of the random variables (a,z), using f(a,z)</p><p>parameter structure provides a list of</p><div><ol><li>from result_map('ar_st_pol_names'), get list of outcome matrix on state space</li><li>simulate each outcome using f(a,z) for probability draws</li><li>compute key statistics: (1) mean (expectation=sum) (2) sd (3) min and max (4) iqr (5) fraction = 0 (6) percentiles including: 99.9, 99, 95, every 5 in between 5, 1, 0.01.</li></ol></div><pre class="codeinput"><span class="comment">% Loop over outcomes, see end of</span>
+</pre><h2 id="14"><b>f(y), f(c), f(a)</b>: Generate Key Distributional Statistics for Each outcome</h2><p>Having derived f(a,z) the probability mass function of the joint discrete random variables, we now obtain distributional statistics. Note that we know f(a,z), and we also know relevant policy functions a'(a,z), c(a,z), or other policy functions. We can simulate any choices that are a function of the random variables (a,z), using f(a,z)</p><p>parameter structure provides a list of</p><div><ol><li>from result_map('ar_st_pol_names'), get list of outcome matrix on state space</li><li>simulate each outcome using f(a,z) for probability draws</li><li>compute key statistics: (1) mean (expectation=sum) (2) sd (3) min and max (4) iqr (5) fraction = 0 (6) percentiles including: 99.9, 99, 95, every 5 in between 5, 1, 0.01.</li></ol></div><pre class="codeinput"><span class="comment">% Loop over outcomes, see end of</span>
 <span class="comment">% &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html</span>
 <span class="comment">% ff_az_vf_vecsv&gt; where these are created</span>
 <span class="keyword">for</span> it_outcome_ctr=1:length(ar_st_pol_names)
-</pre><h2 id="18"><b>f(y), f(c), f(a)</b>: Find p(outcome(states)), proability mass function for each outcome</h2><p>Using from tools: <a href="https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html">fft_disc_rand_var_mass2outcomes</a>, compute unique sorted outcomes for y(a,z) and find:</p><p><img src="ff_az_ds_eq07860812722477683876.png" alt="$$ p(y,z) = \sum_{a} \left(1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$$" style="width:242px;height:31px;"></p><p><img src="ff_az_ds_eq16910297080260075404.png" alt="$$ p(Y=y) = \sum_{a,z} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$$" style="width:259px;height:33px;"></p><p>note: sum(mt_dist_az, 2) = result_map('cl_mt_pol_a'){2}, but not at small simulation grids. These two might be different because pol_a is based on a choices, mt_dist_az is based on a states</p><p>see end of <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a> outcomes in result_map are cells with two elements, first element is y(a,z), second element will be f(y) and y, generated here.</p><pre class="codeinput">    st_cur_output_key = ar_st_pol_names(it_outcome_ctr);
+</pre><h2 id="16"><b>f(y), f(c), f(a)</b>: Find p(outcome(states)), proability mass function for each outcome</h2><p>Using from tools: <a href="https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html">fft_disc_rand_var_mass2outcomes</a>, compute unique sorted outcomes for y(a,z) and find:</p><p><img src="ff_az_ds_eq07860812722477683876.png" alt="$$ p(y,z) = \sum_{a} \left(1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$$" style="width:242px;height:31px;"></p><p><img src="ff_az_ds_eq08810890118983211153.png" alt="$$ p(y,a) = \sum_{z} \left(1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$$" style="width:242px;height:31px;"></p><p><img src="ff_az_ds_eq16910297080260075404.png" alt="$$ p(Y=y) = \sum_{a,z} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$$" style="width:259px;height:33px;"></p><p>note: sum(mt_dist_az, 2) = result_map('cl_mt_pol_a'){2}, but not at small simulation grids. These two might be different because pol_a is based on a choices, mt_dist_az is based on a states</p><p>see end of <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a> outcomes in result_map are cells with two elements, first element is y(a,z), second element will be f(y) and y, generated here.</p><pre class="codeinput">    st_cur_output_key = ar_st_pol_names(it_outcome_ctr);
     cl_mt_choice_cur = result_map(st_cur_output_key);
     mt_choice_cur = cl_mt_choice_cur{1};
 
     <span class="comment">% run function from tools: fft_disc_rand_var_mass2outcomes</span>
     <span class="comment">% &lt;https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html&gt;</span>
     bl_input_override = true;
-    [tb_choice_drv_cur_byY, ar_choice_prob_byY, ar_choice_unique_sorted_byY, mt_choice_prob_byYZ] = <span class="keyword">...</span>
+    [tb_choice_drv_cur_byY, ar_choice_prob_byY, ar_choice_unique_sorted_byY, mt_choice_prob_byYZ, mt_choice_prob_byYA] = <span class="keyword">...</span>
         fft_disc_rand_var_mass2outcomes(st_cur_output_key, mt_choice_cur, mt_dist_az, bl_input_override);
-</pre><h2 id="19"><b>f(y), f(c), f(a)</b>: Compute Statistics for outcomes</h2><p>Using from tools: <a href="https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html">fft_disc_rand_var_stats</a>, compute these outcomes:</p><div><ul><li>$\mu_Y = E(Y) = \sum_{y} p(Y=y) \cdot y $</li><li><img src="ff_az_ds_eq03728111283668325077.png" alt="$\sigma_Y = \sqrt{ \sum_{y} p(Y=y) \cdot \left( y - \mu_y \right)^2}$" style="width:202px;height:27px;"></li><li><img src="ff_az_ds_eq05433369603455155594.png" alt="$p(y=0)$" style="width:53px;height:15px;"></li><li><img src="ff_az_ds_eq09585247606302904929.png" alt="$p(y=\max(y))$" style="width:91px;height:15px;"></li><li>percentiles: <img src="ff_az_ds_eq09488738859326996168.png" alt="$min_{y} \left\{ P(Y \le y) - percentile \mid P(Y \le y) \ge percentile \right\}$" style="width:352px;height:15px;"></li><li>fraction of outcome held by up to percentiles: <img src="ff_az_ds_eq11722476300337688867.png" alt="$E(Y<y)/E(Y)$" style="width:103px;height:15px;"></li></ul></div><pre class="codeinput">    <span class="comment">% run function fft_disc_rand_var_stats.m from tools:</span>
+</pre><h2 id="17"><b>f(y), f(c), f(a)</b>: Compute Statistics for outcomes</h2><p>Using from tools: <a href="https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html">fft_disc_rand_var_stats</a>, compute these outcomes:</p><div><ul><li>$\mu_Y = E(Y) = \sum_{y} p(Y=y) \cdot y $</li><li><img src="ff_az_ds_eq03728111283668325077.png" alt="$\sigma_Y = \sqrt{ \sum_{y} p(Y=y) \cdot \left( y - \mu_y \right)^2}$" style="width:202px;height:27px;"></li><li><img src="ff_az_ds_eq05433369603455155594.png" alt="$p(y=0)$" style="width:53px;height:15px;"></li><li><img src="ff_az_ds_eq09585247606302904929.png" alt="$p(y=\max(y))$" style="width:91px;height:15px;"></li><li>percentiles: <img src="ff_az_ds_eq09488738859326996168.png" alt="$min_{y} \left\{ P(Y \le y) - percentile \mid P(Y \le y) \ge percentile \right\}$" style="width:352px;height:15px;"></li><li>fraction of outcome held by up to percentiles: <img src="ff_az_ds_eq11722476300337688867.png" alt="$E(Y<y)/E(Y)$" style="width:103px;height:15px;"></li></ul></div><pre class="codeinput">    <span class="comment">% run function fft_disc_rand_var_stats.m from tools:</span>
     <span class="comment">% &lt;https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html&gt;</span>
     [ds_stats_map] = fft_disc_rand_var_stats(st_cur_output_key, ar_choice_unique_sorted_byY', ar_choice_prob_byY');
 
@@ -404,8 +410,9 @@ Hdist = mt_dist_az_cur(it_a_n,:) = p(max(a)|z)
          99                   2.1241                            0.98296           
        99.9                   2.3562                            0.99811           
 
-</pre><h2 id="20"><b>f(y), f(c), f(a)</b>: Store Statistics Specific to Each Outcome</h2><p>see intro section</p><pre class="codeinput">    <span class="comment">% Append prob mass functions to ds_stats_map</span>
+</pre><h2 id="18"><b>f(y), f(c), f(a)</b>: Store Statistics Specific to Each Outcome</h2><p>see intro section</p><pre class="codeinput">    <span class="comment">% Append prob mass functions to ds_stats_map</span>
     ds_stats_map(<span class="string">'mt_choice_prob_byYZ'</span>) = mt_choice_prob_byYZ;
+    ds_stats_map(<span class="string">'mt_choice_prob_byYA'</span>) = mt_choice_prob_byYA;
     ds_stats_map(<span class="string">'tb_choice_prob_byY'</span>) = tb_choice_drv_cur_byY;
     <span class="comment">% ds_stats_map is second element of cell for the key for the variable</span>
     <span class="comment">% in result_map</span>
@@ -471,7 +478,7 @@ tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percent
     cl_mt_pol_coh    0.00046931    0.0056855    0.014805    0.035362     0.060387     0.098878      0.10377      0.15913      0.26465      0.39975      0.51052      0.57781      0.65507      0.74042      0.84688      0.95916       0.99463  
     cl_mt_pol_c      0.00076903    0.0093392    0.024372    0.054869      0.10332      0.12492      0.17674      0.25332      0.41338      0.55319      0.66718      0.72753      0.78829      0.85351      0.92266      0.98296       0.99811  
 
-</pre><h2 id="22">Process Optimal Choices</h2><pre class="codeinput"><span class="comment">%</span>
+</pre><h2 id="20">Process Optimal Choices</h2><pre class="codeinput"><span class="comment">%</span>
 <span class="comment">% if (bl_post)</span>
 <span class="comment">%     bl_input_override = true;</span>
 <span class="comment">%     result_map('ar_dist_diff_norm') = ar_dist_diff_norm(1:it_iter_last);</span>
@@ -522,6 +529,7 @@ function [result_map] = ff_az_ds(varargin)
 %
 % * $p(a,z)$
 % * $p(Y=y, z) = \sum_{a} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$
+% * $p(Y=y, a) = \sum_{z} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$
 % * $p(Y=y) = \sum_{a,z} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$
 %
 % Statistics include:
@@ -592,53 +600,55 @@ function [result_map] = ff_az_ds(varargin)
 %
 
 %% Default
+% for default invokes:
+%
 % # it_subset = 5 is basic invoke quick test
-% # it_subset = 6 is main invoke
+% # it_subset = 6 is invoke full test
 % # it_subset = 7 is profiling invoke
-% # it_subset = 8 is matlab publish.
+% # it_subset = 8 is matlab publish
+% # it_subset = 9 is invoke operational (only final stats)
+%
 
-it_param_set = 8;
-bl_input_override = true;
-[param_map, support_map] = ffs_az_set_default_param(it_param_set);
-
-% Note: param_map and support_map can be adjusted here or outside to override defaults
-% param_map('it_a_n') = 750;
-% param_map('it_z_n') = 15;
-
-[armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
-default_params = {param_map support_map armt_map func_map};
-
-%% Parse Parameters 1
-
-% if varargin only has param_map and support_map,
 params_len = length(varargin);
-[default_params{1:params_len}] = varargin{:};
-param_map = [param_map; default_params{1}];
-support_map = [support_map; default_params{2}];
-if params_len >= 1 && params_len <= 2
-    % If override param_map, re-generate armt and func if they are not
-    % provided
-    bl_input_override = true;
-    [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override);
-else
-    % Override all
-    armt_map = [armt_map; default_params{3}];
-    func_map = [func_map; default_params{4}];
+bl_input_override = 0;
+if (params_len == 6)
+    bl_input_override = varargin{6};
 end
+
+if (bl_input_override)
+    % if invoked from outside override fully
+    [param_map, support_map, armt_map, func_map, result_map, ~] = varargin{:};
+
+else
+    % default invoke
+    close all;
+    
+    it_param_set = 8;
+    bl_input_override = true;
+
+    % 1. Generate Parameters
+    [param_map, support_map] = ffs_az_set_default_param(it_param_set);
+
+    % Note: param_map and support_map can be adjusted here or outside to override defaults
+    % param_map('it_a_n') = 750;
+    % param_map('it_z_n') = 15;
+
+    % 2. Generate function and grids
+    [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
+    
+    % 3. Solve value and policy function using az_vf_vecsv, if want to solve
+    % other models, solve outside then provide result_map as input
+    [result_map] = ff_az_vf_vecsv(param_map, support_map, armt_map, func_map);    
+    
+end
+
+%% Parse Parameters
 
 % append function name
 st_func_name = 'ff_az_ds';
 support_map('st_profile_name_main') = [st_func_name support_map('st_profile_name_main')];
 support_map('st_mat_name_main') = [st_func_name support_map('st_mat_name_main')];
 support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')];
-
-%% Obtain Result Map By Solving Value/Pol Function
-% use the optimized-vectorized ff_az_vf_vecsv.m function which works the
-% fastest and produces identical results as ff_az_vf_vec and ff_az_vf. 
-
-result_map = ff_az_vf_vecsv(param_map, support_map);
-
-%% Parse Parameters 2
 
 % result_map
 % ar_st_pol_names is from section _Process Optimal Choices_ in the value
@@ -822,6 +832,8 @@ for it_outcome_ctr=1:length(ar_st_pol_names)
     %
     % $$ p(y,z) = \sum_{a} \left(1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$$
     %
+    % $$ p(y,a) = \sum_{z} \left(1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$$
+    %
     % $$ p(Y=y) = \sum_{a,z} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$$
     %
     % note: sum(mt_dist_az, 2) = result_map('cl_mt_pol_a'){2}, but not at
@@ -842,7 +854,7 @@ for it_outcome_ctr=1:length(ar_st_pol_names)
     % run function from tools: fft_disc_rand_var_mass2outcomes
     % <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html>
     bl_input_override = true;
-    [tb_choice_drv_cur_byY, ar_choice_prob_byY, ar_choice_unique_sorted_byY, mt_choice_prob_byYZ] = ...
+    [tb_choice_drv_cur_byY, ar_choice_prob_byY, ar_choice_unique_sorted_byY, mt_choice_prob_byYZ, mt_choice_prob_byYA] = ...
         fft_disc_rand_var_mass2outcomes(st_cur_output_key, mt_choice_cur, mt_dist_az, bl_input_override);
     
     %% *f(y), f(c), f(a)*: Compute Statistics for outcomes
@@ -888,6 +900,7 @@ for it_outcome_ctr=1:length(ar_st_pol_names)
     
     % Append prob mass functions to ds_stats_map
     ds_stats_map('mt_choice_prob_byYZ') = mt_choice_prob_byYZ;
+    ds_stats_map('mt_choice_prob_byYA') = mt_choice_prob_byYA;    
     ds_stats_map('tb_choice_prob_byY') = tb_choice_drv_cur_byY;
     % ds_stats_map is second element of cell for the key for the variable
     % in result_map

@@ -463,8 +463,6 @@ end
 
 result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
-result_map('mt_pol_a') = mt_pol_a;
-result_map('mt_cons') = mt_pol_cons;
 
 % Find optimal Formal Informal Choices. Could have saved earlier, but was
 % wasteful of resources
@@ -489,26 +487,30 @@ for it_z_i = 1:length(ar_z)
     end
 end
 
-result_map('mt_pol_b_bridge') = mt_pol_b_bridge;
-result_map('mt_pol_inf_borr_nobridge') = mt_pol_inf_borr_nobridge;
-result_map('mt_pol_for_borr') = mt_pol_for_borr;
-result_map('mt_pol_for_save') = mt_pol_for_save;
+result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
+result_map('cl_mt_pol_coh') = {f_coh(ar_z, ar_a'), zeros(1)};
+result_map('cl_mt_pol_c') = {mt_pol_cons, zeros(1)};
+result_map('cl_mt_pol_b_bridge') = {mt_pol_b_bridge, zeros(1)};
+result_map('cl_mt_pol_inf_borr_nobridge') = {mt_pol_inf_borr_nobridge, zeros(1)};
+result_map('cl_mt_pol_for_borr') = {mt_pol_for_borr, zeros(1)};
+result_map('cl_mt_pol_for_save') = {mt_pol_for_save, zeros(1)};
+result_map('ar_st_pol_names') = ["cl_mt_pol_a", "cl_mt_pol_coh", "cl_mt_pol_c", ...
+    "cl_mt_pol_b_bridge", "cl_mt_pol_inf_borr_nobridge", "cl_mt_pol_for_borr", "cl_mt_pol_for_save"];
 
-result_map('mt_pol_a') = mt_pol_a;
 
 %% Post Solution Graph and Table Generation
 
-if (bl_post)
-    bl_input_override = true;
-    result_map('ar_val_diff_norm') = ar_val_diff_norm(1:it_iter_last);
-    result_map('ar_pol_diff_norm') = ar_pol_diff_norm(1:it_iter_last);
-    result_map('mt_pol_perc_change') = mt_pol_perc_change(1:it_iter_last, :);
-
-    % Standard AZ graphs
-    result_map = ff_az_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
-
-    % Graphs for results_map with FIBS contents
-    result_map = ff_az_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
-end
+% if (bl_post)
+%     bl_input_override = true;
+%     result_map('ar_val_diff_norm') = ar_val_diff_norm(1:it_iter_last);
+%     result_map('ar_pol_diff_norm') = ar_pol_diff_norm(1:it_iter_last);
+%     result_map('mt_pol_perc_change') = mt_pol_perc_change(1:it_iter_last, :);
+%
+%     % Standard AZ graphs
+%     result_map = ff_az_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+%
+%     % Graphs for results_map with FIBS contents
+%     result_map = ff_az_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+% end
 
 end

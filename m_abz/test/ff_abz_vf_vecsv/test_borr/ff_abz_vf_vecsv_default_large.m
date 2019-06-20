@@ -15,6 +15,9 @@
 %
 % @seealso
 %
+% * _PRECISION_: savings only quick vs benchmark testing: <https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_vf_vecsv/test_precision/html/fsi_az_vf_vecsv_main.html fsi_az_vf_vecsv_main>
+% * _PRECISION_: savings only asset grid count testing: <https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_vf_vecsv/test_precision/html/fsi_az_vf_vecsv_a_n.html fsi_az_vf_vecsv_a_n>
+% * _PRECISION_: savings only shock grid count testing: <https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_vf_vecsv/test_precision/html/fsi_az_vf_vecsv_z_n.html fsi_az_vf_vecsv_z_n>
 % * _BORROW GRID_: borrowing choice grid with default: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ffs_abz_get_funcgrid/test_borr/html/ffs_abz_get_funcgrid_defnodfalt.html ffs_abz_get_funcgrid_defnodfalt>
 % * _BORROW_: borrow and default small grid testing: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_abz_vf_vecsv/test_borr/html/ff_abz_vf_vecsv_default_small.html ff_abz_vf_vecsv_default_small>
 % * _BORROW_: borrow and default large grid testing: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_abz_vf_vecsv/test_borr/html/ff_abz_vf_vecsv_default_large.html ff_abz_vf_vecsv_default_large>
@@ -100,9 +103,13 @@ support_map('bl_display') = bl_display;
 support_map('bl_post') = bl_post;
 support_map('bl_display_final') = bl_display_final;
 
-
 % Call Program
 ff_abz_vf_vecsv(param_map, support_map);
+
+% Snap 
+snapnow;
+
+close all;
 
 %% Simulate Save/Borrow, Can Default: cmin = 0.00001, choose not to default
 % Default is allowed, borrowing is allowed, very low minimum consumption
@@ -134,9 +141,13 @@ support_map('bl_display') = bl_display;
 support_map('bl_post') = bl_post;
 support_map('bl_display_final') = bl_display_final;
 
-
 % Call Program
 ff_abz_vf_vecsv(param_map, support_map);
+
+% Snap 
+snapnow;
+
+close all;
 
 %% Simulate Save/Borrow, Can Default: cmin = 0.001, default takes place
 % Default is allowed, borrowing is allowed, minimum consumption = 0.01,
@@ -172,6 +183,10 @@ support_map('bl_display_final') = bl_display_final;
 % Call Program
 ff_abz_vf_vecsv(param_map, support_map);
 
+% Snap 
+snapnow;
+
+close all;
 
 %% Simulate Save/Borrow, Can Default: cmin = 1, degenerate, borrow to max
 % Default is allowed, borrowing is allowed, minimum consumption = 1, very
@@ -206,3 +221,9 @@ support_map('bl_display_final') = bl_display_final;
 
 % Call Program
 ff_abz_vf_vecsv(param_map, support_map);
+
+% Snap 
+snapnow;
+
+close all;
+clear all;

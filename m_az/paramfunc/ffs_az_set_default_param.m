@@ -76,7 +76,6 @@ st_matimg_path_root = [st_root_path '/m_az/'];
 support_map('st_matimg_path_root') = st_matimg_path_root;
 % timer
 support_map('bl_time') = true;
-support_map('bl_time_dist') = true;
 % Print Controls
 support_map('bl_display') = true;
 support_map('bl_display_dist') = false;
@@ -139,7 +138,7 @@ if (ismember(it_subset, [1,2,3,4]))
         support_map('it_display_every') = 1;
     end
     if (ismember(it_subset, [2, 4]))
-        % close figures
+        % close all
         close all;
         % Main Run
         support_map('bl_time') = true;
@@ -170,12 +169,13 @@ end
 %% Subset Options for Distribution solutions
 %
 % # it_subset = 5 is basic invoke quick test
-% # it_subset = 6 is main invoke
+% # it_subset = 6 is invoke full test
 % # it_subset = 7 is profiling invoke
-% # it_subset = 8 is matlab publish.
+% # it_subset = 8 is matlab publish
+% # it_subset = 9 is invoke operational (only final stats) and coh graph
 %
 
-if (ismember(it_subset, [5,6,7,8]))
+if (ismember(it_subset, [5,6,7,8,9]))
     if (ismember(it_subset, [5]))
         % TEST quick (need to enough to have distribution)
         param_map('it_a_n') = 100;
@@ -185,14 +185,14 @@ if (ismember(it_subset, [5,6,7,8]))
         param_map('it_tol_pol_nochange') = 1000;
         support_map('bl_display_dist') = true;
     end
-    if (ismember(it_subset, [6, 8]))
-        % close figures
+    if (ismember(it_subset, [6, 8, 9]))
+        % close all
         close all;
         % Main Run
         support_map('bl_time') = true;
         support_map('bl_display') = false;
         support_map('bl_display_dist') = true;
-        support_map('it_display_every') = 5;
+        support_map('it_display_every') = 20;
 
         support_map('bl_post') = true;
         support_map('bl_display_final_dist') = true;
@@ -207,26 +207,28 @@ if (ismember(it_subset, [5,6,7,8]))
         support_map('bl_graph_pol_pct') = false;
         support_map('bl_graph_coh_t_coh') = true;
 
-        if (ismember(it_subset, [8]))
+        if (ismember(it_subset, [8, 9]))
             support_map('bl_time') = false;
             support_map('bl_display') = false;
-            support_map('bl_display_dist') = true;
-            support_map('it_display_every') = 20;
+            support_map('bl_display_dist') = false;
             support_map('bl_graph_onebyones') = true;
             support_map('bl_img_save') = false;
+            if (ismember(it_subset, [9]))
+                support_map('bl_graph_pol_lvl') = false;
+            end
         end
+
     end
     if (ismember(it_subset, [7]))
         % Profile run
         support_map('bl_profile_dist') = true;
-        support_map('bl_display') = false; % don't print
+        support_map('bl_display') = false; % don't print        
         support_map('bl_display_dist') = false; % don't print
         support_map('bl_time') = true;
     end
 end
 
 %% Display
-
 if (bl_display_defparam)
     disp('param_map');
     disp(param_map);
