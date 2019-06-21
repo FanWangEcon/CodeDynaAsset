@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Derive Asset and Choices/Outcomes Distribution (Analytical)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-20"><meta name="DC.source" content="ff_az_ds_vecsv.m"><style type="text/css">
+      --><title>Derive Asset and Choices/Outcomes Distribution (Analytical)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-21"><meta name="DC.source" content="ff_az_ds_vecsv.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,8 +66,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Derive Asset and Choices/Outcomes Distribution (Analytical)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_AZ_DS_VECSV finds the stationary asset distributions analytically</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Start Profiler and Timer</a></li><li><a href="#6">1. Initialize Full all States Transition Matrix (NxM) by (NxM)</a></li><li><a href="#7">2. Generate Max Index in (NxM) from (N) array.</a></li><li><a href="#8">3. Generate Index for Where full Trans Matrix based on choice + shock</a></li><li><a href="#9">6. Transition Probabilities from (M by M) to (NxM) by M</a></li><li><a href="#10">7. Fill mt_pol_idx_mesh_idx to mt_full_trans_mat</a></li><li><a href="#11">8. Stationary Distribution <b>Method A</b>, Eigenvector Approach</a></li><li><a href="#12">9. Stationary Distribution <b>Method B</b>, Projection</a></li><li><a href="#13">10. Stationary Distribution <b>Method C</b>, Power</a></li><li><a href="#14">11. Stationary Vector to Stationary Matrix in Original Dimensions</a></li><li><a href="#15">End Time and Profiler</a></li><li><a href="#16"><b>f(y), f(c), f(a)</b>: Generate Key Distributional Statistics for Each outcome</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [result_map] = ff_az_ds_vecsv(varargin)
-</pre><h2 id="2">FF_AZ_DS_VECSV finds the stationary asset distributions analytically</h2><p>Here, we implement the iteration free semi-analytical method for finding asset distributions. The method is not an analytical method to find the stationary distribution. But the method does analytically give the exact stationary distribution induced by the policy function from the dynamic programming problem. The discrete dynamic programming problem used is, however, not analytical.</p><p>See the appedix of <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3316939">Wang (2019)</a> which develops details on how this works. Suppose endo state size is N and shock is size M, then our transition matrix is (NxM) by (NxM). We know the coh(a,z) value associated with each element of the (NxM) by 1 array. We also know f(a'(a,z),z'|z) transition probability. We contruct a markov chain that has (NxM) states. Specifically:</p><div><ul><li>We need to transform: mt_pol_idx. This matrix is indexing 1 through N, we need for it to index 1 through (NxM).</li><li>Then we need to duplicate the transition matrix fro shocks.</li></ul></div><p>Once we have the all states meshed markov transition matrix, then we can use standard methods to find the stationary distribution. Three options are offered here that provide identical solutions:</p><div><ol><li>The Eigenvector Approach: fast</li><li>The Projection Approach: medium</li><li>The Power Approach: slow</li></ol></div><p>The program here builds on the Asset Dynamic Programming Problem <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a>, here we solve for the asset distribution using vectorized codes. <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html">ff_az_ds</a> shows looped codes for finding asset distribution. The solution is the same. Both <b>ff_az_ds</b> and <b>ff_az_ds_vec</b> using optimized-vectorized dynamic programming code from ff_az_vf_vecsv. The idea here is that in addition to vectornizing the dynamic programming funcion, we can also vectorize the distribution code here.</p><p>Distributions of Interest:</p><div><ul><li><img src="ff_az_ds_vecsv_eq08795144712269443427.png" alt="$p(a,z)$" style="width:39px;height:15px;"></li><li><img src="ff_az_ds_vecsv_eq04843764051820646606.png" alt="$p(Y=y, z) = \sum_{a} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$" style="width:273px;height:15px;"></li><li><img src="ff_az_ds_vecsv_eq00564633710101136588.png" alt="$p(Y=y, a) = \sum_{z} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$" style="width:274px;height:15px;"></li><li><img src="ff_az_ds_vecsv_eq11786329523256587778.png" alt="$p(Y=y) = \sum_{a,z} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$" style="width:268px;height:17px;"></li></ul></div><p>Statistics include:</p><div><ul><li><img src="ff_az_ds_vecsv_eq03016783485460700593.png" alt="$\mu_y = \sum_{y} p(Y=y) \cdot y$" style="width:134px;height:17px;"></li><li><img src="ff_az_ds_vecsv_eq13414381062043947873.png" alt="$\sigma_y = \sqrt{ \sum_{y} p(Y=y) \cdot \left( y - \mu_y \right)^2}$" style="width:199px;height:27px;"></li><li><img src="ff_az_ds_vecsv_eq05433369603455155594.png" alt="$p(y=0)$" style="width:53px;height:15px;"></li><li><img src="ff_az_ds_vecsv_eq09585247606302904929.png" alt="$p(y=\max(y))$" style="width:91px;height:15px;"></li><li>percentiles: <img src="ff_az_ds_vecsv_eq09488738859326996168.png" alt="$min_{y} \left\{ P(Y \le y) - percentile \mid P(Y \le y) \ge percentile \right\}$" style="width:352px;height:15px;"></li><li>fraction of outcome held by up to percentiles: <img src="ff_az_ds_vecsv_eq11722476300337688867.png" alt="$E(Y<y)/E(Y)$" style="width:103px;height:15px;"></li></ul></div><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@param func_map container container with function handles for consumption cash-on-hand etc.</p><p>@return result_map container contains policy function matrix, value function matrix, iteration results, and policy function, value function and iteration results tables.</p><p>new keys included in result_map in addition to the output from <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a> are various distribution statistics for each model outcome, keys include <b>cl_mt_pol_a</b>, <b>cl_mt_pol_c</b>, <b>cl_mt_pol_coh</b>, etc.</p><p>@example</p><pre>  % Get Default Parameters
+  </style></head><body><div class="content"><h1>Derive Asset and Choices/Outcomes Distribution (Analytical)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_AZ_DS_VECSV finds the stationary asset distributions analytically</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Start Profiler and Timer</a></li><li><a href="#6">1. Generate Max Index in (NxM) from (N) array.</a></li><li><a href="#7">2. Transition Probabilities from (M by M) to (NxM) by M</a></li><li><a href="#8">3. Fill mt_pol_idx_mesh_idx to mt_full_trans_mat</a></li><li><a href="#10">3.1 Sparse Matrix Approach</a></li><li><a href="#13">3.2 Full Matrix Approach</a></li><li><a href="#15">4. Stationary Distribution <b>Method A</b>, Eigenvector Approach</a></li><li><a href="#16">5. Stationary Distribution <b>Method B</b>, Projection</a></li><li><a href="#17">6. Stationary Distribution <b>Method C</b>, Power</a></li><li><a href="#18">7. Stationary Vector to Stationary Matrix in Original Dimensions</a></li><li><a href="#19">End Time and Profiler</a></li><li><a href="#20"><b>f(y), f(c), f(a)</b>: Generate Key Distributional Statistics for Each outcome</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [result_map] = ff_az_ds_vecsv(varargin)
+</pre><h2 id="2">FF_AZ_DS_VECSV finds the stationary asset distributions analytically</h2><p>Here, we implement the iteration free semi-analytical method for finding asset distributions. The method analytically give the exact stationary distribution induced by the policy function from the dynamic programming problem, conditional on discretizations.</p><p>See the appedix of <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3316939">Wang (2019)</a> which develops details on how this works. Suppose endo state size is N and shock is size M, then our transition matrix is (NxM) by (NxM). We know the coh(a,z) value associated with each element of the (NxM) by 1 array. We also know f(a'(a,z),z'|z) transition probability. We contruct a markov chain that has (NxM) states. Specifically:</p><div><ul><li>We need to transform: mt_pol_idx. This matrix is indexing 1 through N, we need for it to index 1 through (NxM).</li><li>Then we need to duplicate the transition matrix fro shocks.</li><li>Transition Matrix is <b>sparse</b></li></ul></div><p>Once we have the all states meshed markov transition matrix, then we can use standard methods to find the stationary distribution. Three options are offered here that provide identical solutions:</p><div><ol><li>The Eigenvector Approach: very fast</li><li>The Projection Approach: medium</li><li>The Power Approach: very slow (especially with sparse matrix)</li></ol></div><p>The program here builds on the Asset Dynamic Programming Problem <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a>, here we solve for the asset distribution using vectorized codes. <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html">ff_az_ds</a> shows looped codes for finding asset distribution. The solution is the same. Both <b>ff_az_ds</b> and <b>ff_az_ds_vec</b> using optimized-vectorized dynamic programming code from ff_az_vf_vecsv. The idea here is that in addition to vectornizing the dynamic programming funcion, we can also vectorize the distribution code here.</p><p>Distributions of Interest:</p><div><ul><li><img src="ff_az_ds_vecsv_eq08795144712269443427.png" alt="$p(a,z)$" style="width:39px;height:15px;"></li><li><img src="ff_az_ds_vecsv_eq04843764051820646606.png" alt="$p(Y=y, z) = \sum_{a} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$" style="width:273px;height:15px;"></li><li><img src="ff_az_ds_vecsv_eq00564633710101136588.png" alt="$p(Y=y, a) = \sum_{z} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$" style="width:274px;height:15px;"></li><li><img src="ff_az_ds_vecsv_eq11786329523256587778.png" alt="$p(Y=y) = \sum_{a,z} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$" style="width:268px;height:17px;"></li></ul></div><p>Statistics include:</p><div><ul><li><img src="ff_az_ds_vecsv_eq03016783485460700593.png" alt="$\mu_y = \sum_{y} p(Y=y) \cdot y$" style="width:134px;height:17px;"></li><li><img src="ff_az_ds_vecsv_eq13414381062043947873.png" alt="$\sigma_y = \sqrt{ \sum_{y} p(Y=y) \cdot \left( y - \mu_y \right)^2}$" style="width:199px;height:27px;"></li><li><img src="ff_az_ds_vecsv_eq05433369603455155594.png" alt="$p(y=0)$" style="width:53px;height:15px;"></li><li><img src="ff_az_ds_vecsv_eq09585247606302904929.png" alt="$p(y=\max(y))$" style="width:91px;height:15px;"></li><li>percentiles: <img src="ff_az_ds_vecsv_eq09488738859326996168.png" alt="$min_{y} \left\{ P(Y \le y) - percentile \mid P(Y \le y) \ge percentile \right\}$" style="width:352px;height:15px;"></li><li>fraction of outcome held by up to percentiles: <img src="ff_az_ds_vecsv_eq11722476300337688867.png" alt="$E(Y<y)/E(Y)$" style="width:103px;height:15px;"></li></ul></div><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@param func_map container container with function handles for consumption cash-on-hand etc.</p><p>@return result_map container contains policy function matrix, value function matrix, iteration results, and policy function, value function and iteration results tables.</p><p>new keys included in result_map in addition to the output from <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a> are various distribution statistics for each model outcome, keys include <b>cl_mt_pol_a</b>, <b>cl_mt_pol_c</b>, <b>cl_mt_pol_coh</b>, etc.</p><p>@example</p><pre>  % Get Default Parameters
   it_param_set = 6;
   [param_map, support_map] = ffs_az_set_default_param(it_param_set);
   % Change Keys in param_map
@@ -104,8 +104,8 @@ bl_input_override = 0;
     <span class="comment">% param_map('it_a_n') = 750;</span>
     <span class="comment">% param_map('it_z_n') = 15;</span>
 
-<span class="comment">%     param_map('st_analytical_stationary_type') = 'eigenvector';</span>
-    param_map(<span class="string">'st_analytical_stationary_type'</span>) = <span class="string">'projection'</span>;
+    param_map(<span class="string">'st_analytical_stationary_type'</span>) = <span class="string">'eigenvector'</span>;
+<span class="comment">%     param_map('st_analytical_stationary_type') = 'projection';</span>
 <span class="comment">%     param_map('st_analytical_stationary_type') = 'power';</span>
 
     <span class="comment">% 2. Generate function and grids</span>
@@ -158,8 +158,7 @@ params_group = values(support_map, {<span class="string">'bl_profile_dist'</span
 <span class="keyword">if</span> (bl_time)
     tic;
 <span class="keyword">end</span>
-</pre><h2 id="6">1. Initialize Full all States Transition Matrix (NxM) by (NxM)</h2><pre class="codeinput">mt_full_trans_mat = zeros([it_a_n*it_z_n, it_a_n*it_z_n]);
-</pre><h2 id="7">2. Generate Max Index in (NxM) from (N) array.</h2><p>Suppose we have:</p><pre class="language-matlab">mt_pol_idx =
+</pre><h2 id="6">1. Generate Max Index in (NxM) from (N) array.</h2><p>Suppose we have:</p><pre class="language-matlab">mt_pol_idx =
 </pre><pre>    1     1     2
     2     2     2
     3     3     3
@@ -181,29 +180,7 @@ params_group = values(support_map, {<span class="string">'bl_profile_dist'</span
     4     9    14
     5    10    15</pre><pre class="codeinput"><span class="comment">% mt_pol_idx_mesh_max is (NxM) by M, mt_pol_idx is N by M</span>
 mt_pol_idx_mesh_max = mt_pol_idx(:) + (0:1:(it_z_n-1))*it_a_n;
-</pre><h2 id="8">3. Generate Index for Where full Trans Matrix based on choice + shock</h2><pre class="language-matlab">ar_lin_idx_start_point =
-</pre><pre>    0    15    30    45    60    75    90   105   120   135   150   165   180   195   210</pre><pre class="language-matlab">mt_pol_idx_mesh_idx_meshfull =
-</pre><pre>    1     6    11
-   17    22    27
-   33    38    43
-   49    54    59
-   65    70    75
-   76    81    86
-   92    97   102
-  108   113   118
-  124   129   134
-  140   145   150
-  151   156   161
-  167   172   177
-  183   188   193
-  199   204   209
-  215   220   225</pre><pre class="codeinput"><span class="comment">% Each row's linear index starting point</span>
-ar_lin_idx_start_point = ((it_a_n*it_z_n)*(0:1:(it_a_n*it_z_n-1)));
-
-<span class="comment">% mt_pol_idx_mesh_idx_meshfull is (NxM) by M</span>
-<span class="comment">% Full index in (NxM) to (NxM) transition Matrix</span>
-mt_pol_idx_mesh_idx_meshfull = mt_pol_idx_mesh_max + ar_lin_idx_start_point';
-</pre><h2 id="9">6. Transition Probabilities from (M by M) to (NxM) by M</h2><pre class="language-matlab">mt_trans_prob =
+</pre><h2 id="7">2. Transition Probabilities from (M by M) to (NxM) by M</h2><pre class="language-matlab">mt_trans_prob =
 </pre><pre>   0.9332    0.0668    0.0000
    0.9332    0.0668    0.0000
    0.9332    0.0668    0.0000
@@ -219,12 +196,48 @@ mt_pol_idx_mesh_idx_meshfull = mt_pol_idx_mesh_max + ar_lin_idx_start_point';
    0.0000    0.0668    0.9332
    0.0000    0.0668    0.9332
    0.0000    0.0668    0.9332</pre><pre class="codeinput">mt_trans_prob = reshape(repmat(mt_z_trans(:)', [it_a_n, 1]), [it_a_n*it_z_n, it_z_n]);
-</pre><h2 id="10">7. Fill mt_pol_idx_mesh_idx to mt_full_trans_mat</h2><pre class="codeinput">mt_full_trans_mat(mt_pol_idx_mesh_idx_meshfull(:)) = mt_trans_prob(:);
-</pre><h2 id="11">8. Stationary Distribution <b>Method A</b>, Eigenvector Approach</h2><p>Given that markov chain we have constructured for all state-space elements, we can now find the stationary distribution using standard <a href="https://en.wikipedia.org/wiki/Markov_chain#Stationary_distribution_relation_to_eigenvectors_and_simplices">eigenvector</a> approach.</p><pre class="codeinput"><span class="keyword">if</span> (strcmp(st_analytical_stationary_type, <span class="string">'eigenvector'</span>))
+</pre><h2 id="8">3. Fill mt_pol_idx_mesh_idx to mt_full_trans_mat</h2><p>Try to always use sparse matrix, unless grid sizes very small, keeping non-sparse code here for comparison. Sparse matrix is important for allowing the code to be fast and memory efficient. Otherwise this method is much slower than iterative method.</p><pre class="codeinput">it_sparse_threshold = 100*7;
+
+<span class="keyword">if</span> (it_a_n*it_z_n &gt; it_sparse_threshold)
+</pre><h2 id="10">3.1 Sparse Matrix Approach</h2><pre class="codeinput">    i = mt_pol_idx_mesh_max(:);
+    j = repmat((1:1:it_a_n*it_z_n),[1,it_z_n])';
+    v = mt_trans_prob(:);
+    m = it_a_n*it_z_n;
+    n = it_a_n*it_z_n;
+    mt_full_trans_mat = sparse(i, j, v, m, n);
+</pre><pre class="codeinput"><span class="keyword">else</span>
+</pre><h2 id="13">3.2 Full Matrix Approach</h2><pre class="language-matlab">ar_lin_idx_start_point =
+</pre><pre>    0    15    30    45    60    75    90   105   120   135   150   165   180   195   210</pre><pre class="language-matlab">mt_pol_idx_mesh_idx_meshfull =
+</pre><pre>    1     6    11
+   17    22    27
+   33    38    43
+   49    54    59
+   65    70    75
+   76    81    86
+   92    97   102
+  108   113   118
+  124   129   134
+  140   145   150
+  151   156   161
+  167   172   177
+  183   188   193
+  199   204   209
+  215   220   225</pre><pre class="codeinput">    <span class="comment">% Each row's linear index starting point</span>
+    ar_lin_idx_start_point = ((it_a_n*it_z_n)*(0:1:(it_a_n*it_z_n-1)));
+
+    <span class="comment">% mt_pol_idx_mesh_idx_meshfull is (NxM) by M</span>
+    <span class="comment">% Full index in (NxM) to (NxM) transition Matrix</span>
+    mt_pol_idx_mesh_idx_meshfull = mt_pol_idx_mesh_max + ar_lin_idx_start_point';
+
+    <span class="comment">% Fill mt_pol_idx_mesh_idx to mt_full_trans_mat</span>
+    mt_full_trans_mat = zeros([it_a_n*it_z_n, it_a_n*it_z_n]);
+    mt_full_trans_mat(mt_pol_idx_mesh_idx_meshfull(:)) = mt_trans_prob(:);
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><h2 id="15">4. Stationary Distribution <b>Method A</b>, Eigenvector Approach</h2><p>Given that markov chain we have constructured for all state-space elements, we can now find the stationary distribution using standard <a href="https://en.wikipedia.org/wiki/Markov_chain#Stationary_distribution_relation_to_eigenvectors_and_simplices">eigenvector</a> approach.</p><pre class="codeinput"><span class="keyword">if</span> (strcmp(st_analytical_stationary_type, <span class="string">'eigenvector'</span>))
     [V, ~] = eigs(mt_full_trans_mat,1,1);
     ar_stationary = V/sum(V);
 <span class="keyword">end</span>
-</pre><h2 id="12">9. Stationary Distribution <b>Method B</b>, Projection</h2><p>This uses Projection.</p><pre class="codeinput"><span class="keyword">if</span> (strcmp(st_analytical_stationary_type, <span class="string">'projection'</span>))
+</pre><h2 id="16">5. Stationary Distribution <b>Method B</b>, Projection</h2><p>This uses Projection.</p><pre class="codeinput"><span class="keyword">if</span> (strcmp(st_analytical_stationary_type, <span class="string">'projection'</span>))
 
     <span class="comment">% a. Transition - I</span>
     <span class="comment">% P = P*T</span>
@@ -232,7 +245,12 @@ mt_pol_idx_mesh_idx_meshfull = mt_pol_idx_mesh_max + ar_lin_idx_start_point';
     <span class="comment">% 0 = P*(T-1)</span>
     <span class="comment">% Q = trans_prob - np.identity(state_count);</span>
 
-    mt_Q = mt_full_trans_mat' - eye(it_a_n*it_z_n);
+    mt_diag = eye(it_a_n*it_z_n);
+    <span class="keyword">if</span> (it_a_n*it_z_n &gt; it_sparse_threshold)
+        <span class="comment">% if larger, use sparse matrix</span>
+        mt_diag = sparse(mt_diag);
+    <span class="keyword">end</span>
+    mt_Q = mt_full_trans_mat' - mt_diag;
 
     <span class="comment">% b. add all 1 as final column, (because P*1 = 1)</span>
     <span class="comment">% one_col = np.ones((state_count,1))</span>
@@ -247,6 +265,10 @@ mt_pol_idx_mesh_idx_meshfull = mt_pol_idx_mesh_max + ar_lin_idx_start_point';
     <span class="comment">% b[0, state_count] = 1</span>
 
     ar_b = zeros([1, it_a_n*it_z_n+1]);
+    <span class="keyword">if</span> (it_a_n*it_z_n &gt; it_sparse_threshold)
+        <span class="comment">% if larger, use sparse matrix</span>
+        ar_b = sparse(ar_b);
+    <span class="keyword">end</span>
     ar_b(it_a_n*it_z_n+1) = 1;
 
     <span class="comment">% d. solve</span>
@@ -262,13 +284,13 @@ mt_pol_idx_mesh_idx_meshfull = mt_pol_idx_mesh_max + ar_lin_idx_start_point';
     ar_stationary = (ar_b*mt_Q')/(mt_Q*mt_Q');
 
 <span class="keyword">end</span>
-</pre><h2 id="13">10. Stationary Distribution <b>Method C</b>, Power</h2><p>Takes markov chain to Nth power. This is the slowest.</p><pre class="codeinput"><span class="keyword">if</span> (strcmp(st_analytical_stationary_type, <span class="string">'power'</span>))
+</pre><h2 id="17">6. Stationary Distribution <b>Method C</b>, Power</h2><p>Takes markov chain to Nth power. This is the slowest.</p><pre class="codeinput"><span class="keyword">if</span> (strcmp(st_analytical_stationary_type, <span class="string">'power'</span>))
 
     mt_stationary_full = (mt_full_trans_mat)^it_trans_power_dist;
     ar_stationary = mt_stationary_full(:,1);
 <span class="keyword">end</span>
-</pre><h2 id="14">11. Stationary Vector to Stationary Matrix in Original Dimensions</h2><pre class="codeinput">mt_dist_az = reshape(ar_stationary, size(mt_pol_idx));
-</pre><h2 id="15">End Time and Profiler</h2><pre class="codeinput"><span class="comment">% End Timer</span>
+</pre><h2 id="18">7. Stationary Vector to Stationary Matrix in Original Dimensions</h2><pre class="codeinput">mt_dist_az = reshape(ar_stationary, size(mt_pol_idx));
+</pre><h2 id="19">End Time and Profiler</h2><pre class="codeinput"><span class="comment">% End Timer</span>
 <span class="keyword">if</span> (bl_time)
     toc;
 <span class="keyword">end</span>
@@ -280,7 +302,7 @@ mt_pol_idx_mesh_idx_meshfull = mt_pol_idx_mesh_max + ar_lin_idx_start_point';
     st_file_name = [st_profile_prefix st_profile_name_main st_profile_suffix];
     profsave(profile(<span class="string">'info'</span>), strcat(st_profile_path, st_file_name));
 <span class="keyword">end</span>
-</pre><h2 id="16"><b>f(y), f(c), f(a)</b>: Generate Key Distributional Statistics for Each outcome</h2><p>Having derived f(a,z) the probability mass function of the joint discrete random variables, we now obtain distributional statistics. Note that we know f(a,z), and we also know relevant policy functions a'(a,z), c(a,z), or other policy functions. We can simulate any choices that are a function of the random variables (a,z), using f(a,z). We call function <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_ds_post_stats.html">ff_az_ds_post_stats</a> which uses <a href="https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html">fft_disc_rand_var_stats</a> and <a href="https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html">fft_disc_rand_var_mass2outcomes</a> to compute various statistics of interest.</p><pre class="codeinput">bl_input_override = true;
+</pre><h2 id="20"><b>f(y), f(c), f(a)</b>: Generate Key Distributional Statistics for Each outcome</h2><p>Having derived f(a,z) the probability mass function of the joint discrete random variables, we now obtain distributional statistics. Note that we know f(a,z), and we also know relevant policy functions a'(a,z), c(a,z), or other policy functions. We can simulate any choices that are a function of the random variables (a,z), using f(a,z). We call function <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_ds_post_stats.html">ff_az_ds_post_stats</a> which uses <a href="https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html">fft_disc_rand_var_stats</a> and <a href="https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html">fft_disc_rand_var_mass2outcomes</a> to compute various statistics of interest.</p><pre class="codeinput">bl_input_override = true;
 result_map = ff_az_ds_post_stats(support_map, result_map, mt_dist_az, bl_input_override);
 </pre><pre class="codeoutput">    "tb_prob_drv, Percentiles of Y, &#8230;"    "cl_mt_pol_a"
 
@@ -352,12 +374,12 @@ result_map = ff_az_ds_post_stats(support_map, result_map, mt_dist_az, bl_input_o
        99.9                   2.3562                            0.99811           
 
 tb_outcomes_meansdperc: mean, sd, percentiles
-                      mean        sd       coefofvar      min       max      pYis0     pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15       p20       p25        p35        p50        p65       p75       p80       p85       p90       p95       p99      p99_9 
-                     _______    _______    _________    _______    ______    ______    _________    __________    _______    _______    _______    _______    _______    ______    ______    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______
+                      mean        sd       coefofvar      min       max      pYis0     pYisMINY      pYisMAXY       p0_1        p1         p5         p10        p15       p20       p25        p35        p50        p65       p75       p80       p85       p90       p95       p99      p99_9 
+                     _______    _______    _________    _______    ______    ______    _________    ___________    _______    _______    _______    _______    _______    ______    ______    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______
 
-    cl_mt_pol_a      0.83022     1.1777      1.4186           0    49.599    0.2816       0.2816    1.7076e-15          0          0          0          0          0         0         0    0.13351    0.33378    0.73431    1.1348    1.4686    1.8024    2.3364     3.271    5.3405    8.0774
-    cl_mt_pol_coh      2.131     1.4656     0.68776     0.44468    54.536         0    0.0022504    1.7076e-15    0.44468    0.59175    0.68262    0.85587    0.90837    1.0479    1.1136     1.2772     1.6681     2.1977    2.6879    3.0188    3.4427    4.0585    5.1064    7.4642    10.402
-    cl_mt_pol_c       1.3008    0.34502     0.26525     0.44468    4.9363         0    0.0022504    1.7076e-15    0.44468    0.59175    0.68262    0.81947    0.90837    1.0257    1.0479     1.1964     1.3276     1.4161    1.5268    1.5952    1.6619    1.7521    1.8668    2.1241    2.3562
+    cl_mt_pol_a      0.83022     1.1777      1.4186           0    49.599    0.2816       0.2816    -5.3552e-37          0          0          0          0          0         0         0    0.13351    0.33378    0.73431    1.1348    1.4686    1.8024    2.3364     3.271    5.3405    8.0774
+    cl_mt_pol_coh      2.131     1.4656     0.68776     0.44468    54.536         0    0.0022504    -5.3552e-37    0.44468    0.59175    0.68262    0.85587    0.90837    1.0479    1.1136     1.2772     1.6681     2.1977    2.6879    3.0188    3.4427    4.0585    5.1064    7.4642    10.402
+    cl_mt_pol_c       1.3008    0.34502     0.26525     0.44468    4.9363         0    0.0022504    -5.3552e-37    0.44468    0.59175    0.68262    0.81947    0.90837    1.0257    1.0479     1.1964     1.3276     1.4161    1.5268    1.5952    1.6619    1.7521    1.8668    2.1241    2.3562
 
 tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
                      fracByP0_1    fracByP1     fracByP5    fracByP10    fracByP15    fracByP20    fracByP25    fracByP35    fracByP50    fracByP65    fracByP75    fracByP80    fracByP85    fracByP90    fracByP95    fracByP99    fracByP99_9
@@ -388,11 +410,9 @@ ans =
 function [result_map] = ff_az_ds_vecsv(varargin)
 %% FF_AZ_DS_VECSV finds the stationary asset distributions analytically
 % Here, we implement the iteration free semi-analytical method for finding
-% asset distributions. The method is not an analytical method to find the
-% stationary distribution. But the method does analytically give the exact
+% asset distributions. The method analytically give the exact
 % stationary distribution induced by the policy function from the dynamic
-% programming problem. The discrete dynamic programming problem used is,
-% however, not analytical.
+% programming problem, conditional on discretizations.
 %
 % See the appedix of
 % <https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3316939 Wang (2019)>
@@ -405,14 +425,15 @@ function [result_map] = ff_az_ds_vecsv(varargin)
 % * We need to transform: mt_pol_idx. This matrix is indexing 1 through N,
 % we need for it to index 1 through (NxM).
 % * Then we need to duplicate the transition matrix fro shocks.
+% * Transition Matrix is *sparse*
 %
 % Once we have the all states meshed markov transition matrix, then we can
 % use standard methods to find the stationary distribution. Three options
 % are offered here that provide identical solutions:
 %
-% # The Eigenvector Approach: fast
+% # The Eigenvector Approach: very fast
 % # The Projection Approach: medium
-% # The Power Approach: slow
+% # The Power Approach: very slow (especially with sparse matrix)
 %
 % The program here builds on the Asset Dynamic Programming Problem
 % <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html
@@ -527,8 +548,8 @@ else
     % param_map('it_a_n') = 750;
     % param_map('it_z_n') = 15;
 
-%     param_map('st_analytical_stationary_type') = 'eigenvector';
-    param_map('st_analytical_stationary_type') = 'projection';
+    param_map('st_analytical_stationary_type') = 'eigenvector';
+%     param_map('st_analytical_stationary_type') = 'projection';
 %     param_map('st_analytical_stationary_type') = 'power';
     
     % 2. Generate function and grids
@@ -588,10 +609,7 @@ if (bl_time)
     tic;
 end
 
-%% 1. Initialize Full all States Transition Matrix (NxM) by (NxM)
-mt_full_trans_mat = zeros([it_a_n*it_z_n, it_a_n*it_z_n]);
-
-%% 2. Generate Max Index in (NxM) from (N) array.
+%% 1. Generate Max Index in (NxM) from (N) array.
 % Suppose we have: 
 %
 %   mt_pol_idx =
@@ -626,39 +644,7 @@ mt_full_trans_mat = zeros([it_a_n*it_z_n, it_a_n*it_z_n]);
 % mt_pol_idx_mesh_max is (NxM) by M, mt_pol_idx is N by M
 mt_pol_idx_mesh_max = mt_pol_idx(:) + (0:1:(it_z_n-1))*it_a_n;
 
-%% 3. Generate Index for Where full Trans Matrix based on choice + shock
-%
-%   ar_lin_idx_start_point =
-% 
-%      0    15    30    45    60    75    90   105   120   135   150   165   180   195   210
-%
-%   mt_pol_idx_mesh_idx_meshfull =
-% 
-%      1     6    11
-%     17    22    27
-%     33    38    43
-%     49    54    59
-%     65    70    75
-%     76    81    86
-%     92    97   102
-%    108   113   118
-%    124   129   134
-%    140   145   150
-%    151   156   161
-%    167   172   177
-%    183   188   193
-%    199   204   209
-%    215   220   225
-%
-
-% Each row's linear index starting point
-ar_lin_idx_start_point = ((it_a_n*it_z_n)*(0:1:(it_a_n*it_z_n-1)));
-
-% mt_pol_idx_mesh_idx_meshfull is (NxM) by M
-% Full index in (NxM) to (NxM) transition Matrix
-mt_pol_idx_mesh_idx_meshfull = mt_pol_idx_mesh_max + ar_lin_idx_start_point';
-
-%% 6. Transition Probabilities from (M by M) to (NxM) by M
+%% 2. Transition Probabilities from (M by M) to (NxM) by M
 %
 %   mt_trans_prob =
 % 
@@ -681,10 +667,65 @@ mt_pol_idx_mesh_idx_meshfull = mt_pol_idx_mesh_max + ar_lin_idx_start_point';
 
 mt_trans_prob = reshape(repmat(mt_z_trans(:)', [it_a_n, 1]), [it_a_n*it_z_n, it_z_n]);
 
-%% 7. Fill mt_pol_idx_mesh_idx to mt_full_trans_mat
-mt_full_trans_mat(mt_pol_idx_mesh_idx_meshfull(:)) = mt_trans_prob(:);
+%% 3. Fill mt_pol_idx_mesh_idx to mt_full_trans_mat
+% Try to always use sparse matrix, unless grid sizes very small, keeping
+% non-sparse code here for comparison. Sparse matrix is important for
+% allowing the code to be fast and memory efficient. Otherwise this method
+% is much slower than iterative method.
 
-%% 8. Stationary Distribution *Method A*, Eigenvector Approach
+it_sparse_threshold = 100*7;
+
+if (it_a_n*it_z_n > it_sparse_threshold)
+    
+    %% 3.1 Sparse Matrix Approach
+    i = mt_pol_idx_mesh_max(:);
+    j = repmat((1:1:it_a_n*it_z_n),[1,it_z_n])';
+    v = mt_trans_prob(:);
+    m = it_a_n*it_z_n;
+    n = it_a_n*it_z_n;
+    mt_full_trans_mat = sparse(i, j, v, m, n);
+    
+else
+    
+    %% 3.2 Full Matrix Approach
+    %
+    %   ar_lin_idx_start_point =
+    % 
+    %      0    15    30    45    60    75    90   105   120   135   150   165   180   195   210
+    %
+    %   mt_pol_idx_mesh_idx_meshfull =
+    % 
+    %      1     6    11
+    %     17    22    27
+    %     33    38    43
+    %     49    54    59
+    %     65    70    75
+    %     76    81    86
+    %     92    97   102
+    %    108   113   118
+    %    124   129   134
+    %    140   145   150
+    %    151   156   161
+    %    167   172   177
+    %    183   188   193
+    %    199   204   209
+    %    215   220   225
+    %
+
+    % Each row's linear index starting point
+    ar_lin_idx_start_point = ((it_a_n*it_z_n)*(0:1:(it_a_n*it_z_n-1)));
+
+    % mt_pol_idx_mesh_idx_meshfull is (NxM) by M
+    % Full index in (NxM) to (NxM) transition Matrix
+    mt_pol_idx_mesh_idx_meshfull = mt_pol_idx_mesh_max + ar_lin_idx_start_point';
+
+    % Fill mt_pol_idx_mesh_idx to mt_full_trans_mat
+    mt_full_trans_mat = zeros([it_a_n*it_z_n, it_a_n*it_z_n]);    
+    mt_full_trans_mat(mt_pol_idx_mesh_idx_meshfull(:)) = mt_trans_prob(:);
+    
+end
+
+%% 4. Stationary Distribution *Method A*, Eigenvector Approach
 % Given that markov chain we have constructured for all state-space
 % elements, we can now find the stationary distribution using standard
 % <https://en.wikipedia.org/wiki/Markov_chain#Stationary_distribution_relation_to_eigenvectors_and_simplices
@@ -695,7 +736,7 @@ if (strcmp(st_analytical_stationary_type, 'eigenvector'))
     ar_stationary = V/sum(V);
 end
 
-%% 9. Stationary Distribution *Method B*, Projection
+%% 5. Stationary Distribution *Method B*, Projection
 % This uses Projection. 
 
 if (strcmp(st_analytical_stationary_type, 'projection'))
@@ -706,7 +747,12 @@ if (strcmp(st_analytical_stationary_type, 'projection'))
     % 0 = P*(T-1)                
     % Q = trans_prob - np.identity(state_count);
 
-    mt_Q = mt_full_trans_mat' - eye(it_a_n*it_z_n);        
+    mt_diag = eye(it_a_n*it_z_n);
+    if (it_a_n*it_z_n > it_sparse_threshold)
+        % if larger, use sparse matrix
+        mt_diag = sparse(mt_diag);
+    end
+    mt_Q = mt_full_trans_mat' - mt_diag;
 
     % b. add all 1 as final column, (because P*1 = 1) 
     % one_col = np.ones((state_count,1))
@@ -721,6 +767,10 @@ if (strcmp(st_analytical_stationary_type, 'projection'))
     % b[0, state_count] = 1
 
     ar_b = zeros([1, it_a_n*it_z_n+1]);
+    if (it_a_n*it_z_n > it_sparse_threshold)
+        % if larger, use sparse matrix
+        ar_b = sparse(ar_b);
+    end    
     ar_b(it_a_n*it_z_n+1) = 1;
 
     % d. solve
@@ -737,7 +787,7 @@ if (strcmp(st_analytical_stationary_type, 'projection'))
 
 end
 
-%% 10. Stationary Distribution *Method C*, Power
+%% 6. Stationary Distribution *Method C*, Power
 % Takes markov chain to Nth power. This is the slowest.
 
 if (strcmp(st_analytical_stationary_type, 'power'))
@@ -746,7 +796,7 @@ if (strcmp(st_analytical_stationary_type, 'power'))
     ar_stationary = mt_stationary_full(:,1);
 end
 
-%% 11. Stationary Vector to Stationary Matrix in Original Dimensions
+%% 7. Stationary Vector to Stationary Matrix in Original Dimensions
 
 mt_dist_az = reshape(ar_stationary, size(mt_pol_idx));
 

@@ -198,11 +198,11 @@ for it_outcome_ctr=1:length(ar_st_pol_names)
     ar_choice_percentiles = tb_prob_drv{:,2};
     ar_choice_perc_fracheld = tb_prob_drv{:,3};
 
-%     % Display
-%     if (bl_display_final_dist)
-%         disp(['tb_prob_drv, Percentiles of Y, and Share of Y Held by Households up to this Percentile: ', st_cur_output_key])
-%         disp(tb_prob_drv);
-%     end
+    % Display
+    if (bl_display_final_dist)
+        disp(['tb_prob_drv, Percentiles of Y, and Share of Y Held by Households up to this Percentile: ', st_cur_output_key])
+        disp(tb_prob_drv);
+    end
 
     %% *f(y), f(c), f(a)*: Store Statistics Specific to Each Outcome
     % see intro section
@@ -256,8 +256,8 @@ if (bl_display_final_dist)
     disp('tb_outcomes_meansdperc: mean, sd, percentiles')
     disp(tb_outcomes_meansdperc);
 
-%     disp('tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile')
-%     disp(tb_outcomes_fracheld);
+    disp('tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile')
+    disp(tb_outcomes_fracheld);
 
 end
 

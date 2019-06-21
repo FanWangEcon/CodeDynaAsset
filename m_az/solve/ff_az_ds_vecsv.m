@@ -7,11 +7,9 @@
 function [result_map] = ff_az_ds_vecsv(varargin)
 %% FF_AZ_DS_VECSV finds the stationary asset distributions analytically
 % Here, we implement the iteration free semi-analytical method for finding
-% asset distributions. The method is not an analytical method to find the
-% stationary distribution. But the method does analytically give the exact
+% asset distributions. The method analytically give the exact
 % stationary distribution induced by the policy function from the dynamic
-% programming problem. The discrete dynamic programming problem used is,
-% however, not analytical.
+% programming problem, conditional on discretizations.
 %
 % See the appedix of
 % <https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3316939 Wang (2019)>
@@ -24,14 +22,15 @@ function [result_map] = ff_az_ds_vecsv(varargin)
 % * We need to transform: mt_pol_idx. This matrix is indexing 1 through N,
 % we need for it to index 1 through (NxM).
 % * Then we need to duplicate the transition matrix fro shocks.
+% * Transition Matrix is *sparse*
 %
 % Once we have the all states meshed markov transition matrix, then we can
 % use standard methods to find the stationary distribution. Three options
 % are offered here that provide identical solutions:
 %
-% # The Eigenvector Approach: fast
+% # The Eigenvector Approach: very fast
 % # The Projection Approach: medium
-% # The Power Approach: slow
+% # The Power Approach: very slow (especially with sparse matrix)
 %
 % The program here builds on the Asset Dynamic Programming Problem
 % <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html
@@ -146,8 +145,8 @@ else
     % param_map('it_a_n') = 750;
     % param_map('it_z_n') = 15;
 
-%     param_map('st_analytical_stationary_type') = 'eigenvector';
-    param_map('st_analytical_stationary_type') = 'projection';
+    param_map('st_analytical_stationary_type') = 'eigenvector';
+%     param_map('st_analytical_stationary_type') = 'projection';
 %     param_map('st_analytical_stationary_type') = 'power';
     
     % 2. Generate function and grids
@@ -207,10 +206,7 @@ if (bl_time)
     tic;
 end
 
-%% 1. Initialize Full all States Transition Matrix (NxM) by (NxM)
-mt_full_trans_mat = zeros([it_a_n*it_z_n, it_a_n*it_z_n]);
-
-%% 2. Generate Max Index in (NxM) from (N) array.
+%% 1. Generate Max Index in (NxM) from (N) array.
 % Suppose we have: 
 %
 %   mt_pol_idx =
@@ -245,39 +241,7 @@ mt_full_trans_mat = zeros([it_a_n*it_z_n, it_a_n*it_z_n]);
 % mt_pol_idx_mesh_max is (NxM) by M, mt_pol_idx is N by M
 mt_pol_idx_mesh_max = mt_pol_idx(:) + (0:1:(it_z_n-1))*it_a_n;
 
-%% 3. Generate Index for Where full Trans Matrix based on choice + shock
-%
-%   ar_lin_idx_start_point =
-% 
-%      0    15    30    45    60    75    90   105   120   135   150   165   180   195   210
-%
-%   mt_pol_idx_mesh_idx_meshfull =
-% 
-%      1     6    11
-%     17    22    27
-%     33    38    43
-%     49    54    59
-%     65    70    75
-%     76    81    86
-%     92    97   102
-%    108   113   118
-%    124   129   134
-%    140   145   150
-%    151   156   161
-%    167   172   177
-%    183   188   193
-%    199   204   209
-%    215   220   225
-%
-
-% Each row's linear index starting point
-ar_lin_idx_start_point = ((it_a_n*it_z_n)*(0:1:(it_a_n*it_z_n-1)));
-
-% mt_pol_idx_mesh_idx_meshfull is (NxM) by M
-% Full index in (NxM) to (NxM) transition Matrix
-mt_pol_idx_mesh_idx_meshfull = mt_pol_idx_mesh_max + ar_lin_idx_start_point';
-
-%% 6. Transition Probabilities from (M by M) to (NxM) by M
+%% 2. Transition Probabilities from (M by M) to (NxM) by M
 %
 %   mt_trans_prob =
 % 
@@ -300,10 +264,65 @@ mt_pol_idx_mesh_idx_meshfull = mt_pol_idx_mesh_max + ar_lin_idx_start_point';
 
 mt_trans_prob = reshape(repmat(mt_z_trans(:)', [it_a_n, 1]), [it_a_n*it_z_n, it_z_n]);
 
-%% 7. Fill mt_pol_idx_mesh_idx to mt_full_trans_mat
-mt_full_trans_mat(mt_pol_idx_mesh_idx_meshfull(:)) = mt_trans_prob(:);
+%% 3. Fill mt_pol_idx_mesh_idx to mt_full_trans_mat
+% Try to always use sparse matrix, unless grid sizes very small, keeping
+% non-sparse code here for comparison. Sparse matrix is important for
+% allowing the code to be fast and memory efficient. Otherwise this method
+% is much slower than iterative method.
 
-%% 8. Stationary Distribution *Method A*, Eigenvector Approach
+it_sparse_threshold = 100*7;
+
+if (it_a_n*it_z_n > it_sparse_threshold)
+    
+    %% 3.1 Sparse Matrix Approach
+    i = mt_pol_idx_mesh_max(:);
+    j = repmat((1:1:it_a_n*it_z_n),[1,it_z_n])';
+    v = mt_trans_prob(:);
+    m = it_a_n*it_z_n;
+    n = it_a_n*it_z_n;
+    mt_full_trans_mat = sparse(i, j, v, m, n);
+    
+else
+    
+    %% 3.2 Full Matrix Approach
+    %
+    %   ar_lin_idx_start_point =
+    % 
+    %      0    15    30    45    60    75    90   105   120   135   150   165   180   195   210
+    %
+    %   mt_pol_idx_mesh_idx_meshfull =
+    % 
+    %      1     6    11
+    %     17    22    27
+    %     33    38    43
+    %     49    54    59
+    %     65    70    75
+    %     76    81    86
+    %     92    97   102
+    %    108   113   118
+    %    124   129   134
+    %    140   145   150
+    %    151   156   161
+    %    167   172   177
+    %    183   188   193
+    %    199   204   209
+    %    215   220   225
+    %
+
+    % Each row's linear index starting point
+    ar_lin_idx_start_point = ((it_a_n*it_z_n)*(0:1:(it_a_n*it_z_n-1)));
+
+    % mt_pol_idx_mesh_idx_meshfull is (NxM) by M
+    % Full index in (NxM) to (NxM) transition Matrix
+    mt_pol_idx_mesh_idx_meshfull = mt_pol_idx_mesh_max + ar_lin_idx_start_point';
+
+    % Fill mt_pol_idx_mesh_idx to mt_full_trans_mat
+    mt_full_trans_mat = zeros([it_a_n*it_z_n, it_a_n*it_z_n]);    
+    mt_full_trans_mat(mt_pol_idx_mesh_idx_meshfull(:)) = mt_trans_prob(:);
+    
+end
+
+%% 4. Stationary Distribution *Method A*, Eigenvector Approach
 % Given that markov chain we have constructured for all state-space
 % elements, we can now find the stationary distribution using standard
 % <https://en.wikipedia.org/wiki/Markov_chain#Stationary_distribution_relation_to_eigenvectors_and_simplices
@@ -314,7 +333,7 @@ if (strcmp(st_analytical_stationary_type, 'eigenvector'))
     ar_stationary = V/sum(V);
 end
 
-%% 9. Stationary Distribution *Method B*, Projection
+%% 5. Stationary Distribution *Method B*, Projection
 % This uses Projection. 
 
 if (strcmp(st_analytical_stationary_type, 'projection'))
@@ -325,7 +344,12 @@ if (strcmp(st_analytical_stationary_type, 'projection'))
     % 0 = P*(T-1)                
     % Q = trans_prob - np.identity(state_count);
 
-    mt_Q = mt_full_trans_mat' - eye(it_a_n*it_z_n);        
+    mt_diag = eye(it_a_n*it_z_n);
+    if (it_a_n*it_z_n > it_sparse_threshold)
+        % if larger, use sparse matrix
+        mt_diag = sparse(mt_diag);
+    end
+    mt_Q = mt_full_trans_mat' - mt_diag;
 
     % b. add all 1 as final column, (because P*1 = 1) 
     % one_col = np.ones((state_count,1))
@@ -340,6 +364,10 @@ if (strcmp(st_analytical_stationary_type, 'projection'))
     % b[0, state_count] = 1
 
     ar_b = zeros([1, it_a_n*it_z_n+1]);
+    if (it_a_n*it_z_n > it_sparse_threshold)
+        % if larger, use sparse matrix
+        ar_b = sparse(ar_b);
+    end    
     ar_b(it_a_n*it_z_n+1) = 1;
 
     % d. solve
@@ -356,7 +384,7 @@ if (strcmp(st_analytical_stationary_type, 'projection'))
 
 end
 
-%% 10. Stationary Distribution *Method C*, Power
+%% 6. Stationary Distribution *Method C*, Power
 % Takes markov chain to Nth power. This is the slowest.
 
 if (strcmp(st_analytical_stationary_type, 'power'))
@@ -365,7 +393,7 @@ if (strcmp(st_analytical_stationary_type, 'power'))
     ar_stationary = mt_stationary_full(:,1);
 end
 
-%% 11. Stationary Vector to Stationary Matrix in Original Dimensions
+%% 7. Stationary Vector to Stationary Matrix in Original Dimensions
 
 mt_dist_az = reshape(ar_stationary, size(mt_pol_idx));
 

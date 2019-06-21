@@ -72,6 +72,7 @@ for fl_crra = ar_fl_crra
     support_map('bl_display_final') = false;
     support_map('bl_time') = true;
     support_map('bl_profile') = false;
+    support_map('bl_graph_coh_t_coh') = true;
 
     % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_get_funcgrid.html ffs_az_get_funcgrid>
     [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override);
@@ -123,7 +124,8 @@ for fl_crra = ar_fl_crra
     support_map('bl_display_final') = false;
     support_map('bl_time') = true;
     support_map('bl_profile') = false;
-
+    support_map('bl_graph_coh_t_coh') = true;
+    
     % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_get_funcgrid.html ffs_az_get_funcgrid>
     [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override);
 
@@ -174,7 +176,8 @@ for fl_crra = ar_fl_crra
     support_map('bl_display_final') = false;
     support_map('bl_time') = true;
     support_map('bl_profile') = false;
-
+    support_map('bl_graph_coh_t_coh') = true;
+    
     % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_get_funcgrid.html ffs_az_get_funcgrid>
     [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override);
 

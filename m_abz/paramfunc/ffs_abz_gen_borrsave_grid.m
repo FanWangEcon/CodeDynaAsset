@@ -114,7 +114,15 @@ end
 ar_a = linspace(fl_a_min, fl_a_max, it_a_n);
 
 %% Add Zero
-ar_a = [0 ar_a];
-ar_a = sort(unique(ar_a));
+% allow for not saving or borrowing, but if add zero, preserve ar_a length
+% to be it_a_n still. 
+
+if (ismember(0, ar_a))
+    ar_a = sort(unique(ar_a));
+else
+    ar_a = linspace(fl_a_min, fl_a_max, it_a_n-1);
+    ar_a = [0 ar_a];
+    ar_a = sort(unique(ar_a));
+end
 
 end

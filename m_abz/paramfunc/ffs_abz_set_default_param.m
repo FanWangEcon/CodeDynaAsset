@@ -67,7 +67,7 @@ param_map('fl_nan_replace') = -99999;
 % Solution Accuracy
 param_map('it_maxiter_val') = 1000;
 param_map('it_maxiter_dist') = 1000;
-param_map('st_analytical_stationary_type') = 'projection'; % could be eigenvector, projection, power
+param_map('st_analytical_stationary_type') = 'eigenvector'; % could be eigenvector, projection, power
 param_map('it_trans_power_dist') = 1000;
 param_map('fl_tol_val') = 10^-5;
 param_map('fl_tol_pol') = 10^-5;
@@ -159,7 +159,6 @@ if (ismember(it_subset, [1,2,3,4]))
         support_map('bl_graph_onebyones') = false;
         support_map('bl_img_save') = true;
         if (ismember(it_subset, [4]))
-            support_map('bl_time') = false;
             support_map('bl_display') = false;
             support_map('bl_graph_onebyones') = true;
             support_map('bl_img_save') = false;
@@ -217,7 +216,6 @@ if (ismember(it_subset, [5,6,7,8,9]))
         support_map('bl_graph_coh_t_coh') = true;
 
         if (ismember(it_subset, [8, 9]))
-            support_map('bl_time') = false;
             support_map('bl_display') = false;
             support_map('bl_display_dist') = false;
             support_map('bl_graph_onebyones') = true;
