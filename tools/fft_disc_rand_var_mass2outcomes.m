@@ -4,7 +4,7 @@
 % Table of Content.*
 
 %%
-function [tb_choice_drv_cur_byY, ar_choice_prob_byY, ar_choice_unique_sorted_byY, ...
+function [ar_choice_prob_byY, ar_choice_unique_sorted_byY, ...
     mt_choice_prob_byYZ, mt_choice_prob_byYA] = fft_disc_rand_var_mass2outcomes(varargin)
 %% FFT_DISC_RAND_VAR_MASS2OUTCOMES find f(y) based on f(a,z), and y(a,z)
 % Having derived f(a,z) the probability mass function of the joint discrete
@@ -18,7 +18,7 @@ function [tb_choice_drv_cur_byY, ar_choice_prob_byY, ar_choice_unique_sorted_byY
 % # Sort [c(a,z), f(a,z)] by c(a,z)
 % # Generate unique IDs of sorted c(a,z): unique
 % # sum(f(a,z)|c) for each unique c(a,z): accumarray, this generates f(c)
-% # calculate statistics based on f(c), the discrete distribution of c. 
+% # calculate statistics based on f(c), the discrete distribution of c.
 %
 % Outputs are:
 %
@@ -56,10 +56,10 @@ function [tb_choice_drv_cur_byY, ar_choice_prob_byY, ar_choice_unique_sorted_byY
 % unknown, determined by y(a,z) function
 %
 % @return mt_choice_prob_byYZ matrix f(y,z), meaning for y outcomes along
-% the column dimension. 
+% the column dimension.
 %
 % @return mt_choice_prob_byYA matrix f(y,a), meaning for y outcomes along
-% the row dimension. 
+% the row dimension.
 %
 
 %% Default
@@ -73,10 +73,14 @@ if (params_len == 4)
 end
 
 if (bl_input_override)
+    
     % if invoked from outside overrid fully
     [st_var_name, mt_choice_bystates, mt_dist_bystates, ~] = varargin{:};
-    bl_display_drvm2outcomes = false;    
+    bl_display_drvm2outcomes = false;
+    bl_drvm2outcomes_vec = true;
+    
 else
+    
     clear all;
     close all;
     
@@ -102,6 +106,7 @@ else
     end
     
     % y(a,z), some non-smooth structure
+    rng(123);
     mt_choice_bystates = ar_binom_x' - 0.01*ar_binom_x'.^2  + ar_binom_p - 0.5*ar_binom_p.^2 + rand([it_states, it_shocks]);
     mt_choice_bystates = round(mt_choice_bystates*2);
     
@@ -110,9 +115,11 @@ else
     
     % display
     bl_display_drvm2outcomes = true;
+    bl_drvm2outcomes_vec = true;
+    
 end
 
-%% Generate Y(a) and Y(a,z)
+%% 1. Generate Y(a) and f(y) and f(y,a) and f(y,z)
 % 1. Get Choice Matrix (choice or outcomes given choices)
 % see end of
 % <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html
@@ -121,46 +128,85 @@ end
 % here.
 ar_choice_cur_bystates = mt_choice_bystates(:);
 
-% 2. Sort and Generate Unique
+%% 2. Sort and Generate Unique
+
 ar_choice_bystates_sorted = sort(ar_choice_cur_bystates);
 ar_choice_unique_sorted_byY = unique(ar_choice_bystates_sorted);
 
-% 3. Sum up Density at each element of ar_choice
+%% 3. Sum up Density at each element of ar_choice
+
 ar_choice_prob_byY = zeros([length(ar_choice_unique_sorted_byY),1]);
 mt_choice_prob_byYZ = zeros([length(ar_choice_unique_sorted_byY), size(mt_dist_bystates,2)]);
 mt_choice_prob_byYA = zeros([length(ar_choice_unique_sorted_byY), size(mt_dist_bystates,1)]);
-for it_z_i = 1:size(mt_dist_bystates,2)
+
+if (~bl_drvm2outcomes_vec)
+    
+    %% 2. Looped solution
+    
+    for it_z_i = 1:size(mt_dist_bystates,2)
+        for it_a_j = 1:size(mt_dist_bystates,1)
+            
+            % get f(a,z) and c(a,z)
+            fl_mass_curstate = mt_dist_bystates(it_a_j, it_z_i);
+            fl_choice_cur = mt_choice_bystates(it_a_j, it_z_i);
+            
+            % add f(a,z) to f(c(a,z))
+            ar_choice_in_unique_idx = (ar_choice_unique_sorted_byY == fl_choice_cur);
+            
+            % add probability to p(y)
+            ar_choice_prob_byY(ar_choice_in_unique_idx) = ar_choice_prob_byY(ar_choice_in_unique_idx) + fl_mass_curstate;
+            
+            % add probability to p(y,z)
+            mt_choice_prob_byYZ(ar_choice_in_unique_idx, it_z_i) = mt_choice_prob_byYZ(ar_choice_in_unique_idx, it_z_i) + fl_mass_curstate;
+            
+            % add probability to p(y,a)
+            mt_choice_prob_byYA(ar_choice_in_unique_idx, it_a_j) = mt_choice_prob_byYA(ar_choice_in_unique_idx, it_a_j) + fl_mass_curstate;
+        end
+    end
+    
+else
+    
+    %% 3 Vectorized Solution
+    
+    % Generating Unique Index
+    [~, ~, ar_idx_of_unique] = unique(mt_choice_bystates(:));
+    mt_idx_of_unique = reshape(ar_idx_of_unique, size(mt_choice_bystates));
+    
+    %% 3.1 Vectorized solution for f(Y)
+    
+    ar_choice_prob_byY = accumarray(ar_idx_of_unique, mt_dist_bystates(:));
+    
+    %% 3.2 Vectorized solution for f(Y,z)
+    
+    for it_z_i = 1:size(mt_dist_bystates,2)
+        
+        % f(y,z) for one z
+        ar_choice_prob_byY_curZ = accumarray(mt_idx_of_unique(:, it_z_i), mt_dist_bystates(:, it_z_i), [length(ar_choice_unique_sorted_byY), 1]);
+        % add probability to p(y,z)
+        mt_choice_prob_byYZ(:, it_z_i) = ar_choice_prob_byY_curZ;
+        
+    end
+    
+    %% 3.3 Vectorized solution for f(Y,a)
+    
     for it_a_j = 1:size(mt_dist_bystates,1)
         
-        % get f(a,z) and c(a,z)
-        fl_mass_curstate = mt_dist_bystates(it_a_j, it_z_i);
-        fl_choice_cur = mt_choice_bystates(it_a_j, it_z_i);
-        
-        % add f(a,z) to f(c(a,z))
-        ar_choice_in_unique_idx = (ar_choice_unique_sorted_byY == fl_choice_cur);
-        
-        % add probability to p(y)
-        ar_choice_prob_byY(ar_choice_in_unique_idx) = ar_choice_prob_byY(ar_choice_in_unique_idx) + fl_mass_curstate;
-        
-        % add probability to p(y,z)
-        mt_choice_prob_byYZ(ar_choice_in_unique_idx, it_z_i) = mt_choice_prob_byYZ(ar_choice_in_unique_idx, it_z_i) + fl_mass_curstate;
-        
+        % f(y,z) for one z
+        mt_choice_prob_byY_curA = accumarray(mt_idx_of_unique(it_a_j, :)', mt_dist_bystates(it_a_j, :)', [length(ar_choice_unique_sorted_byY), 1]);
         % add probability to p(y,a)
-        mt_choice_prob_byYA(ar_choice_in_unique_idx, it_a_j) = mt_choice_prob_byYA(ar_choice_in_unique_idx, it_a_j) + fl_mass_curstate;        
+        mt_choice_prob_byYA(:, it_a_j) = mt_choice_prob_byY_curA;
+        
     end
+    
 end
 
-% 4. Store into second cell of the outcome's key's value in results_map
-% drv: discrete random variable
-tb_choice_drv_cur_byY = array2table([ar_choice_unique_sorted_byY ar_choice_prob_byY]);
-tb_choice_drv_cur_byY.Properties.VariableNames = matlab.lang.makeValidName([string([char(st_var_name) ' outcomes']), 'prob mass function']);
 
 %% Display
 if (bl_display_drvm2outcomes)
-
+        
     disp('INPUT f(a,z): mt_dist_bystates');
     disp(mt_dist_bystates);
-
+    
     disp('INPUT y(a,z): mt_choice_bystates');
     disp(mt_choice_bystates);
     
@@ -174,6 +220,8 @@ if (bl_display_drvm2outcomes)
     disp(mt_choice_prob_byYA);
     
     disp('OUTPUT f(y) and y in table: tb_choice_drv_cur_byY');
+    tb_choice_drv_cur_byY = table(ar_choice_unique_sorted_byY, ar_choice_prob_byY);
+    tb_choice_drv_cur_byY.Properties.VariableNames = matlab.lang.makeValidName([string([char(st_var_name) ' outcomes']), 'prob mass function']);    
     disp(tb_choice_drv_cur_byY);
     
 end

@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Compute Distributional Statistics from a Discrete Random Variable</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-19"><meta name="DC.source" content="fft_disc_rand_var_stats.m"><style type="text/css">
+      --><title>Compute Distributional Statistics from a Discrete Random Variable</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-21"><meta name="DC.source" content="fft_disc_rand_var_stats.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -67,7 +67,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
   </style></head><body><div class="content"><h1>Compute Distributional Statistics from a Discrete Random Variable</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FFT_DISCT_RAND_VAR_STATS compute mean, sd, percentiles</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5"><b>f(y), f(c), f(a)</b>: Compute Scalar Statistics for outcomes</a></li><li><a href="#6"><b>f(y), f(c), f(a)</b>: Compute Distributional Statistics for outcomes</a></li><li><a href="#7">Collect Statistics</a></li><li><a href="#8">Display</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [ds_stats_map] = fft_disc_rand_var_stats(varargin)
-</pre><h2 id="2">FFT_DISCT_RAND_VAR_STATS compute mean, sd, percentiles</h2><p>Model simulation generates discrete random variables, to analyze, need to calculate various statistics</p><p>Statistics include:</p><div><ul><li>$\mu_Y = E(Y) = \sum_{y} p(Y=y) \cdot y $</li><li><img src="fft_disc_rand_var_stats_eq03728111283668325077.png" alt="$\sigma_Y = \sqrt{ \sum_{y} p(Y=y) \cdot \left( y - \mu_y \right)^2}$" style="width:202px;height:27px;"></li><li><img src="fft_disc_rand_var_stats_eq05433369603455155594.png" alt="$p(y=0)$" style="width:53px;height:15px;"></li><li><img src="fft_disc_rand_var_stats_eq07625046231269844879.png" alt="$p(y=\min(y))$" style="width:89px;height:15px;"></li><li><img src="fft_disc_rand_var_stats_eq09585247606302904929.png" alt="$p(y=\max(y))$" style="width:91px;height:15px;"></li><li>percentiles: <img src="fft_disc_rand_var_stats_eq09488738859326996168.png" alt="$min_{y} \left\{ P(Y \le y) - percentile \mid P(Y \le y) \ge percentile \right\}$" style="width:352px;height:15px;"></li><li>fraction of outcome held by up to percentiles: <img src="fft_disc_rand_var_stats_eq11722476300337688867.png" alt="$E(Y<y)/E(Y)$" style="width:103px;height:15px;"></li></ul></div><p>@param ar_choice_unique_sorted array 1 by N elements in the sample space of the discrete random variable ordered. Unique consumption values ordered. Unique asset choices ordered. etc.</p><p>@param ar_choice_prob array 1 by N probability mass function associated with each element ar_choice_unique_sorted</p><p>@param ar_fl_percentiles array 1 by M some vector of percentiles (0 to 100) that we would like to compute based on the discrete random variable's probability mass function and x values.</p><p>@return ds_stats_map container various distributional statistics</p><p>@example</p><pre class="language-matlab"><span class="comment">% run function</span>
+</pre><h2 id="2">FFT_DISCT_RAND_VAR_STATS compute mean, sd, percentiles</h2><p>Model simulation generates discrete random variables, to analyze, need to calculate various statistics</p><p>Statistics include:</p><div><ul><li>$\mu_Y = E(Y) = \sum_{y} p(Y=y) \cdot y $</li><li><img src="fft_disc_rand_var_stats_eq03728111283668325077.png" alt="$\sigma_Y = \sqrt{ \sum_{y} p(Y=y) \cdot \left( y - \mu_y \right)^2}$" style="width:202px;height:27px;"></li><li><img src="fft_disc_rand_var_stats_eq05433369603455155594.png" alt="$p(y=0)$" style="width:53px;height:15px;"></li><li><img src="fft_disc_rand_var_stats_eq07625046231269844879.png" alt="$p(y=\min(y))$" style="width:89px;height:15px;"></li><li><img src="fft_disc_rand_var_stats_eq09585247606302904929.png" alt="$p(y=\max(y))$" style="width:91px;height:15px;"></li><li>percentiles: <img src="fft_disc_rand_var_stats_eq09488738859326996168.png" alt="$min_{y} \left\{ P(Y \le y) - percentile \mid P(Y \le y) \ge percentile \right\}$" style="width:352px;height:15px;"></li><li>fraction of outcome held by up to percentiles: <img src="fft_disc_rand_var_stats_eq11722476300337688867.png" alt="$E(Y<y)/E(Y)$" style="width:103px;height:15px;"></li></ul></div><p>@param st_var_name string name of the variable (choice/outcome) been analyzed</p><p>@param ar_choice_unique_sorted array 1 by N elements in the sample space of the discrete random variable ordered. Unique consumption values ordered. Unique asset choices ordered. etc.</p><p>@param ar_choice_prob array 1 by N probability mass function associated with each element ar_choice_unique_sorted</p><p>@param ar_fl_percentiles array 1 by M some vector of percentiles (0 to 100) that we would like to compute based on the discrete random variable's probability mass function and x values.</p><p>@return ds_stats_map container various distributional statistics</p><p>@example</p><pre class="language-matlab"><span class="comment">% run function</span>
 [ds_stats_map] = fft_disc_rand_var_stats(ar_choice_unique_sorted, ar_choice_prob,ar_fl_percentiles);
 <span class="comment">% retrieve scalar statistics</span>
 <span class="comment">% fl_choice_mean = ds_stats_map('fl_choice_mean');</span>
@@ -104,9 +104,9 @@ fl_choice_mean = ar_choice_prob*ar_choice_unique_sorted';
 fl_choice_sd = sqrt(ar_choice_prob*((ar_choice_unique_sorted'-fl_choice_mean).^2));
 <span class="comment">% Coef of Variation of discrete random variable</span>
 fl_choice_coefofvar = fl_choice_sd/fl_choice_mean;
-<span class="comment">% Coef of Variation of discrete random variable</span>
+<span class="comment">% min of y from policy function, p(y) might be 0</span>
 fl_choice_min = min(ar_choice_unique_sorted);
-<span class="comment">% Coef of Variation of discrete random variable</span>
+<span class="comment">% max of y from policy function, p(y) might be 0</span>
 fl_choice_max = max(ar_choice_unique_sorted);
 <span class="comment">% prob(outcome=min(outcome)), fraction of people not saving for example</span>
 fl_choice_prob_min = sum(ar_choice_prob(ar_choice_unique_sorted == min(ar_choice_unique_sorted)));
@@ -152,11 +152,9 @@ ds_stats_map(<span class="string">'fl_choice_prob_min'</span>) = fl_choice_prob_
 ds_stats_map(<span class="string">'fl_choice_prob_max'</span>) = fl_choice_prob_max;
 
 <span class="comment">% distributional array stats</span>
-tb_prob_drv = array2table([ar_fl_percentiles' ar_choice_percentiles' ar_choice_perc_fracheld']);
-st_var_name = [char(st_var_name) <span class="string">' percentile values'</span>];
-tb_prob_drv.Properties.VariableNames = matlab.lang.makeValidName([<span class="string">"percentiles"</span>, st_var_name, <span class="string">"frac of sum held below this percentile"</span>]);
-
-ds_stats_map(<span class="string">'tb_prob_drv'</span>) = tb_prob_drv;
+ds_stats_map(<span class="string">'ar_fl_percentiles'</span>) = ar_fl_percentiles;
+ds_stats_map(<span class="string">'ar_choice_percentiles'</span>) = ar_choice_percentiles;
+ds_stats_map(<span class="string">'ar_choice_perc_fracheld'</span>) = ar_choice_perc_fracheld;
 </pre><h2 id="8">Display</h2><pre class="codeinput"><span class="keyword">if</span> (bl_display_drvstats)
 
     disp(<span class="string">'fl_choice_mean'</span>);
@@ -172,6 +170,9 @@ ds_stats_map(<span class="string">'tb_prob_drv'</span>) = tb_prob_drv;
     disp(fl_choice_prob_max);
 
     disp(<span class="string">'tb_prob_drv'</span>);
+    tb_prob_drv = table(ar_fl_percentiles', ar_choice_percentiles', ar_choice_perc_fracheld');
+    st_var_name = [char(st_var_name) <span class="string">' percentile values'</span>];
+    tb_prob_drv.Properties.VariableNames = matlab.lang.makeValidName([<span class="string">"percentiles"</span>, st_var_name, <span class="string">"frac of sum held below this percentile"</span>]);
     disp(tb_prob_drv);
 
 <span class="keyword">end</span>
@@ -218,7 +219,7 @@ ans =
 
   Map with properties:
 
-        Count: 9
+        Count: 11
       KeyType: char
     ValueType: any
 
@@ -244,6 +245,8 @@ function [ds_stats_map] = fft_disc_rand_var_stats(varargin)
 % * $p(y=\max(y))$
 % * percentiles: $min_{y} \left\{ P(Y \le y) - percentile \mid P(Y \le y) \ge percentile \right\}$
 % * fraction of outcome held by up to percentiles: $E(Y<y)/E(Y)$
+%
+% @param st_var_name string name of the variable (choice/outcome) been analyzed
 %
 % @param ar_choice_unique_sorted array 1 by N elements in the sample space
 % of the discrete random variable ordered. Unique consumption values
@@ -316,9 +319,9 @@ fl_choice_mean = ar_choice_prob*ar_choice_unique_sorted';
 fl_choice_sd = sqrt(ar_choice_prob*((ar_choice_unique_sorted'-fl_choice_mean).^2));
 % Coef of Variation of discrete random variable
 fl_choice_coefofvar = fl_choice_sd/fl_choice_mean;
-% Coef of Variation of discrete random variable
+% min of y from policy function, p(y) might be 0
 fl_choice_min = min(ar_choice_unique_sorted);
-% Coef of Variation of discrete random variable
+% max of y from policy function, p(y) might be 0
 fl_choice_max = max(ar_choice_unique_sorted);
 % prob(outcome=min(outcome)), fraction of people not saving for example
 fl_choice_prob_min = sum(ar_choice_prob(ar_choice_unique_sorted == min(ar_choice_unique_sorted)));
@@ -376,11 +379,9 @@ ds_stats_map('fl_choice_prob_min') = fl_choice_prob_min;
 ds_stats_map('fl_choice_prob_max') = fl_choice_prob_max;
 
 % distributional array stats
-tb_prob_drv = array2table([ar_fl_percentiles' ar_choice_percentiles' ar_choice_perc_fracheld']);
-st_var_name = [char(st_var_name) ' percentile values'];
-tb_prob_drv.Properties.VariableNames = matlab.lang.makeValidName(["percentiles", st_var_name, "frac of sum held below this percentile"]);
-
-ds_stats_map('tb_prob_drv') = tb_prob_drv;
+ds_stats_map('ar_fl_percentiles') = ar_fl_percentiles;
+ds_stats_map('ar_choice_percentiles') = ar_choice_percentiles;
+ds_stats_map('ar_choice_perc_fracheld') = ar_choice_perc_fracheld;
 
 %% Display
 if (bl_display_drvstats)
@@ -398,6 +399,9 @@ if (bl_display_drvstats)
     disp(fl_choice_prob_max);
     
     disp('tb_prob_drv');
+    tb_prob_drv = table(ar_fl_percentiles', ar_choice_percentiles', ar_choice_perc_fracheld');
+    st_var_name = [char(st_var_name) ' percentile values'];
+    tb_prob_drv.Properties.VariableNames = matlab.lang.makeValidName(["percentiles", st_var_name, "frac of sum held below this percentile"]);    
     disp(tb_prob_drv);
 
 end

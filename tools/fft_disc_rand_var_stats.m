@@ -152,11 +152,9 @@ ds_stats_map('fl_choice_prob_min') = fl_choice_prob_min;
 ds_stats_map('fl_choice_prob_max') = fl_choice_prob_max;
 
 % distributional array stats
-tb_prob_drv = array2table([ar_fl_percentiles' ar_choice_percentiles' ar_choice_perc_fracheld']);
-st_var_name = [char(st_var_name) ' percentile values'];
-tb_prob_drv.Properties.VariableNames = matlab.lang.makeValidName(["percentiles", st_var_name, "frac of sum held below this percentile"]);
-
-ds_stats_map('tb_prob_drv') = tb_prob_drv;
+ds_stats_map('ar_fl_percentiles') = ar_fl_percentiles;
+ds_stats_map('ar_choice_percentiles') = ar_choice_percentiles;
+ds_stats_map('ar_choice_perc_fracheld') = ar_choice_perc_fracheld;
 
 %% Display
 if (bl_display_drvstats)
@@ -174,6 +172,9 @@ if (bl_display_drvstats)
     disp(fl_choice_prob_max);
     
     disp('tb_prob_drv');
+    tb_prob_drv = table(ar_fl_percentiles', ar_choice_percentiles', ar_choice_perc_fracheld');
+    st_var_name = [char(st_var_name) ' percentile values'];
+    tb_prob_drv.Properties.VariableNames = matlab.lang.makeValidName(["percentiles", st_var_name, "frac of sum held below this percentile"]);    
     disp(tb_prob_drv);
 
 end
