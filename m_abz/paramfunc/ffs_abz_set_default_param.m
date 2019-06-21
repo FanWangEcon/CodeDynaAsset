@@ -48,7 +48,7 @@ param_map('fl_z_sig') = 0.2;
 % households face if they default.
 param_map('fl_b_bd') = -20; % borrow bound, = 0 if save only
 param_map('fl_default_aprime') = 0; % if default, next period aprime
-param_map('bl_default') = 1; % if borrowing is default allowed
+param_map('bl_default') = true; % if borrowing is default allowed
 % Savings
 param_map('fl_a_min') = 0; % if there is minimum savings requirement
 param_map('fl_a_max') = 50;
@@ -67,6 +67,7 @@ param_map('fl_nan_replace') = -99999;
 % Solution Accuracy
 param_map('it_maxiter_val') = 1000;
 param_map('it_maxiter_dist') = 1000;
+param_map('st_analytical_stationary_type') = 'projection'; % could be eigenvector, projection, power
 param_map('it_trans_power_dist') = 1000;
 param_map('fl_tol_val') = 10^-5;
 param_map('fl_tol_pol') = 10^-5;
@@ -221,6 +222,10 @@ if (ismember(it_subset, [5,6,7,8,9]))
             support_map('bl_display_dist') = false;
             support_map('bl_graph_onebyones') = true;
             support_map('bl_img_save') = false;
+            if (ismember(it_subset, [9]))
+                % quietly turn off all graphs, only tables
+                support_map('bl_graph_coh_t_coh') = false;
+            end
         end
 
     end

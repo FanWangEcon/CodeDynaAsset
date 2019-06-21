@@ -54,9 +54,9 @@ Algorithms below provide identical solutions (speed below does not include speed
 2. *az* model asset distribution [vectorized](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solve/ff_az_ds_vec.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/profile/ff_az_ds_vec_default_p7/file0.html)
     * speed: **0.8** seconds
     * loops: 1 for pmf iteration, 1 for shocks, policy index match
-3. *az* model asset distribution [semi-analytical](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solve/ff_az_ds_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/profile/ff_az_ds_vecsv_default_p7/file0.html)
-    * speed: (a) **5** seconds for **eigenvector** method (b) **8** seconds for **projection** method (c) **54.5** seconds for **power**
-    * iteration free, construct full markov chain, eigenvector
+3. *az* model asset distribution [semi-analytical](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solve/ff_az_ds_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/profile/ff_az_ds_vecsv_default_p7/file0.html)
+    * speed: (a) **5** sec *eigenvector* (b) **8** sec for *projection* (c) **54.5** sec for *power*
+    * iteration free, construct full-states markov, eigenvector/projection/Nth-power
 
 ### 1.2.b Statistics Support Functions
 
@@ -137,6 +137,7 @@ The same files are used here as are used under *1.2*:
 
 1. *abz* model asset distribution [looped](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html)
 2. *abz* model asset distribution [vectorized](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html)
+3. *abz* model asset distribution [semi-analytical](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html)
 
 ## 2.3 Solution Support Files (ABZ)
 
