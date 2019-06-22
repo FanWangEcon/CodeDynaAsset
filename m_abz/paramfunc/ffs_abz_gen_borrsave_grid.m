@@ -121,8 +121,15 @@ if (ismember(0, ar_a))
     ar_a = sort(unique(ar_a));
 else
     ar_a = linspace(fl_a_min, fl_a_max, it_a_n-1);
-    ar_a = [0 ar_a];
-    ar_a = sort(unique(ar_a));
+    
+    if (ismember(0, ar_a))
+        % add a mid point between 0 and lowest savings point above zero.
+        ar_a = [(ar_a(2)-ar_a(1))/2, ar_a];
+        ar_a = sort(unique(ar_a));
+    else
+        ar_a = [0 ar_a];
+        ar_a = sort(unique(ar_a));        
+    end
 end
 
 end

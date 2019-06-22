@@ -1,0 +1,761 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Test Borrowing Natural Borrowing Constraint (Save + Borr Distribution)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-21"><meta name="DC.source" content="fsi_abz_ds_vecsv_nbc.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Test Borrowing Natural Borrowing Constraint (Save + Borr Distribution)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><p>Testing the <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html">ff_az_ds_vec</a> program for solving the savings only dynamic programming problem.</p><p>No default, change borrowing interest rates. Default, changin minimum consumption etc.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Test Borrowing Interest Rates, No Default, NBC, Shift Borrow Interest</a></li><li><a href="#2">Test Borrowing Interest Rates, No Default, Shift R, More Accurate</a></li></ul></div><h2 id="1">Test Borrowing Interest Rates, No Default, NBC, Shift Borrow Interest</h2><p>The natural borrowing constraint restricts borrowing. Note that <b>pYisMINY</b> in tables below is generally very close to 0. That is the correct mass. As we shift the formal borrowing interest rate, the natural borrowing constraints changes (lower borrowing interest rate, more borrowing allowed), but the mass at the borrowing bound is 0 because at the bound, households would go to negative infinite utility, approximated by -9999 in default parameters pYisMINY. Note the <b>min</b> value in table shows how the natural borrowing constraint is adjusting. that is the NBC bound.</p><p>As the borrowing interest rate increases, households borrow more and average/aggregate savings decrease.</p><pre class="codeinput">close <span class="string">all</span>;
+clear <span class="string">all</span>;
+
+it_size = 5;
+
+<span class="comment">% default or not</span>
+bl_default = false;
+ar_bl_default = [false, false, true];
+ar_bl_default = zeros([1,it_size]) + bl_default;
+<span class="comment">% cmin</span>
+fl_c_min = 0.001;
+ar_fl_c_min = [0.001, 0.005, 0.010];
+ar_fl_c_min = linspace(0.001, 0.005, it_size);
+ar_fl_c_min = zeros([1,it_size]) + fl_c_min;
+<span class="comment">% borrow bound</span>
+fl_b_bd = -20;
+ar_fl_b_bd = [-20, -15, -10];
+ar_fl_b_bd = linspace(-20, 0, it_size);
+ar_fl_b_bd = zeros([1,it_size]) + fl_b_bd;
+<span class="comment">% fl_r_borr</span>
+fl_r_borr = 0.035;
+ar_fl_r_borr = [-999, -999, -999];
+ar_fl_r_borr = linspace(0.20, 0.025, it_size);
+<span class="comment">% ar_fl_r_borr = zeros([1,it_size]) + fl_r_borr;</span>
+
+<span class="comment">% other parameters</span>
+it_a_n = 750;
+it_z_n = 15;
+fl_crra = 1.5;
+fl_beta = 0.94;
+fl_r_save = 0.025;
+
+<span class="comment">% Simulate Model</span>
+
+<span class="keyword">for</span> it_cur_param = 1:1:length(ar_bl_default)
+
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp([<span class="string">'ar_bl_default = '</span> num2str(ar_bl_default(it_cur_param))]);
+    disp([<span class="string">'ar_fl_c_min = '</span> num2str(ar_fl_c_min(it_cur_param))]);
+    disp([<span class="string">'ar_fl_b_bd = '</span> num2str(ar_fl_b_bd(it_cur_param))]);
+    disp([<span class="string">'ar_fl_r_borr = '</span> num2str(ar_fl_r_borr(it_cur_param))]);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp(<span class="string">''</span>);
+    disp(<span class="string">''</span>);
+    disp(<span class="string">''</span>);
+    disp(<span class="string">''</span>);
+
+    <span class="comment">% Call Default Parameters &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param&gt;</span>
+    bl_input_override = true;
+    it_param_set = 9;
+    [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
+
+    <span class="comment">% Borrowing Parameters</span>
+    param_map(<span class="string">'bl_default'</span>) = ar_bl_default(it_cur_param);
+    param_map(<span class="string">'fl_c_min'</span>) = ar_fl_c_min(it_cur_param);
+    param_map(<span class="string">'fl_b_bd'</span>) = ar_fl_b_bd(it_cur_param);
+
+    <span class="comment">% Interest Rates</span>
+    param_map(<span class="string">'fl_r_save'</span>) = fl_r_save;
+    param_map(<span class="string">'fl_r_borr'</span>) = ar_fl_r_borr(it_cur_param);
+
+    <span class="comment">% Simulation Accuracy</span>
+    param_map(<span class="string">'it_a_n'</span>) = it_a_n;
+    param_map(<span class="string">'it_z_n'</span>) = it_z_n;
+    param_map(<span class="string">'fl_crra'</span>) = fl_crra;
+    param_map(<span class="string">'fl_beta'</span>) = fl_beta;
+
+    <span class="comment">% Display Parameters</span>
+    support_map(<span class="string">'bl_display'</span>) = false;
+    support_map(<span class="string">'bl_display_final'</span>) = false;
+    support_map(<span class="string">'bl_time'</span>) = true;
+    support_map(<span class="string">'bl_profile'</span>) = false;
+
+    support_map(<span class="string">'bl_graph_funcgrids'</span>) = false;
+
+    <span class="comment">% Call Grid Generator &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid&gt;</span>
+    [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+
+    <span class="comment">% Call Dynamic Programming Problem &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv&gt;</span>
+    result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
+
+    <span class="comment">% Call Distribution CProgram</span>
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx: iterative distribution'</span>);
+    result_map = ff_az_ds_vec(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    <span class="comment">% Call Distribution CProgram</span>
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx: semi-analytical distribution'</span>);
+    result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+
+    <span class="comment">% Snap</span>
+    snapnow;
+
+<span class="keyword">end</span>
+
+<span class="comment">% close all</span>
+close <span class="string">all</span>;
+</pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
+ar_bl_default = 0
+ar_fl_c_min = 0.001
+ar_fl_b_bd = -20
+ar_fl_r_borr = 0.2
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 1.447118 seconds.
+xxxxxxxxxxxxxxxxxxxxxxxxxxx: iterative distribution
+Elapsed time is 0.584118 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar      min       max        pYis0        pYisMINY     pYisMAXY      p0_1        p1         p5         p10        p15       p20        p25         p35         p50        p65       p75       p80       p85       p90       p95       p99      p99_9 
+                     _______    _______    _________    _______    ______    __________    __________    ________    ________    _______    _______    _______    _______    ______    ________    ________    _______    _______    ______    ______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a      0.82816      1.181       1.426     -2.2234    49.581       0.17805    5.8387e-43       0        -0.33835    -0.1289          0          0          0         0    0.010738    0.080555    0.35982    0.77873    1.1278    1.4769     1.826    2.3147    3.2922    5.3867    8.0397
+    cl_mt_pol_coh     2.1283     1.4713      0.6913     -2.2234    54.536             0    2.5531e-43       0         0.19282    0.50235    0.68262    0.79845    0.90837    1.0479      1.0847      1.2913     1.6911     2.1926    2.6935    3.0116    3.4409    4.0645    5.1261    7.4472    10.382
+    cl_mt_pol_c       1.3001    0.34542     0.26568           0    4.9547    2.5531e-43    2.5531e-43       0         0.48872    0.57205     0.6871    0.79845    0.90837    1.0059      1.0535       1.198     1.3138     1.4156    1.5442    1.5849    1.6625    1.7502    1.8663     2.132    2.3791
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx: semi-analytical distribution
+Elapsed time is 0.269763 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar      min       max         pYis0        pYisMINY       pYisMAXY       p0_1        p1         p5         p10        p15        p20        p25         p35         p50        p65       p75       p80       p85       p90       p95       p99      p99_9 
+                     _______    _______    _________    _______    ______    ___________    ___________    __________    ________    _______    _______    _______    _______    _______    ________    ________    _______    _______    ______    ______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a      0.82743     1.1802      1.4264     -2.2234    49.581        0.17816     -1.599e-34    4.6032e-35    -0.33835    -0.1289          0          0          0          0    0.010738    0.080555    0.35982    0.77873    1.1278    1.4769     1.826    2.3147    3.2922    5.3867    8.0397
+    cl_mt_pol_coh     2.1274     1.4705      0.6912     -2.2234    54.536              0    -8.9885e-35    4.6032e-35     0.19282    0.50235    0.68262    0.79845    0.90837     1.0479      1.0847      1.2913     1.6911      2.192     2.693    3.0103    3.4409    4.0546    5.0869    7.4472    10.381
+    cl_mt_pol_c          1.3    0.34539     0.26569           0    4.9547    -8.9885e-35    -8.9885e-35    4.6032e-35     0.48872    0.57205    0.68262    0.79845    0.90837    0.98194      1.0535       1.198     1.3138     1.4156    1.5442    1.5849    1.6625    1.7502    1.8663     2.132    2.3791
+
+</pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
+ar_bl_default = 0
+ar_fl_c_min = 0.001
+ar_fl_b_bd = -20
+ar_fl_r_borr = 0.15625
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 1.464859 seconds.
+xxxxxxxxxxxxxxxxxxxxxxxxxxx: iterative distribution
+Elapsed time is 0.597561 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar     min       max        pYis0        pYisMINY     pYisMAXY      p0_1         p1          p5          p10         p15        p20        p25         p35        p50        p65       p75       p80       p85       p90       p95       p99      p99_9 
+                     _______    _______    _________    ______    ______    __________    __________    ________    ________    ________    ________    _________    _______    _______    ________    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a      0.80803     1.1901      1.4728     -2.846    49.576       0.12821    8.8084e-42       0         -1.0091    -0.44389    -0.16129    -0.019989          0          0    0.050661    0.12131    0.33326    0.75716    1.1104    1.4637    1.8169    2.3115    3.2299    5.3494    8.0341
+    cl_mt_pol_coh     2.1058     1.4857     0.70554     -2.846    54.536             0    3.8516e-42       0        -0.42176     0.17651     0.60095      0.78744    0.90837     1.0247      1.0998      1.317     1.6636      2.186    2.6774    2.9937    3.4282    4.0533    5.0938    7.4454    10.375
+    cl_mt_pol_c       1.2977    0.34604     0.26665          0    4.9597    3.8516e-42    3.8516e-42       0         0.51663     0.61512     0.73911      0.80743    0.90837    0.98205      1.0479     1.1581     1.2931     1.4169    1.5527     1.583    1.6643    1.7476    1.8639    2.1347    2.3728
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx: semi-analytical distribution
+Elapsed time is 0.164606 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd      coefofvar     min       max        pYis0        pYisMINY      pYisMAXY        p0_1         p1          p5          p10         p15        p20        p25         p35        p50        p65       p75       p80       p85       p90       p95       p99      p99_9 
+                     _______    ______    _________    ______    ______    __________    __________    ___________    ________    ________    ________    _________    _______    _______    ________    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a      0.80696     1.189      1.4734     -2.846    49.576        0.1283    5.2493e-34    -4.4125e-35     -1.0091    -0.44389    -0.16129    -0.019989          0          0    0.050661    0.12131    0.33326    0.75716    1.1104    1.4637    1.8169    2.3115    3.2299    5.3494    8.0341
+    cl_mt_pol_coh     2.1045    1.4846     0.70544     -2.846    54.536             0    3.1177e-34    -4.4125e-35    -0.42176     0.17651     0.60095      0.78744    0.90837     1.0247      1.0998      1.317     1.6636     2.1705    2.6774    2.9937    3.4282    4.0502    5.0891    7.4454    10.362
+    cl_mt_pol_c       1.2975     0.346     0.26666          0    4.9597    3.1177e-34    3.1177e-34    -4.4125e-35     0.51663     0.61512     0.73911      0.80743    0.90837    0.98205      1.0479     1.1581     1.2931     1.4169    1.5527     1.583    1.6643    1.7476    1.8639    2.1347    2.3728
+
+</pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
+ar_bl_default = 0
+ar_fl_c_min = 0.001
+ar_fl_b_bd = -20
+ar_fl_r_borr = 0.1125
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 1.586462 seconds.
+xxxxxxxxxxxxxxxxxxxxxxxxxxx: iterative distribution
+Elapsed time is 0.523870 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd      coefofvar      min       max        pYis0        pYisMINY     pYisMAXY     p0_1         p1          p5         p10         p15          p20          p25         p35         p50        p65       p75       p80       p85       p90       p95       p99      p99_9 
+                     _______    ______    _________    _______    ______    __________    __________    ________    _______    ________    ________    ________    ________    _________    _________    ________    _______    _______    ______    ______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a      0.64142    1.2761      1.9895     -3.9527    49.567      0.057771    1.3288e-40       0        -2.7987     -1.6446    -0.77905    -0.41841    -0.20202    -0.057761    -0.057761    0.014368    0.23076    0.66353    1.0242    1.3848    1.6733    2.2504    3.1881    5.2798    7.9486
+    cl_mt_pol_coh     1.9274    1.5841      0.8219     -3.9527    54.536             0    5.8106e-41       0        -2.2704    -0.99568    0.020675     0.44724     0.68362      0.84411       0.9836      1.2088      1.557     2.0745    2.5844    2.9053    3.3381     3.946    4.9976    7.3413    10.299
+    cl_mt_pol_c       1.2859    0.3473     0.27008           0    4.9686    5.8106e-41    5.8106e-41       0        0.46984     0.63374     0.77193     0.83685     0.87753      0.93567        1.015      1.1258     1.2903     1.4146    1.5527    1.5782    1.6594    1.7459    1.8565    2.1274    2.3655
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx: semi-analytical distribution
+Elapsed time is 0.166671 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar      min       max         pYis0        pYisMINY      pYisMAXY      p0_1        p1          p5          p10         p15          p20          p25         p35         p50        p65       p75       p80       p85       p90       p95       p99      p99_9 
+                     _______    _______    _________    _______    ______    ___________    ___________    _________    _______    _______    _________    ________    ________    _________    _________    ________    _______    _______    ______    ______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a      0.63827     1.2755      1.9983     -3.9527    49.567       0.057787    -5.5704e-36    3.107e-36    -2.7987    -1.6446     -0.77905    -0.41841    -0.20202    -0.057761    -0.057761    0.014368    0.23076    0.66353    1.0242    1.3848    1.6733    2.2504    3.1881    5.2798    7.9486
+    cl_mt_pol_coh     1.9237     1.5836     0.82323     -3.9527    54.536              0    -4.3152e-36    3.107e-36    -2.2854    -1.0015    0.0009897     0.44289     0.68362      0.84411       0.9836      1.2088      1.557     2.0745    2.5844    2.9053    3.3381    3.9404    4.9976    7.3413    10.288
+    cl_mt_pol_c       1.2854    0.34739     0.27027           0    4.9686    -4.3152e-36    -4.3152e-36    3.107e-36    0.46459     0.6336      0.77193     0.83685     0.87753      0.93567       1.0132      1.1258     1.2903     1.4146    1.5527    1.5764    1.6594    1.7443    1.8565    2.1264    2.3655
+
+</pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
+ar_bl_default = 0
+ar_fl_c_min = 0.001
+ar_fl_b_bd = -20
+ar_fl_r_borr = 0.06875
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 1.659084 seconds.
+xxxxxxxxxxxxxxxxxxxxxxxxxxx: iterative distribution
+Elapsed time is 0.715434 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                       mean        sd       coefofvar        min         max       pYis0       pYisMINY     pYisMAXY     p0_1        p1         p5         p10        p15        p20        p25        p35         p50          p65         p75        p80       p85       p90       p95       p99      p99_9 
+                     ________    _______    _________    ___________    ______    ________    __________    ________    _______    _______    _______    _______    _______    _______    _______    ________    ________    _________    _______    _______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a      -0.92735     2.1364     -2.3038         -6.4681    49.547    0.015277    1.0381e-56       0        -6.2417    -5.7887    -4.7318    -3.9014     -3.222    -2.6935    -2.2406     -1.5611    -0.65523    -0.051296    0.32616    0.55264    0.9301    1.4585    2.4399    4.5537    7.2714
+    cl_mt_pol_coh     0.27144     2.4628       9.073         -6.4681    54.536           0    4.5393e-57       0         -5.984    -5.3002    -4.0276    -3.0999    -2.3737    -1.7685    -1.2702    -0.49616     0.45013       1.2274     1.7691     2.0976     2.549    3.1681    4.2017    6.5856     9.544
+    cl_mt_pol_c        1.1988    0.34878     0.29095     -8.8818e-16    4.9887           0    4.5393e-57       0         0.2485    0.47534    0.67931    0.80151    0.86707    0.91008    0.94473       1.042      1.1471       1.2905     1.4344     1.4997    1.5856      1.68    1.8337    2.0846     2.339
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx: semi-analytical distribution
+Elapsed time is 0.129437 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                       mean        sd       coefofvar        min         max       pYis0      pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15        p20        p25        p35         p50          p65         p75        p80       p85       p90       p95       p99      p99_9 
+                     ________    _______    _________    ___________    ______    _______    __________    __________    _______    _______    _______    _______    _______    _______    _______    ________    ________    _________    _______    _______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a      -0.93941     2.1417     -2.2799         -6.4681    49.547    0.01522    1.3169e-36    2.6367e-36    -6.2417    -5.7887    -4.7318    -3.9014    -3.2975    -2.6935    -2.2406     -1.5611    -0.73073    -0.051296    0.32616    0.55264    0.9301    1.4585    2.4399    4.5537    7.2714
+    cl_mt_pol_coh     0.25798     2.4685      9.5687         -6.4681    54.536          0    -4.496e-36    2.6367e-36    -5.9881    -5.3006     -4.062    -3.1222    -2.3956     -1.807    -1.3086    -0.51611     0.42826       1.2274     1.7408     2.0976     2.549    3.1619    4.2017    6.5856    9.5409
+    cl_mt_pol_c        1.1974    0.34915      0.2916     -8.8818e-16    4.9887          0    -4.496e-36    2.6367e-36     0.2485    0.47534    0.67739    0.79941    0.86507    0.90703    0.94292      1.0375      1.1465       1.2905      1.433     1.4969    1.5856     1.679    1.8335    2.0846     2.339
+
+</pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
+ar_bl_default = 0
+ar_fl_c_min = 0.001
+ar_fl_b_bd = -20
+ar_fl_r_borr = 0.025
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 1.536301 seconds.
+xxxxxxxxxxxxxxxxxxxxxxxxxxx: iterative distribution
+Elapsed time is 0.686185 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar      min       max        pYis0        pYisMINY     pYisMAXY      p0_1        p1         p5         p10        p15        p20        p25        p35        p50        p65        p75        p80        p85        p90        p95        p99       p99_9 
+                     _______    _______    _________    _______    ______    __________    __________    ________    ________    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______
+
+    cl_mt_pol_a      -15.632     1.7575    -0.11243     -17.787    49.366    1.8816e-07    5.8379e-54       0         -17.697    -17.606    -17.425    -17.334    -17.153    -17.062    -16.972    -16.609    -16.156    -15.431    -14.887    -14.434    -13.981    -13.256    -12.078    -9.5405    -6.4593
+    cl_mt_pol_coh    -14.742     2.0345    -0.13801     -17.787    54.536             0    2.5527e-54       0         -17.547    -17.352    -17.045    -16.806    -16.609    -16.423    -16.237    -15.865    -15.258    -14.487    -13.772    -13.311     -12.75    -12.007     -10.71      -7.96    -4.5731
+    cl_mt_pol_c       0.8895    0.31119     0.34984           0    5.1702    2.5527e-54    2.5527e-54       0        0.072819    0.19937    0.35182    0.47501    0.57017    0.61904    0.68118    0.78206    0.89534     1.0143     1.0959     1.1447      1.207     1.2885     1.4119      1.642     1.9158
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx: semi-analytical distribution
+Elapsed time is 0.152899 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar      min       max         pYis0        pYisMINY       pYisMAXY       p0_1        p1         p5         p10        p15        p20        p25        p35        p50        p65        p75        p80        p85        p90        p95        p99       p99_9 
+                     _______    _______    _________    _______    ______    ___________    ___________    __________    ________    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______
+
+    cl_mt_pol_a      -15.635     1.7554    -0.11228     -17.787    49.366     1.8451e-07    -2.0691e-35    6.7487e-36     -17.697    -17.606    -17.425    -17.334    -17.153    -17.062    -16.972    -16.609    -16.156    -15.431    -14.887    -14.434    -13.981    -13.256    -12.078    -9.5405    -6.4593
+    cl_mt_pol_coh    -14.746     2.0324    -0.13783     -17.787    54.536              0    -6.9688e-36    6.7487e-36     -17.547    -17.362    -17.045    -16.806    -16.609    -16.423    -16.237    -15.865    -15.258    -14.487    -13.772    -13.311    -12.754    -12.007     -10.71    -7.9847    -4.5794
+    cl_mt_pol_c      0.88913    0.31113     0.34992           0    5.1702    -6.9688e-36    -6.9688e-36    6.7487e-36    0.072819    0.19711    0.35182    0.47383    0.57017    0.61904    0.68118    0.78206    0.89534     1.0143     1.0959     1.1446      1.207     1.2885     1.4108     1.6416     1.9156
+
+</pre><h2 id="2">Test Borrowing Interest Rates, No Default, Shift R, More Accurate</h2><p>Identical to above, but now increase grid sizes to be more accurate, as we change interest rate, perhaps the lower interest rate problems are less accurate because choice grid is larger and choice grid points have not increased.</p><pre class="codeinput">close <span class="string">all</span>;
+clear <span class="string">all</span>;
+
+it_size = 5;
+
+<span class="comment">% default or not</span>
+bl_default = false;
+ar_bl_default = [false, false, true];
+ar_bl_default = zeros([1,it_size]) + bl_default;
+<span class="comment">% cmin</span>
+fl_c_min = 0.001;
+ar_fl_c_min = [0.001, 0.005, 0.010];
+ar_fl_c_min = linspace(0.001, 0.005, it_size);
+ar_fl_c_min = zeros([1,it_size]) + fl_c_min;
+<span class="comment">% borrow bound</span>
+fl_b_bd = -20;
+ar_fl_b_bd = [-20, -15, -10];
+ar_fl_b_bd = linspace(-20, 0, it_size);
+ar_fl_b_bd = zeros([1,it_size]) + fl_b_bd;
+<span class="comment">% fl_r_borr</span>
+fl_r_borr = 0.035;
+ar_fl_r_borr = [-999, -999, -999];
+ar_fl_r_borr = linspace(0.20, 0.025, it_size);
+<span class="comment">% ar_fl_r_borr = zeros([1,it_size]) + fl_r_borr;</span>
+
+<span class="comment">% other parameters</span>
+it_a_n = 2250;
+it_z_n = 27;
+fl_crra = 1.5;
+fl_beta = 0.94;
+fl_r_save = 0.025;
+
+<span class="comment">% Simulate Model</span>
+
+<span class="keyword">for</span> it_cur_param = 1:1:length(ar_bl_default)
+
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp([<span class="string">'ar_bl_default = '</span> num2str(ar_bl_default(it_cur_param))]);
+    disp([<span class="string">'ar_fl_c_min = '</span> num2str(ar_fl_c_min(it_cur_param))]);
+    disp([<span class="string">'ar_fl_b_bd = '</span> num2str(ar_fl_b_bd(it_cur_param))]);
+    disp([<span class="string">'ar_fl_r_borr = '</span> num2str(ar_fl_r_borr(it_cur_param))]);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp(<span class="string">''</span>);
+    disp(<span class="string">''</span>);
+    disp(<span class="string">''</span>);
+    disp(<span class="string">''</span>);
+
+    <span class="comment">% Call Default Parameters &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param&gt;</span>
+    bl_input_override = true;
+    it_param_set = 9;
+    [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
+
+    <span class="comment">% Borrowing Parameters</span>
+    param_map(<span class="string">'bl_default'</span>) = ar_bl_default(it_cur_param);
+    param_map(<span class="string">'fl_c_min'</span>) = ar_fl_c_min(it_cur_param);
+    param_map(<span class="string">'fl_b_bd'</span>) = ar_fl_b_bd(it_cur_param);
+
+    <span class="comment">% Interest Rates</span>
+    param_map(<span class="string">'fl_r_save'</span>) = fl_r_save;
+    param_map(<span class="string">'fl_r_borr'</span>) = ar_fl_r_borr(it_cur_param);
+
+    <span class="comment">% Simulation Accuracy</span>
+    param_map(<span class="string">'it_a_n'</span>) = it_a_n;
+    param_map(<span class="string">'it_z_n'</span>) = it_z_n;
+    param_map(<span class="string">'fl_crra'</span>) = fl_crra;
+    param_map(<span class="string">'fl_beta'</span>) = fl_beta;
+
+    <span class="comment">% Display Parameters</span>
+    support_map(<span class="string">'bl_display'</span>) = false;
+    support_map(<span class="string">'bl_display_final'</span>) = false;
+    support_map(<span class="string">'bl_time'</span>) = true;
+    support_map(<span class="string">'bl_profile'</span>) = false;
+
+    support_map(<span class="string">'bl_graph_funcgrids'</span>) = false;
+
+    <span class="comment">% Call Grid Generator &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid&gt;</span>
+    [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+
+    <span class="comment">% Call Dynamic Programming Problem &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv&gt;</span>
+    result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
+
+    <span class="comment">% Call Distribution CProgram</span>
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx: iterative distribution'</span>);
+    result_map = ff_az_ds_vec(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    <span class="comment">% Call Distribution CProgram</span>
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx: semi-analytical distribution'</span>);
+    result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+
+    <span class="comment">% Snap</span>
+    snapnow;
+
+<span class="keyword">end</span>
+
+<span class="comment">% close all</span>
+close <span class="string">all</span>;
+</pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
+ar_bl_default = 0
+ar_fl_c_min = 0.001
+ar_fl_b_bd = -20
+ar_fl_r_borr = 0.2
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 18.134400 seconds.
+xxxxxxxxxxxxxxxxxxxxxxxxxxx: iterative distribution
+Elapsed time is 3.219993 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean       sd       coefofvar      min       max        pYis0        pYisMINY     pYisMAXY      p0_1         p1          p5          p10        p15         p20         p25         p35        p50        p65       p75       p80       p85       p90       p95       p99      p99_9 
+                     ______    _______    _________    _______    ______    __________    __________    ________    ________    ________    _________    _______    _______    _________    ________    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a      0.7996     1.1418       1.428     -2.2271    49.582       0.14291    1.2953e-68       0        -0.34523    -0.11291    -0.019975          0          0    0.0032581    0.026491    0.11942    0.35175    0.72347    1.1184    1.3972    1.7457    2.2568    3.1629    5.2074    7.8327
+    cl_mt_pol_coh    2.0991     1.4288     0.68068     -2.2271    54.541             0    1.2953e-68       0         0.19161      0.4813      0.70666    0.82418    0.94659       1.0381      1.1211     1.3076     1.6552     2.1537    2.6386    2.9581    3.3811    3.9765    4.9962    7.2714    10.141
+    cl_mt_pol_c      1.2995    0.34112     0.26251           0    4.9594    1.2953e-68    1.2953e-68       0         0.51112     0.59923         0.71    0.82418    0.91724      0.99386      1.0609     1.1717     1.3043      1.431    1.5278    1.5849    1.6487    1.7359    1.8644    2.1055    2.3537
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx: semi-analytical distribution
+Elapsed time is 5.767439 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar      min       max        pYis0      pYisMINY      pYisMAXY       p0_1         p1          p5          p10        p15         p20         p25         p35        p50        p65       p75       p80       p85       p90       p95       p99      p99_9 
+                     _______    _______    _________    _______    ______    _________    _________    __________    ________    ________    _________    _______    _______    _________    ________    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a      0.79834     1.1405      1.4286     -2.2271    49.582      0.14306    6.912e-35    4.1275e-35    -0.34523    -0.11291    -0.019975          0          0    0.0032581    0.026491    0.11942    0.35175    0.72347    1.1184     1.374    1.7457    2.2568    3.1629    5.2074    7.8327
+    cl_mt_pol_coh     2.0976     1.4274     0.68049     -2.2271    54.541            0    6.912e-35    4.1275e-35     0.19161      0.4813      0.70666    0.82418    0.94659       1.0381      1.1211     1.3076     1.6536     2.1504    2.6318    2.9572    3.3775    3.9729    4.9937    7.2684    10.133
+    cl_mt_pol_c       1.2992    0.34107     0.26252           0    4.9594    6.912e-35    6.912e-35    4.1275e-35     0.51112     0.59923         0.71    0.82418    0.91724      0.99386      1.0609     1.1717     1.3042     1.4308    1.5278    1.5849    1.6486    1.7358    1.8643    2.1054    2.3534
+
+</pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
+ar_bl_default = 0
+ar_fl_c_min = 0.001
+ar_fl_b_bd = -20
+ar_fl_r_borr = 0.15625
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 18.057348 seconds.
+xxxxxxxxxxxxxxxxxxxxxxxxxxx: iterative distribution
+Elapsed time is 3.024495 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar      min       max        pYis0        pYisMINY     pYisMAXY      p0_1         p1          p5          p10         p15        p20        p25         p35       p50        p65       p75       p80       p85       p90       p95       p99      p99_9 
+                     _______    _______    _________    _______    ______    __________    __________    ________    ________    ________    ________    _________    _______    _______    ________    _______    ______    _______    ______    ______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a      0.77239     1.1522      1.4918     -2.8507    49.577       0.10559    2.9474e-67       0        -0.92284    -0.42912    -0.12349    -0.029452          0          0    0.017568    0.11161    0.3232    0.72287     1.099    1.3812    1.7338     2.251    3.1444    5.1898    7.8229
+    cl_mt_pol_coh     2.0694     1.4435     0.69754     -2.8507    54.541             0    2.9474e-67       0        -0.36853     0.22796     0.62028      0.79013    0.89039     1.0041      1.1043     1.2971    1.6394     2.1423    2.6225    2.9407     3.363    3.9586    4.9776    7.2578    10.125
+    cl_mt_pol_c        1.297    0.34179     0.26352           0    4.9644    2.9474e-67    2.9474e-67       0         0.52591     0.62476     0.74387      0.82326    0.89861    0.97688      1.0386     1.1651     1.302     1.4316    1.5258    1.5837    1.6563    1.7359    1.8638    2.1031    2.3575
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx: semi-analytical distribution
+Elapsed time is 5.360743 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar      min       max         pYis0        pYisMINY       pYisMAXY        p0_1         p1          p5          p10         p15        p20        p25         p35       p50        p65       p75       p80       p85       p90       p95       p99      p99_9 
+                     _______    _______    _________    _______    ______    ___________    ___________    ___________    ________    ________    ________    _________    _______    _______    ________    _______    ______    _______    ______    ______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a      0.77073     1.1505      1.4927     -2.8507    49.577        0.10572    -9.2374e-35    -3.0322e-34    -0.94635    -0.42912    -0.12349    -0.029452          0          0    0.017568    0.11161    0.3232    0.72287     1.099    1.3812    1.7338     2.251    3.1444    5.1898    7.8229
+    cl_mt_pol_coh     2.0675     1.4417     0.69735     -2.8507    54.541              0    -9.2374e-35    -3.0322e-34    -0.37008     0.22796     0.62028      0.79013    0.89039     1.0041      1.1043     1.2971    1.6394     2.1405     2.616    2.9401     3.358    3.9543    4.9725    7.2532    10.117
+    cl_mt_pol_c       1.2967    0.34174     0.26354           0    4.9644    -9.2374e-35    -9.2374e-35    -3.0322e-34     0.52591     0.62476     0.74387      0.82326    0.89861    0.97688      1.0381     1.1651    1.3019      1.431    1.5255    1.5834    1.6507    1.7356    1.8635    2.1027    2.3571
+
+</pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
+ar_bl_default = 0
+ar_fl_c_min = 0.001
+ar_fl_b_bd = -20
+ar_fl_r_borr = 0.1125
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 18.534600 seconds.
+xxxxxxxxxxxxxxxxxxxxxxxxxxx: iterative distribution
+Elapsed time is 2.853354 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar        min         max       pYis0       pYisMINY     pYisMAXY     p0_1         p1          p5         p10         p15          p20          p25         p35         p50        p65       p75       p80       p85       p90       p95       p99      p99_9 
+                     _______    _______    _________    ___________    ______    ________    __________    ________    _______    ________    ________    ________    ________    _________    _________    ________    _______    _______    ______    ______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a      0.62064     1.2331      1.9868         -3.9593    49.568    0.053085    3.4728e-63       0        -2.6871     -1.5589    -0.71882    -0.38277    -0.21475    -0.094734    -0.022724    0.025283    0.26531    0.62536    1.0334    1.2975    1.6575    2.1616    3.0737     5.138    7.7543
+    cl_mt_pol_coh     1.9069     1.5373     0.80617         -3.9593    54.541           0    3.4728e-63       0        -2.1612    -0.87954    0.068282     0.46775     0.69209       0.8381      0.96125      1.1962     1.5549     2.0506    2.5359    2.8589    3.2783    3.8724    4.8992    7.1851    10.058
+    cl_mt_pol_c       1.2863    0.34262     0.26637     -4.4409e-16    4.9733           0    3.4728e-63       0        0.50594     0.64655      0.7661     0.83723     0.89491      0.94851       1.0089      1.1321      1.286      1.427    1.5227     1.579    1.6479     1.735    1.8629     2.103    2.3556
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx: semi-analytical distribution
+Elapsed time is 5.262265 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar        min         max       pYis0       pYisMINY       pYisMAXY       p0_1         p1          p5         p10         p15          p20          p25         p35         p50        p65       p75       p80       p85       p90       p95       p99      p99_9 
+                     _______    _______    _________    ___________    ______    ________    ___________    ___________    _______    ________    ________    ________    ________    _________    _________    ________    _______    _______    ______    ______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a      0.61477      1.231      2.0023         -3.9593    49.568    0.053145    -9.4816e-35    -5.2968e-34    -2.7351     -1.5829    -0.74282    -0.40678    -0.21475    -0.094734    -0.022724    0.025283    0.24131    0.62536    1.0094    1.2735    1.6335    2.1616    3.0497     5.114    7.7303
+    cl_mt_pol_coh        1.9     1.5354     0.80811         -3.9593    54.541           0    -9.4816e-35    -5.2968e-34    -2.2059    -0.89763    0.055087     0.45575     0.68447       0.8381      0.96125       1.187      1.551      2.047    2.5248    2.8539    3.2732    3.8659    4.8806    7.1645    10.032
+    cl_mt_pol_c       1.2852    0.34271     0.26666     -4.4409e-16    4.9733           0    -9.4816e-35    -5.2968e-34    0.50168     0.64509     0.76596     0.83502     0.89491       0.9479        1.008      1.1321      1.286     1.4266    1.5221    1.5783    1.6475    1.7344    1.8621    2.1023    2.3538
+
+</pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
+ar_bl_default = 0
+ar_fl_c_min = 0.001
+ar_fl_b_bd = -20
+ar_fl_r_borr = 0.06875
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 21.214916 seconds.
+xxxxxxxxxxxxxxxxxxxxxxxxxxx: iterative distribution
+Elapsed time is 3.850455 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                       mean        sd       coefofvar        min         max       pYis0       pYisMINY     pYisMAXY     p0_1        p1         p5         p10        p15        p20        p25        p35         p50          p65         p75        p80        p85       p90       p95       p99      p99_9 
+                     ________    _______    _________    ___________    ______    ________    __________    ________    _______    _______    _______    _______    _______    _______    _______    ________    ________    _________    _______    _______    _______    ______    ______    ______    ______
+
+    cl_mt_pol_a      -0.97854     2.1263      -2.173         -6.4788    49.573    0.011454    6.7211e-85       0         -6.328    -5.8758    -4.7955    -3.9413    -3.3132    -2.7855    -2.3333     -1.5796    -0.72538    -0.072155    0.27958    0.53082    0.88256    1.4102    2.3146    4.3999    7.0631
+    cl_mt_pol_coh     0.21859     2.4489      11.203         -6.4788    54.541           0    6.7211e-85       0        -6.0409    -5.3644    -4.0846    -3.1268    -2.4213    -1.8547    -1.3547    -0.54172     0.42643       1.1959     1.7095     2.0395     2.4697    3.0696    4.0997    6.4144    9.3255
+    cl_mt_pol_c        1.1971    0.34402     0.28737     -8.8818e-16    4.9683           0    6.7211e-85       0        0.25312    0.49302    0.69983    0.79923    0.86577    0.91925    0.95918      1.0387      1.1425       1.2842     1.4245     1.5071     1.5853    1.6814    1.8152    2.0658    2.3189
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx: semi-analytical distribution
+Elapsed time is 4.811598 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar        min         max       pYis0       pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15        p20        p25        p35        p50         p65         p75        p80        p85       p90       p95       p99      p99_9 
+                     _______    _______    _________    ___________    ______    ________    __________    __________    _______    _______    _______    _______    _______    _______    _______    _______    _______    _________    _______    _______    _______    ______    ______    ______    ______
+
+    cl_mt_pol_a      -1.0077     2.1394     -2.1231         -6.4788    49.573    0.011353    1.7103e-34    1.1587e-34     -6.328    -5.9009    -4.8457    -3.9915    -3.3634    -2.8358    -2.3836    -1.6298    -0.7505    -0.072155    0.25446    0.53082    0.88256    1.4102    2.3146    4.3748    7.0379
+    cl_mt_pol_coh    0.18607     2.4629      13.236         -6.4788    54.541           0    1.7103e-34    1.1587e-34     -6.055    -5.4003    -4.1399    -3.1894    -2.4779    -1.9085    -1.4038    -0.5833    0.39958       1.1759     1.6987     2.0272     2.4502    3.0564    4.0865    6.3916    9.3086
+    cl_mt_pol_c       1.1938    0.34493     0.28894     -8.8818e-16    4.9683           0    1.7103e-34    1.1587e-34    0.24614    0.48114    0.69455    0.79463    0.86058    0.91509    0.95582      1.035     1.1397       1.2801     1.4213     1.5045     1.5834    1.6795    1.8136    2.0639    2.3178
+
+</pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
+ar_bl_default = 0
+ar_fl_c_min = 0.001
+ar_fl_b_bd = -20
+ar_fl_r_borr = 0.025
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 20.268018 seconds.
+xxxxxxxxxxxxxxxxxxxxxxxxxxx: iterative distribution
+Elapsed time is 3.759437 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar       min         max        pYis0       pYisMINY     pYisMAXY      p0_1        p1         p5         p10        p15        p20        p25        p35        p50        p65        p75        p80        p85        p90        p95        p99       p99_9 
+                     _______    _______    _________    __________    ______    _________    __________    ________    ________    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______
+
+    cl_mt_pol_a      -15.834     1.7126    -0.10816        -17.817    49.397    1.504e-08    6.4377e-71       0         -17.726    -17.666    -17.575    -17.485    -17.364    -17.213    -17.093    -16.821    -16.308    -15.675    -15.071    -14.709    -14.197    -13.533    -12.386    -9.9429    -6.8357
+    cl_mt_pol_coh     -14.95     1.9859    -0.13284        -17.817    54.541            0    4.9739e-71       0          -17.65    -17.453    -17.175    -16.955     -16.76    -16.584    -16.404    -16.049     -15.44    -14.688    -14.012    -13.577    -13.026    -12.261    -11.018    -8.3324    -4.9939
+    cl_mt_pol_c      0.88482    0.30672     0.34664     3.5527e-15    5.1446            0    4.9739e-71       0        0.068799    0.21194    0.38405    0.48944    0.56367    0.62367    0.67415    0.76319    0.87757    0.99397     1.0826     1.1455     1.1977     1.2805     1.4075     1.6373     1.8863
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx: semi-analytical distribution
+Elapsed time is 3.787721 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar       min         max        pYis0        pYisMINY       pYisMAXY        p0_1        p1         p5         p10        p15        p20        p25        p35        p50        p65        p75        p80        p85        p90        p95        p99       p99_9 
+                     _______    _______    _________    __________    ______    __________    ___________    ___________    ________    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______
+
+    cl_mt_pol_a      -15.842     1.7077     -0.1078        -17.817    49.397    1.4155e-08    -7.9016e-34    -7.0018e-34     -17.726    -17.666    -17.575    -17.485    -17.364    -17.213    -17.093    -16.821    -16.338    -15.675    -15.102    -14.709    -14.227    -13.533    -12.417    -9.9429    -6.8658
+    cl_mt_pol_coh    -14.958     1.9809    -0.13243        -17.817    54.541             0    -4.7335e-34    -7.0018e-34      -17.65    -17.453    -17.175    -16.955    -16.769    -16.587    -16.413    -16.057    -15.445    -14.697    -14.018    -13.585    -13.033    -12.285    -11.041    -8.3582    -5.0238
+    cl_mt_pol_c      0.88396    0.30658     0.34683     3.5527e-15    5.1446             0    -4.7335e-34    -7.0018e-34    0.068799    0.21194    0.38405    0.48869    0.55807    0.62291    0.67415    0.76244    0.87632    0.99247     1.0819     1.1447     1.1969     1.2799     1.4072     1.6359     1.8847
+
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Test Borrowing Natural Borrowing Constraint (Save + Borr Distribution)
+% *back to <https://fanwangecon.github.io Fan>'s
+% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
+% Table of Content.*
+%
+% Testing the
+% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html
+% ff_az_ds_vec> program for solving the savings only dynamic
+% programming problem.
+%
+% No default, change borrowing interest rates. Default, changin minimum
+% consumption etc. 
+%
+
+%% Test Borrowing Interest Rates, No Default, NBC, Shift Borrow Interest
+% The natural borrowing constraint restricts borrowing. Note that
+% *pYisMINY* in tables below is generally very close to 0. That is the
+% correct mass. As we shift the formal borrowing interest rate, the natural
+% borrowing constraints changes (lower borrowing interest rate, more
+% borrowing allowed), but the mass at the borrowing bound is 0 because at
+% the bound, households would go to negative infinite utility, approximated
+% by -9999 in default parameters pYisMINY. Note the *min* value in table
+% shows how the natural borrowing constraint is adjusting. that is the NBC
+% bound.
+%
+% As the borrowing interest rate increases, households borrow more and
+% average/aggregate savings decrease. 
+%
+
+close all;
+clear all;
+
+it_size = 5;
+
+% default or not
+bl_default = false;
+ar_bl_default = [false, false, true];
+ar_bl_default = zeros([1,it_size]) + bl_default;
+% cmin
+fl_c_min = 0.001;
+ar_fl_c_min = [0.001, 0.005, 0.010];
+ar_fl_c_min = linspace(0.001, 0.005, it_size);
+ar_fl_c_min = zeros([1,it_size]) + fl_c_min;
+% borrow bound
+fl_b_bd = -20;
+ar_fl_b_bd = [-20, -15, -10];
+ar_fl_b_bd = linspace(-20, 0, it_size);
+ar_fl_b_bd = zeros([1,it_size]) + fl_b_bd;
+% fl_r_borr
+fl_r_borr = 0.035;
+ar_fl_r_borr = [-999, -999, -999];
+ar_fl_r_borr = linspace(0.20, 0.025, it_size);
+% ar_fl_r_borr = zeros([1,it_size]) + fl_r_borr;
+
+% other parameters
+it_a_n = 750;
+it_z_n = 15;
+fl_crra = 1.5;
+fl_beta = 0.94;
+fl_r_save = 0.025;
+
+% Simulate Model
+
+for it_cur_param = 1:1:length(ar_bl_default)
+
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp(['ar_bl_default = ' num2str(ar_bl_default(it_cur_param))]);
+    disp(['ar_fl_c_min = ' num2str(ar_fl_c_min(it_cur_param))]);
+    disp(['ar_fl_b_bd = ' num2str(ar_fl_b_bd(it_cur_param))]);
+    disp(['ar_fl_r_borr = ' num2str(ar_fl_r_borr(it_cur_param))]);
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('');
+    disp('');
+    disp('');
+    disp('');
+
+    % Call Default Parameters <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param>
+    bl_input_override = true;
+    it_param_set = 9;
+    [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
+
+    % Borrowing Parameters
+    param_map('bl_default') = ar_bl_default(it_cur_param);
+    param_map('fl_c_min') = ar_fl_c_min(it_cur_param);
+    param_map('fl_b_bd') = ar_fl_b_bd(it_cur_param);
+    
+    % Interest Rates
+    param_map('fl_r_save') = fl_r_save;
+    param_map('fl_r_borr') = ar_fl_r_borr(it_cur_param);
+    
+    % Simulation Accuracy
+    param_map('it_a_n') = it_a_n;
+    param_map('it_z_n') = it_z_n;
+    param_map('fl_crra') = fl_crra;
+    param_map('fl_beta') = fl_beta;
+
+    % Display Parameters
+    support_map('bl_display') = false;
+    support_map('bl_display_final') = false;
+    support_map('bl_time') = true;
+    support_map('bl_profile') = false;
+    
+    support_map('bl_graph_funcgrids') = false;
+
+    % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
+    [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+
+    % Call Dynamic Programming Problem <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv>
+    result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
+
+    % Call Distribution CProgram
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx: iterative distribution');    
+    result_map = ff_az_ds_vec(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    % Call Distribution CProgram
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx: semi-analytical distribution');    
+    result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+
+    % Snap
+    snapnow;
+
+end
+
+% close all
+close all;
+
+
+%% Test Borrowing Interest Rates, No Default, Shift R, More Accurate
+% Identical to above, but now increase grid sizes to be more accurate, as
+% we change interest rate, perhaps the lower interest rate problems are
+% less accurate because choice grid is larger and choice grid points have
+% not increased. 
+%
+
+close all;
+clear all;
+
+it_size = 5;
+
+% default or not
+bl_default = false;
+ar_bl_default = [false, false, true];
+ar_bl_default = zeros([1,it_size]) + bl_default;
+% cmin
+fl_c_min = 0.001;
+ar_fl_c_min = [0.001, 0.005, 0.010];
+ar_fl_c_min = linspace(0.001, 0.005, it_size);
+ar_fl_c_min = zeros([1,it_size]) + fl_c_min;
+% borrow bound
+fl_b_bd = -20;
+ar_fl_b_bd = [-20, -15, -10];
+ar_fl_b_bd = linspace(-20, 0, it_size);
+ar_fl_b_bd = zeros([1,it_size]) + fl_b_bd;
+% fl_r_borr
+fl_r_borr = 0.035;
+ar_fl_r_borr = [-999, -999, -999];
+ar_fl_r_borr = linspace(0.20, 0.025, it_size);
+% ar_fl_r_borr = zeros([1,it_size]) + fl_r_borr;
+
+% other parameters
+it_a_n = 2250;
+it_z_n = 27;
+fl_crra = 1.5;
+fl_beta = 0.94;
+fl_r_save = 0.025;
+
+% Simulate Model
+
+for it_cur_param = 1:1:length(ar_bl_default)
+
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp(['ar_bl_default = ' num2str(ar_bl_default(it_cur_param))]);
+    disp(['ar_fl_c_min = ' num2str(ar_fl_c_min(it_cur_param))]);
+    disp(['ar_fl_b_bd = ' num2str(ar_fl_b_bd(it_cur_param))]);
+    disp(['ar_fl_r_borr = ' num2str(ar_fl_r_borr(it_cur_param))]);
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('');
+    disp('');
+    disp('');
+    disp('');
+
+    % Call Default Parameters <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param>
+    bl_input_override = true;
+    it_param_set = 9;
+    [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
+
+    % Borrowing Parameters
+    param_map('bl_default') = ar_bl_default(it_cur_param);
+    param_map('fl_c_min') = ar_fl_c_min(it_cur_param);
+    param_map('fl_b_bd') = ar_fl_b_bd(it_cur_param);
+    
+    % Interest Rates
+    param_map('fl_r_save') = fl_r_save;
+    param_map('fl_r_borr') = ar_fl_r_borr(it_cur_param);
+    
+    % Simulation Accuracy
+    param_map('it_a_n') = it_a_n;
+    param_map('it_z_n') = it_z_n;
+    param_map('fl_crra') = fl_crra;
+    param_map('fl_beta') = fl_beta;
+
+    % Display Parameters
+    support_map('bl_display') = false;
+    support_map('bl_display_final') = false;
+    support_map('bl_time') = true;
+    support_map('bl_profile') = false;
+    
+    support_map('bl_graph_funcgrids') = false;
+
+    % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
+    [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+
+    % Call Dynamic Programming Problem <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv>
+    result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
+
+    % Call Distribution CProgram
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx: iterative distribution');    
+    result_map = ff_az_ds_vec(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    % Call Distribution CProgram
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx: semi-analytical distribution');    
+    result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+
+    % Snap
+    snapnow;
+
+end
+
+% close all
+close all;
+
+##### SOURCE END #####
+--></body></html>

@@ -1,4 +1,4 @@
-%% Test Preference (Save + Borr Distribution)
+%% Test Shock Persistence and Variance No Default (Save + Borr Distribution)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
@@ -10,20 +10,30 @@
 %
 % defaults in ffs_abz_set_default_param.m are:
 %
-% * param_map('fl_beta') = 0.94;
-% * param_map('fl_crra') = 1.5;
+% * param_map('fl_z_rho') = 0.8;
+% * param_map('fl_z_sig') = 0.2;
 %
-% here test three levels of discount:
+% here test three levels of persistence:
 %
-% * 0.85
-% * 0.925
-% * 0.99
+% * iid shocks
+% * 0.5 persistence
+% * 0.995 persistence
 %
-% for each shock, thest at these crra levels
+% for each shock, thest at these standard deviations of the log normal
+% shock:
 %
-% * log (1)
-% * 1.5
-% * 2.0
+% * 0.01
+% * 0.05
+% * 0.30
+%
+% Changing the shock process changes the natural borrowing constraint.
+% Given no default, there is no mass at *pYisMINY*. More persistent shock
+% and higher variance reduces minY, decreasing borrowing limit. 
+%
+% Substantial fraction borrowing, with positive overall mean assets.
+% Increasing variance for consumption and asset as shock variance increase,
+% and less borrowing. Higher means as shock persistence increases given
+% these parameters. 
 %
 
 %% Set Shared Parameters
@@ -31,19 +41,25 @@
 close all;
 clear all;
 
-ar_fl_beta = [0.94, 0.96, 0.98];
-ar_fl_crra = [1, 1.5, 2.0];
+ar_fl_z_rho = [0.80, 0.85, 0.90];
+ar_fl_z_sig = [0.20, 0.30, 0.35];
 it_a_n = 750;
 it_z_n = 15;
 
-%% Simulate Model with Discount = 0.85
+bl_default = false;
+fl_c_min = 0.035; % irrelevant when bl_default = false
+fl_b_bd = -20;   
+fl_r_save = 0.02;
+fl_r_borr = 0.065;
 
-for fl_crra = ar_fl_crra
+%% Simulate Model with schok persistence = 0.0, IID
+
+for fl_z_sig = ar_fl_z_sig
 
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp(['fl_beta = ' num2str(ar_fl_beta(1))]);
-    disp(['fl_crra = ' num2str(fl_crra)]);
+    disp(['fl_z_rho = ' num2str(ar_fl_z_rho(1))]);
+    disp(['fl_z_sig = ' num2str(fl_z_sig)]);
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('');
@@ -59,9 +75,18 @@ for fl_crra = ar_fl_crra
     % Simulation Accuracy
     param_map('it_a_n') = it_a_n;
     param_map('it_z_n') = it_z_n;
-    param_map('fl_beta') = ar_fl_beta(1);
-    param_map('fl_crra') = fl_crra;
+    param_map('fl_z_rho') = ar_fl_z_rho(1);
+    param_map('fl_z_sig') = fl_z_sig;
 
+    % Borrowing Parameters
+    param_map('bl_default') = bl_default;
+    param_map('fl_c_min') = fl_c_min;
+    param_map('fl_b_bd') = fl_b_bd;
+    
+    % Interest Rates
+    param_map('fl_r_save') = fl_r_save;
+    param_map('fl_r_borr') = fl_r_borr;
+    
     % Display Parameters
     support_map('bl_display') = false;
     support_map('bl_display_final') = false;
@@ -75,7 +100,7 @@ for fl_crra = ar_fl_crra
     result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
 
     % Call Distribution CProgram
-    result_map = ff_az_ds(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
 
     % Snap
     snapnow;
@@ -85,16 +110,16 @@ end
 % close all
 close all;
 
-%% Simulate Model with Discount = 0.925
+%% Simulate Model with schok persistence = 0.5
 
 close all
 
-for fl_crra = ar_fl_crra
+for fl_z_sig = ar_fl_z_sig
 
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp(['fl_beta = ' num2str(ar_fl_beta(2))]);
-    disp(['fl_crra = ' num2str(fl_crra)]);
+    disp(['fl_z_rho = ' num2str(ar_fl_z_rho(2))]);
+    disp(['fl_z_sig = ' num2str(fl_z_sig)]);
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('');
@@ -110,9 +135,18 @@ for fl_crra = ar_fl_crra
     % Simulation Accuracy
     param_map('it_a_n') = it_a_n;
     param_map('it_z_n') = it_z_n;
-    param_map('fl_beta') = ar_fl_beta(2);
-    param_map('fl_crra') = fl_crra;
+    param_map('fl_z_rho') = ar_fl_z_rho(2);
+    param_map('fl_z_sig') = fl_z_sig;
 
+    % Borrowing Parameters
+    param_map('bl_default') = bl_default;
+    param_map('fl_c_min') = fl_c_min;
+    param_map('fl_b_bd') = fl_b_bd;
+    
+    % Interest Rates
+    param_map('fl_r_save') = fl_r_save;
+    param_map('fl_r_borr') = fl_r_borr;
+    
     % Display Parameters
     support_map('bl_display') = false;
     support_map('bl_display_final') = false;
@@ -126,7 +160,7 @@ for fl_crra = ar_fl_crra
     result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
 
     % Call Distribution CProgram
-    result_map = ff_az_ds(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
 
     % Snap
     snapnow;
@@ -136,16 +170,16 @@ end
 % close all
 close all;
 
-%% Simulate Model with Discount = 0.99
+%% Simulate Model with schok persistence = 0.995 (very persistent)
 
 close all
 
-for fl_crra = ar_fl_crra
+for fl_z_sig = ar_fl_z_sig
 
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp(['fl_beta = ' num2str(ar_fl_beta(3))]);
-    disp(['fl_crra = ' num2str(fl_crra)]);
+    disp(['fl_z_rho = ' num2str(ar_fl_z_rho(3))]);
+    disp(['fl_z_sig = ' num2str(fl_z_sig)]);
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('');
@@ -161,9 +195,18 @@ for fl_crra = ar_fl_crra
     % Simulation Accuracy
     param_map('it_a_n') = it_a_n;
     param_map('it_z_n') = it_z_n;
-    param_map('fl_beta') = ar_fl_beta(3);
-    param_map('fl_crra') = fl_crra;
+    param_map('fl_z_rho') = ar_fl_z_rho(3);
+    param_map('fl_z_sig') = fl_z_sig;
 
+    % Borrowing Parameters
+    param_map('bl_default') = bl_default;
+    param_map('fl_c_min') = fl_c_min;
+    param_map('fl_b_bd') = fl_b_bd;
+    
+    % Interest Rates
+    param_map('fl_r_save') = fl_r_save;
+    param_map('fl_r_borr') = fl_r_borr;
+    
     % Display Parameters
     support_map('bl_display') = false;
     support_map('bl_display_final') = false;
@@ -177,7 +220,7 @@ for fl_crra = ar_fl_crra
     result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
 
     % Call Distribution CProgram
-    result_map = ff_az_ds(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
 
     % Snap
     snapnow;

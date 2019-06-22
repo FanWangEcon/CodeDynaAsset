@@ -1,4 +1,4 @@
-%% Test Shock Persistence and Variance (Save + Borr Distribution)
+%% Test Preference With Default (Save + Borr Distribution)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
@@ -10,82 +10,53 @@
 %
 % defaults in ffs_abz_set_default_param.m are:
 %
-% * param_map('fl_z_rho') = 0.8;
-% * param_map('fl_z_sig') = 0.2;
+% * param_map('fl_beta') = 0.94;
+% * param_map('fl_crra') = 1.5;
 %
-% here test three levels of persistence:
+% here test three levels of discount:
 %
-% * iid shocks
-% * 0.5 persistence
-% * 0.995 persistence
+% * 0.94
+% * 0.96
+% * 0.98
 %
-% for each shock, thest at these standard deviations of the log normal
-% shock:
+% for each shock, thest at these crra levels
 %
-% * 0.01
-% * 0.05
-% * 0.30
+% * log (1)
+% * 1.5
+% * 2.0
 %
-% @seealso
+% Substantial variation in default rates acorss crra and beta. For example,
+% for crra = 1.5 and beta = 0.96, 1.2 percent of households default, with a
+% substantial proportion of households in negative wealth and borrowing.
+% Somewhere like 40 percent of households are borrowing and like 30 percent
+% of households have negative cash-on-hand. Default increases to 16 percent
+% if crra goes to 1 and default goes to 0 if crra goes to 2.
 %
-% * _PREFERENCE_: savings only quick vs benchmark testing: <https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds/test_pref/html/fsi_abz_ds_pref.html fsi_abz_ds_pref>
-% * _SHOCK_: savings only asset grid count testing: <https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds/test_shock/html/fsi_abz_ds_shock.html fsi_abz_ds_shock>
-% * _PREFERENCE_: borr + save quick vs benchmark testing: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds/test_pref/html/fsi_abz_ds_pref.html fsi_abz_ds_pref>
-% * _SHOCK_: borr + save only asset grid count testing: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds/test_shock/html/fsi_abz_ds_shock.html fsi_abz_ds_shock>
-%
-
 
 %% Set Shared Parameters
 
 close all;
 clear all;
 
-ar_fl_z_rho = [0.0, 0.50, 0.99];
-ar_fl_z_sig = [0.05, 0.10, 0.3];
+ar_fl_beta = [0.94, 0.96, 0.98];
+ar_fl_crra = [1, 1.5, 2.0];
 it_a_n = 750;
 it_z_n = 15;
 
-%% Test
+bl_default = true; 
+fl_c_min = 0.035; % irrelevant when bl_default = false
+fl_b_bd = -12.5;   
+fl_r_save = 0.02;
+fl_r_borr = 0.065;
 
-% Call Default Parameters <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param>
-bl_input_override = true;
-it_param_set = 9;
-[param_map, support_map] = ffs_abz_set_default_param(it_param_set);
+%% Simulate Model with Discount = 0.94
 
-% Simulation Accuracy
-param_map('it_a_n') = it_a_n;
-param_map('it_z_n') = it_z_n;
-param_map('fl_z_rho') = 0.99;
-param_map('fl_z_sig') = 0.1;
-param_map('bl_default') = false;
-
-% Display Parameters
-support_map('bl_display') = false;
-support_map('bl_display_final') = false;
-support_map('bl_time') = true;
-support_map('bl_profile') = false;
-
-% Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
-[armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
-
-% Call Dynamic Programming Problem <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv>
-result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
-
-% Call Distribution CProgram
-result_map = ff_az_ds_vec(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
-
-% Snap
-snapnow;
-
-
-%% Simulate Model with schok persistence = 0.0, IID
-
-for fl_z_sig = ar_fl_z_sig
+for fl_crra = ar_fl_crra
 
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp(['fl_z_rho = ' num2str(ar_fl_z_rho(1))]);
-    disp(['fl_z_sig = ' num2str(fl_z_sig)]);
+    disp(['fl_beta = ' num2str(ar_fl_beta(1))]);
+    disp(['fl_crra = ' num2str(fl_crra)]);
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('');
@@ -101,9 +72,78 @@ for fl_z_sig = ar_fl_z_sig
     % Simulation Accuracy
     param_map('it_a_n') = it_a_n;
     param_map('it_z_n') = it_z_n;
-    param_map('fl_z_rho') = ar_fl_z_rho(1);
-    param_map('fl_z_sig') = fl_z_sig;
+    param_map('fl_beta') = ar_fl_beta(1);
+    param_map('fl_crra') = fl_crra;
 
+    % Borrowing Parameters
+    param_map('bl_default') = bl_default;
+    param_map('fl_c_min') = fl_c_min;
+    param_map('fl_b_bd') = fl_b_bd;
+    
+    % Interest Rates
+    param_map('fl_r_save') = fl_r_save;
+    param_map('fl_r_borr') = fl_r_borr;
+        
+    % Display Parameters
+    support_map('bl_display') = false;
+    support_map('bl_display_final') = false;
+    support_map('bl_time') = true;
+    support_map('bl_profile') = false;
+    
+    % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
+    [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+
+    % Call Dynamic Programming Problem <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv>
+    result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
+
+    % Call Distribution CProgram
+    result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+
+    % Snap
+    snapnow;
+
+end
+
+% close all
+close all;
+
+%% Simulate Model with Discount = 0.96
+
+close all
+
+for fl_crra = ar_fl_crra
+
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp(['fl_beta = ' num2str(ar_fl_beta(2))]);
+    disp(['fl_crra = ' num2str(fl_crra)]);
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('');
+    disp('');
+    disp('');
+    disp('');
+
+    % Call Default Parameters <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param>
+    bl_input_override = true;
+    it_param_set = 9;
+    [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
+
+    % Simulation Accuracy
+    param_map('it_a_n') = it_a_n;
+    param_map('it_z_n') = it_z_n;
+    param_map('fl_beta') = ar_fl_beta(2);
+    param_map('fl_crra') = fl_crra;
+
+    % Borrowing Parameters
+    param_map('bl_default') = bl_default;
+    param_map('fl_c_min') = fl_c_min;
+    param_map('fl_b_bd') = fl_b_bd;
+    
+    % Interest Rates
+    param_map('fl_r_save') = fl_r_save;
+    param_map('fl_r_borr') = fl_r_borr;
+    
     % Display Parameters
     support_map('bl_display') = false;
     support_map('bl_display_final') = false;
@@ -127,16 +167,16 @@ end
 % close all
 close all;
 
-%% Simulate Model with schok persistence = 0.5
+%% Simulate Model with Discount = 0.98
 
 close all
 
-for fl_z_sig = ar_fl_z_sig
+for fl_crra = ar_fl_crra
 
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp(['fl_z_rho = ' num2str(ar_fl_z_rho(2))]);
-    disp(['fl_z_sig = ' num2str(fl_z_sig)]);
+    disp(['fl_beta = ' num2str(ar_fl_beta(3))]);
+    disp(['fl_crra = ' num2str(fl_crra)]);
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('');
@@ -152,60 +192,18 @@ for fl_z_sig = ar_fl_z_sig
     % Simulation Accuracy
     param_map('it_a_n') = it_a_n;
     param_map('it_z_n') = it_z_n;
-    param_map('fl_z_rho') = ar_fl_z_rho(2);
-    param_map('fl_z_sig') = fl_z_sig;
+    param_map('fl_beta') = ar_fl_beta(3);
+    param_map('fl_crra') = fl_crra;
 
-    % Display Parameters
-    support_map('bl_display') = false;
-    support_map('bl_display_final') = false;
-    support_map('bl_time') = true;
-    support_map('bl_profile') = false;
-
-    % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
-    [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
-
-    % Call Dynamic Programming Problem <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv>
-    result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
-
-    % Call Distribution CProgram
-    result_map = ff_az_ds(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
-
-    % Snap
-    snapnow;
-
-end
-
-% close all
-close all;
-
-%% Simulate Model with schok persistence = 0.995 (very persistent)
-
-close all
-
-for fl_z_sig = ar_fl_z_sig
-
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp(['fl_z_rho = ' num2str(ar_fl_z_rho(3))]);
-    disp(['fl_z_sig = ' num2str(fl_z_sig)]);
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp('');
-    disp('');
-    disp('');
-    disp('');
-
-    % Call Default Parameters <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param>
-    bl_input_override = true;
-    it_param_set = 9;
-    [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
-
-    % Simulation Accuracy
-    param_map('it_a_n') = it_a_n;
-    param_map('it_z_n') = it_z_n;
-    param_map('fl_z_rho') = ar_fl_z_rho(3);
-    param_map('fl_z_sig') = fl_z_sig;
-
+    % Borrowing Parameters
+    param_map('bl_default') = bl_default;
+    param_map('fl_c_min') = fl_c_min;
+    param_map('fl_b_bd') = fl_b_bd;
+    
+    % Interest Rates
+    param_map('fl_r_save') = fl_r_save;
+    param_map('fl_r_borr') = fl_r_borr;
+    
     % Display Parameters
     support_map('bl_display') = false;
     support_map('bl_display_final') = false;

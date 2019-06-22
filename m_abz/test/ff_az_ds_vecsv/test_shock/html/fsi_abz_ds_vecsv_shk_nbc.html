@@ -1,0 +1,629 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Test Shock Persistence and Variance (Save + Borr Distribution)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-21"><meta name="DC.source" content="fsi_abz_ds_vecsv_shk_nbc.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Test Shock Persistence and Variance (Save + Borr Distribution)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><p>Testing the <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html">ff_az_ds</a> program for solving the savings only dynamic programming problem.</p><p>defaults in ffs_abz_set_default_param.m are:</p><div><ul><li>param_map('fl_z_rho') = 0.8;</li><li>param_map('fl_z_sig') = 0.2;</li></ul></div><p>here test three levels of persistence:</p><div><ul><li>iid shocks</li><li>0.5 persistence</li><li>0.995 persistence</li></ul></div><p>for each shock, thest at these standard deviations of the log normal shock:</p><div><ul><li>0.01</li><li>0.05</li><li>0.30</li></ul></div><p>Changing the shock process changes the natural borrowing constraint. Given no default, there is no mass at <b>pYisMINY</b>.</p><p>Relationship complicated, nonlinear. Highly persistent almost no variance shocks leads to almost no asset choices.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Set Shared Parameters</a></li><li><a href="#2">Simulate Model with schok persistence = 0.0, IID</a></li><li><a href="#3">Simulate Model with schok persistence = 0.5</a></li><li><a href="#4">Simulate Model with schok persistence = 0.995 (very persistent)</a></li></ul></div><h2 id="1">Set Shared Parameters</h2><pre class="codeinput">close <span class="string">all</span>;
+clear <span class="string">all</span>;
+
+ar_fl_z_rho = [0.80, 0.85, 0.90];
+ar_fl_z_sig = [0.20, 0.30, 0.35];
+it_a_n = 750;
+it_z_n = 15;
+
+bl_default = false;
+fl_c_min = 0.01; <span class="comment">% irrelevant when bl_default = false</span>
+fl_b_bd = -20;
+fl_r_save = 0.02;
+fl_r_borr = 0.065;
+</pre><h2 id="2">Simulate Model with schok persistence = 0.0, IID</h2><pre class="codeinput"><span class="keyword">for</span> fl_z_sig = ar_fl_z_sig
+
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp([<span class="string">'fl_z_rho = '</span> num2str(ar_fl_z_rho(1))]);
+    disp([<span class="string">'fl_z_sig = '</span> num2str(fl_z_sig)]);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp(<span class="string">''</span>);
+    disp(<span class="string">''</span>);
+    disp(<span class="string">''</span>);
+    disp(<span class="string">''</span>);
+
+    <span class="comment">% Call Default Parameters &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param&gt;</span>
+    bl_input_override = true;
+    it_param_set = 9;
+    [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
+
+    <span class="comment">% Simulation Accuracy</span>
+    param_map(<span class="string">'it_a_n'</span>) = it_a_n;
+    param_map(<span class="string">'it_z_n'</span>) = it_z_n;
+    param_map(<span class="string">'fl_z_rho'</span>) = ar_fl_z_rho(1);
+    param_map(<span class="string">'fl_z_sig'</span>) = fl_z_sig;
+
+    <span class="comment">% Borrowing Parameters</span>
+    param_map(<span class="string">'bl_default'</span>) = bl_default;
+    param_map(<span class="string">'fl_c_min'</span>) = fl_c_min;
+    param_map(<span class="string">'fl_b_bd'</span>) = fl_b_bd;
+
+    <span class="comment">% Interest Rates</span>
+    param_map(<span class="string">'fl_r_save'</span>) = fl_r_save;
+    param_map(<span class="string">'fl_r_borr'</span>) = fl_r_borr;
+
+    <span class="comment">% Display Parameters</span>
+    support_map(<span class="string">'bl_display'</span>) = false;
+    support_map(<span class="string">'bl_display_final'</span>) = false;
+    support_map(<span class="string">'bl_time'</span>) = true;
+    support_map(<span class="string">'bl_profile'</span>) = false;
+
+    <span class="comment">% Call Grid Generator &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid&gt;</span>
+    [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+
+    <span class="comment">% Call Dynamic Programming Problem &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv&gt;</span>
+    result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
+
+    <span class="comment">% Call Distribution CProgram</span>
+    result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+
+    <span class="comment">% Snap</span>
+    snapnow;
+
+<span class="keyword">end</span>
+
+<span class="comment">% close all</span>
+close <span class="string">all</span>;
+</pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+fl_z_rho = 0.8
+fl_z_sig = 0.2
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 1.704400 seconds.
+Elapsed time is 0.206489 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                       mean        sd       coefofvar      min       max         pYis0        pYisMINY       pYisMAXY      p0_1        p1         p5         p10        p15        p20        p25        p35        p50         p65        p75        p80        p85        p90       p95       p99      p99_9 
+                     ________    _______    _________    _______    ______    ___________    ___________    __________    _______    _______    _______    _______    _______    _______    _______    _______    ________    ________    ______    _______    _______    _______    ______    ______    ______
+
+    cl_mt_pol_a       -1.5285      2.218     -1.4511     -6.8413     49.24      0.0082447    -5.0167e-35    1.1241e-35    -6.5373    -6.2334    -5.3975    -4.6376    -4.0296    -3.4977    -3.1177    -2.3578     -1.2939    -0.45804         0    0.22588    0.52984    0.98579    1.8217    3.7975    6.3052
+    cl_mt_pol_coh    -0.36043     2.5459     -7.0633     -6.8413    54.286              0    -2.1211e-35    1.1241e-35    -6.2874    -5.7702    -4.7181    -3.8921    -3.2209    -2.6477    -2.1688    -1.3023    -0.16928     0.80189    1.3635     1.6839     2.0859     2.6324    3.6214       5.8    8.5718
+    cl_mt_pol_c         1.168    0.34974     0.29942           0    5.0457    -2.1211e-35    -2.1211e-35    1.1241e-35    0.24775    0.45827    0.64834    0.76911    0.83134    0.87181     0.9212     1.0249      1.1237      1.2661    1.3698     1.4567     1.5461     1.6542    1.8152    2.0664    2.3438
+
+</pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+fl_z_rho = 0.8
+fl_z_sig = 0.3
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 1.553638 seconds.
+Elapsed time is 0.382179 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar      min       max        pYis0       pYisMINY       pYisMAXY      p0_1        p1         p5         p10        p15        p20         p25         p35         p50         p65       p75       p80       p85       p90       p95       p99      p99_9 
+                     _______    _______    _________    _______    ______    _________    ___________    __________    _______    _______    _______    _______    _______    ________    ________    ________    ________    _______    ______    ______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a      0.57941     2.8285      4.8817     -3.8635        50     0.012491    -6.2246e-35    1.0972e-15    -3.5755    -3.4314    -2.9274    -2.4233    -1.9912     -1.6312     -1.2711    -0.69505    0.025048    0.88917    1.7533    2.3294    3.0495    4.1296    6.0739    10.467    16.155
+    cl_mt_pol_coh      1.839     3.2758      1.7812     -3.8635    56.044            0      -1.67e-35    2.8543e-16    -3.4224    -3.0389    -2.2989    -1.6942    -1.1983    -0.76512    -0.36868     0.32154      1.2377     2.3014    3.2811    3.9421    4.8077    6.0133    8.1288    12.918     19.06
+    cl_mt_pol_c       1.2596    0.48009     0.38113           0     6.044    -1.67e-35      -1.67e-35    2.8543e-16    0.15309    0.34063    0.57359    0.69708    0.77845     0.85097     0.91144      1.0166      1.2023     1.4137    1.5764    1.6657    1.7766    1.9094    2.1125    2.5292    3.0126
+
+</pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+fl_z_rho = 0.8
+fl_z_sig = 0.35
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 1.466475 seconds.
+Elapsed time is 0.502829 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean       sd      coefofvar      min       max        pYis0        pYisMINY      pYisMAXY      p0_1        p1         p5         p10         p15          p20         p25          p35         p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
+                     ______    ______    _________    _______    ______    __________    __________    __________    _______    _______    _______    ________    ________    _________    ________    _________    _______    ______    ______    ______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a      1.7015    3.5571      2.0905     -2.8727        50       0.01508    5.3822e-34    3.6802e-09    -2.6607    -2.4486    -2.0245     -1.6004      -1.247     -0.89352    -0.61078    -0.045298    0.66156    1.8632    2.9942    3.7717    4.7613    6.2457    8.7904    14.799    22.574
+    cl_mt_pol_coh    2.9974    4.0581      1.3539     -2.8727    57.184             0    1.8208e-34    7.4631e-10    -2.4963    -2.1372    -1.4698    -0.93099    -0.47931    -0.074023     0.29305      0.93484     1.9417    3.3073    4.6051    5.4703    6.5968    8.2143    11.026    17.511    25.874
+    cl_mt_pol_c      1.2959    0.5428     0.41886           0    7.1835    1.8208e-34    1.8208e-34    7.4631e-10    0.13951    0.31602    0.52333     0.64456     0.74119      0.83108     0.86858       1.0205     1.2348    1.4806    1.6545    1.7508    1.8584    2.0265    2.2739    2.7885    3.3877
+
+</pre><h2 id="3">Simulate Model with schok persistence = 0.5</h2><pre class="codeinput">close <span class="string">all</span>
+
+<span class="keyword">for</span> fl_z_sig = ar_fl_z_sig
+
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp([<span class="string">'fl_z_rho = '</span> num2str(ar_fl_z_rho(2))]);
+    disp([<span class="string">'fl_z_sig = '</span> num2str(fl_z_sig)]);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp(<span class="string">''</span>);
+    disp(<span class="string">''</span>);
+    disp(<span class="string">''</span>);
+    disp(<span class="string">''</span>);
+
+    <span class="comment">% Call Default Parameters &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param&gt;</span>
+    bl_input_override = true;
+    it_param_set = 9;
+    [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
+
+    <span class="comment">% Simulation Accuracy</span>
+    param_map(<span class="string">'it_a_n'</span>) = it_a_n;
+    param_map(<span class="string">'it_z_n'</span>) = it_z_n;
+    param_map(<span class="string">'fl_z_rho'</span>) = ar_fl_z_rho(2);
+    param_map(<span class="string">'fl_z_sig'</span>) = fl_z_sig;
+
+    <span class="comment">% Borrowing Parameters</span>
+    param_map(<span class="string">'bl_default'</span>) = bl_default;
+    param_map(<span class="string">'fl_c_min'</span>) = fl_c_min;
+    param_map(<span class="string">'fl_b_bd'</span>) = fl_b_bd;
+
+    <span class="comment">% Interest Rates</span>
+    param_map(<span class="string">'fl_r_save'</span>) = fl_r_save;
+    param_map(<span class="string">'fl_r_borr'</span>) = fl_r_borr;
+
+    <span class="comment">% Display Parameters</span>
+    support_map(<span class="string">'bl_display'</span>) = false;
+    support_map(<span class="string">'bl_display_final'</span>) = false;
+    support_map(<span class="string">'bl_time'</span>) = true;
+    support_map(<span class="string">'bl_profile'</span>) = false;
+
+    <span class="comment">% Call Grid Generator &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid&gt;</span>
+    [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+
+    <span class="comment">% Call Dynamic Programming Problem &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv&gt;</span>
+    result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
+
+    <span class="comment">% Call Distribution CProgram</span>
+    result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+
+    <span class="comment">% Snap</span>
+    snapnow;
+
+<span class="keyword">end</span>
+
+<span class="comment">% close all</span>
+close <span class="string">all</span>;
+</pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+fl_z_rho = 0.85
+fl_z_sig = 0.2
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 1.508781 seconds.
+Elapsed time is 0.166395 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                       mean        sd       coefofvar       min         max       pYis0       pYisMINY      pYisMAXY       p0_1        p1         p5         p10        p15        p20        p25        p35         p50          p65         p75        p80       p85       p90       p95       p99      p99_9 
+                     ________    _______    _________    __________    ______    ________    __________    ___________    _______    _______    _______    _______    _______    _______    _______    ________    ________    _________    _______    _______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a      -0.86087     2.2718     -2.6389        -5.8488    49.552    0.019334    2.6517e-34    -2.9752e-35    -5.5502    -5.3262    -4.5796    -3.9076    -3.3849    -2.8623    -2.4143     -1.6676    -0.69701    -0.025033    0.34829    0.64695    1.0949    1.7669    2.9615    5.6494    9.2333
+    cl_mt_pol_coh      0.3408     2.6656      7.8215        -5.8488    54.709           0     1.114e-34    -2.9752e-35    -5.3711    -4.8939    -3.9401    -3.1449    -2.5257    -1.9653     -1.475    -0.61724     0.39731       1.2381     1.8472      2.228    2.7611    3.5086    4.8677    7.9486    11.824
+    cl_mt_pol_c        1.2017    0.42371      0.3526     8.8818e-16    5.1573           0     1.114e-34    -2.9752e-35    0.17049    0.37295    0.60964    0.71638    0.79666    0.85976    0.90266      0.9899      1.1375       1.3065      1.482     1.5736    1.6677    1.8089    1.9985    2.3186     2.642
+
+</pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+fl_z_rho = 0.85
+fl_z_sig = 0.3
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 1.460200 seconds.
+Elapsed time is 0.535685 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean       sd       coefofvar       min         max       pYis0      pYisMINY       pYisMAXY      p0_1        p1         p5         p10        p15         p20         p25         p35        p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
+                     ______    _______    _________    __________    ______    _______    ___________    __________    _______    _______    _______    _______    ________    ________    ________    ________    ______    ______    ______    ______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a      1.6312     3.6709      2.2505        -3.0141        50    0.02085    -1.1916e-33    8.7462e-09    -2.7306    -2.5889    -2.1636    -1.6675     -1.3131    -0.95876    -0.67527    -0.17915    0.5296    1.6636    2.7976    3.5772    4.6403    6.1996    8.9637    15.484    23.918
+    cl_mt_pol_coh    2.9244     4.2043      1.4376        -3.0141    56.971          0    -3.4539e-34    2.2154e-09    -2.6367    -2.2742    -1.6079    -1.0366    -0.57649    -0.16595     0.20852     0.84339    1.7824    3.1399     4.451    5.3387    6.5376    8.2533    11.291    18.351    27.388
+    cl_mt_pol_c      1.2933    0.58439     0.45188     4.4409e-16     6.971          0    -3.4539e-34    2.2154e-09    0.10312     0.3111    0.50478    0.62202      0.7145     0.77121     0.84527     0.98064     1.235    1.4847    1.6633    1.7629    1.8857    2.0727    2.3629    2.9603    3.6016
+
+</pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+fl_z_rho = 0.85
+fl_z_sig = 0.35
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 1.491313 seconds.
+Elapsed time is 0.661402 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean       sd       coefofvar     min       max        pYis0        pYisMINY       pYisMAXY      p0_1        p1          p5         p10         p15         p20         p25        p35       p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
+                     ______    _______    _________    ______    ______    __________    ___________    __________    _______    _______    ________    ________    ________    ________    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a      2.9928     4.8552      1.6223     -2.134        50      0.011803    -1.1926e-33    5.2629e-06    -1.9249    -1.7855     -1.3674    -0.94917    -0.60068    -0.32189    -0.1128    0.37509    1.3509    2.8842    4.4176    5.5327    6.9267    9.0176    12.781    21.772    33.412
+    cl_mt_pol_coh    4.3229     5.4626      1.2636     -2.134    58.472             0     2.3408e-35    1.2168e-06    -1.7914    -1.4683    -0.88022    -0.36397    0.051818     0.41725    0.74478     1.3852    2.6092     4.371    6.1159    7.3013    8.8944    11.211    15.316    24.983    37.473
+    cl_mt_pol_c      1.3301    0.66462     0.49966          0    8.4716    2.3408e-35     2.3408e-35    1.2168e-06    0.09235    0.23946     0.42769     0.57811     0.68543     0.72673    0.82814    0.99352    1.2285    1.4822    1.7234    1.8321     2.005    2.2154    2.5737    3.3235    4.1696
+
+</pre><h2 id="4">Simulate Model with schok persistence = 0.995 (very persistent)</h2><pre class="codeinput">close <span class="string">all</span>
+
+<span class="keyword">for</span> fl_z_sig = ar_fl_z_sig
+
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp([<span class="string">'fl_z_rho = '</span> num2str(ar_fl_z_rho(3))]);
+    disp([<span class="string">'fl_z_sig = '</span> num2str(fl_z_sig)]);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp(<span class="string">''</span>);
+    disp(<span class="string">''</span>);
+    disp(<span class="string">''</span>);
+    disp(<span class="string">''</span>);
+
+    <span class="comment">% Call Default Parameters &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param&gt;</span>
+    bl_input_override = true;
+    it_param_set = 9;
+    [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
+
+    <span class="comment">% Simulation Accuracy</span>
+    param_map(<span class="string">'it_a_n'</span>) = it_a_n;
+    param_map(<span class="string">'it_z_n'</span>) = it_z_n;
+    param_map(<span class="string">'fl_z_rho'</span>) = ar_fl_z_rho(3);
+    param_map(<span class="string">'fl_z_sig'</span>) = fl_z_sig;
+
+    <span class="comment">% Borrowing Parameters</span>
+    param_map(<span class="string">'bl_default'</span>) = bl_default;
+    param_map(<span class="string">'fl_c_min'</span>) = fl_c_min;
+    param_map(<span class="string">'fl_b_bd'</span>) = fl_b_bd;
+
+    <span class="comment">% Interest Rates</span>
+    param_map(<span class="string">'fl_r_save'</span>) = fl_r_save;
+    param_map(<span class="string">'fl_r_borr'</span>) = fl_r_borr;
+
+    <span class="comment">% Display Parameters</span>
+    support_map(<span class="string">'bl_display'</span>) = false;
+    support_map(<span class="string">'bl_display_final'</span>) = false;
+    support_map(<span class="string">'bl_time'</span>) = true;
+    support_map(<span class="string">'bl_profile'</span>) = false;
+
+    <span class="comment">% Call Grid Generator &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid&gt;</span>
+    [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+
+    <span class="comment">% Call Dynamic Programming Problem &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv&gt;</span>
+    result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
+
+    <span class="comment">% Call Distribution CProgram</span>
+    result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+
+    <span class="comment">% Snap</span>
+    snapnow;
+
+<span class="keyword">end</span>
+
+<span class="comment">% close all</span>
+close <span class="string">all</span>;
+clear <span class="string">all</span>;
+</pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+fl_z_rho = 0.9
+fl_z_sig = 0.2
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 1.553224 seconds.
+Elapsed time is 0.314905 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar       min         max       pYis0       pYisMINY       pYisMAXY      p0_1        p1         p5         p10        p15        p20        p25        p35         p50         p65       p75       p80       p85       p90       p95       p99      p99_9 
+                     _______    _______    _________    __________    ______    ________    ___________    __________    _______    _______    _______    _______    _______    _______    _______    ________    ________    _______    ______    ______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a      0.11425     2.6172      22.907        -4.4462        50    0.024522      2.729e-36    3.6004e-35    -4.1551    -3.9367    -3.3544    -2.7721    -2.2626    -1.8258    -1.4619    -0.87956    -0.15167    0.35786     1.013    1.4497    2.1048    3.1238    5.0891    9.6021    15.425
+    cl_mt_pol_coh     1.3589     3.1196      2.2957        -4.4462    55.534           0    -1.4601e-35    3.6004e-35    -3.9969    -3.6082    -2.7991    -2.1087    -1.5424    -1.0169    -0.6165     0.12724     0.98322     1.7644    2.5785    3.1692    3.9175    5.1028     7.245    12.308    18.619
+    cl_mt_pol_c       1.2446    0.55134     0.44299     8.8818e-16    5.5343           0    -1.4601e-35    3.6004e-35    0.11064    0.26882    0.50829    0.64258    0.69936    0.77913    0.84064     0.96547      1.1396      1.395    1.5754    1.7195    1.8352    2.0128    2.2795    2.8062    3.3433
+
+</pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+fl_z_rho = 0.9
+fl_z_sig = 0.3
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 1.521777 seconds.
+Elapsed time is 0.985425 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean       sd       coefofvar      min       max         pYis0        pYisMINY       pYisMAXY       p0_1        p1          p5         p10         p15         p20           p25          p35       p50       p65       p75       p80       p85      p90       p95       p99      p99_9 
+                     ______    _______    _________    _______    ______    ___________    ___________    __________    ________    _______    ________    ________    ________    ________    ___________    _______    ______    ______    ______    ______    _____    ______    ______    ______    ______
+
+    cl_mt_pol_a      3.3553     5.5986      1.6686     -1.9445        50       0.014237    -1.0064e-33     4.842e-05     -1.7361    -1.5973     -1.1806    -0.83337    -0.55559    -0.20837    -3.5411e-05    0.34719    1.3194    2.9166    4.6527    5.9027      7.5    10.069    14.722    26.042    40.208
+    cl_mt_pol_coh    4.6944     6.3008      1.3422     -1.9445    58.855              0    -3.4945e-34    1.3443e-05      -1.621    -1.3209    -0.77211    -0.28549     0.10857     0.44599        0.74186     1.3505    2.5547    4.4252    6.3673    7.7255    9.589    12.365    17.431    29.713    44.914
+    cl_mt_pol_c      1.3391    0.77689     0.58015           0    8.8547    -3.4945e-34    -3.4945e-34    1.3443e-05    0.061417    0.20264     0.39093     0.49368      0.5951     0.68538         0.7419    0.92697    1.2049    1.4715    1.7348    1.9098      2.1    2.3793    2.8211    3.8167    4.8894
+
+</pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+fl_z_rho = 0.9
+fl_z_sig = 0.35
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 1.549169 seconds.
+Elapsed time is 1.246556 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean       sd       coefofvar     min      max       pYis0        pYisMINY      pYisMAXY       p0_1         p1          p5         p10          p15         p20        p25        p35       p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
+                     ______    _______    _________    _____    _____    __________    __________    __________    ________    ________    ________    ________    _________    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a      5.0935     7.4037      1.4536     -1.26       50      0.010372    1.1703e-35    0.00072146     -1.0544    -0.91738    -0.57473    -0.30062    -0.026499    0.11056    0.38468     1.0014    2.3035    4.4964    6.8264    8.4712    10.733    14.091    20.464    35.609    49.383
+    cl_mt_pol_coh    6.4722     8.2351      1.2724     -1.26    61.13             0    4.5708e-35    0.00013345    -0.95998    -0.72558    -0.22741     0.17953      0.50054    0.82833     1.1634     1.9467    3.5544    6.0112    8.5909    10.415      12.9    16.611      23.5    39.748    54.902
+    cl_mt_pol_c      1.3787    0.90516     0.65652         0    11.13    4.5708e-35    4.5708e-35    0.00013345    0.051459      0.1719     0.32951     0.43367      0.53531    0.63502    0.72325    0.91992    1.1748    1.5161    1.7916    1.9781    2.2362    2.5432    3.1129    4.3525    6.0899
+
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Test Shock Persistence and Variance (Save + Borr Distribution)
+% *back to <https://fanwangecon.github.io Fan>'s
+% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
+% Table of Content.*
+%
+% Testing the
+% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html
+% ff_az_ds> program for solving the savings only dynamic
+% programming problem.
+%
+% defaults in ffs_abz_set_default_param.m are:
+%
+% * param_map('fl_z_rho') = 0.8;
+% * param_map('fl_z_sig') = 0.2;
+%
+% here test three levels of persistence:
+%
+% * iid shocks
+% * 0.5 persistence
+% * 0.995 persistence
+%
+% for each shock, thest at these standard deviations of the log normal
+% shock:
+%
+% * 0.01
+% * 0.05
+% * 0.30
+%
+% Changing the shock process changes the natural borrowing constraint.
+% Given no default, there is no mass at *pYisMINY*.
+%
+% Relationship complicated, nonlinear. Highly persistent almost no variance shocks
+% leads to almost no asset choices. 
+%
+
+%% Set Shared Parameters
+
+close all;
+clear all;
+
+ar_fl_z_rho = [0.80, 0.85, 0.90];
+ar_fl_z_sig = [0.20, 0.30, 0.35];
+it_a_n = 750;
+it_z_n = 15;
+
+bl_default = false;
+fl_c_min = 0.01; % irrelevant when bl_default = false
+fl_b_bd = -20;   
+fl_r_save = 0.02;
+fl_r_borr = 0.065;
+
+%% Simulate Model with schok persistence = 0.0, IID
+
+for fl_z_sig = ar_fl_z_sig
+
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp(['fl_z_rho = ' num2str(ar_fl_z_rho(1))]);
+    disp(['fl_z_sig = ' num2str(fl_z_sig)]);
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('');
+    disp('');
+    disp('');
+    disp('');
+
+    % Call Default Parameters <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param>
+    bl_input_override = true;
+    it_param_set = 9;
+    [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
+
+    % Simulation Accuracy
+    param_map('it_a_n') = it_a_n;
+    param_map('it_z_n') = it_z_n;
+    param_map('fl_z_rho') = ar_fl_z_rho(1);
+    param_map('fl_z_sig') = fl_z_sig;
+
+    % Borrowing Parameters
+    param_map('bl_default') = bl_default;
+    param_map('fl_c_min') = fl_c_min;
+    param_map('fl_b_bd') = fl_b_bd;
+    
+    % Interest Rates
+    param_map('fl_r_save') = fl_r_save;
+    param_map('fl_r_borr') = fl_r_borr;
+    
+    % Display Parameters
+    support_map('bl_display') = false;
+    support_map('bl_display_final') = false;
+    support_map('bl_time') = true;
+    support_map('bl_profile') = false;
+
+    % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
+    [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+
+    % Call Dynamic Programming Problem <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv>
+    result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
+
+    % Call Distribution CProgram
+    result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+
+    % Snap
+    snapnow;
+
+end
+
+% close all
+close all;
+
+%% Simulate Model with schok persistence = 0.5
+
+close all
+
+for fl_z_sig = ar_fl_z_sig
+
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp(['fl_z_rho = ' num2str(ar_fl_z_rho(2))]);
+    disp(['fl_z_sig = ' num2str(fl_z_sig)]);
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('');
+    disp('');
+    disp('');
+    disp('');
+
+    % Call Default Parameters <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param>
+    bl_input_override = true;
+    it_param_set = 9;
+    [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
+
+    % Simulation Accuracy
+    param_map('it_a_n') = it_a_n;
+    param_map('it_z_n') = it_z_n;
+    param_map('fl_z_rho') = ar_fl_z_rho(2);
+    param_map('fl_z_sig') = fl_z_sig;
+
+    % Borrowing Parameters
+    param_map('bl_default') = bl_default;
+    param_map('fl_c_min') = fl_c_min;
+    param_map('fl_b_bd') = fl_b_bd;
+    
+    % Interest Rates
+    param_map('fl_r_save') = fl_r_save;
+    param_map('fl_r_borr') = fl_r_borr;
+    
+    % Display Parameters
+    support_map('bl_display') = false;
+    support_map('bl_display_final') = false;
+    support_map('bl_time') = true;
+    support_map('bl_profile') = false;
+
+    % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
+    [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+
+    % Call Dynamic Programming Problem <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv>
+    result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
+
+    % Call Distribution CProgram
+    result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+
+    % Snap
+    snapnow;
+
+end
+
+% close all
+close all;
+
+%% Simulate Model with schok persistence = 0.995 (very persistent)
+
+close all
+
+for fl_z_sig = ar_fl_z_sig
+
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp(['fl_z_rho = ' num2str(ar_fl_z_rho(3))]);
+    disp(['fl_z_sig = ' num2str(fl_z_sig)]);
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('');
+    disp('');
+    disp('');
+    disp('');
+
+    % Call Default Parameters <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param>
+    bl_input_override = true;
+    it_param_set = 9;
+    [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
+
+    % Simulation Accuracy
+    param_map('it_a_n') = it_a_n;
+    param_map('it_z_n') = it_z_n;
+    param_map('fl_z_rho') = ar_fl_z_rho(3);
+    param_map('fl_z_sig') = fl_z_sig;
+
+    % Borrowing Parameters
+    param_map('bl_default') = bl_default;
+    param_map('fl_c_min') = fl_c_min;
+    param_map('fl_b_bd') = fl_b_bd;
+    
+    % Interest Rates
+    param_map('fl_r_save') = fl_r_save;
+    param_map('fl_r_borr') = fl_r_borr;
+    
+    % Display Parameters
+    support_map('bl_display') = false;
+    support_map('bl_display_final') = false;
+    support_map('bl_time') = true;
+    support_map('bl_profile') = false;
+
+    % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
+    [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+
+    % Call Dynamic Programming Problem <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv>
+    result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
+
+    % Call Distribution CProgram
+    result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+
+    % Snap
+    snapnow;
+
+end
+
+% close all
+close all;
+clear all;
+
+##### SOURCE END #####
+--></body></html>

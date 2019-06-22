@@ -257,7 +257,6 @@ if (bl_display_final_dist)
     tb_outcomes_fracheld.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
     tb_outcomes_fracheld.Properties.RowNames = matlab.lang.makeValidName(cl_outcome_names);
     
-
 %     disp('tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile')
 %     disp(tb_outcomes_fracheld);
 
