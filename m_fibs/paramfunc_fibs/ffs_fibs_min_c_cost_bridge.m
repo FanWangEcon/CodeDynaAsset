@@ -95,8 +95,8 @@ params_group = values(armt_map, {'ar_forbrblk', 'ar_forbrblk_r'});
 [ar_forbrblk, ar_forbrblk_r] = params_group{:};
 
 % Gather Inputs from param_map
-params_group = values(param_map, {'bl_default', 'bl_b_is_principle', 'fl_r_inf', 'fl_r_fsv', 'fl_c_min'});
-[bl_default, bl_b_is_principle, fl_r_inf, fl_r_fsv, fl_c_min] = params_group{:};
+params_group = values(param_map, {'bl_default', 'bl_bridge', 'bl_b_is_principle', 'fl_r_inf', 'fl_r_fsv', 'fl_c_min'});
+[bl_default, bl_bridge, bl_b_is_principle, fl_r_inf, fl_r_fsv, fl_c_min] = params_group{:};
 
 % func_map
 params_group = values(func_map, {'f_cons_coh_fbis', 'f_cons_coh_save'});
@@ -128,7 +128,7 @@ params_group = values(support_map, {'bl_display_minccost', 'bl_display_infbridge
 if (fl_ap < 0)
     
     % Calculate Bridge Loan Borrowing
-    if (fl_coh < 0)
+    if (fl_coh < 0 && bl_bridge)
         bl_input_override = true;
         [fl_aprime_nobridge, fl_b_bridge, fl_c_bridge] = ffs_fibs_inf_bridge(...
             bl_b_is_principle, fl_r_inf, fl_ap, fl_coh, ...

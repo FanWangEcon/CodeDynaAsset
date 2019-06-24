@@ -162,8 +162,8 @@ params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z'});
 [ar_a, mt_z_trans, ar_z] = params_group{:};
 
 % func_map
-params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons', 'f_coh', 'f_cons_coh'});
-[f_util_log, f_util_crra, f_cons, f_coh, f_cons_coh] = params_group{:};
+params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons_checkcmin', 'f_coh', 'f_cons_coh'});
+[f_util_log, f_util_crra, f_cons_checkcmin, f_coh, f_cons_coh] = params_group{:};
 
 % param_map
 params_group = values(param_map, {'it_a_n', 'it_z_n', 'fl_crra', 'fl_beta', 'fl_c_min',...
@@ -363,7 +363,7 @@ result_map('mt_pol_idx') = mt_pol_idx;
 
 result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
 result_map('cl_mt_pol_coh') = {f_coh(ar_z, ar_a'), zeros(1)};
-result_map('cl_mt_pol_c') = {f_cons(ar_z, ar_a', mt_pol_a), zeros(1)};
+result_map('cl_mt_pol_c') = {f_cons_checkcmin(ar_z, ar_a', mt_pol_a), zeros(1)};
 result_map('ar_st_pol_names') = ["cl_mt_pol_a", "cl_mt_pol_coh", "cl_mt_pol_c"];
 
 if (bl_post)

@@ -124,9 +124,9 @@ params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_coh', 'f_cons_c
 
 % param_map
 params_group = values(param_map, {'it_a_n', 'it_z_n', 'fl_crra', 'fl_beta', 'fl_c_min',...
-    'fl_nan_replace', 'bl_default', 'fl_default_aprime'});
+    'fl_nan_replace', 'bl_default', 'bl_bridge', 'bl_rollover', 'fl_default_aprime'});
 [it_a_n, it_z_n, fl_crra, fl_beta, fl_c_min, ...
-    fl_nan_replace, bl_default, fl_default_aprime] = params_group{:};
+    fl_nan_replace, bl_default, bl_bridge, bl_rollover, fl_default_aprime] = params_group{:};
 params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol', 'it_tol_pol_nochange'});
 [it_maxiter_val, fl_tol_val, fl_tol_pol, it_tol_pol_nochange] = params_group{:};
 
@@ -225,8 +225,11 @@ while bl_vfi_continue
         % 3. *CASE A* initiate consumption matrix as if all save
         mt_c = f_cons_coh_save(ar_coh, ar_a');
         
+        % 3. if Bridge Loan is Needed
+        
         % 4. *CASE B+C* get negative coh index and get borrowing choices index
         ar_coh_neg_idx = (ar_coh <= fl_c_min);
+        
         ar_a_neg_idx = (ar_a < 0);
         ar_coh_neg = ar_coh(ar_coh_neg_idx);
         ar_a_neg = ar_a(ar_a_neg_idx);
@@ -247,18 +250,23 @@ while bl_vfi_continue
         mt_coh_negp1_mesh_neg_aprime = zeros(size(ar_a_neg')) + ar_coh(ar_coh_forinfsolve_idx);
         mt_neg_aprime_mesh_coh_negp1 = zeros(size(mt_coh_negp1_mesh_neg_aprime)) + ar_a_neg';
         
-        %         mt_neg_aprime_mesh_coh_1col4poscoh = zeros([length(ar_a_neg), (length(ar_coh_neg)+1)]) + ar_a_neg';
-        %         ar_coh_neg_idx_1col4poscoh = ar_coh_neg_idx(1:(length(ar_coh_neg)+1));
-        
-        % 6. *CASE B* Solve for: if (fl_ap < 0) and if (fl_coh < 0)
-        [mt_aprime_nobridge_negcoh, ~, mt_c_bridge_negcoh] = ffs_fibs_inf_bridge(...
-            bl_b_is_principle, fl_r_inf, ...
-            mt_neg_aprime_mesh_coh_negp1(:,ar_coh_forinfsolve_a_neg_idx), ...
-            mt_coh_negp1_mesh_neg_aprime(:,ar_coh_forinfsolve_a_neg_idx), ...
-            bl_display_infbridge, bl_input_override);
-        
-        % generate mt_aprime_nobridge
-        mt_neg_aprime_mesh_coh_negp1(:, ar_coh_forinfsolve_a_neg_idx) = mt_aprime_nobridge_negcoh;
+        if (bl_bridge)            
+            %         mt_neg_aprime_mesh_coh_1col4poscoh = zeros([length(ar_a_neg), (length(ar_coh_neg)+1)]) + ar_a_neg';
+            %         ar_coh_neg_idx_1col4poscoh = ar_coh_neg_idx(1:(length(ar_coh_neg)+1));
+            
+            % 6. *CASE B* Solve for: if (fl_ap < 0) and if (fl_coh < 0)
+            [mt_aprime_nobridge_negcoh, ~, mt_c_bridge_negcoh] = ffs_fibs_inf_bridge(...
+                bl_b_is_principle, fl_r_inf, ...
+                mt_neg_aprime_mesh_coh_negp1(:,ar_coh_forinfsolve_a_neg_idx), ...
+                mt_coh_negp1_mesh_neg_aprime(:,ar_coh_forinfsolve_a_neg_idx), ...
+                bl_display_infbridge, bl_input_override);
+            
+            % generate mt_aprime_nobridge
+            mt_neg_aprime_mesh_coh_negp1(:, ar_coh_forinfsolve_a_neg_idx) = mt_aprime_nobridge_negcoh;
+        else
+            % no bridge loan needed means roll over is allowed.
+            mt_neg_aprime_mesh_coh_negp1 = ar_a_neg';
+        end
         
         % 7. *CASE B + C* formal and informal joint choices, 1 col Case C
         bl_input_override = true;
@@ -282,17 +290,23 @@ while bl_vfi_continue
         % 1. Initalize all Neg Aprime consumption cost of aprime inputs
         % Initialize
         mt_max_c_nobridge_a_neg = zeros([length(ar_a_neg), length(ar_coh)]) + 0;
-        mt_c_bridge_coh_a_neg = zeros(size(mt_max_c_nobridge_a_neg)) + 0;
-        
-        % 2. Fill in *Case B* Bridge C-cost
-        mt_c_bridge_coh_a_neg(:, ar_coh_neg_idx) = mt_c_bridge_negcoh;
+        mt_c_bridge_coh_a_neg = zeros(size(mt_max_c_nobridge_a_neg)) + 0;        
         
         % 2. Fill in *Case B* and *Case C* (one column) Other C-cost
         mt_max_c_nobridge_negcohp1 = reshape(ar_max_c_nobridge, [size(mt_neg_aprime_mesh_coh_negp1)]);
-        mt_max_c_nobridge_a_neg(:, ar_coh_forinfsolve_idx) = mt_max_c_nobridge_negcohp1;
-        mt_max_c_nobridge_a_neg(:, ~ar_coh_forinfsolve_idx) = ...
-            zeros(size(mt_c(ar_a_neg_idx, ~ar_coh_forinfsolve_idx))) ...
-            + mt_max_c_nobridge_negcohp1(:, ~ar_coh_forinfsolve_a_neg_idx);
+        
+        if (bl_bridge)            
+            % 2. Fill in *Case B* Bridge C-cost
+            mt_c_bridge_coh_a_neg(:, ar_coh_neg_idx) = mt_c_bridge_negcoh;
+            
+            % 2. Fill in *Case B* and *Case C* (one column) Other C-cost
+            mt_max_c_nobridge_a_neg(:, ar_coh_forinfsolve_idx) = mt_max_c_nobridge_negcohp1;
+            mt_max_c_nobridge_a_neg(:, ~ar_coh_forinfsolve_idx) = ...
+                zeros(size(mt_c(ar_a_neg_idx, ~ar_coh_forinfsolve_idx))) ...
+                + mt_max_c_nobridge_negcohp1(:, ~ar_coh_forinfsolve_a_neg_idx);
+        else
+            mt_max_c_nobridge_a_neg = zeros([length(ar_a_neg), length(ar_coh)]) + mt_max_c_nobridge_negcohp1;
+        end
         
         % 3. Consumption for B + C Cases
         % note, the c cost of aprime is the same for all coh > 0, but mt_c
@@ -331,6 +345,17 @@ while bl_vfi_continue
             mt_utility(mt_c <= fl_c_min) = fl_nan_replace;
         end
         
+        % 5. no bridge and no rollover allowed
+        if( ~bl_rollover && ~bl_bridge)
+            if (bl_default)
+                % if default: only today u(cmin), transition out next period, debt wiped out
+                mt_utility(:, ar_coh_neg_idx) = fl_u_cmin + fl_beta*mt_evzp_condi_z(ar_a == fl_default_aprime);
+            else
+                % if default is not allowed: v = fl_nan_replace
+                mt_utility(:, ar_coh_neg_idx) = fl_nan_replace;
+            end
+        end
+        
         % 5. Optimization: remember matlab is column major, rows must be
         % choices, columns must be states
         % <https://en.wikipedia.org/wiki/Row-_and_column-major_order COLUMN-MAJOR>
@@ -352,6 +377,17 @@ while bl_vfi_continue
             % this is absorbing state, this is the limiting case, single
             % state space point, lowest a and lowest shock has this.
             ar_opti_aprime_z(ar_opti_c_z <= fl_c_min) = ar_a(ar_opti_c_z <= fl_c_min);
+        end
+        
+        % 6. no bridge and no rollover allowed
+        if( ~bl_rollover && ~bl_bridge)
+            if (bl_default)
+                % if default: only today u(cmin), transition out next period, debt wiped out
+                ar_opti_aprime_z(ar_coh_neg_idx) = fl_default_aprime;
+            else
+                % if default is not allowed: v = fl_nan_replace
+                ar_opti_aprime_z(ar_coh_neg_idx) = ar_a(fl_nan_replace);
+            end
         end
         
         %% Store Optimal Choices Current Iteration
@@ -435,17 +471,17 @@ for it_z_i = 1:length(ar_z)
         fl_coh = f_coh(fl_z, fl_a);
         fl_a_opti = mt_pol_a(it_a_j, it_z_i);
         
-        % call formal and informal function. 
+        % call formal and informal function.
         [~, fl_opti_b_bridge, fl_opti_inf_borr_nobridge, fl_opti_for_borr, fl_opti_for_save] = ...
             ffs_fibs_min_c_cost_bridge(fl_a_opti, fl_coh, ...
-                param_map, support_map, armt_map, func_map, bl_input_override);
-       
+            param_map, support_map, armt_map, func_map, bl_input_override);
+        
         % store savings and borrowing formal and inf optimal choices
         mt_pol_b_bridge(it_a_j,it_z_i) = fl_opti_b_bridge;
         mt_pol_inf_borr_nobridge(it_a_j,it_z_i) = fl_opti_inf_borr_nobridge;
         mt_pol_for_borr(it_a_j,it_z_i) = fl_opti_for_borr;
         mt_pol_for_save(it_a_j,it_z_i) = fl_opti_for_save;
-            
+        
     end
 end
 
@@ -453,7 +489,7 @@ result_map('mt_pol_b_bridge') = mt_pol_b_bridge;
 result_map('mt_pol_inf_borr_nobridge') = mt_pol_inf_borr_nobridge;
 result_map('mt_pol_for_borr') = mt_pol_for_borr;
 result_map('mt_pol_for_save') = mt_pol_for_save;
-mt_pol_for_borr
+
 if (bl_post)
     bl_input_override = true;
     result_map('ar_val_diff_norm') = ar_val_diff_norm(1:it_iter_last);

@@ -108,8 +108,13 @@ else
     params_group = values(param_map, {'bl_b_is_principle', 'fl_r_inf', 'fl_r_fsv'});
     [bl_b_is_principle, fl_r_inf, fl_r_fsv] = params_group{:};
     
+    % Setting interest rate, if r_inf is very high, that means informal
+    % option would generally never be chosen, or options that involve
+    % informal options never choice, either here, or outside. 
+    fl_r_inf = 10000;
+    
     % Testing COH and Aprime Vectors
-    ar_aprime_nobridge = [-20,-5,-4.5,-4.1,-1.1,-0.1, 0.1, 1]';
+    ar_aprime_nobridge = [-20,-10,-5,-4.5,-4.1,-1.1,-0.1, 0.1, 1]';
     
     % Set Display Control
     bl_display_minccost = true;

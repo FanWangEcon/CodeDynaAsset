@@ -107,9 +107,9 @@ params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_coh', 'f_cons_c
 
 % param_map
 params_group = values(param_map, {'it_a_n', 'it_z_n', 'fl_crra', 'fl_beta', 'fl_c_min',...
-    'fl_nan_replace', 'bl_default', 'fl_default_aprime'});
+    'fl_nan_replace', 'bl_default', 'bl_bridge', 'bl_rollover', 'fl_default_aprime'});
 [it_a_n, it_z_n, fl_crra, fl_beta, fl_c_min, ...
-    fl_nan_replace, bl_default, fl_default_aprime] = params_group{:};
+    fl_nan_replace, bl_default, bl_bridge, bl_rollover, fl_default_aprime] = params_group{:};
 params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol', 'it_tol_pol_nochange'});
 [it_maxiter_val, fl_tol_val, fl_tol_pol, it_tol_pol_nochange] = params_group{:};
 
@@ -234,7 +234,8 @@ while bl_vfi_continue
                 if (fl_ap < 0)
                     
                     % Calculate Bridge Loan Borrowing
-                    if (fl_coh < 0)
+                    if (bl_bridge && fl_coh < 0)
+                        
                         bl_input_override = true;
                         [fl_aprime_nobridge, fl_b_bridge, fl_c_bridge] = ffs_fibs_inf_bridge(...
                             bl_b_is_principle, fl_r_inf, fl_ap, fl_coh, ...
@@ -275,8 +276,13 @@ while bl_vfi_continue
                 end
                                                 
                 %% Compute Utility With Default
+                % if rollover is not allowed and bridge is not allowed,
+                % then as long as coh <= 0, also treat as not allowed
+                % states.
                 % assign u(c)
-                if (fl_c <= fl_c_min)
+                if (fl_c <= fl_c_min || ...
+                    ( ~bl_rollover && ~bl_bridge && fl_coh < fl_c_min))
+                    
                     if (bl_default)
                         % defaults
                         % current utility: only today u(cmin)
@@ -448,7 +454,7 @@ result_map('mt_pol_b_bridge') = mt_pol_b_bridge;
 result_map('mt_pol_inf_borr_nobridge') = mt_pol_inf_borr_nobridge;
 result_map('mt_pol_for_borr') = mt_pol_for_borr;
 result_map('mt_pol_for_save') = mt_pol_for_save;
-mt_pol_for_save
+
 if (bl_post)
     bl_input_override = true;
     result_map('ar_val_diff_norm') = ar_val_diff_norm(1:it_iter_last);

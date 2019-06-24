@@ -11,6 +11,17 @@
 % Testing with default. Changing borrowing bound, minimum consumption, as
 % well as the borrowing interest rate.
 %
+% @seealso
+%
+% * test interest rate no default: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_borr/html/fsi_abz_ds_vecsv_nbc.html fsi_abz_ds_vecsv_nbc> 
+% * test interest rate default: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_borr/html/fsi_abz_ds_vecsv_default.html fsi_abz_ds_vecsv_default> 
+% * test shock no default: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_ds_vecsv_shk_nbc.html fsi_abz_ds_vecsv_shk_nbc>
+% * test shock default: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_ds_vecsv_shk_default.html fsi_abz_ds_vecsv_shk_default>
+% * test shock default (very low cmin): <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_ds_vecsv_shk_default_lowcmin.html fsi_abz_ds_vecsv_shk_default_lowcmin>
+% * test preference no default: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_pref/html/fsi_abz_ds_vecsv_pref_nbc.html fsi_abz_ds_vecsv_pref_nbc>
+% * test preference default: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_pref/html/fsi_abz_ds_vecsv_pref_default.html fsi_abz_ds_vecsv_pref_default>
+% * test preference default (very low cmin): <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_pref/html/fsi_abz_ds_vecsv_pref_default_lowcmin.html fsi_abz_ds_vecsv_pref_default_lowcmin>
+%
 
 %% Test Minimum Consumption with Defaults, Vary Borrow Bound
 % As Borrowing bound relaxes, more borrowing. As borrowing bound is
@@ -49,9 +60,11 @@ fl_r_borr = 0.10;
 % ar_fl_r_borr = linspace(0.20, 0.025, it_size);
 ar_fl_r_borr = zeros([1,it_size]) + fl_r_borr;
 
+% Accuracy
+ar_it_a_n_hg = [750, 1250, 1750, 2250];
+ar_it_z_n_hg = [15, 19, 23, 27];
+
 % other parameters
-it_a_n = 750;
-it_z_n = 15;
 fl_crra = 1.5;
 fl_beta = 0.94;
 fl_r_save = 0.025;
@@ -87,9 +100,7 @@ for it_cur_param = 1:1:length(ar_bl_default)
     param_map('fl_r_save') = fl_r_save;
     param_map('fl_r_borr') = ar_fl_r_borr(it_cur_param);
     
-    % Simulation Accuracy
-    param_map('it_a_n') = it_a_n;
-    param_map('it_z_n') = it_z_n;
+    % Preference
     param_map('fl_crra') = fl_crra;
     param_map('fl_beta') = fl_beta;
 
@@ -101,18 +112,20 @@ for it_cur_param = 1:1:length(ar_bl_default)
     
     support_map('bl_graph_funcgrids') = false;
 
-    % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
-    [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
-
-    % Call Dynamic Programming Problem <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv>
-    result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
-
-    % Call Distribution CProgram
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx: iterative distribution');    
-    result_map = ff_az_ds_vec(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
-    % Call Distribution CProgram
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx: semi-analytical distribution');    
-    result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    for it_accuracy = 1:length(ar_it_a_n_hg)
+        % Accuracy Regular
+        param_map('it_a_n') = ar_it_a_n_hg(it_accuracy);
+        param_map('it_z_n') = ar_it_z_n_hg(it_accuracy);        
+        disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+        disp(['it_a_n = ' num2str(ar_it_a_n_hg(it_accuracy)) ', it_z_n = ' num2str(ar_it_z_n_hg(it_accuracy))]);
+        disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+        % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
+        [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+        % Call Dynamic Programming Problem <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv>
+        result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
+        % Call Distribution CProgram
+        result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    end
 
 
     % Snap
@@ -129,7 +142,6 @@ close all;
 % households that are going to the defaulting bound. 
 
 close all;
-clear all;
 
 it_size = 4;
 
@@ -190,9 +202,7 @@ for it_cur_param = 1:1:length(ar_bl_default)
     param_map('fl_r_save') = fl_r_save;
     param_map('fl_r_borr') = ar_fl_r_borr(it_cur_param);
     
-    % Simulation Accuracy
-    param_map('it_a_n') = it_a_n;
-    param_map('it_z_n') = it_z_n;
+    % Preference
     param_map('fl_crra') = fl_crra;
     param_map('fl_beta') = fl_beta;
 
@@ -204,19 +214,20 @@ for it_cur_param = 1:1:length(ar_bl_default)
     
     support_map('bl_graph_funcgrids') = false;
 
-    % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
-    [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
-
-    % Call Dynamic Programming Problem <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv>
-    result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
-
-    % Call Distribution CProgram
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx: iterative distribution');    
-    result_map = ff_az_ds_vec(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
-    % Call Distribution CProgram
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx: semi-analytical distribution');    
-    result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
-
+    for it_accuracy = 1:length(ar_it_a_n_hg)
+        % Accuracy Regular
+        param_map('it_a_n') = ar_it_a_n_hg(it_accuracy);
+        param_map('it_z_n') = ar_it_z_n_hg(it_accuracy);        
+        disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+        disp(['it_a_n = ' num2str(ar_it_a_n_hg(it_accuracy)) ', it_z_n = ' num2str(ar_it_z_n_hg(it_accuracy))]);
+        disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+        % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
+        [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+        % Call Dynamic Programming Problem <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv>
+        result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
+        % Call Distribution CProgram
+        result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    end
 
     % Snap
     snapnow;

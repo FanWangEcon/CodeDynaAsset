@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Test Shock Persistence and Variance Default (Save + Borr Distribution)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-21"><meta name="DC.source" content="fsi_abz_ds_vecsv_shk_default.m"><style type="text/css">
+      --><title>Test Shock Persistence and Variance Default (Save + Borr Distribution)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-23"><meta name="DC.source" content="fsi_abz_ds_vecsv_shk_default.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,20 +66,24 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Test Shock Persistence and Variance Default (Save + Borr Distribution)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><p>Testing the <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html">ff_az_ds</a> program for solving the savings only dynamic programming problem.</p><p>defaults in ffs_abz_set_default_param.m are:</p><div><ul><li>param_map('fl_z_rho') = 0.8;</li><li>param_map('fl_z_sig') = 0.2;</li></ul></div><p>here test three levels of persistence:</p><div><ul><li>iid shocks</li><li>0.5 persistence</li><li>0.995 persistence</li></ul></div><p>for each shock, thest at these standard deviations of the log normal shock:</p><div><ul><li>0.01</li><li>0.05</li><li>0.30</li></ul></div><p>Changing the shock process changes the natural borrowing constraint. Given no default, there is no mass at <b>pYisMINY</b>. More persistent shock and higher variance reduces minY, decreasing borrowing limit.</p><p>Substantial fraction borrowing, with positive overall mean assets. Increasing variance for consumption and asset as shock variance increase, and less borrowing. Higher means as shock persistence increases given these parameters.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Set Shared Parameters</a></li><li><a href="#2">Simulate Model with schok persistence = 0.0, IID</a></li><li><a href="#3">Simulate Model with schok persistence = 0.5</a></li><li><a href="#4">Simulate Model with schok persistence = 0.995 (very persistent)</a></li></ul></div><h2 id="1">Set Shared Parameters</h2><pre class="codeinput">close <span class="string">all</span>;
+  </style></head><body><div class="content"><h1>Test Shock Persistence and Variance <b>Default</b> (Save + Borr Distribution)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><p>Testing the <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html">ff_az_ds_vecsv</a> program for solving the savings and borrowing problem.</p><p>defaults in ffs_abz_set_default_param.m are:</p><div><ul><li>param_map('fl_z_rho') = 0.8;</li><li>param_map('fl_z_sig') = 0.2;</li></ul></div><p>here test three levels of persistence and shocks shown below that generate different levels of aggregate savings, and proportions of households borrowing and savings.</p><p>@seealso</p><div><ul><li>test interest rate no default: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_borr/html/fsi_abz_ds_vecsv_nbc.html">fsi_abz_ds_vecsv_nbc</a></li><li>test interest rate default: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_borr/html/fsi_abz_ds_vecsv_default.html">fsi_abz_ds_vecsv_default</a></li><li>test shock no default: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_ds_vecsv_shk_nbc.html">fsi_abz_ds_vecsv_shk_nbc</a></li><li>test shock default: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_ds_vecsv_shk_default.html">fsi_abz_ds_vecsv_shk_default</a></li><li>test shock default (very low cmin): <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_ds_vecsv_shk_default_lowcmin.html">fsi_abz_ds_vecsv_shk_default_lowcmin</a></li><li>test preference no default: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_pref/html/fsi_abz_ds_vecsv_pref_nbc.html">fsi_abz_ds_vecsv_pref_nbc</a></li><li>test preference default: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_pref/html/fsi_abz_ds_vecsv_pref_default.html">fsi_abz_ds_vecsv_pref_default</a></li><li>test preference default (very low cmin): <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_pref/html/fsi_abz_ds_vecsv_pref_default_lowcmin.html">fsi_abz_ds_vecsv_pref_default_lowcmin</a></li></ul></div><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Set Shared Parameters</a></li><li><a href="#2">Simulate Model with Low Persistence</a></li><li><a href="#3">Simulate Model with Medium Persistence</a></li><li><a href="#4">Simulate Model with High Persistence</a></li></ul></div><h2 id="1">Set Shared Parameters</h2><pre class="codeinput">close <span class="string">all</span>;
 clear <span class="string">all</span>;
 
-ar_fl_z_rho = [0.80, 0.85, 0.90];
-ar_fl_z_sig = [0.20, 0.30, 0.35];
-it_a_n = 750;
-it_z_n = 15;
+<span class="comment">% Shocks</span>
+ar_fl_z_rho = [0.65, 0.80, 0.95];
+ar_fl_z_sig = [0.05, 0.20, 0.35];
 
+<span class="comment">% Accuracy</span>
+ar_it_a_n_hg = [750, 1250, 1750, 2250];
+ar_it_z_n_hg = [15, 19, 23, 27];
+
+<span class="comment">% Borrowing/Savings Parameters</span>
 bl_default = true;
-fl_c_min = 0.03; <span class="comment">% irrelevant when bl_default = false</span>
-fl_b_bd = -10;
+fl_c_min = 0.01; <span class="comment">% irrelevant when bl_default = false</span>
+fl_b_bd = -20;
 fl_r_save = 0.02;
 fl_r_borr = 0.065;
-</pre><h2 id="2">Simulate Model with schok persistence = 0.0, IID</h2><pre class="codeinput"><span class="keyword">for</span> fl_z_sig = ar_fl_z_sig
+</pre><h2 id="2">Simulate Model with Low Persistence</h2><pre class="codeinput"><span class="keyword">for</span> fl_z_sig = ar_fl_z_sig
 
     disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
     disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
@@ -97,9 +101,7 @@ fl_r_borr = 0.065;
     it_param_set = 9;
     [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
 
-    <span class="comment">% Simulation Accuracy</span>
-    param_map(<span class="string">'it_a_n'</span>) = it_a_n;
-    param_map(<span class="string">'it_z_n'</span>) = it_z_n;
+    <span class="comment">% Shock Parameters</span>
     param_map(<span class="string">'fl_z_rho'</span>) = ar_fl_z_rho(1);
     param_map(<span class="string">'fl_z_sig'</span>) = fl_z_sig;
 
@@ -118,14 +120,20 @@ fl_r_borr = 0.065;
     support_map(<span class="string">'bl_time'</span>) = true;
     support_map(<span class="string">'bl_profile'</span>) = false;
 
-    <span class="comment">% Call Grid Generator &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid&gt;</span>
-    [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
-
-    <span class="comment">% Call Dynamic Programming Problem &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv&gt;</span>
-    result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
-
-    <span class="comment">% Call Distribution CProgram</span>
-    result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    <span class="keyword">for</span> it_accuracy = 1:length(ar_it_a_n_hg)
+        <span class="comment">% Accuracy Regular</span>
+        param_map(<span class="string">'it_a_n'</span>) = ar_it_a_n_hg(it_accuracy);
+        param_map(<span class="string">'it_z_n'</span>) = ar_it_z_n_hg(it_accuracy);
+        disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+        disp([<span class="string">'it_a_n = '</span> num2str(ar_it_a_n_hg(it_accuracy)) <span class="string">', it_z_n = '</span> num2str(ar_it_z_n_hg(it_accuracy))]);
+        disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+        <span class="comment">% Call Grid Generator &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid&gt;</span>
+        [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+        <span class="comment">% Call Dynamic Programming Problem &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv&gt;</span>
+        result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
+        <span class="comment">% Call Distribution CProgram</span>
+        result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    <span class="keyword">end</span>
 
     <span class="comment">% Snap</span>
     snapnow;
@@ -136,53 +144,179 @@ fl_r_borr = 0.065;
 close <span class="string">all</span>;
 </pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
-fl_z_rho = 0.8
+fl_z_rho = 0.65
+fl_z_sig = 0.05
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 750, it_z_n = 15
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 5.737459 seconds.
+Elapsed time is 0.810995 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                       mean         sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY      p0_1       p1         p5         p10        p15        p20         p25         p35         p50         p65         p75         p80         p85          p90        p95       p99       p99_9  
+                     ________    ________    _________    _______    ______    ________    __________    __________    ______    _______    _______    _______    _______    ________    ________    ________    ________    ________    ________    ________    ________    _________    ______    ______    ________
+
+    cl_mt_pol_a       -1.4575      2.1508     -1.4757         -20    47.757    0.090673     0.0011447    1.2917e-35       -20    -12.991    -4.0187    -2.8037    -2.3364     -2.0561     -1.7757     -1.4019    -0.93458    -0.56075    -0.37383    -0.18692    -0.18692    -0.093458         0         0    0.093458
+    cl_mt_pol_coh    -0.27224      2.2968     -8.4365     -20.252    52.556           0    3.4872e-06    1.7168e-35    -19.91    -12.521    -2.9716    -1.7129    -1.2741    -0.93797    -0.64945    -0.24125     0.27617     0.67998     0.91558      1.0426       1.141       1.2306    1.3137    1.4297      1.5559
+    cl_mt_pol_c        1.2082    0.089724    0.074264        0.01    4.7989           0     0.0011447    1.7168e-35      0.01     1.0413     1.0765      1.102     1.1202      1.1375      1.1548      1.1809      1.2124      1.2407        1.26      1.2712      1.2843       1.3016    1.3452    1.4297      1.5126
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 1250, it_z_n = 19
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 21.811129 seconds.
+Elapsed time is 2.539092 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                       mean         sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY       p0_1        p1         p5         p10         p15          p20         p25         p35        p50         p65         p75         p80          p85          p90        p95        p99        p99_9  
+                     ________    ________    _________    _______    ______    ________    __________    ___________    _______    _______    _______    ________    ________    _________    ________    _______    ________    ________    ________    ________    _________    _________    ______    ________    ________
+
+    cl_mt_pol_a      -0.86024      1.2622     -1.4672         -20    47.813    0.050064    0.00031117     2.0715e-34    -17.139    -5.1362    -2.2756     -1.7708     -1.4904       -1.266     -1.0978    -0.8734    -0.59295    -0.36859    -0.25641    -0.20032    -0.088141    -0.032051         0    0.024038    0.080128
+    cl_mt_pol_coh     0.36382      1.3541      3.7218     -20.252    52.556           0    7.9628e-07     2.0715e-34    -16.979    -4.1929    -1.1595    -0.61119    -0.31005    -0.098814    0.076684    0.34704     0.64325      0.8822      1.0325      1.0959        1.181       1.2431    1.3314      1.4498      1.5559
+    cl_mt_pol_c        1.2303    0.072284    0.058753        0.01    4.7658           0    0.00031117    -5.3599e-36     1.0457     1.0714     1.1125      1.1439      1.1634       1.1779      1.1889     1.2071      1.2317      1.2545      1.2694        1.28       1.2962       1.3055    1.3345      1.4257      1.4977
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 1750, it_z_n = 23
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 55.244468 seconds.
+Elapsed time is 1.719822 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                       mean         sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY      p0_1        p1         p5         p10         p15         p20          p25         p35         p50        p65         p75         p80          p85          p90        p95        p99        p99_9 
+                     ________    ________    _________    _______    ______    ________    __________    __________    _______    _______    _______    ________    ________    ________    _________    ________    _______    ________    ________    ________    _________    _________    ______    ________    _______
+
+    cl_mt_pol_a      -0.91319      1.3741     -1.5047         -20    47.797    0.040783    0.00037987    4.0869e-36    -17.878    -6.1442      -2.46     -1.8993     -1.5789     -1.3787      -1.1785    -0.89817    -0.5778    -0.37757    -0.25744    -0.17735    -0.097254    -0.057208         0    0.022883    0.10297
+    cl_mt_pol_coh     0.30743      1.4725      4.7898     -20.252    52.556           0    8.7346e-07    4.0869e-36    -17.742    -5.2687    -1.3458    -0.76507    -0.42707    -0.18709    0.0026096     0.30115    0.63757     0.87913       1.023       1.099       1.1736       1.2509    1.3296      1.4462     1.5559
+    cl_mt_pol_c        1.2282    0.073311    0.059689        0.01    4.7708           0    0.00037987    1.3082e-36     1.0511     1.0712     1.1073      1.1399      1.1604      1.1753       1.1878      1.2071      1.228      1.2521      1.2711      1.2804       1.2908       1.3041    1.3479      1.4253     1.4782
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 2250, it_z_n = 27
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 99.472097 seconds.
+Elapsed time is 7.334995 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                       mean         sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY       p0_1        p1         p5         p10         p15         p20          p25         p35         p50         p65         p75         p80         p85          p90        p95        p99        p99_9 
+                     ________    ________    _________    _______    ______    ________    __________    ___________    _______    _______    _______    ________    ________    ________    _________    ________    ________    ________    ________    ________    ________    _________    ______    ________    _______
+
+    cl_mt_pol_a      -0.94149      1.4143     -1.5022         -20    47.789    0.039262    0.00040757    -1.5489e-34    -17.945     -6.548       -2.5     -1.9395     -1.6281     -1.4101      -1.2233    -0.94306    -0.60053    -0.38256    -0.25801    -0.19573    -0.10231    -0.071174         0    0.022242    0.08452
+    cl_mt_pol_coh     0.27729      1.5151       5.464     -20.252    52.556           0    8.7512e-07    -1.5489e-34    -17.825    -5.6902    -1.4158    -0.81763    -0.47595    -0.22961    -0.034529     0.27287     0.61815     0.87592      1.0164      1.0951      1.1695       1.2482    1.3273      1.4422     1.5559
+    cl_mt_pol_c        1.2269    0.073564    0.059957        0.01    4.7745           0    0.00040757    -1.1314e-34     1.0544     1.0715     1.1052      1.1376      1.1583       1.174       1.1866      1.2064      1.2276      1.2505      1.2699       1.278      1.2888       1.3058    1.3393      1.4215     1.4801
+
+</pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+fl_z_rho = 0.65
 fl_z_sig = 0.2
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
-Elapsed time is 1.726157 seconds.
-Elapsed time is 0.250502 seconds.
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 750, it_z_n = 15
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 9.659632 seconds.
+Elapsed time is 0.732034 seconds.
 tb_outcomes_meansdperc: mean, sd, percentiles
-                      mean        sd      coefofvar      min       max       pYis0       pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15        p20        p25        p35        p50         p65        p75        p80        p85        p90       p95       p99      p99_9 
-                     _______    ______    _________    _______    ______    ________    __________    __________    _______    _______    _______    _______    _______    _______    _______    _______    ________    _______    ________    ______    _______    _______    ______    ______    ______
+                      mean        sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY       p0_1        p1         p5         p10        p15        p20        p25        p35        p50         p65         p75         p80          p85         p90         p95       p99      p99_9 
+                     _______    _______    _________    _______    ______    ________    __________    ___________    _______    _______    _______    _______    _______    _______    _______    _______    _______    _________    ________    ________    _________    ________    _______    ______    ______
 
-    cl_mt_pol_a      -2.5621     3.091     -1.2064         -10    49.278    0.028132      0.015201    1.4107e-34        -10        -10    -8.7166    -7.3529    -6.3102    -5.3476    -4.5455     -3.262     -1.8182    -0.7754    -0.29412         0    0.18717    0.58824    1.3904    3.3155    5.8021
-    cl_mt_pol_coh    -1.4575    3.4126     -2.3415     -10.205    54.286           0    0.00014793    1.4107e-34    -10.058    -9.6021    -8.0744    -6.6662    -5.5016    -4.4864    -3.6457    -2.2653    -0.73557    0.38297     0.98097    1.2953     1.6671     2.2101     3.151    5.3302     8.112
-    cl_mt_pol_c       1.1046    1.2863      1.1645     -10.205    5.0077           0    0.00014793    1.4107e-34    -10.058    -9.6021    0.99233     1.0263     1.0465     1.0631     1.0785      1.113      1.1703      1.249      1.3425    1.3977     1.4947     1.6192    1.8015     2.048    2.3109
+    cl_mt_pol_a      -4.0634     4.9125      -1.209         -20    48.879    0.035378     0.0099021    -2.2744e-35        -20    -19.439    -15.514    -11.869    -9.1589    -7.1963    -5.7944    -3.9252     -2.243       -1.215    -0.56075    -0.37383    -0.093458    0.093458    0.46729    1.4953    2.8037
+    cl_mt_pol_coh    -3.0507      5.269     -1.7271     -20.739    53.721           0    4.3526e-05    -2.2744e-35    -20.419     -19.36    -15.243    -11.357    -8.5187    -6.4788    -4.9676    -2.9447    -1.2036    -0.010276     0.63845     0.93705       1.2356      1.5483     2.0936    3.2204    4.6503
+    cl_mt_pol_c        1.205    0.20164     0.16733        0.01     4.854           0     0.0095486    -2.4939e-35       0.01    0.64014     1.0532     1.0665     1.0786     1.0903     1.1011     1.1207     1.1622         1.23      1.2744      1.3109       1.3771      1.4549     1.5595    1.7687    1.9083
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 1250, it_z_n = 19
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 16.996038 seconds.
+Elapsed time is 3.266223 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY      p0_1       p1         p5         p10        p15        p20        p25        p35        p50         p65         p75         p80         p85         p90         p95       p99      p99_9 
+                     _______    _______    _________    _______    ______    ________    __________    __________    ______    _______    _______    _______    _______    _______    _______    _______    _______    _________    ________    _______    _________    ________    _______    ______    ______
+
+    cl_mt_pol_a      -4.0571     4.9144     -1.2113         -20    48.822    0.018459     0.0098897    4.6189e-34       -20    -19.439    -15.513    -11.811    -9.1747    -7.2115    -5.8093    -3.9022    -2.2756      -1.1538    -0.59295    -0.3125    -0.088141    0.080128    0.52885    1.4824    2.7724
+    cl_mt_pol_coh     -3.044     5.2703     -1.7314     -20.739    53.722           0    3.6628e-05    4.6189e-34    -20.43    -19.334    -15.245    -11.349    -8.5223    -6.4639    -4.9582    -2.9658    -1.1875    0.0072505     0.65821    0.95007       1.2361      1.5549     2.0698    3.2047    4.6349
+    cl_mt_pol_c       1.2049    0.20029     0.16623        0.01    4.9002           0     0.0095229    4.6189e-34      0.01    0.66557     1.0665     1.0761     1.0842      1.092     1.0994     1.1133     1.1603       1.2248      1.2792     1.3188       1.3563      1.4699     1.5708    1.7362    1.9129
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 1750, it_z_n = 23
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 43.421396 seconds.
+Elapsed time is 15.374311 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY       p0_1        p1         p5         p10        p15        p20        p25        p35        p50        p65         p75        p80          p85         p90        p95       p99      p99_9 
+                     _______    _______    _________    _______    ______    ________    __________    ___________    _______    _______    _______    _______    _______    _______    _______    _______    _______    ________    _______    ________    _________    _______    _______    ______    ______
+
+    cl_mt_pol_a       -4.048     4.9079     -1.2124         -20    48.839    0.019522     0.0098511    -4.7419e-35        -20    -19.399    -15.475    -11.791    -9.1476    -7.1854    -5.7838    -3.9016    -2.2597     -1.1384    -0.5778    -0.29748    -0.097254    0.10297    0.50343    1.4645     2.746
+    cl_mt_pol_coh    -3.0342     5.2632     -1.7346     -20.739    53.723           0    3.2839e-05    -4.7419e-35    -20.436    -19.322    -15.238    -11.321    -8.4992    -6.4423    -4.9387    -2.9505    -1.1718    0.013876    0.66212     0.94525       1.2363     1.5512     2.0793    3.1914    4.6202
+    cl_mt_pol_c       1.2047    0.19956     0.16565        0.01    4.8842           0     0.0094836    -4.7419e-35       0.01    0.67774     1.0725     1.0799     1.0863     1.0923     1.0979     1.1094     1.1604      1.2266     1.2815      1.3101       1.3673     1.4553     1.5743    1.7398    1.9123
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 2250, it_z_n = 27
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 82.384669 seconds.
+Elapsed time is 27.533298 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15        p20        p25        p35        p50        p65        p75         p80          p85         p90        p95       p99      p99_9 
+                     _______    _______    _________    _______    ______    ________    __________    __________    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    ________    ________    _________    _______    _______    ______    ______
+
+    cl_mt_pol_a      -4.0095     4.8948     -1.2208         -20    48.848    0.019369     0.0097276    9.3784e-35        -20    -19.346    -15.423    -11.748    -9.0703    -7.1397    -5.7384    -3.8701    -2.2198    -1.1299    -0.53826    -0.28915    -0.071174    0.11566    0.52046    1.4858    2.7313
+    cl_mt_pol_coh    -2.9932     5.2493     -1.7537     -20.739    53.723           0    3.0182e-05    9.3784e-35    -20.441     -19.29    -15.181    -11.249     -8.415    -6.3673    -4.8699    -2.8913    -1.1276     0.0415     0.67431     0.95798       1.2365     1.5674     2.0756    3.1907     4.614
+    cl_mt_pol_c       1.2051    0.19929     0.16538        0.01    4.8753           0     0.0093773    9.3784e-35       0.01    0.70997     1.0757     1.0821     1.0873     1.0923      1.097     1.1087     1.1585     1.2269      1.2739       1.318       1.3627     1.4613     1.5732     1.747    1.9073
 
 </pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
-fl_z_rho = 0.8
-fl_z_sig = 0.3
-xxxxxxxxxxxxxxxxxxxxxxxxxxx
-xxxxxxxxxxxxxxxxxxxxxxxxxxx
-Elapsed time is 1.706367 seconds.
-Elapsed time is 0.436968 seconds.
-tb_outcomes_meansdperc: mean, sd, percentiles
-                      mean        sd      coefofvar      min       max       pYis0       pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15        p20        p25        p35        p50         p65        p75        p80       p85       p90       p95       p99      p99_9 
-                     _______    ______    _________    _______    ______    ________    __________    __________    _______    _______    _______    _______    _______    _______    _______    _______    ________    ________    ______    _______    ______    ______    ______    ______    ______
-
-    cl_mt_pol_a      -2.1888    3.9395     -1.7999         -10        50    0.030562      0.021321    1.6498e-16        -10        -10     -8.877    -7.6738     -6.631    -5.6684    -4.8663    -3.5027     -1.8182    -0.61497         0    0.50802    1.2299    2.2727    4.1979    8.6096    14.385
-    cl_mt_pol_coh    -1.0797    4.3971     -4.0724     -10.399    56.044           0    0.00020215    4.2921e-17    -10.265    -9.9168    -8.4098     -7.097    -5.9577     -4.962    -4.0783     -2.576    -0.79821     0.55595    1.4144     2.0695    2.8877    4.0703    6.1768    11.004    17.222
-    cl_mt_pol_c        1.109    1.5726       1.418     -10.399     6.044           0    0.00020215    4.2921e-17    -10.265    -9.9168     0.9746     1.0295     1.0561     1.0759     1.0932      1.128      1.1906      1.2919     1.449     1.5576    1.6693    1.8411    2.0561    2.4722    2.9342
-
-</pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
-xxxxxxxxxxxxxxxxxxxxxxxxxxx
-fl_z_rho = 0.8
+fl_z_rho = 0.65
 fl_z_sig = 0.35
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
-Elapsed time is 1.593164 seconds.
-Elapsed time is 0.485824 seconds.
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 750, it_z_n = 15
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 5.118397 seconds.
+Elapsed time is 3.033215 seconds.
 tb_outcomes_meansdperc: mean, sd, percentiles
-                       mean        sd      coefofvar      min       max       pYis0       pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15        p20        p25        p35        p50         p65         p75       p80       p85       p90       p95       p99      p99_9 
-                     ________    ______    _________    _______    ______    ________    __________    __________    _______    _______    _______    _______    _______    _______    _______    _______    ________    ________    _______    ______    ______    ______    ______    ______    ______
+                      mean        sd      coefofvar      min       max       pYis0       pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15        p20        p25        p35        p50        p65         p75        p80        p85       p90       p95       p99      p99_9 
+                     _______    ______    _________    _______    ______    ________    __________    __________    _______    _______    _______    _______    _______    _______    _______    _______    _______    ________    ________    ______    _______    ______    ______    ______    ______
 
-    cl_mt_pol_a       -1.8244    4.5517      -2.495         -10        50    0.031355      0.023867    1.1414e-09        -10        -10    -8.9572     -7.754    -6.7112    -5.7487    -4.8663    -3.4225      -1.738    -0.37433    0.34759    1.0695    2.0321    3.4759    6.0428    12.139        20
-    cl_mt_pol_coh    -0.70663    5.0801     -7.1891     -10.463    57.184           0    0.00021978    2.3331e-10    -10.342    -9.9983    -8.5317    -7.1835    -6.0686    -5.0434    -4.1446    -2.5704    -0.72749     0.68953     1.8161    2.6564    3.7771    5.4112    8.2278    14.743    23.251
-    cl_mt_pol_c        1.1177     1.686      1.5084     -10.463    7.1835           0    0.00021978    2.3331e-10    -10.342    -9.9983    0.96317     1.0313       1.06     1.0802     1.0997     1.1364      1.2022        1.32      1.505    1.6173     1.747    1.9253    2.1851    2.7108    3.3028
+    cl_mt_pol_a      -4.6876    5.7855     -1.2342         -20        50    0.031629      0.014475    1.8628e-31        -20        -20    -16.822    -13.925    -11.495    -9.5327    -7.9439     -5.514    -2.9907     -1.3084    -0.46729         0    0.28037     1.028     2.243    5.0467    8.6916
+    cl_mt_pol_coh    -3.7262    6.2469     -1.6765     -21.011    55.575           0    7.6293e-05    2.5294e-32    -20.778    -20.151    -16.715    -13.558     -11.01    -8.9339    -7.2357    -4.6648    -2.0477    -0.22103     0.75097    1.2076     1.8006    2.5855     3.984    7.0436    11.015
+    cl_mt_pol_c       1.2461    0.2806     0.22518        0.01    5.5753           0      0.014019    2.5294e-32       0.01       0.01      1.047      1.065     1.0791     1.0919     1.1038     1.1253      1.172      1.2534       1.333    1.3998     1.5062    1.6223    1.7809    2.0812    2.3894
 
-</pre><h2 id="3">Simulate Model with schok persistence = 0.5</h2><pre class="codeinput">close <span class="string">all</span>
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 1250, it_z_n = 19
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 15.206397 seconds.
+Elapsed time is 6.074850 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY      p0_1        p1        p5         p10        p15        p20        p25        p35        p50        p65         p75          p80         p85        p90       p95       p99      p99_9 
+                     _______    _______    _________    _______    ______    ________    __________    __________    _______    ______    _______    _______    _______    _______    _______    _______    _______    ________    ________    _________    _______    _______    ______    ______    ______
+
+    cl_mt_pol_a      -4.6791     5.7938     -1.2382         -20        50    0.021147      0.015503    2.6871e-32        -20       -20    -16.859    -13.886    -11.474    -9.5112    -7.8846    -5.4728    -3.0048     -1.3221    -0.42468    -0.032051    0.30449    0.97756    2.2115    4.9599    8.5497
+    cl_mt_pol_coh     -3.717     6.2531     -1.6823     -21.011     55.58           0    6.3726e-05    3.6861e-33    -20.766    -20.15    -16.751    -13.583     -11.01    -8.9193    -7.2278    -4.6248    -2.0339    -0.19794     0.76951       1.2321     1.8172     2.6081    3.9647    6.9864    10.914
+    cl_mt_pol_c       1.2447    0.27943      0.2245        0.01    5.5804           0      0.013902    3.6861e-33       0.01      0.01     1.0617     1.0746     1.0844     1.0935     1.1017     1.1184     1.1718      1.2491      1.3195       1.3916     1.5082      1.614    1.7802    2.0613    2.3738
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 1750, it_z_n = 23
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 53.118723 seconds.
+Elapsed time is 15.971184 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15        p20        p25        p35        p50        p65         p75          p80        p85        p90       p95       p99      p99_9 
+                     _______    _______    _________    _______    ______    ________    __________    __________    _______    _______    _______    _______    _______    _______    _______    _______    _______    ________    ________    _________    ______    _______    ______    ______    ______
+
+    cl_mt_pol_a      -4.6653     5.7777     -1.2385         -20        50    0.019079       0.01491    3.2349e-32        -20        -20    -16.836    -13.873     -11.43     -9.468    -7.8661    -5.4634    -3.0206     -1.2986    -0.41762    -0.017162    0.3032    0.98398    2.1854    4.9085    8.5126
+    cl_mt_pol_coh    -3.7023     6.2367     -1.6846     -21.011    55.583           0    5.7196e-05    8.9898e-33    -20.758    -20.149    -16.711    -13.546    -10.978    -8.8897    -7.1917    -4.6236    -2.0141    -0.18937     0.77909       1.2441    1.8146     2.5998    3.9519     6.964    10.871
+    cl_mt_pol_c        1.245    0.27845     0.22365        0.01     5.583           0      0.013881    8.9898e-33       0.01       0.01     1.0677     1.0785     1.0864     1.0934     1.1001      1.117     1.1706      1.2477      1.3285       1.3916    1.4947     1.6235    1.7803    2.0678    2.3777
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 2250, it_z_n = 27
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 44.866318 seconds.
+Elapsed time is 88.725430 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15        p20        p25        p35        p50        p65         p75          p80         p85        p90       p95       p99      p99_9 
+                     _______    _______    _________    _______    ______    ________    __________    __________    _______    _______    _______    _______    _______    _______    _______    _______    _______    ________    ________    _________    _______    _______    ______    ______    ______
+
+    cl_mt_pol_a      -4.6896     5.7874     -1.2341         -20        50    0.020392      0.015442    6.3658e-33        -20        -20    -16.886    -13.897    -11.468    -9.5062     -7.887    -5.4582    -3.0294     -1.3167    -0.44484    -0.040036    0.30249    0.98754    2.1708     4.911     8.492
+    cl_mt_pol_coh     -3.728     6.2455     -1.6753     -21.011    55.584           0    5.3206e-05    6.0958e-34    -20.808    -20.149    -16.767    -13.586    -11.012     -8.923    -7.2186    -4.6443    -2.0301    -0.20863     0.75264       1.2168     1.7833     2.5824    3.9373    6.9364    10.832
+    cl_mt_pol_c       1.2438    0.27831     0.22375        0.01    5.5845           0      0.013883    6.0958e-34       0.01       0.01     1.0699     1.0803      1.087      1.093     1.0987     1.1159     1.1705      1.2476      1.3244       1.3904     1.4962     1.6192    1.7756    2.0624    2.3779
+
+</pre><h2 id="3">Simulate Model with Medium Persistence</h2><pre class="codeinput">close <span class="string">all</span>
 
 <span class="keyword">for</span> fl_z_sig = ar_fl_z_sig
 
@@ -202,10 +336,8 @@ tb_outcomes_meansdperc: mean, sd, percentiles
     it_param_set = 9;
     [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
 
-    <span class="comment">% Simulation Accuracy</span>
-    param_map(<span class="string">'it_a_n'</span>) = it_a_n;
-    param_map(<span class="string">'it_z_n'</span>) = it_z_n;
-    param_map(<span class="string">'fl_z_rho'</span>) = ar_fl_z_rho(2);
+    <span class="comment">% Shock Parameters</span>
+    param_map(<span class="string">'fl_z_rho'</span>) = ar_fl_z_rho(1);
     param_map(<span class="string">'fl_z_sig'</span>) = fl_z_sig;
 
     <span class="comment">% Borrowing Parameters</span>
@@ -223,14 +355,20 @@ tb_outcomes_meansdperc: mean, sd, percentiles
     support_map(<span class="string">'bl_time'</span>) = true;
     support_map(<span class="string">'bl_profile'</span>) = false;
 
-    <span class="comment">% Call Grid Generator &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid&gt;</span>
-    [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
-
-    <span class="comment">% Call Dynamic Programming Problem &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv&gt;</span>
-    result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
-
-    <span class="comment">% Call Distribution CProgram</span>
-    result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    <span class="keyword">for</span> it_accuracy = 1:length(ar_it_a_n_hg)
+        <span class="comment">% Accuracy Regular</span>
+        param_map(<span class="string">'it_a_n'</span>) = ar_it_a_n_hg(it_accuracy);
+        param_map(<span class="string">'it_z_n'</span>) = ar_it_z_n_hg(it_accuracy);
+        disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+        disp([<span class="string">'it_a_n = '</span> num2str(ar_it_a_n_hg(it_accuracy)) <span class="string">', it_z_n = '</span> num2str(ar_it_z_n_hg(it_accuracy))]);
+        disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+        <span class="comment">% Call Grid Generator &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid&gt;</span>
+        [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+        <span class="comment">% Call Dynamic Programming Problem &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv&gt;</span>
+        result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
+        <span class="comment">% Call Distribution CProgram</span>
+        result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    <span class="keyword">end</span>
 
     <span class="comment">% Snap</span>
     snapnow;
@@ -241,53 +379,179 @@ tb_outcomes_meansdperc: mean, sd, percentiles
 close <span class="string">all</span>;
 </pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
-fl_z_rho = 0.85
+fl_z_rho = 0.8
+fl_z_sig = 0.05
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 750, it_z_n = 15
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 6.562120 seconds.
+Elapsed time is 0.546373 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                       mean         sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY      p0_1       p1         p5         p10        p15        p20         p25         p35         p50         p65         p75         p80         p85          p90        p95       p99       p99_9  
+                     ________    ________    _________    _______    ______    ________    __________    __________    ______    _______    _______    _______    _______    ________    ________    ________    ________    ________    ________    ________    ________    _________    ______    ______    ________
+
+    cl_mt_pol_a       -1.4575      2.1508     -1.4757         -20    47.757    0.090673     0.0011447    1.2917e-35       -20    -12.991    -4.0187    -2.8037    -2.3364     -2.0561     -1.7757     -1.4019    -0.93458    -0.56075    -0.37383    -0.18692    -0.18692    -0.093458         0         0    0.093458
+    cl_mt_pol_coh    -0.27224      2.2968     -8.4365     -20.252    52.556           0    3.4872e-06    1.7168e-35    -19.91    -12.521    -2.9716    -1.7129    -1.2741    -0.93797    -0.64945    -0.24125     0.27617     0.67998     0.91558      1.0426       1.141       1.2306    1.3137    1.4297      1.5559
+    cl_mt_pol_c        1.2082    0.089724    0.074264        0.01    4.7989           0     0.0011447    1.7168e-35      0.01     1.0413     1.0765      1.102     1.1202      1.1375      1.1548      1.1809      1.2124      1.2407        1.26      1.2712      1.2843       1.3016    1.3452    1.4297      1.5126
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 1250, it_z_n = 19
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 20.801534 seconds.
+Elapsed time is 2.516362 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                       mean         sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY       p0_1        p1         p5         p10         p15          p20         p25         p35        p50         p65         p75         p80          p85          p90        p95        p99        p99_9  
+                     ________    ________    _________    _______    ______    ________    __________    ___________    _______    _______    _______    ________    ________    _________    ________    _______    ________    ________    ________    ________    _________    _________    ______    ________    ________
+
+    cl_mt_pol_a      -0.86024      1.2622     -1.4672         -20    47.813    0.050064    0.00031117     2.0715e-34    -17.139    -5.1362    -2.2756     -1.7708     -1.4904       -1.266     -1.0978    -0.8734    -0.59295    -0.36859    -0.25641    -0.20032    -0.088141    -0.032051         0    0.024038    0.080128
+    cl_mt_pol_coh     0.36382      1.3541      3.7218     -20.252    52.556           0    7.9628e-07     2.0715e-34    -16.979    -4.1929    -1.1595    -0.61119    -0.31005    -0.098814    0.076684    0.34704     0.64325      0.8822      1.0325      1.0959        1.181       1.2431    1.3314      1.4498      1.5559
+    cl_mt_pol_c        1.2303    0.072284    0.058753        0.01    4.7658           0    0.00031117    -5.3599e-36     1.0457     1.0714     1.1125      1.1439      1.1634       1.1779      1.1889     1.2071      1.2317      1.2545      1.2694        1.28       1.2962       1.3055    1.3345      1.4257      1.4977
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 1750, it_z_n = 23
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 52.648275 seconds.
+Elapsed time is 3.399513 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                       mean         sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY      p0_1        p1         p5         p10         p15         p20          p25         p35         p50        p65         p75         p80          p85          p90        p95        p99        p99_9 
+                     ________    ________    _________    _______    ______    ________    __________    __________    _______    _______    _______    ________    ________    ________    _________    ________    _______    ________    ________    ________    _________    _________    ______    ________    _______
+
+    cl_mt_pol_a      -0.91319      1.3741     -1.5047         -20    47.797    0.040783    0.00037987    4.0869e-36    -17.878    -6.1442      -2.46     -1.8993     -1.5789     -1.3787      -1.1785    -0.89817    -0.5778    -0.37757    -0.25744    -0.17735    -0.097254    -0.057208         0    0.022883    0.10297
+    cl_mt_pol_coh     0.30743      1.4725      4.7898     -20.252    52.556           0    8.7346e-07    4.0869e-36    -17.742    -5.2687    -1.3458    -0.76507    -0.42707    -0.18709    0.0026096     0.30115    0.63757     0.87913       1.023       1.099       1.1736       1.2509    1.3296      1.4462     1.5559
+    cl_mt_pol_c        1.2282    0.073311    0.059689        0.01    4.7708           0    0.00037987    1.3082e-36     1.0511     1.0712     1.1073      1.1399      1.1604      1.1753       1.1878      1.2071      1.228      1.2521      1.2711      1.2804       1.2908       1.3041    1.3479      1.4253     1.4782
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 2250, it_z_n = 27
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 95.003310 seconds.
+Elapsed time is 8.177699 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                       mean         sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY       p0_1        p1         p5         p10         p15         p20          p25         p35         p50         p65         p75         p80         p85          p90        p95        p99        p99_9 
+                     ________    ________    _________    _______    ______    ________    __________    ___________    _______    _______    _______    ________    ________    ________    _________    ________    ________    ________    ________    ________    ________    _________    ______    ________    _______
+
+    cl_mt_pol_a      -0.94149      1.4143     -1.5022         -20    47.789    0.039262    0.00040757    -1.5489e-34    -17.945     -6.548       -2.5     -1.9395     -1.6281     -1.4101      -1.2233    -0.94306    -0.60053    -0.38256    -0.25801    -0.19573    -0.10231    -0.071174         0    0.022242    0.08452
+    cl_mt_pol_coh     0.27729      1.5151       5.464     -20.252    52.556           0    8.7512e-07    -1.5489e-34    -17.825    -5.6902    -1.4158    -0.81763    -0.47595    -0.22961    -0.034529     0.27287     0.61815     0.87592      1.0164      1.0951      1.1695       1.2482    1.3273      1.4422     1.5559
+    cl_mt_pol_c        1.2269    0.073564    0.059957        0.01    4.7745           0    0.00040757    -1.1314e-34     1.0544     1.0715     1.1052      1.1376      1.1583       1.174       1.1866      1.2064      1.2276      1.2505      1.2699       1.278      1.2888       1.3058    1.3393      1.4215     1.4801
+
+</pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+fl_z_rho = 0.8
 fl_z_sig = 0.2
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
-Elapsed time is 1.428573 seconds.
-Elapsed time is 0.207001 seconds.
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 750, it_z_n = 15
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 6.490581 seconds.
+Elapsed time is 0.732905 seconds.
 tb_outcomes_meansdperc: mean, sd, percentiles
-                      mean        sd      coefofvar     min       max       pYis0      pYisMINY      pYisMAXY       p0_1        p1         p5         p10        p15        p20        p25        p35        p50         p65        p75       p80        p85        p90       p95       p99      p99_9 
-                     _______    ______    _________    ______    ______    _______    __________    ___________    _______    _______    _______    _______    _______    _______    _______    _______    ________    _______    _______    ______    _______    _______    ______    ______    ______
+                      mean        sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY       p0_1        p1         p5         p10        p15        p20        p25        p35        p50         p65         p75         p80          p85         p90         p95       p99      p99_9 
+                     _______    _______    _________    _______    ______    ________    __________    ___________    _______    _______    _______    _______    _______    _______    _______    _______    _______    _________    ________    ________    _________    ________    _______    ______    ______
 
-    cl_mt_pol_a      -2.5573    3.3307     -1.3024        -10    49.519    0.03267      0.018092    -4.1495e-34        -10        -10     -8.877    -7.6738    -6.5508    -5.5882    -4.7861    -3.4225     -1.8984    -0.7754    -0.2139         0    0.34759    0.90909    2.0321    4.7594     8.369
-    cl_mt_pol_coh    -1.4567    3.7116     -2.5479     -10.27    54.709          0    0.00019442    -4.1495e-34    -10.124    -9.7924     -8.298    -6.9851    -5.7966    -4.8271    -3.9561     -2.531    -0.84174    0.40069     1.0451    1.4165      1.917      2.622    3.9257    7.0093    10.917
-    cl_mt_pol_c       1.1006    1.4427      1.3108     -10.27    5.1906          0    0.00019442    -4.1495e-34    -10.124    -9.7924    0.97661     1.0282     1.0493     1.0663     1.0815      1.116       1.177     1.2538     1.3782    1.4573     1.5711     1.7475    1.9275    2.2981    2.6411
+    cl_mt_pol_a      -4.0634     4.9125      -1.209         -20    48.879    0.035378     0.0099021    -2.2744e-35        -20    -19.439    -15.514    -11.869    -9.1589    -7.1963    -5.7944    -3.9252     -2.243       -1.215    -0.56075    -0.37383    -0.093458    0.093458    0.46729    1.4953    2.8037
+    cl_mt_pol_coh    -3.0507      5.269     -1.7271     -20.739    53.721           0    4.3526e-05    -2.2744e-35    -20.419     -19.36    -15.243    -11.357    -8.5187    -6.4788    -4.9676    -2.9447    -1.2036    -0.010276     0.63845     0.93705       1.2356      1.5483     2.0936    3.2204    4.6503
+    cl_mt_pol_c        1.205    0.20164     0.16733        0.01     4.854           0     0.0095486    -2.4939e-35       0.01    0.64014     1.0532     1.0665     1.0786     1.0903     1.1011     1.1207     1.1622         1.23      1.2744      1.3109       1.3771      1.4549     1.5595    1.7687    1.9083
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 1250, it_z_n = 19
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 16.752997 seconds.
+Elapsed time is 3.223870 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY      p0_1       p1         p5         p10        p15        p20        p25        p35        p50         p65         p75         p80         p85         p90         p95       p99      p99_9 
+                     _______    _______    _________    _______    ______    ________    __________    __________    ______    _______    _______    _______    _______    _______    _______    _______    _______    _________    ________    _______    _________    ________    _______    ______    ______
+
+    cl_mt_pol_a      -4.0571     4.9144     -1.2113         -20    48.822    0.018459     0.0098897    4.6189e-34       -20    -19.439    -15.513    -11.811    -9.1747    -7.2115    -5.8093    -3.9022    -2.2756      -1.1538    -0.59295    -0.3125    -0.088141    0.080128    0.52885    1.4824    2.7724
+    cl_mt_pol_coh     -3.044     5.2703     -1.7314     -20.739    53.722           0    3.6628e-05    4.6189e-34    -20.43    -19.334    -15.245    -11.349    -8.5223    -6.4639    -4.9582    -2.9658    -1.1875    0.0072505     0.65821    0.95007       1.2361      1.5549     2.0698    3.2047    4.6349
+    cl_mt_pol_c       1.2049    0.20029     0.16623        0.01    4.9002           0     0.0095229    4.6189e-34      0.01    0.66557     1.0665     1.0761     1.0842      1.092     1.0994     1.1133     1.1603       1.2248      1.2792     1.3188       1.3563      1.4699     1.5708    1.7362    1.9129
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 1750, it_z_n = 23
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 36.697128 seconds.
+Elapsed time is 5.082501 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY       p0_1        p1         p5         p10        p15        p20        p25        p35        p50        p65         p75        p80          p85         p90        p95       p99      p99_9 
+                     _______    _______    _________    _______    ______    ________    __________    ___________    _______    _______    _______    _______    _______    _______    _______    _______    _______    ________    _______    ________    _________    _______    _______    ______    ______
+
+    cl_mt_pol_a       -4.048     4.9079     -1.2124         -20    48.839    0.019522     0.0098511    -4.7419e-35        -20    -19.399    -15.475    -11.791    -9.1476    -7.1854    -5.7838    -3.9016    -2.2597     -1.1384    -0.5778    -0.29748    -0.097254    0.10297    0.50343    1.4645     2.746
+    cl_mt_pol_coh    -3.0342     5.2632     -1.7346     -20.739    53.723           0    3.2839e-05    -4.7419e-35    -20.436    -19.322    -15.238    -11.321    -8.4992    -6.4423    -4.9387    -2.9505    -1.1718    0.013876    0.66212     0.94525       1.2363     1.5512     2.0793    3.1914    4.6202
+    cl_mt_pol_c       1.2047    0.19956     0.16565        0.01    4.8842           0     0.0094836    -4.7419e-35       0.01    0.67774     1.0725     1.0799     1.0863     1.0923     1.0979     1.1094     1.1604      1.2266     1.2815      1.3101       1.3673     1.4553     1.5743    1.7398    1.9123
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 2250, it_z_n = 27
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 51.033781 seconds.
+Elapsed time is 21.278675 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15        p20        p25        p35        p50        p65        p75         p80          p85         p90        p95       p99      p99_9 
+                     _______    _______    _________    _______    ______    ________    __________    __________    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    ________    ________    _________    _______    _______    ______    ______
+
+    cl_mt_pol_a      -4.0095     4.8948     -1.2208         -20    48.848    0.019369     0.0097276    9.3784e-35        -20    -19.346    -15.423    -11.748    -9.0703    -7.1397    -5.7384    -3.8701    -2.2198    -1.1299    -0.53826    -0.28915    -0.071174    0.11566    0.52046    1.4858    2.7313
+    cl_mt_pol_coh    -2.9932     5.2493     -1.7537     -20.739    53.723           0    3.0182e-05    9.3784e-35    -20.441     -19.29    -15.181    -11.249     -8.415    -6.3673    -4.8699    -2.8913    -1.1276     0.0415     0.67431     0.95798       1.2365     1.5674     2.0756    3.1907     4.614
+    cl_mt_pol_c       1.2051    0.19929     0.16538        0.01    4.8753           0     0.0093773    9.3784e-35       0.01    0.70997     1.0757     1.0821     1.0873     1.0923      1.097     1.1087     1.1585     1.2269      1.2739       1.318       1.3627     1.4613     1.5732     1.747    1.9073
 
 </pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
-fl_z_rho = 0.85
-fl_z_sig = 0.3
-xxxxxxxxxxxxxxxxxxxxxxxxxxx
-xxxxxxxxxxxxxxxxxxxxxxxxxxx
-Elapsed time is 1.515554 seconds.
-Elapsed time is 0.574628 seconds.
-tb_outcomes_meansdperc: mean, sd, percentiles
-                       mean        sd      coefofvar      min       max       pYis0      pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15        p20        p25        p35        p50         p65         p75        p80       p85       p90       p95       p99      p99_9 
-                     ________    ______    _________    _______    ______    _______    __________    __________    _______    _______    _______    _______    _______    _______    _______    _______    ________    ________    _______    _______    ______    ______    ______    ______    ______
-
-    cl_mt_pol_a       -1.8977    4.6353     -2.4425         -10        50    0.03254      0.025417      2.59e-09        -10        -10    -8.9572    -7.8342    -6.7914    -5.8289    -5.0267    -3.5829     -1.8182    -0.53476    0.18717    0.90909    1.8717    3.3957    6.2032    12.781    21.364
-    cl_mt_pol_coh    -0.78473    5.1934      -6.618     -10.454    56.971          0    0.00024203    6.6345e-10    -10.331    -9.9862    -8.6193    -7.3252    -6.2147    -5.2022    -4.2719    -2.7248    -0.85478     0.59749     1.7036     2.5221    3.6675    5.3857    8.4167    15.571    24.744
-    cl_mt_pol_c         1.113    1.7525      1.5746     -10.454     6.971          0    0.00024203    6.6345e-10    -10.331    -9.9862    0.95356     1.0318     1.0588     1.0789     1.0957     1.1288      1.1986      1.3228      1.492      1.627    1.7916    1.9787    2.2948    2.8848    3.5118
-
-</pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
-xxxxxxxxxxxxxxxxxxxxxxxxxxx
-fl_z_rho = 0.85
+fl_z_rho = 0.8
 fl_z_sig = 0.35
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
-Elapsed time is 1.522561 seconds.
-Elapsed time is 0.541237 seconds.
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 750, it_z_n = 15
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 7.876281 seconds.
+Elapsed time is 3.212868 seconds.
 tb_outcomes_meansdperc: mean, sd, percentiles
-                       mean        sd      coefofvar      min       max       pYis0      pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15        p20        p25        p35        p50         p65         p75       p80       p85       p90       p95       p99      p99_9 
-                     ________    ______    _________    _______    ______    ________    _________    __________    _______    _______    _______    _______    _______    _______    _______    _______    ________    ________    _______    ______    ______    ______    ______    ______    ______
+                      mean        sd      coefofvar      min       max       pYis0       pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15        p20        p25        p35        p50        p65         p75        p80        p85       p90       p95       p99      p99_9 
+                     _______    ______    _________    _______    ______    ________    __________    __________    _______    _______    _______    _______    _______    _______    _______    _______    _______    ________    ________    ______    _______    ______    ______    ______    ______
 
-    cl_mt_pol_a         -1.34    5.6081     -4.1852         -10        50    0.033589      0.02902    2.2825e-06        -10        -10    -8.9572    -7.8342    -6.7914    -5.8289    -5.0267    -3.5027     -1.6578    -0.29412    0.66845    1.7112    3.1551    5.2406    9.0909    18.155    30.027
-    cl_mt_pol_coh    -0.21341    6.2556     -29.313     -10.511    58.472           0    0.0002535    5.3215e-07    -10.405    -10.074    -8.6986    -7.4068    -6.2796    -5.2619    -4.3283    -2.7123    -0.74747     0.78389     2.2726     3.418    4.9807    7.3083    11.455    21.263    33.955
-    cl_mt_pol_c        1.1266    1.8806      1.6693     -10.511    8.4716           0    0.0002535    5.3215e-07    -10.405    -10.074    0.94719      1.037     1.0631     1.0839     1.1013     1.1341      1.2175      1.3402     1.5552    1.7312     1.864    2.0918    2.4856     3.219    4.0341
+    cl_mt_pol_a      -4.6876    5.7855     -1.2342         -20        50    0.031629      0.014475    1.8628e-31        -20        -20    -16.822    -13.925    -11.495    -9.5327    -7.9439     -5.514    -2.9907     -1.3084    -0.46729         0    0.28037     1.028     2.243    5.0467    8.6916
+    cl_mt_pol_coh    -3.7262    6.2469     -1.6765     -21.011    55.575           0    7.6293e-05    2.5294e-32    -20.778    -20.151    -16.715    -13.558     -11.01    -8.9339    -7.2357    -4.6648    -2.0477    -0.22103     0.75097    1.2076     1.8006    2.5855     3.984    7.0436    11.015
+    cl_mt_pol_c       1.2461    0.2806     0.22518        0.01    5.5753           0      0.014019    2.5294e-32       0.01       0.01      1.047      1.065     1.0791     1.0919     1.1038     1.1253      1.172      1.2534       1.333    1.3998     1.5062    1.6223    1.7809    2.0812    2.3894
 
-</pre><h2 id="4">Simulate Model with schok persistence = 0.995 (very persistent)</h2><pre class="codeinput">close <span class="string">all</span>
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 1250, it_z_n = 19
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 18.120350 seconds.
+Elapsed time is 5.749947 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY      p0_1        p1        p5         p10        p15        p20        p25        p35        p50        p65         p75          p80         p85        p90       p95       p99      p99_9 
+                     _______    _______    _________    _______    ______    ________    __________    __________    _______    ______    _______    _______    _______    _______    _______    _______    _______    ________    ________    _________    _______    _______    ______    ______    ______
+
+    cl_mt_pol_a      -4.6791     5.7938     -1.2382         -20        50    0.021147      0.015503    2.6871e-32        -20       -20    -16.859    -13.886    -11.474    -9.5112    -7.8846    -5.4728    -3.0048     -1.3221    -0.42468    -0.032051    0.30449    0.97756    2.2115    4.9599    8.5497
+    cl_mt_pol_coh     -3.717     6.2531     -1.6823     -21.011     55.58           0    6.3726e-05    3.6861e-33    -20.766    -20.15    -16.751    -13.583     -11.01    -8.9193    -7.2278    -4.6248    -2.0339    -0.19794     0.76951       1.2321     1.8172     2.6081    3.9647    6.9864    10.914
+    cl_mt_pol_c       1.2447    0.27943      0.2245        0.01    5.5804           0      0.013902    3.6861e-33       0.01      0.01     1.0617     1.0746     1.0844     1.0935     1.1017     1.1184     1.1718      1.2491      1.3195       1.3916     1.5082      1.614    1.7802    2.0613    2.3738
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 1750, it_z_n = 23
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 38.519384 seconds.
+Elapsed time is 12.852800 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15        p20        p25        p35        p50        p65         p75          p80        p85        p90       p95       p99      p99_9 
+                     _______    _______    _________    _______    ______    ________    __________    __________    _______    _______    _______    _______    _______    _______    _______    _______    _______    ________    ________    _________    ______    _______    ______    ______    ______
+
+    cl_mt_pol_a      -4.6653     5.7777     -1.2385         -20        50    0.019079       0.01491    3.2349e-32        -20        -20    -16.836    -13.873     -11.43     -9.468    -7.8661    -5.4634    -3.0206     -1.2986    -0.41762    -0.017162    0.3032    0.98398    2.1854    4.9085    8.5126
+    cl_mt_pol_coh    -3.7023     6.2367     -1.6846     -21.011    55.583           0    5.7196e-05    8.9898e-33    -20.758    -20.149    -16.711    -13.546    -10.978    -8.8897    -7.1917    -4.6236    -2.0141    -0.18937     0.77909       1.2441    1.8146     2.5998    3.9519     6.964    10.871
+    cl_mt_pol_c        1.245    0.27845     0.22365        0.01     5.583           0      0.013881    8.9898e-33       0.01       0.01     1.0677     1.0785     1.0864     1.0934     1.1001      1.117     1.1706      1.2477      1.3285       1.3916    1.4947     1.6235    1.7803    2.0678    2.3777
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 2250, it_z_n = 27
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 63.283428 seconds.
+Elapsed time is 55.279700 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15        p20        p25        p35        p50        p65         p75          p80         p85        p90       p95       p99      p99_9 
+                     _______    _______    _________    _______    ______    ________    __________    __________    _______    _______    _______    _______    _______    _______    _______    _______    _______    ________    ________    _________    _______    _______    ______    ______    ______
+
+    cl_mt_pol_a      -4.6896     5.7874     -1.2341         -20        50    0.020392      0.015442    6.3658e-33        -20        -20    -16.886    -13.897    -11.468    -9.5062     -7.887    -5.4582    -3.0294     -1.3167    -0.44484    -0.040036    0.30249    0.98754    2.1708     4.911     8.492
+    cl_mt_pol_coh     -3.728     6.2455     -1.6753     -21.011    55.584           0    5.3206e-05    6.0958e-34    -20.808    -20.149    -16.767    -13.586    -11.012     -8.923    -7.2186    -4.6443    -2.0301    -0.20863     0.75264       1.2168     1.7833     2.5824    3.9373    6.9364    10.832
+    cl_mt_pol_c       1.2438    0.27831     0.22375        0.01    5.5845           0      0.013883    6.0958e-34       0.01       0.01     1.0699     1.0803      1.087      1.093     1.0987     1.1159     1.1705      1.2476      1.3244       1.3904     1.4962     1.6192    1.7756    2.0624    2.3779
+
+</pre><h2 id="4">Simulate Model with High Persistence</h2><pre class="codeinput">close <span class="string">all</span>
 
 <span class="keyword">for</span> fl_z_sig = ar_fl_z_sig
 
@@ -307,10 +571,8 @@ tb_outcomes_meansdperc: mean, sd, percentiles
     it_param_set = 9;
     [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
 
-    <span class="comment">% Simulation Accuracy</span>
-    param_map(<span class="string">'it_a_n'</span>) = it_a_n;
-    param_map(<span class="string">'it_z_n'</span>) = it_z_n;
-    param_map(<span class="string">'fl_z_rho'</span>) = ar_fl_z_rho(3);
+    <span class="comment">% Shock Parameters</span>
+    param_map(<span class="string">'fl_z_rho'</span>) = ar_fl_z_rho(1);
     param_map(<span class="string">'fl_z_sig'</span>) = fl_z_sig;
 
     <span class="comment">% Borrowing Parameters</span>
@@ -328,14 +590,20 @@ tb_outcomes_meansdperc: mean, sd, percentiles
     support_map(<span class="string">'bl_time'</span>) = true;
     support_map(<span class="string">'bl_profile'</span>) = false;
 
-    <span class="comment">% Call Grid Generator &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid&gt;</span>
-    [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
-
-    <span class="comment">% Call Dynamic Programming Problem &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv&gt;</span>
-    result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
-
-    <span class="comment">% Call Distribution CProgram</span>
-    result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    <span class="keyword">for</span> it_accuracy = 1:length(ar_it_a_n_hg)
+        <span class="comment">% Accuracy Regular</span>
+        param_map(<span class="string">'it_a_n'</span>) = ar_it_a_n_hg(it_accuracy);
+        param_map(<span class="string">'it_z_n'</span>) = ar_it_z_n_hg(it_accuracy);
+        disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+        disp([<span class="string">'it_a_n = '</span> num2str(ar_it_a_n_hg(it_accuracy)) <span class="string">', it_z_n = '</span> num2str(ar_it_z_n_hg(it_accuracy))]);
+        disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+        <span class="comment">% Call Grid Generator &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid&gt;</span>
+        [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+        <span class="comment">% Call Dynamic Programming Problem &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv&gt;</span>
+        result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
+        <span class="comment">% Call Distribution CProgram</span>
+        result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    <span class="keyword">end</span>
 
     <span class="comment">% Snap</span>
     snapnow;
@@ -347,90 +615,208 @@ close <span class="string">all</span>;
 clear <span class="string">all</span>;
 </pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
-fl_z_rho = 0.9
+fl_z_rho = 0.95
+fl_z_sig = 0.05
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 750, it_z_n = 15
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 9.107580 seconds.
+Elapsed time is 0.706634 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                       mean         sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY      p0_1       p1         p5         p10        p15        p20         p25         p35         p50         p65         p75         p80         p85          p90        p95       p99       p99_9  
+                     ________    ________    _________    _______    ______    ________    __________    __________    ______    _______    _______    _______    _______    ________    ________    ________    ________    ________    ________    ________    ________    _________    ______    ______    ________
+
+    cl_mt_pol_a       -1.4575      2.1508     -1.4757         -20    47.757    0.090673     0.0011447    1.2917e-35       -20    -12.991    -4.0187    -2.8037    -2.3364     -2.0561     -1.7757     -1.4019    -0.93458    -0.56075    -0.37383    -0.18692    -0.18692    -0.093458         0         0    0.093458
+    cl_mt_pol_coh    -0.27224      2.2968     -8.4365     -20.252    52.556           0    3.4872e-06    1.7168e-35    -19.91    -12.521    -2.9716    -1.7129    -1.2741    -0.93797    -0.64945    -0.24125     0.27617     0.67998     0.91558      1.0426       1.141       1.2306    1.3137    1.4297      1.5559
+    cl_mt_pol_c        1.2082    0.089724    0.074264        0.01    4.7989           0     0.0011447    1.7168e-35      0.01     1.0413     1.0765      1.102     1.1202      1.1375      1.1548      1.1809      1.2124      1.2407        1.26      1.2712      1.2843       1.3016    1.3452    1.4297      1.5126
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 1250, it_z_n = 19
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 22.234495 seconds.
+Elapsed time is 1.871345 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                       mean         sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY       p0_1        p1         p5         p10         p15          p20         p25         p35        p50         p65         p75         p80          p85          p90        p95        p99        p99_9  
+                     ________    ________    _________    _______    ______    ________    __________    ___________    _______    _______    _______    ________    ________    _________    ________    _______    ________    ________    ________    ________    _________    _________    ______    ________    ________
+
+    cl_mt_pol_a      -0.86024      1.2622     -1.4672         -20    47.813    0.050064    0.00031117     2.0715e-34    -17.139    -5.1362    -2.2756     -1.7708     -1.4904       -1.266     -1.0978    -0.8734    -0.59295    -0.36859    -0.25641    -0.20032    -0.088141    -0.032051         0    0.024038    0.080128
+    cl_mt_pol_coh     0.36382      1.3541      3.7218     -20.252    52.556           0    7.9628e-07     2.0715e-34    -16.979    -4.1929    -1.1595    -0.61119    -0.31005    -0.098814    0.076684    0.34704     0.64325      0.8822      1.0325      1.0959        1.181       1.2431    1.3314      1.4498      1.5559
+    cl_mt_pol_c        1.2303    0.072284    0.058753        0.01    4.7658           0    0.00031117    -5.3599e-36     1.0457     1.0714     1.1125      1.1439      1.1634       1.1779      1.1889     1.2071      1.2317      1.2545      1.2694        1.28       1.2962       1.3055    1.3345      1.4257      1.4977
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 1750, it_z_n = 23
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 57.173245 seconds.
+Elapsed time is 3.363801 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                       mean         sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY      p0_1        p1         p5         p10         p15         p20          p25         p35         p50        p65         p75         p80          p85          p90        p95        p99        p99_9 
+                     ________    ________    _________    _______    ______    ________    __________    __________    _______    _______    _______    ________    ________    ________    _________    ________    _______    ________    ________    ________    _________    _________    ______    ________    _______
+
+    cl_mt_pol_a      -0.91319      1.3741     -1.5047         -20    47.797    0.040783    0.00037987    4.0869e-36    -17.878    -6.1442      -2.46     -1.8993     -1.5789     -1.3787      -1.1785    -0.89817    -0.5778    -0.37757    -0.25744    -0.17735    -0.097254    -0.057208         0    0.022883    0.10297
+    cl_mt_pol_coh     0.30743      1.4725      4.7898     -20.252    52.556           0    8.7346e-07    4.0869e-36    -17.742    -5.2687    -1.3458    -0.76507    -0.42707    -0.18709    0.0026096     0.30115    0.63757     0.87913       1.023       1.099       1.1736       1.2509    1.3296      1.4462     1.5559
+    cl_mt_pol_c        1.2282    0.073311    0.059689        0.01    4.7708           0    0.00037987    1.3082e-36     1.0511     1.0712     1.1073      1.1399      1.1604      1.1753       1.1878      1.2071      1.228      1.2521      1.2711      1.2804       1.2908       1.3041    1.3479      1.4253     1.4782
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 2250, it_z_n = 27
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 79.970927 seconds.
+Elapsed time is 4.556990 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                       mean         sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY       p0_1        p1         p5         p10         p15         p20          p25         p35         p50         p65         p75         p80         p85          p90        p95        p99        p99_9 
+                     ________    ________    _________    _______    ______    ________    __________    ___________    _______    _______    _______    ________    ________    ________    _________    ________    ________    ________    ________    ________    ________    _________    ______    ________    _______
+
+    cl_mt_pol_a      -0.94149      1.4143     -1.5022         -20    47.789    0.039262    0.00040757    -1.5489e-34    -17.945     -6.548       -2.5     -1.9395     -1.6281     -1.4101      -1.2233    -0.94306    -0.60053    -0.38256    -0.25801    -0.19573    -0.10231    -0.071174         0    0.022242    0.08452
+    cl_mt_pol_coh     0.27729      1.5151       5.464     -20.252    52.556           0    8.7512e-07    -1.5489e-34    -17.825    -5.6902    -1.4158    -0.81763    -0.47595    -0.22961    -0.034529     0.27287     0.61815     0.87592      1.0164      1.0951      1.1695       1.2482    1.3273      1.4422     1.5559
+    cl_mt_pol_c        1.2269    0.073564    0.059957        0.01    4.7745           0    0.00040757    -1.1314e-34     1.0544     1.0715     1.1052      1.1376      1.1583       1.174       1.1866      1.2064      1.2276      1.2505      1.2699       1.278      1.2888       1.3058    1.3393      1.4215     1.4801
+
+</pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+fl_z_rho = 0.95
 fl_z_sig = 0.2
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
-Elapsed time is 1.728625 seconds.
-Elapsed time is 0.379747 seconds.
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 750, it_z_n = 15
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 3.218624 seconds.
+Elapsed time is 0.343091 seconds.
 tb_outcomes_meansdperc: mean, sd, percentiles
-                      mean        sd      coefofvar      min       max       pYis0       pYisMINY      pYisMAXY       p0_1        p1         p5         p10        p15        p20        p25        p35        p50         p65        p75        p80        p85       p90       p95       p99      p99_9 
-                     _______    ______    _________    _______    ______    ________    __________    ___________    _______    _______    _______    _______    _______    _______    _______    _______    ________    ________    ______    _______    _______    ______    ______    ______    ______
+                      mean        sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY       p0_1        p1         p5         p10        p15        p20        p25        p35        p50         p65         p75         p80          p85         p90         p95       p99      p99_9 
+                     _______    _______    _________    _______    ______    ________    __________    ___________    _______    _______    _______    _______    _______    _______    _______    _______    _______    _________    ________    ________    _________    ________    _______    ______    ______
 
-    cl_mt_pol_a      -2.4033    3.7962     -1.5796         -10        50    0.034238      0.023405    -1.3354e-34        -10        -10    -8.9572    -7.8342    -6.7914    -5.8289    -4.9465    -3.5027     -1.8984    -0.69519         0    0.10695    0.66845     1.631    3.3957    7.9679    13.824
-    cl_mt_pol_coh    -1.3022    4.2925     -3.2963     -10.361    55.534           0    0.00025528    -1.3354e-34    -10.222    -9.8775     -8.591    -7.2841    -6.1346    -5.1484    -4.2342    -2.7015    -0.91011     0.42826     1.172     1.6963     2.4026    3.4963    5.5682    10.625    16.996
-    cl_mt_pol_c       1.1011    1.6713      1.5179     -10.361    5.5343           0    0.00025528    -1.3354e-34    -10.222    -9.8775    0.97402     1.0333     1.0559     1.0723     1.0875      1.118      1.1773      1.2822    1.4081     1.5666     1.7093    1.9163    2.2282    2.7564    3.2723
+    cl_mt_pol_a      -4.0634     4.9125      -1.209         -20    48.879    0.035378     0.0099021    -2.2744e-35        -20    -19.439    -15.514    -11.869    -9.1589    -7.1963    -5.7944    -3.9252     -2.243       -1.215    -0.56075    -0.37383    -0.093458    0.093458    0.46729    1.4953    2.8037
+    cl_mt_pol_coh    -3.0507      5.269     -1.7271     -20.739    53.721           0    4.3526e-05    -2.2744e-35    -20.419     -19.36    -15.243    -11.357    -8.5187    -6.4788    -4.9676    -2.9447    -1.2036    -0.010276     0.63845     0.93705       1.2356      1.5483     2.0936    3.2204    4.6503
+    cl_mt_pol_c        1.205    0.20164     0.16733        0.01     4.854           0     0.0095486    -2.4939e-35       0.01    0.64014     1.0532     1.0665     1.0786     1.0903     1.1011     1.1207     1.1622         1.23      1.2744      1.3109       1.3771      1.4549     1.5595    1.7687    1.9083
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 1250, it_z_n = 19
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 9.502606 seconds.
+Elapsed time is 1.458349 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY      p0_1       p1         p5         p10        p15        p20        p25        p35        p50         p65         p75         p80         p85         p90         p95       p99      p99_9 
+                     _______    _______    _________    _______    ______    ________    __________    __________    ______    _______    _______    _______    _______    _______    _______    _______    _______    _________    ________    _______    _________    ________    _______    ______    ______
+
+    cl_mt_pol_a      -4.0571     4.9144     -1.2113         -20    48.822    0.018459     0.0098897    4.6189e-34       -20    -19.439    -15.513    -11.811    -9.1747    -7.2115    -5.8093    -3.9022    -2.2756      -1.1538    -0.59295    -0.3125    -0.088141    0.080128    0.52885    1.4824    2.7724
+    cl_mt_pol_coh     -3.044     5.2703     -1.7314     -20.739    53.722           0    3.6628e-05    4.6189e-34    -20.43    -19.334    -15.245    -11.349    -8.5223    -6.4639    -4.9582    -2.9658    -1.1875    0.0072505     0.65821    0.95007       1.2361      1.5549     2.0698    3.2047    4.6349
+    cl_mt_pol_c       1.2049    0.20029     0.16623        0.01    4.9002           0     0.0095229    4.6189e-34      0.01    0.66557     1.0665     1.0761     1.0842      1.092     1.0994     1.1133     1.1603       1.2248      1.2792     1.3188       1.3563      1.4699     1.5708    1.7362    1.9129
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 1750, it_z_n = 23
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 20.158611 seconds.
+Elapsed time is 3.345337 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY       p0_1        p1         p5         p10        p15        p20        p25        p35        p50        p65         p75        p80          p85         p90        p95       p99      p99_9 
+                     _______    _______    _________    _______    ______    ________    __________    ___________    _______    _______    _______    _______    _______    _______    _______    _______    _______    ________    _______    ________    _________    _______    _______    ______    ______
+
+    cl_mt_pol_a       -4.048     4.9079     -1.2124         -20    48.839    0.019522     0.0098511    -4.7419e-35        -20    -19.399    -15.475    -11.791    -9.1476    -7.1854    -5.7838    -3.9016    -2.2597     -1.1384    -0.5778    -0.29748    -0.097254    0.10297    0.50343    1.4645     2.746
+    cl_mt_pol_coh    -3.0342     5.2632     -1.7346     -20.739    53.723           0    3.2839e-05    -4.7419e-35    -20.436    -19.322    -15.238    -11.321    -8.4992    -6.4423    -4.9387    -2.9505    -1.1718    0.013876    0.66212     0.94525       1.2363     1.5512     2.0793    3.1914    4.6202
+    cl_mt_pol_c       1.2047    0.19956     0.16565        0.01    4.8842           0     0.0094836    -4.7419e-35       0.01    0.67774     1.0725     1.0799     1.0863     1.0923     1.0979     1.1094     1.1604      1.2266     1.2815      1.3101       1.3673     1.4553     1.5743    1.7398    1.9123
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 2250, it_z_n = 27
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 25.231398 seconds.
+Elapsed time is 8.413574 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15        p20        p25        p35        p50        p65        p75         p80          p85         p90        p95       p99      p99_9 
+                     _______    _______    _________    _______    ______    ________    __________    __________    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    ________    ________    _________    _______    _______    ______    ______
+
+    cl_mt_pol_a      -4.0095     4.8948     -1.2208         -20    48.848    0.019369     0.0097276    9.3784e-35        -20    -19.346    -15.423    -11.748    -9.0703    -7.1397    -5.7384    -3.8701    -2.2198    -1.1299    -0.53826    -0.28915    -0.071174    0.11566    0.52046    1.4858    2.7313
+    cl_mt_pol_coh    -2.9932     5.2493     -1.7537     -20.739    53.723           0    3.0182e-05    9.3784e-35    -20.441     -19.29    -15.181    -11.249     -8.415    -6.3673    -4.8699    -2.8913    -1.1276     0.0415     0.67431     0.95798       1.2365     1.5674     2.0756    3.1907     4.614
+    cl_mt_pol_c       1.2051    0.19929     0.16538        0.01    4.8753           0     0.0093773    9.3784e-35       0.01    0.70997     1.0757     1.0821     1.0873     1.0923      1.097     1.1087     1.1585     1.2269      1.2739       1.318       1.3627     1.4613     1.5732     1.747    1.9073
 
 </pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
-fl_z_rho = 0.9
-fl_z_sig = 0.3
-xxxxxxxxxxxxxxxxxxxxxxxxxxx
-xxxxxxxxxxxxxxxxxxxxxxxxxxx
-Elapsed time is 1.573760 seconds.
-Elapsed time is 0.554583 seconds.
-tb_outcomes_meansdperc: mean, sd, percentiles
-                       mean        sd      coefofvar      min       max       pYis0       pYisMINY      pYisMAXY      p0_1       p1         p5         p10        p15        p20        p25        p35        p50         p65         p75       p80       p85       p90       p95       p99      p99_9 
-                     ________    ______    _________    _______    ______    ________    __________    __________    ______    _______    _______    _______    _______    _______    _______    _______    ________    ________    _______    ______    ______    ______    ______    ______    ______
-
-    cl_mt_pol_a       -1.2557    6.2346      -4.965         -10        50    0.035435      0.033195    2.3903e-05       -10        -10    -9.0374    -7.9947    -7.0321    -6.0695    -5.1872    -3.6631     -1.8182    -0.45455    0.50802     1.631    3.2353    5.8021    10.455    22.086    36.684
-    cl_mt_pol_coh    -0.13239    6.9782     -52.708     -10.524    58.855           0    0.00029261     6.739e-06    -10.48    -10.239    -8.8527    -7.6016    -6.4928    -5.4744    -4.5627    -2.9217    -0.94673     0.59771     2.1342    3.4109     5.223    7.9928    13.136    25.606    41.282
-    cl_mt_pol_c        1.1233    2.0377       1.814     -10.524    8.8547           0    0.00029261     6.739e-06    -10.48    -10.239    0.91806     1.0328     1.0659     1.0833     1.0989     1.1273      1.1964      1.3576     1.5986    1.7385    1.9547    2.2679    2.7273    3.6959    4.7948
-
-</pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
-xxxxxxxxxxxxxxxxxxxxxxxxxxx
-fl_z_rho = 0.9
+fl_z_rho = 0.95
 fl_z_sig = 0.35
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
-Elapsed time is 1.644238 seconds.
-Elapsed time is 1.201084 seconds.
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 750, it_z_n = 15
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 1.667545 seconds.
+Elapsed time is 0.737800 seconds.
 tb_outcomes_meansdperc: mean, sd, percentiles
-                       mean        sd      coefofvar      min       max      pYis0       pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15        p20        p25        p35        p50        p65        p75       p80       p85       p90       p95       p99      p99_9 
-                     ________    ______    _________    _______    _____    ________    __________    __________    _______    _______    _______    _______    _______    _______    _______    _______    _______    ________    ______    ______    ______    ______    ______    ______    ______
+                      mean        sd      coefofvar      min       max       pYis0       pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15        p20        p25        p35        p50        p65         p75        p80        p85       p90       p95       p99      p99_9 
+                     _______    ______    _________    _______    ______    ________    __________    __________    _______    _______    _______    _______    _______    _______    _______    _______    _______    ________    ________    ______    _______    ______    ______    ______    ______
 
-    cl_mt_pol_a      -0.43232    7.8604     -18.182         -10       50    0.036481      0.037356     0.0004277        -10        -10    -9.1176    -8.0749    -7.0321    -6.0695    -5.1872    -3.6631     -1.738    -0.13369    1.2299    2.8342    5.0802    8.6096    15.107    30.909    47.513
-    cl_mt_pol_coh     0.70892    8.7354      12.322     -10.568    61.13           0    0.00030073    8.1573e-05    -10.534    -10.326    -8.9379    -7.6889    -6.6313    -5.6152    -4.6512    -2.9788    -0.8807     0.76848    2.9037    4.7018    7.1665    10.999     18.04    34.981    52.981
-    cl_mt_pol_c        1.1412    2.1918      1.9205     -10.568    11.13           0    0.00030073    8.1573e-05    -10.534    -10.326    0.91099     1.0321     1.0677     1.0866     1.1007     1.1332     1.2026      1.3706    1.6489    1.8631    2.1004    2.4485    3.0166    4.2481    5.8374
+    cl_mt_pol_a      -4.6876    5.7855     -1.2342         -20        50    0.031629      0.014475    1.8628e-31        -20        -20    -16.822    -13.925    -11.495    -9.5327    -7.9439     -5.514    -2.9907     -1.3084    -0.46729         0    0.28037     1.028     2.243    5.0467    8.6916
+    cl_mt_pol_coh    -3.7262    6.2469     -1.6765     -21.011    55.575           0    7.6293e-05    2.5294e-32    -20.778    -20.151    -16.715    -13.558     -11.01    -8.9339    -7.2357    -4.6648    -2.0477    -0.22103     0.75097    1.2076     1.8006    2.5855     3.984    7.0436    11.015
+    cl_mt_pol_c       1.2461    0.2806     0.22518        0.01    5.5753           0      0.014019    2.5294e-32       0.01       0.01      1.047      1.065     1.0791     1.0919     1.1038     1.1253      1.172      1.2534       1.333    1.3998     1.5062    1.6223    1.7809    2.0812    2.3894
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 1250, it_z_n = 19
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 5.850613 seconds.
+Elapsed time is 2.227417 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY      p0_1        p1        p5         p10        p15        p20        p25        p35        p50        p65         p75          p80         p85        p90       p95       p99      p99_9 
+                     _______    _______    _________    _______    ______    ________    __________    __________    _______    ______    _______    _______    _______    _______    _______    _______    _______    ________    ________    _________    _______    _______    ______    ______    ______
+
+    cl_mt_pol_a      -4.6791     5.7938     -1.2382         -20        50    0.021147      0.015503    2.6871e-32        -20       -20    -16.859    -13.886    -11.474    -9.5112    -7.8846    -5.4728    -3.0048     -1.3221    -0.42468    -0.032051    0.30449    0.97756    2.2115    4.9599    8.5497
+    cl_mt_pol_coh     -3.717     6.2531     -1.6823     -21.011     55.58           0    6.3726e-05    3.6861e-33    -20.766    -20.15    -16.751    -13.583     -11.01    -8.9193    -7.2278    -4.6248    -2.0339    -0.19794     0.76951       1.2321     1.8172     2.6081    3.9647    6.9864    10.914
+    cl_mt_pol_c       1.2447    0.27943      0.2245        0.01    5.5804           0      0.013902    3.6861e-33       0.01      0.01     1.0617     1.0746     1.0844     1.0935     1.1017     1.1184     1.1718      1.2491      1.3195       1.3916     1.5082      1.614    1.7802    2.0613    2.3738
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 1750, it_z_n = 23
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 13.039319 seconds.
+Elapsed time is 4.361665 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15        p20        p25        p35        p50        p65         p75          p80        p85        p90       p95       p99      p99_9 
+                     _______    _______    _________    _______    ______    ________    __________    __________    _______    _______    _______    _______    _______    _______    _______    _______    _______    ________    ________    _________    ______    _______    ______    ______    ______
+
+    cl_mt_pol_a      -4.6653     5.7777     -1.2385         -20        50    0.019079       0.01491    3.2349e-32        -20        -20    -16.836    -13.873     -11.43     -9.468    -7.8661    -5.4634    -3.0206     -1.2986    -0.41762    -0.017162    0.3032    0.98398    2.1854    4.9085    8.5126
+    cl_mt_pol_coh    -3.7023     6.2367     -1.6846     -21.011    55.583           0    5.7196e-05    8.9898e-33    -20.758    -20.149    -16.711    -13.546    -10.978    -8.8897    -7.1917    -4.6236    -2.0141    -0.18937     0.77909       1.2441    1.8146     2.5998    3.9519     6.964    10.871
+    cl_mt_pol_c        1.245    0.27845     0.22365        0.01     5.583           0      0.013881    8.9898e-33       0.01       0.01     1.0677     1.0785     1.0864     1.0934     1.1001      1.117     1.1706      1.2477      1.3285       1.3916    1.4947     1.6235    1.7803    2.0678    2.3777
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+it_a_n = 2250, it_z_n = 27
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 25.091405 seconds.
+Elapsed time is 27.404582 seconds.
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd       coefofvar      min       max       pYis0       pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15        p20        p25        p35        p50        p65         p75          p80         p85        p90       p95       p99      p99_9 
+                     _______    _______    _________    _______    ______    ________    __________    __________    _______    _______    _______    _______    _______    _______    _______    _______    _______    ________    ________    _________    _______    _______    ______    ______    ______
+
+    cl_mt_pol_a      -4.6896     5.7874     -1.2341         -20        50    0.020392      0.015442    6.3658e-33        -20        -20    -16.886    -13.897    -11.468    -9.5062     -7.887    -5.4582    -3.0294     -1.3167    -0.44484    -0.040036    0.30249    0.98754    2.1708     4.911     8.492
+    cl_mt_pol_coh     -3.728     6.2455     -1.6753     -21.011    55.584           0    5.3206e-05    6.0958e-34    -20.808    -20.149    -16.767    -13.586    -11.012     -8.923    -7.2186    -4.6443    -2.0301    -0.20863     0.75264       1.2168     1.7833     2.5824    3.9373    6.9364    10.832
+    cl_mt_pol_c       1.2438    0.27831     0.22375        0.01    5.5845           0      0.013883    6.0958e-34       0.01       0.01     1.0699     1.0803      1.087      1.093     1.0987     1.1159     1.1705      1.2476      1.3244       1.3904     1.4962     1.6192    1.7756    2.0624    2.3779
 
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
-%% Test Shock Persistence and Variance Default (Save + Borr Distribution)
+%% Test Shock Persistence and Variance *Default* (Save + Borr Distribution)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 %
 % Testing the
 % <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html
-% ff_az_ds> program for solving the savings only dynamic
-% programming problem.
+% ff_az_ds_vecsv> program for solving the savings and borrowing problem. 
 %
 % defaults in ffs_abz_set_default_param.m are:
 %
 % * param_map('fl_z_rho') = 0.8;
 % * param_map('fl_z_sig') = 0.2;
 %
-% here test three levels of persistence:
+% here test three levels of persistence and shocks shown below that
+% generate different levels of aggregate savings, and proportions of
+% households borrowing and savings.
 %
-% * iid shocks
-% * 0.5 persistence
-% * 0.995 persistence
+% @seealso
 %
-% for each shock, thest at these standard deviations of the log normal
-% shock:
-%
-% * 0.01
-% * 0.05
-% * 0.30
-%
-% Changing the shock process changes the natural borrowing constraint.
-% Given no default, there is no mass at *pYisMINY*. More persistent shock
-% and higher variance reduces minY, decreasing borrowing limit. 
-%
-% Substantial fraction borrowing, with positive overall mean assets.
-% Increasing variance for consumption and asset as shock variance increase,
-% and less borrowing. Higher means as shock persistence increases given
-% these parameters. 
+% * test interest rate no default: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_borr/html/fsi_abz_ds_vecsv_nbc.html fsi_abz_ds_vecsv_nbc> 
+% * test interest rate default: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_borr/html/fsi_abz_ds_vecsv_default.html fsi_abz_ds_vecsv_default> 
+% * test shock no default: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_ds_vecsv_shk_nbc.html fsi_abz_ds_vecsv_shk_nbc>
+% * test shock default: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_ds_vecsv_shk_default.html fsi_abz_ds_vecsv_shk_default>
+% * test shock default (very low cmin): <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_ds_vecsv_shk_default_lowcmin.html fsi_abz_ds_vecsv_shk_default_lowcmin>
+% * test preference no default: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_pref/html/fsi_abz_ds_vecsv_pref_nbc.html fsi_abz_ds_vecsv_pref_nbc>
+% * test preference default: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_pref/html/fsi_abz_ds_vecsv_pref_default.html fsi_abz_ds_vecsv_pref_default>
+% * test preference default (very low cmin): <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_pref/html/fsi_abz_ds_vecsv_pref_default_lowcmin.html fsi_abz_ds_vecsv_pref_default_lowcmin>
 %
 
 %% Set Shared Parameters
@@ -438,18 +824,22 @@ tb_outcomes_meansdperc: mean, sd, percentiles
 close all;
 clear all;
 
-ar_fl_z_rho = [0.80, 0.85, 0.90];
-ar_fl_z_sig = [0.20, 0.30, 0.35];
-it_a_n = 750;
-it_z_n = 15;
+% Shocks
+ar_fl_z_rho = [0.65, 0.80, 0.95];
+ar_fl_z_sig = [0.05, 0.20, 0.35];
 
+% Accuracy
+ar_it_a_n_hg = [750, 1250, 1750, 2250];
+ar_it_z_n_hg = [15, 19, 23, 27];
+
+% Borrowing/Savings Parameters
 bl_default = true;
-fl_c_min = 0.03; % irrelevant when bl_default = false
-fl_b_bd = -10;   
+fl_c_min = 0.01; % irrelevant when bl_default = false
+fl_b_bd = -20;
 fl_r_save = 0.02;
 fl_r_borr = 0.065;
 
-%% Simulate Model with schok persistence = 0.0, IID
+%% Simulate Model with Low Persistence
 
 for fl_z_sig = ar_fl_z_sig
 
@@ -469,9 +859,7 @@ for fl_z_sig = ar_fl_z_sig
     it_param_set = 9;
     [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
 
-    % Simulation Accuracy
-    param_map('it_a_n') = it_a_n;
-    param_map('it_z_n') = it_z_n;
+    % Shock Parameters
     param_map('fl_z_rho') = ar_fl_z_rho(1);
     param_map('fl_z_sig') = fl_z_sig;
 
@@ -490,14 +878,20 @@ for fl_z_sig = ar_fl_z_sig
     support_map('bl_time') = true;
     support_map('bl_profile') = false;
 
-    % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
-    [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
-
-    % Call Dynamic Programming Problem <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv>
-    result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
-
-    % Call Distribution CProgram
-    result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    for it_accuracy = 1:length(ar_it_a_n_hg)
+        % Accuracy Regular
+        param_map('it_a_n') = ar_it_a_n_hg(it_accuracy);
+        param_map('it_z_n') = ar_it_z_n_hg(it_accuracy);        
+        disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+        disp(['it_a_n = ' num2str(ar_it_a_n_hg(it_accuracy)) ', it_z_n = ' num2str(ar_it_z_n_hg(it_accuracy))]);
+        disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+        % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
+        [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+        % Call Dynamic Programming Problem <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv>
+        result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
+        % Call Distribution CProgram
+        result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    end
 
     % Snap
     snapnow;
@@ -507,7 +901,7 @@ end
 % close all
 close all;
 
-%% Simulate Model with schok persistence = 0.5
+%% Simulate Model with Medium Persistence
 
 close all
 
@@ -529,10 +923,8 @@ for fl_z_sig = ar_fl_z_sig
     it_param_set = 9;
     [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
 
-    % Simulation Accuracy
-    param_map('it_a_n') = it_a_n;
-    param_map('it_z_n') = it_z_n;
-    param_map('fl_z_rho') = ar_fl_z_rho(2);
+    % Shock Parameters
+    param_map('fl_z_rho') = ar_fl_z_rho(1);
     param_map('fl_z_sig') = fl_z_sig;
 
     % Borrowing Parameters
@@ -550,14 +942,20 @@ for fl_z_sig = ar_fl_z_sig
     support_map('bl_time') = true;
     support_map('bl_profile') = false;
 
-    % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
-    [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
-
-    % Call Dynamic Programming Problem <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv>
-    result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
-
-    % Call Distribution CProgram
-    result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    for it_accuracy = 1:length(ar_it_a_n_hg)
+        % Accuracy Regular
+        param_map('it_a_n') = ar_it_a_n_hg(it_accuracy);
+        param_map('it_z_n') = ar_it_z_n_hg(it_accuracy);        
+        disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+        disp(['it_a_n = ' num2str(ar_it_a_n_hg(it_accuracy)) ', it_z_n = ' num2str(ar_it_z_n_hg(it_accuracy))]);
+        disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+        % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
+        [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+        % Call Dynamic Programming Problem <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv>
+        result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
+        % Call Distribution CProgram
+        result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    end
 
     % Snap
     snapnow;
@@ -567,7 +965,7 @@ end
 % close all
 close all;
 
-%% Simulate Model with schok persistence = 0.995 (very persistent)
+%% Simulate Model with High Persistence
 
 close all
 
@@ -589,10 +987,8 @@ for fl_z_sig = ar_fl_z_sig
     it_param_set = 9;
     [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
 
-    % Simulation Accuracy
-    param_map('it_a_n') = it_a_n;
-    param_map('it_z_n') = it_z_n;
-    param_map('fl_z_rho') = ar_fl_z_rho(3);
+    % Shock Parameters
+    param_map('fl_z_rho') = ar_fl_z_rho(1);
     param_map('fl_z_sig') = fl_z_sig;
 
     % Borrowing Parameters
@@ -610,14 +1006,20 @@ for fl_z_sig = ar_fl_z_sig
     support_map('bl_time') = true;
     support_map('bl_profile') = false;
 
-    % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
-    [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
-
-    % Call Dynamic Programming Problem <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv>
-    result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
-
-    % Call Distribution CProgram
-    result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    for it_accuracy = 1:length(ar_it_a_n_hg)
+        % Accuracy Regular
+        param_map('it_a_n') = ar_it_a_n_hg(it_accuracy);
+        param_map('it_z_n') = ar_it_z_n_hg(it_accuracy);        
+        disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+        disp(['it_a_n = ' num2str(ar_it_a_n_hg(it_accuracy)) ', it_z_n = ' num2str(ar_it_z_n_hg(it_accuracy))]);
+        disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+        % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
+        [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+        % Call Dynamic Programming Problem <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv>
+        result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
+        % Call Distribution CProgram
+        result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    end
 
     % Snap
     snapnow;

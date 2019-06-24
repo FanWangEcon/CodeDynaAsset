@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Solve Save + Borr Dynamic Programming Problem (Optimized-Vectorized)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-20"><meta name="DC.source" content="ff_abz_vf_vecsv.m"><style type="text/css">
+      --><title>Solve Save + Borr Dynamic Programming Problem (Optimized-Vectorized)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-23"><meta name="DC.source" content="ff_abz_vf_vecsv.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -94,19 +94,6 @@ bl_input_override = true;
 
 [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override); <span class="comment">% 1 for override</span>
 default_params = {param_map support_map armt_map func_map};
-</pre><pre class="codeoutput">Warning:
-"C:\Users\fan\CodeDynaAsset\m_az\solve\profile\ff_az_ds_vecsv_default_p7" not
-found in path. 
-Warning: "C:\Users\fan\CodeDynaAsset\m_az\test\ff_az_ds_vecsv" not found in
-path. 
-Warning: "C:\Users\fan\CodeDynaAsset\m_az\test\ff_az_ds_vecsv\test_pref" not
-found in path. 
-Warning: "C:\Users\fan\CodeDynaAsset\m_az\test\ff_az_ds_vecsv\test_pref\html"
-not found in path. 
-Warning: "C:\Users\fan\CodeDynaAsset\m_az\test\ff_az_ds_vecsv\test_shock" not
-found in path. 
-Warning: "C:\Users\fan\CodeDynaAsset\m_az\test\ff_az_ds_vecsv\test_shock\html"
-not found in path. 
 </pre><h2 id="4">Parse Parameters 1</h2><pre class="codeinput"><span class="comment">% if varargin only has param_map and support_map,</span>
 params_len = length(varargin);
 [default_params{1:params_len}] = varargin{:};
@@ -133,8 +120,8 @@ params_group = values(armt_map, {<span class="string">'ar_a'</span>, <span class
 [ar_a, mt_z_trans, ar_z] = params_group{:};
 
 <span class="comment">% func_map</span>
-params_group = values(func_map, {<span class="string">'f_util_log'</span>, <span class="string">'f_util_crra'</span>, <span class="string">'f_cons'</span>, <span class="string">'f_coh'</span>, <span class="string">'f_cons_coh'</span>});
-[f_util_log, f_util_crra, f_cons, f_coh, f_cons_coh] = params_group{:};
+params_group = values(func_map, {<span class="string">'f_util_log'</span>, <span class="string">'f_util_crra'</span>, <span class="string">'f_cons_checkcmin'</span>, <span class="string">'f_coh'</span>, <span class="string">'f_cons_coh'</span>});
+[f_util_log, f_util_crra, f_cons_checkcmin, f_coh, f_cons_coh] = params_group{:};
 
 <span class="comment">% param_map</span>
 params_group = values(param_map, {<span class="string">'it_a_n'</span>, <span class="string">'it_z_n'</span>, <span class="string">'fl_crra'</span>, <span class="string">'fl_beta'</span>, <span class="string">'fl_c_min'</span>,<span class="keyword">...</span>
@@ -327,13 +314,14 @@ mt_pol_perc_change = zeros([it_maxiter_val, it_z_n]);
     st_file_name = [st_profile_prefix st_profile_name_main st_profile_suffix];
     profsave(profile(<span class="string">'info'</span>), strcat(st_profile_path, st_file_name));
 <span class="keyword">end</span>
+</pre><pre class="codeoutput">Elapsed time is 3.838325 seconds.
 </pre><h2 id="13">Process Optimal Choices</h2><pre class="codeinput">result_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
 result_map(<span class="string">'mt_val'</span>) = mt_val;
 result_map(<span class="string">'mt_pol_idx'</span>) = mt_pol_idx;
 
 result_map(<span class="string">'cl_mt_pol_a'</span>) = {mt_pol_a, zeros(1)};
 result_map(<span class="string">'cl_mt_pol_coh'</span>) = {f_coh(ar_z, ar_a'), zeros(1)};
-result_map(<span class="string">'cl_mt_pol_c'</span>) = {f_cons(ar_z, ar_a', mt_pol_a), zeros(1)};
+result_map(<span class="string">'cl_mt_pol_c'</span>) = {f_cons_checkcmin(ar_z, ar_a', mt_pol_a), zeros(1)};
 result_map(<span class="string">'ar_st_pol_names'</span>) = [<span class="string">"cl_mt_pol_a"</span>, <span class="string">"cl_mt_pol_coh"</span>, <span class="string">"cl_mt_pol_c"</span>];
 
 <span class="keyword">if</span> (bl_post)
@@ -820,8 +808,8 @@ params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z'});
 [ar_a, mt_z_trans, ar_z] = params_group{:};
 
 % func_map
-params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons', 'f_coh', 'f_cons_coh'});
-[f_util_log, f_util_crra, f_cons, f_coh, f_cons_coh] = params_group{:};
+params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons_checkcmin', 'f_coh', 'f_cons_coh'});
+[f_util_log, f_util_crra, f_cons_checkcmin, f_coh, f_cons_coh] = params_group{:};
 
 % param_map
 params_group = values(param_map, {'it_a_n', 'it_z_n', 'fl_crra', 'fl_beta', 'fl_c_min',...
@@ -1050,7 +1038,7 @@ result_map('mt_pol_idx') = mt_pol_idx;
 
 result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
 result_map('cl_mt_pol_coh') = {f_coh(ar_z, ar_a'), zeros(1)};
-result_map('cl_mt_pol_c') = {f_cons(ar_z, ar_a', mt_pol_a), zeros(1)};
+result_map('cl_mt_pol_c') = {f_cons_checkcmin(ar_z, ar_a', mt_pol_a), zeros(1)};
 result_map('ar_st_pol_names') = ["cl_mt_pol_a", "cl_mt_pol_coh", "cl_mt_pol_c"];
 
 if (bl_post)

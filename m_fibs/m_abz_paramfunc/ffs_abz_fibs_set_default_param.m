@@ -51,7 +51,12 @@ param_map('fl_z_sig') = 0.2;
 % households face if they default.
 param_map('fl_b_bd') = -20; % borrow bound, = 0 if save only
 param_map('fl_default_aprime') = 0;
-param_map('bl_default') = 1; % if borrowing is default allowed
+
+% Borrowing Setting 1: Default Allowed, Bridge True, bl_rollover does not matter
+% Borrowing Setting 2: Default Allowed, Bridge False, bl_rollover matter
+param_map('bl_default') = true; % if borrowing is default allowed
+param_map('bl_bridge') = false; % if false, roll-over allowed.
+param_map('bl_rollover') = false; % if false, roll-over allowed.
 
 % Savings
 param_map('fl_a_min') = 0; % if there is minimum savings requirement
@@ -68,6 +73,7 @@ param_map('fl_r_borr') = 0.035;
 % formal informal parameters
 % fl_for_br_block are the formal borrowing grid block sizes.
 param_map('fl_r_inf') = 0.06;
+param_map('fl_r_inf_bridge') = 0.06;
 param_map('fl_r_fsv') = 0.01;
 param_map('fl_r_fbr') = 0.035;
 param_map('fl_for_br_block') = -1;

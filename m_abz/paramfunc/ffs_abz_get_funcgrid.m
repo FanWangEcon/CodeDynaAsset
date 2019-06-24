@@ -86,7 +86,7 @@ params_group = values(support_map, {'bl_graph_funcgrids', 'bl_display_funcgrids'
 
 %% Get Equations
 
-[f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons_coh, f_cons] = ...
+[f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons_coh, f_cons, f_cons_checkcmin] = ...
     ffs_abz_set_functions(fl_crra, fl_c_min, fl_r_save, fl_r_borr, fl_w);
 
 %% Get Asset and Choice Grid
@@ -114,8 +114,9 @@ func_map('f_util_crra') = f_util_crra;
 func_map('f_util_standin') = f_util_standin;
 func_map('f_inc') = f_inc;
 func_map('f_coh') = f_coh;
-func_map('f_cons_coh') = f_cons_coh;
 func_map('f_cons') = f_cons;
+func_map('f_cons_coh') = f_cons_coh;
+func_map('f_cons_checkcmin') = f_cons_checkcmin;
 
 %% Graph: A, Shocks, COH, and Defaults
 % # y-axis : coh(a,z)

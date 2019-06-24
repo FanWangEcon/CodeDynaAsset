@@ -1,6 +1,5 @@
 function [st_root_path] = preamble(varargin)
-
-%% Default
+%% PREAMBLE gets path to root and generates all path
 % generate path by default, but when calling this from other functions to
 % get st_root_path, do not generate path.
 

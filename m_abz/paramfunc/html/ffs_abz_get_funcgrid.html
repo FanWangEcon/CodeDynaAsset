@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Generate States, Choices and Shocks Grids and Get Functions (Borr + Save)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-16"><meta name="DC.source" content="ffs_abz_get_funcgrid.m"><style type="text/css">
+      --><title>Generate States, Choices and Shocks Grids and Get Functions (Borr + Save)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-23"><meta name="DC.source" content="ffs_abz_get_funcgrid.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -106,7 +106,7 @@ params_group = values(param_map, {<span class="string">'fl_r_save'</span>, <span
 params_group = values(support_map, {<span class="string">'bl_graph_funcgrids'</span>, <span class="string">'bl_display_funcgrids'</span>});
 [bl_graph_funcgrids, bl_display_funcgrids] = params_group{:};
 </pre><h2 id="5">Get Shock Grids</h2><pre class="codeinput">[~, mt_z_trans, ar_stationary, ar_z] = ffto_gen_tauchen_jhl(fl_z_mu,fl_z_rho,fl_z_sig,it_z_n);
-</pre><h2 id="6">Get Equations</h2><pre class="codeinput">[f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons_coh, f_cons] = <span class="keyword">...</span>
+</pre><h2 id="6">Get Equations</h2><pre class="codeinput">[f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons_coh, f_cons, f_cons_checkcmin] = <span class="keyword">...</span>
     ffs_abz_set_functions(fl_crra, fl_c_min, fl_r_save, fl_r_borr, fl_w);
 </pre><h2 id="7">Get Asset and Choice Grid</h2><p>note this requires ar_z</p><pre class="codeinput"><span class="keyword">if</span> (bl_loglin)
     <span class="comment">% C:\Users\fan\M4Econ\asset\grid\ff_grid_loglin.m</span>
@@ -127,8 +127,9 @@ func_map(<span class="string">'f_util_crra'</span>) = f_util_crra;
 func_map(<span class="string">'f_util_standin'</span>) = f_util_standin;
 func_map(<span class="string">'f_inc'</span>) = f_inc;
 func_map(<span class="string">'f_coh'</span>) = f_coh;
-func_map(<span class="string">'f_cons_coh'</span>) = f_cons_coh;
 func_map(<span class="string">'f_cons'</span>) = f_cons;
+func_map(<span class="string">'f_cons_coh'</span>) = f_cons_coh;
+func_map(<span class="string">'f_cons_checkcmin'</span>) = f_cons_checkcmin;
 </pre><h2 id="9">Graph: A, Shocks, COH, and Defaults</h2><div><ol><li>y-axis : coh(a,z)</li><li>x-axis : a</li><li>color: z</li><li>overlay: coh points points where there is default.</li></ol></div><pre class="codeinput"><span class="keyword">if</span> (bl_graph_funcgrids)
 
     <span class="comment">% mesh a and and z</span>
@@ -376,11 +377,12 @@ mt_z_trans
 
 pos = 1 ; key = f_coh ; val = @(z,b)(z*fl_w+(b.*(1+fl_r_save).*(b&gt;0)+b.*(1+fl_r_borr).*(b&lt;=0)))
 pos = 2 ; key = f_cons ; val = @(z,b,bprime)(f_coh(z,b)-bprime)
-pos = 3 ; key = f_cons_coh ; val = @(coh,bprime)(coh-bprime)
-pos = 4 ; key = f_inc ; val = @(z,b)(z*fl_w+(b.*(fl_r_save).*(b&gt;0)+b.*(fl_r_borr).*(b&lt;=0)))
-pos = 5 ; key = f_util_crra ; val = @(c)(((c).^(1-fl_crra)-1)./(1-fl_crra))
-pos = 6 ; key = f_util_log ; val = @(c)log(c)
-pos = 7 ; key = f_util_standin ; val = @(z,b)f_util_log(f_coh(z,b).*(f_coh(z,b)&gt;0)+fl_c_min.*(f_coh(z,b)&lt;=0))
+pos = 3 ; key = f_cons_checkcmin ; val = @(z,b,bprime)((f_coh(z,b)-bprime).*(f_coh(z,b)-bprime&gt;=fl_c_min)+fl_c_min.*(f_coh(z,b)-bprime&lt;fl_c_min))
+pos = 4 ; key = f_cons_coh ; val = @(coh,bprime)(coh-bprime)
+pos = 5 ; key = f_inc ; val = @(z,b)(z*fl_w+(b.*(fl_r_save).*(b&gt;0)+b.*(fl_r_borr).*(b&lt;=0)))
+pos = 6 ; key = f_util_crra ; val = @(c)(((c).^(1-fl_crra)-1)./(1-fl_crra))
+pos = 7 ; key = f_util_log ; val = @(c)log(c)
+pos = 8 ; key = f_util_standin ; val = @(z,b)f_util_log(f_coh(z,b).*(f_coh(z,b)&gt;0)+fl_c_min.*(f_coh(z,b)&lt;=0))
 </pre><pre class="codeinput"><span class="keyword">end</span>
 </pre><pre class="codeoutput">
 ans = 
@@ -481,7 +483,7 @@ params_group = values(support_map, {'bl_graph_funcgrids', 'bl_display_funcgrids'
 
 %% Get Equations
 
-[f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons_coh, f_cons] = ...
+[f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons_coh, f_cons, f_cons_checkcmin] = ...
     ffs_abz_set_functions(fl_crra, fl_c_min, fl_r_save, fl_r_borr, fl_w);
 
 %% Get Asset and Choice Grid
@@ -509,8 +511,9 @@ func_map('f_util_crra') = f_util_crra;
 func_map('f_util_standin') = f_util_standin;
 func_map('f_inc') = f_inc;
 func_map('f_coh') = f_coh;
-func_map('f_cons_coh') = f_cons_coh;
 func_map('f_cons') = f_cons;
+func_map('f_cons_coh') = f_cons_coh;
+func_map('f_cons_checkcmin') = f_cons_checkcmin;
 
 %% Graph: A, Shocks, COH, and Defaults
 % # y-axis : coh(a,z)

@@ -7,8 +7,11 @@
 function [ar_aprime_nobridge, ar_b_bridge, ar_c_bridge] = ffs_fibs_inf_bridge(varargin)
 %% FFS_FIBS_INF_BRIDGE Amount of Informal Borrowing Needed as Bridge Loans
 % Bridge loan needed to pay for debt that is still unpaid due to
-% insufficient cash on hand. Only informal lender or some other lender
-% willing to extend this loan offers it
+% insufficient cash on hand. Potentially, only informal lender or some
+% other lender willing to extend this loan offers. So some existing debts
+% are paid back with revenue, parts that revenue can not cover is paid back
+% potentially with informal borrowing. This works with single and multiple
+% assets.
 %
 % @param bl_b_is_principle boolean solving with aggregate savings as
 % savings + debt principles + interests, or just principles no interests.
@@ -114,16 +117,36 @@ end
 % remaining aprime after allocating to pay debt not covered by coh
 ar_aprime_nobridge = ar_aprime - ar_b_bridge;
 
+%% Display
 if (bl_display_infbridge)
-    tab_aprime_bridge = table(ar_coh_today, ar_b_bridge, ar_c_bridge, ar_aprime, ar_aprime_nobridge);
-    disp('coh_today: includes all income - debt');
-    disp(tab_aprime_bridge);
-end
+        
+    disp(['bl_b_is_principle:', num2str(bl_b_is_principle)]);
+    disp(['fl_r_bridge:', num2str(fl_r_bridge)]);
+    disp(['ar_aprime:', num2str(ar_aprime')]);
+    disp(['ar_b_bridge:', num2str(ar_coh_today')]);
+    disp(['bl_display_infbridge:', num2str(bl_display_infbridge)]);
 
-% Display
-if (bl_display_infbridge)
-    tab_bridge = table(ar_coh_today, ar_aprime, ar_aprime_nobridge, ar_c_bridge, ar_b_bridge);
-    disp(tab_bridge);
+    tab_aprime_bridge = table(ar_coh_today, ar_aprime, ar_b_bridge, ar_c_bridge, ar_aprime_nobridge);
+    tab_aprime_bridge.Properties.VariableDescriptions{'ar_coh_today'} = ...
+        '*ar_coh_today*: cash on hand someone arrives in the period with given debt and current income';
+    tab_aprime_bridge.Properties.VariableDescriptions{'ar_aprime'} = ...
+        '*ar_aprime*: func called during finding optimal aprime, this is the current aprime overall choice';
+    tab_aprime_bridge.Properties.VariableDescriptions{'ar_b_bridge'} = ...
+        '*ar_b_bridge*: amount of bridge loan required to cover negative coh (includes interest if bl_b_is_principle = false)';
+    tab_aprime_bridge.Properties.VariableDescriptions{'ar_c_bridge'} = ...
+        '*ar_c_bridge*: consumption gain today from the bridge loan to cover negative coh';
+    tab_aprime_bridge.Properties.VariableDescriptions{'ar_aprime_nobridge'} = ...
+        ['ar_aprime_nobridge:' ...
+         'aprime = -10, -5 for bridge; -5 left for other borrowing choices;' ...
+         'aprime = -10, -11 for bridge (given r), +1 savings left, reduces consumption, back to neg coh, infeasible state;'];
+    
+    disp(tab_aprime_bridge);
+    sc_summary = summary(tab_aprime_bridge);
+    cl_var_name = fieldnames(sc_summary);
+    for it_var_name = 1:length(cl_var_name)
+        disp(sc_summary.(cl_var_name{it_var_name}).Description);
+    end
+    
 end
 
 end

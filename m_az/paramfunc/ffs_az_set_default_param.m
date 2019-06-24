@@ -70,6 +70,11 @@ param_map('it_trans_power_dist') = 1000;
 param_map('it_tol_pol_nochange') = 25; % number of iterations where policy does not change
 
 %% Setting support_map container
+% Sets up support container map. One important input is st_root_path, which
+% is obtained from the
+% <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/preamble.m
+% preamble> file. If input for file is false, will not reload all path.
+% Loading path takes several seconds of time.
 
 support_map = containers.Map('KeyType','char', 'ValueType','any');
 % root directory

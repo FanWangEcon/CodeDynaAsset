@@ -4,7 +4,8 @@
 % Table of Content.*
 
 %%
-function [f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons_coh, f_cons] = ffs_abz_set_functions(varargin)
+function [f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons_coh, f_cons, f_cons_checkcmin] = ...
+    ffs_abz_set_functions(varargin)
 %% FFS_ABZ_SET_FUNCTIONS setting model functions
 % define functions here to avoid copy paste mistakes
 %
@@ -58,8 +59,15 @@ f_inc = @(z, b) (z*fl_w + (b.*(fl_r_save).*(b>0) + b.*(fl_r_borr).*(b<=0))); % z
 % Cash on Hand, b is principle
 f_coh = @(z, b) (z*fl_w + (b.*(1+fl_r_save).*(b>0) + b.*(1+fl_r_borr).*(b<=0)));
 % Simple Consumption b and k
-f_cons = @(z, b, bprime) (f_coh(z, b) - bprime);
 f_cons_coh = @(coh, bprime) (coh - bprime);
+f_cons = @(z, b, bprime) (f_coh(z, b) - bprime);
+% f_cons_checkcmin is not used in main solution, but at the end of solution file to
+% get consumption based on optimal choices. Here we add conditioning based
+% on cmin, so that consumption is not negative. If do not do this, for
+% defaulters, next period a'=0, would seem like they have large negative
+% consumption. 
+f_cons_checkcmin = @(z, b, bprime) ((f_coh(z, b) - bprime).*(f_coh(z, b) - bprime >= fl_c_min) + ...
+                                     fl_c_min.*(f_coh(z, b) - bprime < fl_c_min));
 % Simple Consumption b and k
 f_util_standin = @(z, b) f_util_log(f_coh(z,b).*(f_coh(z,b) > 0) + ...
                                     fl_c_min.*(f_coh(z,b) <= 0));

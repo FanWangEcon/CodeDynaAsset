@@ -83,7 +83,7 @@ function result_map = ff_abz_fibs_vf_vecsv(varargin)
 % from ffs_abz_fibs_set_default_param as we possibly change it_a_n and it_z_n
 % here.
 
-it_param_set = 4;
+it_param_set = 1;
 bl_input_override = true;
 [param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
 
@@ -134,9 +134,9 @@ params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_coh', 'f_cons_c
 
 % param_map
 params_group = values(param_map, {'it_a_n', 'it_z_n', 'fl_crra', 'fl_beta', 'fl_c_min',...
-    'fl_nan_replace', 'bl_default', 'fl_default_aprime'});
+    'fl_nan_replace', 'bl_default', 'bl_bridge', 'bl_rollover', 'fl_default_aprime'});
 [it_a_n, it_z_n, fl_crra, fl_beta, fl_c_min, ...
-    fl_nan_replace, bl_default, fl_default_aprime] = params_group{:};
+    fl_nan_replace, bl_default, bl_bridge, bl_rollover, fl_default_aprime] = params_group{:};
 params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol', 'it_tol_pol_nochange'});
 [it_maxiter_val, fl_tol_val, fl_tol_pol, it_tol_pol_nochange] = params_group{:};
 
@@ -268,18 +268,23 @@ while bl_vfi_continue
             mt_coh_negp1_mesh_neg_aprime = zeros(size(ar_a_neg')) + ar_coh(ar_coh_forinfsolve_idx);
             mt_neg_aprime_mesh_coh_negp1 = zeros(size(mt_coh_negp1_mesh_neg_aprime)) + ar_a_neg';
 
-            %         mt_neg_aprime_mesh_coh_1col4poscoh = zeros([length(ar_a_neg), (length(ar_coh_neg)+1)]) + ar_a_neg';
-            %         ar_coh_neg_idx_1col4poscoh = ar_coh_neg_idx(1:(length(ar_coh_neg)+1));
+            if (bl_bridge)
+                %         mt_neg_aprime_mesh_coh_1col4poscoh = zeros([length(ar_a_neg), (length(ar_coh_neg)+1)]) + ar_a_neg';
+                %         ar_coh_neg_idx_1col4poscoh = ar_coh_neg_idx(1:(length(ar_coh_neg)+1));
 
-            % 6. *CASE B* Solve for: if (fl_ap < 0) and if (fl_coh < 0)
-            [mt_aprime_nobridge_negcoh, ~, mt_c_bridge_negcoh] = ffs_fibs_inf_bridge(...
-                bl_b_is_principle, fl_r_inf, ...
-                mt_neg_aprime_mesh_coh_negp1(:,ar_coh_forinfsolve_a_neg_idx), ...
-                mt_coh_negp1_mesh_neg_aprime(:,ar_coh_forinfsolve_a_neg_idx), ...
-                bl_display_infbridge, bl_input_override);
+                % 6. *CASE B* Solve for: if (fl_ap < 0) and if (fl_coh < 0)
+                [mt_aprime_nobridge_negcoh, ~, mt_c_bridge_negcoh] = ffs_fibs_inf_bridge(...
+                    bl_b_is_principle, fl_r_inf, ...
+                    mt_neg_aprime_mesh_coh_negp1(:,ar_coh_forinfsolve_a_neg_idx), ...
+                    mt_coh_negp1_mesh_neg_aprime(:,ar_coh_forinfsolve_a_neg_idx), ...
+                    bl_display_infbridge, bl_input_override);
 
-            % generate mt_aprime_nobridge
-            mt_neg_aprime_mesh_coh_negp1(:, ar_coh_forinfsolve_a_neg_idx) = mt_aprime_nobridge_negcoh;
+                % generate mt_aprime_nobridge
+                mt_neg_aprime_mesh_coh_negp1(:, ar_coh_forinfsolve_a_neg_idx) = mt_aprime_nobridge_negcoh;
+            else
+                % no bridge loan needed means roll over is allowed.
+                mt_neg_aprime_mesh_coh_negp1 = ar_a_neg';
+            end
 
             % 7. *CASE B + C* formal and informal joint choices, 1 col Case C
             bl_input_override = true;
@@ -305,15 +310,21 @@ while bl_vfi_continue
             mt_max_c_nobridge_a_neg = zeros([length(ar_a_neg), length(ar_coh)]) + 0;
             mt_c_bridge_coh_a_neg = zeros(size(mt_max_c_nobridge_a_neg)) + 0;
 
-            % 2. Fill in *Case B* Bridge C-cost
-            mt_c_bridge_coh_a_neg(:, ar_coh_neg_idx) = mt_c_bridge_negcoh;
-
             % 2. Fill in *Case B* and *Case C* (one column) Other C-cost
             mt_max_c_nobridge_negcohp1 = reshape(ar_max_c_nobridge, [size(mt_neg_aprime_mesh_coh_negp1)]);
-            mt_max_c_nobridge_a_neg(:, ar_coh_forinfsolve_idx) = mt_max_c_nobridge_negcohp1;
-            mt_max_c_nobridge_a_neg(:, ~ar_coh_forinfsolve_idx) = ...
-                zeros(size(mt_c(ar_a_neg_idx, ~ar_coh_forinfsolve_idx))) ...
-                + mt_max_c_nobridge_negcohp1(:, ~ar_coh_forinfsolve_a_neg_idx);
+
+            if (bl_bridge)                
+                % 2. Fill in *Case B* Bridge C-cost
+                mt_c_bridge_coh_a_neg(:, ar_coh_neg_idx) = mt_c_bridge_negcoh;
+                                
+                % 2. Fill in *Case B* and *Case C* (one column) Other C-cost                
+                mt_max_c_nobridge_a_neg(:, ar_coh_forinfsolve_idx) = mt_max_c_nobridge_negcohp1;
+                mt_max_c_nobridge_a_neg(:, ~ar_coh_forinfsolve_idx) = ...
+                    zeros(size(mt_c(ar_a_neg_idx, ~ar_coh_forinfsolve_idx))) ...
+                    + mt_max_c_nobridge_negcohp1(:, ~ar_coh_forinfsolve_a_neg_idx);
+            else
+                mt_max_c_nobridge_a_neg = zeros([length(ar_a_neg), length(ar_coh)]) + mt_max_c_nobridge_negcohp1;
+            end
 
             % 3. Consumption for B + C Cases
             % note, the c cost of aprime is the same for all coh > 0, but mt_c
@@ -335,8 +346,12 @@ while bl_vfi_continue
 
             % 2. Eliminate Complex Numbers
             mt_it_c_valid_idx = (mt_c <= fl_c_min);
+            if( ~bl_rollover && ~bl_bridge)
+                mt_it_c_valid_idx(:, ar_coh_neg_idx) = 1;
+            end
+            
             mt_utility(mt_it_c_valid_idx) = fl_u_cmin;
-
+            
             % 3. Store in cells
             cl_c_store{it_z_i} = mt_c;
             cl_u_c_store{it_z_i} = mt_utility;
@@ -369,8 +384,8 @@ while bl_vfi_continue
         else
             % if default is not allowed: v = u(cmin)
             mt_utility = mt_utility.*(~mt_it_c_valid_idx) + fl_nan_replace*(mt_it_c_valid_idx);
-        end
-
+        end        
+        
         % Optimization: remember matlab is column major, rows must be
         % choices, columns must be states
         % <https://en.wikipedia.org/wiki/Row-_and_column-major_order COLUMN-MAJOR>
@@ -394,6 +409,17 @@ while bl_vfi_continue
             ar_opti_aprime_z(ar_opti_c_z <= fl_c_min) = ar_a(ar_opti_c_z <= fl_c_min);
         end
 
+        % 6. no bridge and no rollover allowed
+        if( ~bl_rollover && ~bl_bridge)
+            if (bl_default)
+                % if default: only today u(cmin), transition out next period, debt wiped out
+                ar_opti_aprime_z(ar_coh_neg_idx) = fl_default_aprime;
+            else
+                % if default is not allowed: v = fl_nan_replace
+                ar_opti_aprime_z(ar_coh_neg_idx) = ar_a(fl_nan_replace);
+            end
+        end
+        
         % store optimal values
         mt_val(:,it_z_i) = ar_opti_val_z;
         mt_pol_a(:,it_z_i) = ar_opti_aprime_z;
