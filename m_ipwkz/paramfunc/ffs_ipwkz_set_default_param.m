@@ -118,7 +118,7 @@ param_map('it_tol_pol_nochange') = 25; % number of iterations where policy does 
 support_map = containers.Map('KeyType','char', 'ValueType','any');
 
 % root directory
-[st_root_path] = preamble();
+[st_root_path] = preamble(false);
 st_matimg_path_root = [st_root_path '/m_ipwkz/'];
 support_map('st_matimg_path_root') = st_matimg_path_root;
 

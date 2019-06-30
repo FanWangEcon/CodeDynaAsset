@@ -1,8 +1,9 @@
-%%
+%% Risky + Safe Asset (Save + Borr) Only Interpolated-Percentage (Optimized-Vectorized)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
+%%
 function result_map = ff_ipwkbz_vf_vecsv(varargin)
 %% FF_IPWKBZ_VF_VECSV solve infinite horizon exo shock + endo asset problem
 % This program solves the infinite horizon dynamic savings and risky
@@ -106,27 +107,25 @@ support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')]
 params_group = values(armt_map, {'ar_w_perc', 'ar_w_level', 'ar_z'});
 [ar_w_perc, ar_w_level, ar_z] = params_group{:};
 params_group = values(armt_map, {'ar_interp_c_grid', 'ar_interp_coh_grid', ...
+    'ar_a_meshk', 'ar_k_mesha', ...
     'mt_interp_coh_grid_mesh_z', 'mt_z_mesh_coh_interp_grid',...
     'mt_interp_coh_grid_mesh_w_perc',...
     'mt_w_by_interp_coh_interp_grid'});
-[ar_interp_c_grid, ar_interp_coh_grid, ...
+[ar_interp_c_grid, ar_interp_coh_grid, ar_a_meshk, ar_k_mesha, ...
     mt_interp_coh_grid_mesh_z, mt_z_mesh_coh_interp_grid, ...
     mt_interp_coh_grid_mesh_w_perc,...
     mt_w_by_interp_coh_interp_grid] = params_group{:};
 params_group = values(armt_map, {'mt_coh_wkb', 'mt_z_mesh_coh_wkb'});
 [mt_coh_wkb, mt_z_mesh_coh_wkb] = params_group{:};
 
-
 % func_map
 params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons'});
 [f_util_log, f_util_crra, f_cons] = params_group{:};
 
 % param_map
-params_group = values(param_map, {'fl_r_save', 'fl_r_borr', 'fl_w',...
-    'it_z_n', 'fl_crra', 'fl_beta', 'fl_c_min', ...
-    'fl_nan_replace', 'bl_default', 'fl_default_wprime'});
-[fl_r_save, fl_r_borr, fl_wage, it_z_n, fl_crra, fl_beta, fl_c_min ...
-    fl_nan_replace, bl_default, fl_default_wprime] = params_group{:};
+params_group = values(param_map, {'it_z_n', 'fl_crra', 'fl_beta', ...
+    'fl_nan_replace', 'fl_c_min', 'bl_default', 'fl_default_wprime'});
+[it_z_n, fl_crra, fl_beta, fl_nan_replace, fl_c_min, bl_default, fl_default_wprime] = params_group{:};
 params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol', 'it_tol_pol_nochange'});
 [it_maxiter_val, fl_tol_val, fl_tol_pol, it_tol_pol_nochange] = params_group{:};
 
@@ -332,8 +331,8 @@ while bl_vfi_continue
             % if default is not allowed, then next period same state as now
             % this is absorbing state, this is the limiting case, single
             % state space point, lowest a and lowest shock has this.
-            ar_opti_aprime_z(ar_opti_c_z <= fl_c_min) = min(ar_a);
-            ar_opti_kprime_z(ar_opti_c_z <= fl_c_min) = 0;
+            ar_opti_aprime_z(ar_opti_c_z <= fl_c_min) = min(ar_a_meshk);
+            ar_opti_kprime_z(ar_opti_c_z <= fl_c_min) = min(ar_k_mesha);
         end
 
         mt_val(:,it_z_i) = ar_opti_val_z;
@@ -413,8 +412,14 @@ end
 
 result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
-result_map('mt_pol_a') = mt_pol_a;
-result_map('mt_pol_k') = mt_pol_k;
+result_map('mt_pol_idx') = mt_pol_idx;
+
+result_map('cl_mt_pol_coh') = {mt_interp_coh_grid_mesh_z, zeros(1)};
+result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
+result_map('cl_mt_pol_k') = {mt_pol_k, zeros(1)};
+result_map('cl_mt_pol_c') = {f_cons(mt_interp_coh_grid_mesh_z, mt_pol_a, mt_pol_k), zeros(1)};
+result_map('ar_st_pol_names') = ["cl_mt_pol_coh", "cl_mt_pol_a", "cl_mt_pol_k", "cl_mt_pol_c"];
+
 
 if (bl_post)
     bl_input_override = true;

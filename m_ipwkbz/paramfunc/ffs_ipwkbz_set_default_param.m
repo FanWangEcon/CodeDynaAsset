@@ -1,8 +1,9 @@
-%%
+%% Set Model Parameters (Interpolated + Percentage + Risky + Safe Asset)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
+%%
 function [param_map, support_map] = ffs_ipwkbz_set_default_param(varargin)
 %% FFS_IPKZ_SET_DEFAULT_PARAM setting model default parameters
 % Define model parameters, similar to
@@ -24,7 +25,7 @@ function [param_map, support_map] = ffs_ipwkbz_set_default_param(varargin)
 % @example
 %
 %   it_param_set = 1;
-%   [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
+%   [param_map, support_map] = ffs_ipwkbz_set_default_param(it_param_set);
 %
 
 %% Default
@@ -72,7 +73,7 @@ param_map('fl_nan_replace') = -9999;
 % Borrowing Parameters
 param_map('fl_b_bd') = -20; % borrow bound, = 0 if save only
 param_map('fl_default_wprime') = 0; % wprime not a prime
-param_map('bl_default') = 1; % if borrowing is default allowed
+param_map('bl_default') = true; % if borrowing is default allowed
 
 % Asset Grids
 % Toal savings aggregate grid (see discussion on top). 35 points picked for
@@ -122,7 +123,7 @@ param_map('it_tol_pol_nochange') = 25; % number of iterations where policy does 
 support_map = containers.Map('KeyType','char', 'ValueType','any');
 
 % root directory
-[st_root_path] = preamble();
+[st_root_path] = preamble(false);
 st_matimg_path_root = [st_root_path '/m_ipwkbz/'];
 support_map('st_matimg_path_root') = st_matimg_path_root;
 

@@ -324,6 +324,7 @@ end
 
 result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
+result_map('mt_pol_idx') = mt_pol_idx;
 
 mt_coh = f_coh(ar_z, ar_a_meshk, ar_k_mesha);
 result_map('cl_mt_pol_coh') = {mt_coh, zeros(1)};

@@ -204,7 +204,7 @@ if (bl_graph_coh_t_coh)
             st_y_label = 'coh(a''(a,k,z), k''(a,k,z), z'') - coh(a,k,z)';
             st_x_label = 'coh(a,k,z)';
             st_title = 'coh''(a'',k'',z''|a,z) - coh(a,k,z): reachable coh'' given coh';
-            st_legend_loc = 'southwest';
+            st_legend_loc = 'northeast';
             
         end
         

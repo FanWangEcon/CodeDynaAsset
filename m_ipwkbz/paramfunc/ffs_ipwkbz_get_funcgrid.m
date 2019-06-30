@@ -1,8 +1,9 @@
-%%
+%% Generate States, Choices and Shocks Grids and Get Functions (Interpolated + Percentage + Risky + Safe Asset)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
+%%
 function [armt_map, func_map] = ffs_ipwkbz_get_funcgrid(varargin)
 %% FFS_IPWKBZ_GET_FUNCGRID get funcs, params, states choices shocks grids
 % centralized gateway for retrieving parameters, and solution grids and
@@ -33,6 +34,9 @@ function [armt_map, func_map] = ffs_ipwkbz_get_funcgrid(varargin)
 % coh(k,w-k,z) > max(w), which also means that at max(coh) grid, the w_perc
 % choices at higher points require extrapolation. Extrapolation is based on
 % nearest extrapolation.
+%
+% Note that even when w = 0, as long as interest rate is low, only the
+% lowest level of borrowing is invalid.
 %
 % @param param_map container parameter container
 %
@@ -78,7 +82,7 @@ else
     support_map('bl_graph_funcgrids') = true;
     support_map('bl_graph_funcgrids_detail') = true;
     support_map('bl_display_funcgrids') = true;
-
+    
     % to be able to visually see choice grid points
     param_map('fl_b_bd') = -20; % borrow bound, = 0 if save only
     param_map('fl_default_aprime') = 0;
@@ -89,6 +93,7 @@ else
     param_map('it_ak_perc_n') = 45;
     param_map('fl_w_interp_grid_gap') = 2;
     param_map('fl_coh_interp_grid_gap') = 2;
+
     default_maps = {param_map, support_map};
 
     % numvarargs is the number of varagin inputted
@@ -344,10 +349,10 @@ if (bl_graph_funcgrids)
     for m = 1:numel(chart)
         set(chart(m),'Color',clr(m,:))
     end
-    if (length(ar_w_level_full) <= 100)
+%     if (length(ar_w_level_full) <= 100)
         scatter(ar_a_meshk, ar_k_mesha, 3, 'filled', ...
             'MarkerEdgeColor', 'b', 'MarkerFaceColor', 'b');
-    end
+%     end
     if (length(ar_w_level_full) <= 100)
         gf_invalid_scatter = scatter(ar_a_meshk_full(ar_bl_wkb_invalid),...
                                      ar_k_mesha_full(ar_bl_wkb_invalid),...
@@ -358,18 +363,22 @@ if (bl_graph_funcgrids)
     yline(0);
 
     title('Risky K Percentage Grids Given w=k+a (2nd Stage)')
-    ylabel('Capital Choice')
-    xlabel({'Borrowing (<0) or Saving (>0)'...
+    ylabel('Capital Choice (mt\_k)')
+    xlabel({'Borrowing (<0) or Saving (>0) (mt\_a)'...
         'Each Diagonal Line a Different w=k+a level'...
         'Percentage for Risky K along Each Diagonal'})
 
     legend2plot = fliplr([1 round(numel(chart)/3) round((2*numel(chart))/4)  numel(chart)]);
     legendCell = cellstr(num2str(ar_w_level', 'k+a=%3.2f'));
 
-    chart(length(chart)+1) = gf_invalid_scatter;
-    legendCell{length(legendCell) + 1} = 'Invalid: COH(a,b,z)<bar(b) some z';
-    legend(chart([legend2plot length(legendCell)]), legendCell([legend2plot length(legendCell)]), 'Location', 'northeast');
-
+    if (length(ar_w_level_full) <= 100)
+        chart(length(chart)+1) = gf_invalid_scatter;
+        legendCell{length(legendCell) + 1} = 'Invalid: COH(a,b,z)<bar(b) some z';
+        legend(chart([legend2plot length(legendCell)]), legendCell([legend2plot length(legendCell)]), 'Location', 'northeast');
+    else
+        legend(chart([legend2plot]), legendCell([legend2plot]), 'Location', 'northeast');
+    end
+        
     grid on;
 
     %% Graph 2: coh by shock
@@ -404,8 +413,8 @@ if (bl_graph_funcgrids)
     yline_borrbound.LineWidth = 2.5;
 
     title('Cash-on-Hand given w(k+b),k,z');
-    ylabel('Cash-on-Hand');
-    xlabel({'Index of Cash-on-Hand Discrete Point'...
+    ylabel('Cash-on-Hand (mt\_coh\_wkb\_full)');
+    xlabel({'Index of Cash-on-Hand Discrete Point (0:1:(size(mt\_coh\_wkb\_full,1)-1))'...
         'Each Segment is a w=k+b; within segment increasing k'...
         'For each w and z, coh maximizing k is different'});
 
@@ -447,7 +456,8 @@ if (bl_graph_funcgrids)
     yline0 = yline(0);
     yline0.HandleVisibility = 'off';
 
-    title('Aggregate Savings Percentage Grids (1st Stage)');
+    title({'Aggregate Savings Percentage Grids (1st Stage)' ...
+           'y=mt\_w\_by\_interp\_coh\_interp\_grid, and, y=ar\_interp\_coh\_grid'});
     ylabel('1st Stage Aggregate Savings Choices');
     xlabel({'Cash-on-Hand Levels (Interpolation Points)'...
             'w(coh)>min-agg-save, coh(k(w),w-k)>=bar(b)'});
@@ -474,8 +484,8 @@ if (bl_graph_funcgrids_detail)
     xline(0);
     yline(0);
     title('Cash-on-Hand given w(k+b),k,z');
-    ylabel('Cash-on-Hand');
-    xlabel({'Index of Cash-on-Hand Discrete Point'});
+    ylabel('Cash-on-Hand (y=ar\_coh\_kpzgrid\_unique)');
+    xlabel({'Index of Cash-on-Hand Discrete Point' 'x = 1:length(ar\_coh\_kpzgrid\_unique)'});
     grid on;
 
     %% Graph 2: 2nd stage coh reached by k' b' choices  by coh
@@ -486,8 +496,8 @@ if (bl_graph_funcgrids_detail)
     xline(0);
     yline(0);
     title('Cash-on-Hand given w(k+b),k,z; See Clearly Sparsity Density of Grid across Z');
-    ylabel('Cash-on-Hand');
-    xlabel({'Cash-on-Hand'});
+    ylabel('Cash-on-Hand (y = ar\_coh\_kpzgrid\_unique)');
+    xlabel({'Cash-on-Hand' 'x = ar\_coh\_kpzgrid\_unique'});
     grid on;
 end
 
@@ -495,60 +505,91 @@ end
 
 if (bl_display_funcgrids)
 
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('ar_z');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(ar_z));
     disp(ar_z);
 
-    disp('ar_w_level');
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('ar_w_level_full');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(ar_w_level_full));
-    disp(ar_w_level_full');
+    disp(ar_w_level_full);
 
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_w_by_interp_coh_interp_grid');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(mt_w_by_interp_coh_interp_grid));
+    disp(head(array2table(mt_w_by_interp_coh_interp_grid), 10));
+    disp(tail(array2table(mt_w_by_interp_coh_interp_grid), 10));
 
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_z_trans');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(mt_z_trans));
-    disp(mt_z_trans');
+    disp(head(array2table(mt_z_trans), 10));
+    disp(tail(array2table(mt_z_trans), 10));
 
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('ar_interp_coh_grid');
-    disp(size(ar_interp_coh_grid));
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     summary(array2table(ar_interp_coh_grid'));
 
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('ar_interp_c_grid');
-    disp(size(ar_interp_c_grid));
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     summary(array2table(ar_interp_c_grid'));
 
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_interp_coh_grid_mesh_z');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(mt_interp_coh_grid_mesh_z));
-    summary(array2table(mt_interp_coh_grid_mesh_z));
+    disp(head(array2table(mt_interp_coh_grid_mesh_z), 10));
+    disp(tail(array2table(mt_interp_coh_grid_mesh_z), 10));
 
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_a');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(mt_a));
-    %     summary(array2table(mt_a));
-    %     disp(mt_a);
+    disp(head(array2table(mt_a), 10));
+    disp(tail(array2table(mt_a), 10));
 
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('ar_a_meshk');
-    disp(size(ar_a_meshk));
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     summary(array2table(ar_a_meshk));
-    %     disp(ar_a_meshk');
 
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_k');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(mt_k));
-    %     summary(array2table(mt_k));
-    %     disp(mt_k);
+    disp(head(array2table(mt_k), 10));
+    disp(tail(array2table(mt_k), 10));
 
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('ar_k_mesha');
-    disp(size(ar_k_mesha));
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     summary(array2table(ar_k_mesha));
-    %     disp(ar_k_mesha');
 
-    disp('mt_coh');
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('mt_coh_wkb_full');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(mt_coh_wkb_full));
-    summary(array2table(mt_coh_wkb_full));
-    %     disp(mt_coh_wkb);
-
-    disp('mt_coh_wkb_full')
-    disp(mt_coh_wkb_full)
+    disp(head(array2table(mt_coh_wkb_full), 10));
+    disp(tail(array2table(mt_coh_wkb_full), 10));
 
     param_map_keys = keys(func_map);
     param_map_vals = values(func_map);
