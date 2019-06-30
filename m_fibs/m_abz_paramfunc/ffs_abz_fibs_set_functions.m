@@ -4,8 +4,9 @@
 % Table of Content.*
 
 %%
-function [f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons_coh_fbis, f_cons_coh_save, f_bprime] = ffs_abz_fibs_set_functions(varargin)
-%% FFS_ABZ_SET_FUNCTIONS setting model functions
+function [f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons_coh_fbis, f_cons_coh_save, f_bprime] = ...
+    ffs_abz_fibs_set_functions(varargin)
+%% FFS_ABZ_SET_FIBS_FUNCTIONS setting model functions
 % Define functions for the abz problem with formal and informal borrowing
 % and savings. See here:
 % <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_functions.html
