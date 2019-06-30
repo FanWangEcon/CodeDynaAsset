@@ -49,7 +49,16 @@ function [ar_aprime_nobridge, ar_b_bridge, ar_c_bridge] = ffs_fibs_inf_bridge(va
 %                              ar_aprime, ar_coh_today, ...
 %                              bl_display_infbridge, bl_input_override);
 %
-
+% @seealso
+%
+% * Formal Borrowing Grid: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_gen.html ffs_for_br_block_gen>
+% * Informal Interest Rates: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_r_inf.html ffs_r_inf>
+% * Match Borrowing to Formal Grid: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_match.html ffs_for_br_block_match>
+% * Optimize Formal and Informal, Borrowing and Savings Joint Choices: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost.html ffs_fibs_min_c_cost>
+% * Bridge Loan: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_inf_bridge.html ffs_fibs_inf_bridge>
+% * Overall Optimization: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost_bridge.html ffs_fibs_min_c_cost_bridge>
+% * Discrete Choices: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_identify_discrete.html ffs_fibs_identify_discrete>
+%
 
 %% Default and Parse Parameters
 
@@ -136,7 +145,7 @@ if (bl_display_infbridge)
     tab_aprime_bridge.Properties.VariableDescriptions{'ar_c_bridge'} = ...
         '*ar_c_bridge*: consumption gain today from the bridge loan to cover negative coh';
     tab_aprime_bridge.Properties.VariableDescriptions{'ar_aprime_nobridge'} = ...
-        ['ar_aprime_nobridge:' ...
+        ['*ar_aprime_nobridge*ar_aprime_nobridge:' ...
          'aprime = -10, -5 for bridge; -5 left for other borrowing choices;' ...
          'aprime = -10, -11 for bridge (given r), +1 savings left, reduces consumption, back to neg coh, infeasible state;'];
     

@@ -74,8 +74,8 @@ params_group = values(param_map, {'fl_b_bd', 'bl_default', 'fl_a_min', 'fl_a_max
 params_group = values(param_map, {'fl_crra', 'fl_c_min'});
 [fl_crra, fl_c_min] = params_group{:};
 
-params_group = values(param_map, {'fl_r_fbr', 'fl_r_fsv', 'fl_r_inf', 'fl_w'});
-[fl_r_fbr, fl_r_fsv, fl_r_inf, fl_w] = params_group{:};
+params_group = values(param_map, {'bl_b_is_principle', 'fl_r_fbr', 'fl_r_fsv', 'fl_r_inf', 'fl_w'});
+[bl_b_is_principle, fl_r_fbr, fl_r_fsv, fl_r_inf, fl_w] = params_group{:};
 
 params_group = values(param_map, {'st_forbrblk_type', 'fl_forbrblk_brmost', 'fl_forbrblk_brleast', 'fl_forbrblk_gap'});
 [st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap] = params_group{:};
@@ -87,11 +87,15 @@ params_group = values(support_map, {'bl_graph_funcgrids', 'bl_display_funcgrids'
 
 [~, mt_z_trans, ar_stationary, ar_z] = ffto_gen_tauchen_jhl(fl_z_mu,fl_z_rho,fl_z_sig,it_z_n);
 
-
 %% Get Equations
 
 [f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons_coh_fbis, f_cons_coh_save, f_bprime] = ...
     ffs_abz_fibs_set_functions(fl_crra, fl_c_min, fl_r_fbr, fl_r_fsv, fl_w);
+
+%% Get Formal Borrowing Blocks
+
+[ar_forbrblk, ar_forbrblk_r] = ...
+        ffs_for_br_block_gen(fl_r_fbr, st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap);
 
 %% Get Asset and Choice Grid
 % note this requires ar_z
@@ -100,15 +104,26 @@ if (bl_loglin)
     % C:\Users\fan\M4Econ\asset\grid\ff_grid_loglin.m
     ar_a = fft_gen_grid_loglin(it_a_n, fl_a_max, fl_a_min, fl_loglin_threshold);
 else
-    [ar_a, fl_borr_yminbd, fl_borr_ymaxbd] = ffs_abz_gen_borrsave_grid(...
-        fl_b_bd, bl_default, ar_z, ...
-        fl_w, fl_r_inf, fl_a_min, fl_a_max, it_a_n);
+    [ar_a_inf, fl_borr_yminbd_inf, fl_borr_ymaxbd_inf] = ffs_abz_gen_borrsave_grid(...
+        fl_b_bd, bl_default, ar_z, fl_w, ...
+        bl_b_is_principle, fl_r_inf, fl_a_min, fl_a_max, it_a_n);
+    
+    [ar_a_for, fl_borr_yminbd_for, fl_borr_ymaxbd_for] = ffs_abz_gen_borrsave_grid(...
+        fl_b_bd, bl_default, ar_z, fl_w, ...
+        bl_b_is_principle, fl_r_fbr, fl_a_min, fl_a_max, it_a_n);
+    
+    if (min(ar_a_for) <= min(ar_a_inf))
+        ar_a = ar_a_for;
+        fl_borr_yminbd = fl_borr_yminbd_for;
+        fl_borr_ymaxbd = fl_borr_ymaxbd_for;
+    else
+        ar_a = ar_a_inf;
+        fl_borr_yminbd = fl_borr_yminbd_inf;
+        fl_borr_ymaxbd = fl_borr_ymaxbd_inf;        
+    end
+    
 end
 
-%% Get Formal Borrowing Blocks
-
-[ar_forbrblk, ar_forbrblk_r] = ...
-        ffs_for_br_block_gen(fl_r_fbr, st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap);
 
 %% Store
 

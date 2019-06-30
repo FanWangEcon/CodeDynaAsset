@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>ffs_for_br_block_match</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-14"><meta name="DC.source" content="ffs_for_br_block_match.m"><style type="text/css">
+      --><title>Match Borrowing Choices to Formal Grid</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-29"><meta name="DC.source" content="ffs_for_br_block_match.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,11 +66,11 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">FFS_FOR_BR_BLOCK_MATCH formal borrowing blocks</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Adjust Inputs t</a></li><li><a href="#6">Show Details Step by Step</a></li><li><a href="#7">Standard Quicker Solve</a></li></ul></div><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><pre class="codeinput"><span class="keyword">function</span> [ar_a_grid_ceil_principle, ar_a_grid_ceil_wthr, <span class="keyword">...</span>
+  </style></head><body><div class="content"><h1>Match Borrowing Choices to Formal Grid</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FFS_FOR_BR_BLOCK_MATCH formal borrowing blocks</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Adjust Inputs t</a></li><li><a href="#6">Show Details Step by Step</a></li><li><a href="#7">Standard Quicker Solve</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [ar_a_grid_ceil_principle, ar_a_grid_ceil_wthr, <span class="keyword">...</span>
     ar_a_grid_floor_principle, ar_a_grid_floor_wthr] = ffs_for_br_block_match(varargin)
 </pre><h2 id="2">FFS_FOR_BR_BLOCK_MATCH formal borrowing blocks</h2><p>Find Value just below or above each element of <b>ar_a</b> from <b>ar_forbrblk</b>. a vector of grid points, find for each element of ar_a the element of ar_forbrblk that is just above or just below.</p><div><ol><li><i>ar_a</i>: <img src="ffs_for_br_block_match_eq03484293295041957082.png" alt="$a'_i$" style="width:11px;height:15px;"> where <img src="ffs_for_br_block_match_eq05692636549016096107.png" alt="$i \in (1,...,N)$" style="width:79px;height:15px;"></li><li><i>ar_forbrblk</i>: <img src="ffs_for_br_block_match_eq15607827006220175380.png" alt="$grid_j$" style="width:32px;height:15px;"> where <img src="ffs_for_br_block_match_eq04029012002770262774.png" alt="$j\in (1,...,M)$" style="width:83px;height:15px;"></li></ol></div><p><img src="ffs_for_br_block_match_eq13695894519637089652.png" alt="$$ForCEIL_i = argmin_{j}(ForGrid_j - a'_i | grid_j &gt; a'_i)$$" style="width:315px;height:17px;"></p><p><img src="ffs_for_br_block_match_eq12402002803269729158.png" alt="$ForCEIL_i$" style="width:69px;height:13px;"> is the level of formal borrowing if joint formal + informal borrowing is chosen.</p><p><img src="ffs_for_br_block_match_eq02305714690395215661.png" alt="$$ForFLOOR_i = argmax_{j}(ForGrid_j - a'_i | grid_j <= a'_i)$$" style="width:344px;height:17px;"></p><p><img src="ffs_for_br_block_match_eq12766844808937043900.png" alt="$ForFLOOR_i$" style="width:85px;height:13px;"> is the level of formal borrowing if joint formal borrowing + informal savings is chosen.</p><p>@param ar_a boolean N by 1 single formal borrowing interest rate</p><p>@param ar_forbrblk 1 by M array array of formal borrowing grid points</p><p>@param ar_forbrblk_r array interest rates associated with equal-length <i>ar_forbrblk</i>.</p><p>@param bl_b_is_principle boolean solving with aggregate savings as savings + debt principles + interests, or just principles no interests. if true, principels only, no interests.</p><p>@return ar_a_grid_ceil_principle array N by 1 Solution to:</p><p><img src="ffs_for_br_block_match_eq14135633334677931405.png" alt="$$min_{j}(ForGrid_j - a'_i | grid_j &gt; a'_i)$$" style="width:203px;height:17px;"></p><p>@return ar_a_grid_ceil_wthr array <i>ar_a_grid_ceil_principle</i> with interest rates specified to each borrowing formal level added</p><p>@return ar_a_grid_floor_principle array N by 1 element of the <b>ar_forbrblk</b> vector that are the elements right above each eelemnt of ar_a. Solution to:</p><p><img src="ffs_for_br_block_match_eq17746790677149999358.png" alt="$$max_{j}(ForGrid_j - a'_i | grid_j <= a'_i)$$" style="width:217px;height:17px;"></p><p>@return ar_a_grid_floor_principle array <i>ar_a_grid_floor_principle</i> with interest rates specified to each borrowing formal level added</p><p>@example</p><pre class="language-matlab">[ar_a_grid_ceil, ar_a_grid_floor] = <span class="keyword">...</span>
      ffs_for_br_block_match(ar_a, ar_forbrblk, ar_forbrblk_r, bl_b_is_principle);
-</pre><h2 id="3">Default</h2><pre class="codeinput"><span class="comment">% array of a choices</span>
+</pre><p>@seealso</p><div><ul><li>Formal Borrowing Grid: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_gen.html">ffs_for_br_block_gen</a></li><li>Informal Interest Rates: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_r_inf.html">ffs_r_inf</a></li><li>Match Borrowing to Formal Grid: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_match.html">ffs_for_br_block_match</a></li><li>Optimize Formal and Informal, Borrowing and Savings Joint Choices: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost.html">ffs_fibs_min_c_cost</a></li><li>Bridge Loan: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_inf_bridge.html">ffs_fibs_inf_bridge</a></li><li>Overall Optimization: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost_bridge.html">ffs_fibs_min_c_cost_bridge</a></li><li>Discrete Choices: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_identify_discrete.html">ffs_fibs_identify_discrete</a></li></ul></div><h2 id="3">Default</h2><pre class="codeinput"><span class="comment">% array of a choices</span>
 <span class="comment">% ar_a could be principles + interests, or principles only</span>
 ar_a = -sort(rand([10,1])*20);
 
@@ -165,29 +165,30 @@ default_params = {ar_a ar_forbrblk ar_forbrblk_r bl_b_is_principle bl_display_br
 ans =
 
          0
-         0
-   -4.0000
-   -5.5000
-   -5.5000
+   -1.0000
+   -1.0000
   -10.0000
   -10.0000
   -10.0000
   -10.0000
   -10.0000
+  -14.5000
+  -19.0000
 
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
-%%
+%% Match Borrowing Choices to Formal Grid
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
+%%
 function [ar_a_grid_ceil_principle, ar_a_grid_ceil_wthr, ...
     ar_a_grid_floor_principle, ar_a_grid_floor_wthr] = ffs_for_br_block_match(varargin)
 %% FFS_FOR_BR_BLOCK_MATCH formal borrowing blocks
 % Find Value just below or above each element of *ar_a* from *ar_forbrblk*.
 % a vector of grid points, find for each element of ar_a the element of
-% ar_forbrblk that is just above or just below. 
+% ar_forbrblk that is just above or just below.
 %
 % # _ar_a_: $a'_i$ where $i \in (1,...,N)$
 % # _ar_forbrblk_: $grid_j$ where $j\in (1,...,M)$
@@ -195,7 +196,7 @@ function [ar_a_grid_ceil_principle, ar_a_grid_ceil_wthr, ...
 % $$ForCEIL_i = argmin_{j}(ForGrid_j - a'_i | grid_j > a'_i)$$
 %
 % $ForCEIL_i$ is the level of formal borrowing if joint formal + informal
-% borrowing is chosen. 
+% borrowing is chosen.
 %
 % $$ForFLOOR_i = argmax_{j}(ForGrid_j - a'_i | grid_j <= a'_i)$$
 %
@@ -211,9 +212,9 @@ function [ar_a_grid_ceil_principle, ar_a_grid_ceil_wthr, ...
 %
 % @param bl_b_is_principle boolean solving with aggregate savings as
 % savings + debt principles + interests, or just principles no interests.
-% if true, principels only, no interests. 
+% if true, principels only, no interests.
 %
-% @return ar_a_grid_ceil_principle array N by 1 Solution to: 
+% @return ar_a_grid_ceil_principle array N by 1 Solution to:
 %
 % $$min_{j}(ForGrid_j - a'_i | grid_j > a'_i)$$
 %
@@ -221,7 +222,7 @@ function [ar_a_grid_ceil_principle, ar_a_grid_ceil_wthr, ...
 % interest rates specified to each borrowing formal level added
 %
 % @return ar_a_grid_floor_principle array N by 1 element of the *ar_forbrblk* vector that are
-% the elements right above each eelemnt of ar_a. Solution to: 
+% the elements right above each eelemnt of ar_a. Solution to:
 %
 % $$max_{j}(ForGrid_j - a'_i | grid_j <= a'_i)$$
 %
@@ -232,6 +233,16 @@ function [ar_a_grid_ceil_principle, ar_a_grid_ceil_wthr, ...
 %
 %   [ar_a_grid_ceil, ar_a_grid_floor] = ...
 %        ffs_for_br_block_match(ar_a, ar_forbrblk, ar_forbrblk_r, bl_b_is_principle);
+%
+% @seealso
+%
+% * Formal Borrowing Grid: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_gen.html ffs_for_br_block_gen>
+% * Informal Interest Rates: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_r_inf.html ffs_r_inf>
+% * Match Borrowing to Formal Grid: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_match.html ffs_for_br_block_match>
+% * Optimize Formal and Informal, Borrowing and Savings Joint Choices: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost.html ffs_fibs_min_c_cost>
+% * Bridge Loan: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_inf_bridge.html ffs_fibs_inf_bridge>
+% * Overall Optimization: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost_bridge.html ffs_fibs_min_c_cost_bridge>
+% * Discrete Choices: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_identify_discrete.html ffs_fibs_identify_discrete>
 %
 
 
@@ -265,7 +276,7 @@ default_params = {ar_a ar_forbrblk ar_forbrblk_r bl_b_is_principle bl_display_br
 % ar_forbrblk. If bl_b_is_principle is false, that means the ar_a vector is
 % principle and interest rates. Hence, need to convert ar_forbrblk which
 % are principles to interests plus principles to be on the same scale as
-% ar_a. 
+% ar_a.
 
 if (~bl_b_is_principle)
     ar_forbrblk_use = ar_forbrblk.*(1+ar_forbrblk_r);
@@ -275,11 +286,11 @@ end
 
 %% Show Details Step by Step
 if (bl_display_brblockmatch)
-        
+
     % show borrowing array
     disp('ar_a')
     disp(ar_a)
-    
+
     % show borrowing formal blocks/grids
     disp('ar_forbrblk_use and ar_forbrblk')
     disp([ar_forbrblk_use;ar_forbrblk]')
@@ -287,27 +298,27 @@ if (bl_display_brblockmatch)
     % all combination division
     disp('mt_a_dvd_grid = (ar_a./ar_forbrblk_use)')
     mt_a_dvd_grid = (ar_a./ar_forbrblk_use)
-    
+
     % ceiling for each
     disp('(mt_a_dvd_grid >= 1)')
     (mt_a_dvd_grid >= 1)
-    
+
     % If ceiling exists and cloest ceiling index
     % min_{j}( ar_forbrblk[j] - ar_a[i] | ar_forbrblk[j] > ar_a[i])
     disp('[~, ar_max_a_on_grid_idx] = max((mt_a_dvd_grid >= 1),[], 2)')
     [~, ar_max_a_on_grid_idx] = max((mt_a_dvd_grid >= 1),[], 2)
-    
+
     % ar_forbrblk[argmin_{j}( ar_forbrblk[j] - ar_a[i] | ar_forbrblk[j] > ar_a[i])]
     disp('ar_a_grid_ceil = ar_forbrblk_use(ar_max_a_on_grid_idx)')
     ar_a_grid_ceil = ar_forbrblk_use(ar_max_a_on_grid_idx)
     % ar_a_grid_ceil(ar_max_a_on_grid_idx == 1) = ar_forbrblk(0)
-    
+
     % now floor, just one index less
     disp('ar_a_grid_floor = ar_forbrblk_use(max(ar_max_a_on_grid_idx - 1, 1))')
     ar_a_grid_floor = ar_forbrblk_use(max(ar_max_a_on_grid_idx - 1, 1))
     % ar_a_grid_floor(ar_max_a_on_grid_idx == 1) =
-    
-    % Dispaly    
+
+    % Dispaly
     tab_matched_grid = table(ar_a, ar_a_grid_floor', ar_a_grid_ceil');
     tab_matched_grid.Properties.VariableNames = {'ar_a','ar_a_grid_floor','ar_a_grid_ceil'};
     disp('ar_a_grid_floor: for borrow + for save')
@@ -322,15 +333,15 @@ end
 
 % Get Values
 if (~bl_b_is_principle)
-    
+
     % Borrowing borrowing points, following formal grids, but add interests
     ar_a_grid_ceil_wthr = ar_forbrblk_use(ar_max_a_on_grid_idx)';
     ar_a_grid_floor_wthr = ar_forbrblk_use(max(ar_max_a_on_grid_idx - 1, 1))';
-    
+
     % Principles only
     ar_a_grid_ceil_principle = ar_forbrblk(ar_max_a_on_grid_idx)';
     ar_a_grid_floor_principle = ar_forbrblk(max(ar_max_a_on_grid_idx - 1, 1))';
-    
+
 else
 
     % Borrowing borrowing points, following formal grids, but add interests
@@ -338,11 +349,11 @@ else
         (ar_forbrblk_use(ar_max_a_on_grid_idx).*ar_forbrblk_r(ar_max_a_on_grid_idx))';
     ar_a_grid_floor_wthr = ...
         (ar_forbrblk_use(max(ar_max_a_on_grid_idx - 1, 1)).*ar_forbrblk_r(max(ar_max_a_on_grid_idx - 1, 1)))';
-    
+
     % Principles only, note ar_forbrblk_use = ar_forbrblk
     ar_a_grid_ceil_principle = ar_forbrblk_use(ar_max_a_on_grid_idx)';
     ar_a_grid_floor_principle = ar_forbrblk_use(max(ar_max_a_on_grid_idx - 1, 1))';
-    
+
 end
 
 ##### SOURCE END #####

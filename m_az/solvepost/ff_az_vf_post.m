@@ -114,10 +114,10 @@ params_group = values(support_map, {'bl_mat', 'st_mat_path', 'st_mat_prefix', 's
 
 %% Generate Consumption and Income Matrix
 
-if (~isKey(result_map, 'cl_mt_cons'))
+if (~isKey(result_map, 'cl_mt_pol_c'))
     f_cons = func_map('f_cons');
     mt_cons = f_cons(ar_z, ar_a', mt_pol_a);
-    result_map('cl_mt_cons') = {mt_cons, zeros(1)};
+    result_map('cl_mt_pol_c') = {mt_cons, zeros(1)};
 end
 if (~isKey(result_map, 'cl_mt_coh'))
     f_coh = func_map('f_coh');

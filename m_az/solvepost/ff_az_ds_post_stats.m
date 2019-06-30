@@ -190,8 +190,10 @@ for it_outcome_ctr=1:length(ar_st_pol_names)
     fl_choice_sd = ds_stats_map('fl_choice_sd');
     fl_choice_coefofvar = ds_stats_map('fl_choice_coefofvar');
     fl_choice_min = ds_stats_map('fl_choice_min');
-    fl_choice_max = ds_stats_map('fl_choice_max');
+    fl_choice_max = ds_stats_map('fl_choice_max');    
     fl_choice_prob_zero = ds_stats_map('fl_choice_prob_zero');
+    fl_choice_prob_below_zero = ds_stats_map('fl_choice_prob_below_zero');
+    fl_choice_prob_above_zero = ds_stats_map('fl_choice_prob_above_zero');        
     fl_choice_prob_min = ds_stats_map('fl_choice_prob_min');
     fl_choice_prob_max = ds_stats_map('fl_choice_prob_max');
     % retrieve distributional array stats
@@ -219,7 +221,8 @@ for it_outcome_ctr=1:length(ar_st_pol_names)
 
     % key stats
     ar_keystats = [fl_choice_mean fl_choice_sd fl_choice_coefofvar fl_choice_min fl_choice_max ...
-        fl_choice_prob_zero fl_choice_prob_min fl_choice_prob_max ar_choice_percentiles];
+        fl_choice_prob_zero fl_choice_prob_below_zero fl_choice_prob_above_zero ...
+        fl_choice_prob_min fl_choice_prob_max ar_choice_percentiles];
     cl_outcome_names(it_outcome_ctr) = st_cur_output_key;
     if (it_outcome_ctr == 1)
         mt_outcomes_meansdperc = ar_keystats;
@@ -244,7 +247,7 @@ if (bl_display_final_dist)
     tb_outcomes_meansdperc = array2table(mt_outcomes_meansdperc);
     ar_fl_percentiles = ds_stats_map('ar_fl_percentiles');
     cl_col_names = ['mean', 'sd', 'coefofvar', 'min', 'max', ...
-                    'pYis0', 'pYisMINY', 'pYisMAXY', strcat('p', string(ar_fl_percentiles))];
+                    'pYis0', 'pYls0', 'pYgr0', 'pYisMINY', 'pYisMAXY', strcat('p', string(ar_fl_percentiles))];
     tb_outcomes_meansdperc.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
     tb_outcomes_meansdperc.Properties.RowNames = matlab.lang.makeValidName(cl_outcome_names);
 

@@ -159,8 +159,7 @@ if (bl_display_setfunc)
 end
 
 %% Defome Stand-in Utility for Testing
-
-f_util_standin = @(ar_z, b) f_util_log(f_cons_coh_b(ar_z,b).*(f_cons_coh_b(ar_z,b) > 0) + ...
-    fl_c_min.*(f_cons_coh_b(ar_z,b) <= 0));
+f_coh_simple = @(ar_z, ar_b) (ar_z*fl_w + ar_b);
+f_util_standin = @(z, b) f_util_log(f_coh_simple(z, b).*(f_coh_simple(z, b) > 0) + fl_c_min.*(f_coh_simple(z, b) <= 0));
 
 end

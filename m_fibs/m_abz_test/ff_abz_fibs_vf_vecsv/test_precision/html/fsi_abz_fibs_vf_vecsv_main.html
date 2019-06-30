@@ -1,0 +1,254 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Quick vs Benchmark vs More Precise (For + Inf + Borr + Save DP)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-29"><meta name="DC.source" content="fsi_abz_fibs_vf_vecsv_main.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Quick vs Benchmark vs More Precise (For + Inf + Borr + Save DP)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><p>Testing the <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_fibs_vf_vecsv.html">ff_abz_fibs_vf_vecsv</a> program for solving the savings and borrowing dynamic programming problem.</p><p>Computational speed is determined by the number of asset and shock grid points. Here we run the model with quick, benchmark and more precise simulations with increasing grid points for shocks and asset.</p><div><ol><li>quick: fast run</li><li>benchmark: default as set in <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_fibs_set_default_param.html">ffs_abz_fibs_set_default_param</a></li><li>more precise: increase grid count for shocks and asset</li></ol></div><p>@seealso</p><div><ul><li><i>BORROW</i>: borrow and default small grid testing: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_borr/html/ff_abz_fibs_vf_vecsv_default_small.html">ff_abz_fibs_vf_vecsv_default_small</a></li><li><i>BORROW</i>: borrow and default large grid testing: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_borr/html/ff_abz_fibs_vf_vecsv_default_large.html">ff_abz_fibs_vf_vecsv_default_large</a></li><li><i>PRECISION</i>: borr + save quick vs benchmark testing: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_precision/html/fsi_abz_fibs_vf_vecsv_main.html">fsi_abz_fibs_vf_vecsv_main</a></li><li><i>PRECISION</i>: borr + save asset grid count testing: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_precision/html/fsi_abz_fibs_vf_vecsv_a_n.html">fsi_abz_fibs_vf_vecsv_a_n</a></li><li><i>PRECISION</i>: borr + save shock grid count testing: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_precision/html/fsi_abz_fibs_vf_vecsv_z_n.html">fsi_abz_fibs_vf_vecsv_z_n</a></li></ul></div><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Quick Solution</a></li><li><a href="#2">Benchmark Solution</a></li><li><a href="#3">More Precise Solution</a></li></ul></div><h2 id="1">Quick Solution</h2><pre class="codeinput">it_param_set = 4;
+[param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
+
+<span class="comment">% Simulation Accuracy</span>
+param_map(<span class="string">'it_a_n'</span>) = 100;
+param_map(<span class="string">'it_z_n'</span>) = 11;
+param_map(<span class="string">'bl_default'</span>) = true;
+param_map(<span class="string">'bl_bridge'</span>) = true;
+
+<span class="comment">% Display Parameters</span>
+support_map(<span class="string">'bl_display'</span>) = false;
+support_map(<span class="string">'bl_display_final'</span>) = false;
+support_map(<span class="string">'bl_time'</span>) = true;
+support_map(<span class="string">'bl_profile'</span>) = false;
+
+<span class="comment">% Call Program</span>
+ff_abz_fibs_vf_vecsv(param_map, support_map);
+
+<span class="comment">% Snap</span>
+snapnow;
+close <span class="string">all</span>;
+</pre><pre class="codeoutput">Elapsed time is 0.215613 seconds.
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+</pre><img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_01.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_02.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_03.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_04.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_05.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_06.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_07.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_08.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_09.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_10.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_11.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_12.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_13.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_14.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_15.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_16.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_17.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_18.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_19.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_20.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_21.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_22.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_23.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_24.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_25.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_26.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_27.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_28.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_29.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_30.png" alt=""> <h2 id="2">Benchmark Solution</h2><pre class="codeinput">it_param_set = 4;
+[param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
+
+<span class="comment">% Simulation Accuracy</span>
+param_map(<span class="string">'it_a_n'</span>) = 750;
+param_map(<span class="string">'it_z_n'</span>) = 15;
+param_map(<span class="string">'bl_default'</span>) = true;
+param_map(<span class="string">'bl_bridge'</span>) = true;
+
+<span class="comment">% Display Parameters</span>
+support_map(<span class="string">'bl_display'</span>) = false;
+support_map(<span class="string">'bl_display_final'</span>) = false;
+support_map(<span class="string">'bl_time'</span>) = true;
+support_map(<span class="string">'bl_profile'</span>) = false;
+
+<span class="comment">% Call Program</span>
+ff_abz_fibs_vf_vecsv(param_map, support_map);
+
+<span class="comment">% Snap</span>
+snapnow;
+close <span class="string">all</span>;
+</pre><pre class="codeoutput">Elapsed time is 2.857073 seconds.
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+</pre><img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_31.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_32.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_33.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_34.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_35.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_36.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_37.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_38.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_39.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_40.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_41.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_42.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_43.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_44.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_45.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_46.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_47.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_48.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_49.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_50.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_51.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_52.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_53.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_54.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_55.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_56.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_57.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_58.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_59.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_60.png" alt=""> <h2 id="3">More Precise Solution</h2><pre class="codeinput">it_param_set = 4;
+[param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
+
+<span class="comment">% Simulation Accuracy</span>
+param_map(<span class="string">'it_a_n'</span>) = 2250;
+param_map(<span class="string">'it_z_n'</span>) = 27;
+param_map(<span class="string">'bl_default'</span>) = true;
+param_map(<span class="string">'bl_bridge'</span>) = true;
+
+<span class="comment">% Display Parameters</span>
+support_map(<span class="string">'bl_display'</span>) = false;
+support_map(<span class="string">'bl_display_final'</span>) = false;
+support_map(<span class="string">'bl_time'</span>) = true;
+support_map(<span class="string">'bl_profile'</span>) = false;
+
+<span class="comment">% Call Program</span>
+ff_abz_fibs_vf_vecsv(param_map, support_map);
+
+<span class="comment">% Snap</span>
+snapnow;
+close <span class="string">all</span>;
+clear <span class="string">all</span>;
+</pre><pre class="codeoutput">Elapsed time is 36.217229 seconds.
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+</pre><img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_61.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_62.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_63.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_64.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_65.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_66.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_67.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_68.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_69.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_70.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_71.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_72.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_73.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_74.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_75.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_76.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_77.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_78.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_79.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_80.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_81.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_82.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_83.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_84.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_85.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_86.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_87.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_88.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_89.png" alt=""> <img vspace="5" hspace="5" src="fsi_abz_fibs_vf_vecsv_main_90.png" alt=""> <p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Quick vs Benchmark vs More Precise (For + Inf + Borr + Save DP)
+% *back to <https://fanwangecon.github.io Fan>'s
+% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
+% Table of Content.*
+%
+% Testing the
+% <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_fibs_vf_vecsv.html ff_abz_fibs_vf_vecsv>
+% program for solving the savings and borrowing dynamic programming problem.
+%
+% Computational speed is determined by the number of asset and shock grid
+% points. Here we run the model with quick, benchmark and more precise
+% simulations with increasing grid points for shocks and asset.
+%
+% # quick: fast run
+% # benchmark: default as set in <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_fibs_set_default_param.html ffs_abz_fibs_set_default_param>
+% # more precise: increase grid count for shocks and asset
+%
+% @seealso
+%
+% * _BORROW_: borrow and default small grid testing: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_borr/html/ff_abz_fibs_vf_vecsv_default_small.html ff_abz_fibs_vf_vecsv_default_small>
+% * _BORROW_: borrow and default large grid testing: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_borr/html/ff_abz_fibs_vf_vecsv_default_large.html ff_abz_fibs_vf_vecsv_default_large>
+% * _PRECISION_: borr + save quick vs benchmark testing: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_precision/html/fsi_abz_fibs_vf_vecsv_main.html fsi_abz_fibs_vf_vecsv_main>
+% * _PRECISION_: borr + save asset grid count testing: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_precision/html/fsi_abz_fibs_vf_vecsv_a_n.html fsi_abz_fibs_vf_vecsv_a_n>
+% * _PRECISION_: borr + save shock grid count testing: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_precision/html/fsi_abz_fibs_vf_vecsv_z_n.html fsi_abz_fibs_vf_vecsv_z_n>
+%
+
+
+%% Quick Solution
+
+it_param_set = 4;
+[param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
+
+% Simulation Accuracy
+param_map('it_a_n') = 100;
+param_map('it_z_n') = 11;
+param_map('bl_default') = true;
+param_map('bl_bridge') = true;
+
+% Display Parameters
+support_map('bl_display') = false;
+support_map('bl_display_final') = false;
+support_map('bl_time') = true;
+support_map('bl_profile') = false;
+
+% Call Program
+ff_abz_fibs_vf_vecsv(param_map, support_map);
+
+% Snap
+snapnow;
+close all;
+
+%% Benchmark Solution
+
+it_param_set = 4;
+[param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
+
+% Simulation Accuracy
+param_map('it_a_n') = 750;
+param_map('it_z_n') = 15;
+param_map('bl_default') = true;
+param_map('bl_bridge') = true;
+
+% Display Parameters
+support_map('bl_display') = false;
+support_map('bl_display_final') = false;
+support_map('bl_time') = true;
+support_map('bl_profile') = false;
+
+% Call Program
+ff_abz_fibs_vf_vecsv(param_map, support_map);
+
+% Snap
+snapnow;
+close all;
+
+%% More Precise Solution
+
+it_param_set = 4;
+[param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
+
+% Simulation Accuracy
+param_map('it_a_n') = 2250;
+param_map('it_z_n') = 27;
+param_map('bl_default') = true;
+param_map('bl_bridge') = true;
+
+% Display Parameters
+support_map('bl_display') = false;
+support_map('bl_display_final') = false;
+support_map('bl_time') = true;
+support_map('bl_profile') = false;
+
+% Call Program
+ff_abz_fibs_vf_vecsv(param_map, support_map);
+
+% Snap
+snapnow;
+close all;
+clear all;
+
+##### SOURCE END #####
+--></body></html>

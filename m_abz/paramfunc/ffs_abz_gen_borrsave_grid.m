@@ -59,13 +59,15 @@ fl_b_bd = -100;
 bl_default = 1;
 ar_z = [0.3474 0.4008 0.4623 0.5333 0.6152 0.7097 0.8186 0.9444 1.0894 1.2567 1.4496 1.6723 1.9291 2.2253 2.5670];
 fl_w = 1;
+bl_b_is_principle = true; % if false, b = principle + interest rates
 fl_r_borr = 0.05;
 fl_a_min = 0;
 fl_a_max = 50;
 it_a_n = 100;
 
-cl_params = {fl_b_bd bl_default ar_z ...
-             fl_w fl_r_borr fl_a_min fl_a_max it_a_n};
+cl_params = {fl_b_bd bl_default ar_z fl_w ...
+             bl_b_is_principle fl_r_borr fl_a_min fl_a_max it_a_n};
+
 
 %% Parse Parameters
 % numvarargs is the number of varagin inputted
@@ -74,20 +76,38 @@ fl_b_bd = cl_params{1};
 bl_default = cl_params{2};
 ar_z = cl_params{3};
 fl_w = cl_params{4};
-fl_r_borr = cl_params{5};
-fl_a_min = cl_params{6};
-fl_a_max = cl_params{7};
-it_a_n = cl_params{8};
+
+bl_b_is_principle = cl_params{5};
+fl_r_borr = cl_params{6};
+fl_a_min = cl_params{7};
+fl_a_max = cl_params{8};
+it_a_n = cl_params{9};
 
 %% Min and Max Income
 % With the discretized exogenous income process, there are minimum and
 % maximum levels of income next period given the vector of shocks.
 
-fl_ar_z_min = min(ar_z);
-fl_borr_yminbd = -(fl_ar_z_min*fl_w)/fl_r_borr;
+if (bl_b_is_principle)
+    % If principle, have to worry about if can repay interest rate
+    fl_ar_z_min = min(ar_z);
+    fl_borr_yminbd = -(fl_ar_z_min*fl_w)/fl_r_borr;
 
-fl_ar_z_max = max(ar_z);
-fl_borr_ymaxbd = -(fl_ar_z_max*fl_w)/fl_r_borr;
+    fl_ar_z_max = max(ar_z);
+    fl_borr_ymaxbd = -(fl_ar_z_max*fl_w)/fl_r_borr;
+    
+else
+    % B is principle + interest rate, next period repay, constraint is now
+    % different: min_wage - b/(1+r) >= - b. If do not use these but use the
+    % bounds from above, there will be households who are at the min
+    % borrowing bound even though default is not allowed.
+           
+    fl_ar_z_min = min(ar_z);
+    fl_borr_yminbd = -(fl_ar_z_min*fl_w)*((1+fl_r_borr)/fl_r_borr);
+
+    fl_ar_z_max = max(ar_z);
+    fl_borr_ymaxbd = -(fl_ar_z_max*fl_w)*((1+fl_r_borr)/fl_r_borr);
+    
+end
 
 %% Savings Only
 if (fl_b_bd >= 0)

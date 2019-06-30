@@ -55,8 +55,8 @@ param_map('fl_default_aprime') = 0;
 % Borrowing Setting 1: Default Allowed, Bridge True, bl_rollover does not matter
 % Borrowing Setting 2: Default Allowed, Bridge False, bl_rollover matter
 param_map('bl_default') = true; % if borrowing is default allowed
-param_map('bl_bridge') = false; % if false, roll-over allowed.
-param_map('bl_rollover') = false; % if false, roll-over allowed.
+param_map('bl_bridge') = false;
+param_map('bl_rollover') = true;
 
 % Savings
 param_map('fl_a_min') = 0; % if there is minimum savings requirement
@@ -67,31 +67,30 @@ param_map('it_a_n') = 750;
 
 % Prices
 param_map('fl_w') = 1.28;
-param_map('fl_r_save') = 0.025;
-param_map('fl_r_borr') = 0.035;
 
 % formal informal parameters
 % fl_for_br_block are the formal borrowing grid block sizes.
-param_map('fl_r_inf') = 0.06;
-param_map('fl_r_inf_bridge') = 0.06;
-param_map('fl_r_fsv') = 0.01;
+param_map('fl_r_fsv') = 0.025;
+param_map('fl_r_inf') = 0.045;
+param_map('fl_r_inf_bridge') = 0.045;
 param_map('fl_r_fbr') = 0.035;
-param_map('fl_for_br_block') = -1;
 param_map('bl_b_is_principle') = false;
 % see: ffs_for_br_block.m
 param_map('st_forbrblk_type') = 'seg3';
-param_map('fl_forbrblk_brmost') = -10;
+param_map('fl_forbrblk_brmost') = -19;
 param_map('fl_forbrblk_brleast') = -1;
-param_map('fl_forbrblk_gap') = -1;
+param_map('fl_forbrblk_gap') = -1.5;
 
 % Minimum Consumption, c_min is for default, when c < 0, replace utility
 % with fl_nan_replace.
 param_map('fl_c_min') = 0.001;
-param_map('fl_nan_replace') = -9999;
+param_map('fl_nan_replace') = -99999;
 
 % Solution Accuracy
 param_map('it_maxiter_val') = 1000;
 param_map('it_maxiter_dist') = 1000;
+param_map('it_trans_power_dist') = 1000;
+param_map('st_analytical_stationary_type') = 'eigenvector'; % could be eigenvector, projection, power
 param_map('fl_tol_val') = 10^-5;
 param_map('fl_tol_pol') = 10^-5;
 param_map('fl_tol_dist') = 10^-5;
@@ -101,7 +100,7 @@ param_map('it_tol_pol_nochange') = 25; % number of iterations where policy does 
 
 support_map = containers.Map('KeyType','char', 'ValueType','any');
 % root directory
-[st_root_path] = preamble();
+[st_root_path] = preamble(false);
 st_matimg_path_root = [st_root_path '/m_fibs/'];
 support_map('st_matimg_path_root') = st_matimg_path_root;
 % timer
@@ -138,6 +137,11 @@ support_map('bl_graph_pol_lvl') = true;
 support_map('bl_graph_pol_pct') = true;
 support_map('bl_graph_coh_t_coh') = true;
 support_map('bl_graph_discrete') = true;
+% Formal Informal Specific Graphs
+support_map('bl_graph_forinf_discrete') = true;
+support_map('bl_graph_forinf_pol_lvl') = true;
+support_map('bl_graph_forinf_pol_pct') = true;
+
 
 % Image Saving Controls (given graphing)
 support_map('st_title_prefix') = '';
@@ -237,9 +241,12 @@ if (ismember(it_subset, [5,6,7,8,9]))
 
         % do not generate all graphs when solving for distribution
         support_map('bl_graph_val') = false;
-        support_map('bl_graph_pol_lvl') = true;
+        support_map('bl_graph_pol_lvl') = false;
         support_map('bl_graph_pol_pct') = false;
         support_map('bl_graph_coh_t_coh') = true;
+        support_map('bl_graph_forinf_discrete') = false;
+        support_map('bl_graph_forinf_pol_lvl') = false;
+        support_map('bl_graph_forinf_pol_pct') = true;
 
         if (ismember(it_subset, [8, 9]))
             support_map('bl_time') = false;
@@ -248,7 +255,8 @@ if (ismember(it_subset, [5,6,7,8,9]))
             support_map('bl_graph_onebyones') = true;
             support_map('bl_img_save') = false;
             if (ismember(it_subset, [9]))
-                support_map('bl_graph_pol_lvl') = false;
+                support_map('bl_graph_coh_t_coh') = false;
+                support_map('bl_graph_forinf_pol_pct') = false;
             end
         end
 

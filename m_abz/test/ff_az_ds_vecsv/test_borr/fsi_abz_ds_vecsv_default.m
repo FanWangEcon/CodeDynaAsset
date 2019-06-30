@@ -4,9 +4,9 @@
 % Table of Content.*
 %
 % Testing the
-% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html
-% ff_az_ds_vec> program for solving the savings only dynamic
-% programming problem.
+% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html
+% ff_az_ds_vecsv> program for solving the savings + borrowing problem using
+% full-states-markov eigenvector-sparse-matrix approach.
 %
 % Testing with default. Changing borrowing bound, minimum consumption, as
 % well as the borrowing interest rate.
@@ -61,8 +61,10 @@ fl_r_borr = 0.10;
 ar_fl_r_borr = zeros([1,it_size]) + fl_r_borr;
 
 % Accuracy
-ar_it_a_n_hg = [750, 1250, 1750, 2250];
-ar_it_z_n_hg = [15, 19, 23, 27];
+% ar_it_a_n_hg = [750, 1250, 1750, 2250];
+% ar_it_z_n_hg = [15, 19, 23, 27];
+ar_it_a_n_hg = [750];
+ar_it_z_n_hg = [15];
 
 % other parameters
 fl_crra = 1.5;

@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Formal Informal Cost Minimizer</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-14"><meta name="DC.source" content="ffs_fibs_min_c_cost.m"><style type="text/css">
+      --><title>Formal Informal Cost Minimizer</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-29"><meta name="DC.source" content="ffs_fibs_min_c_cost.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -72,7 +72,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
      ffs_akz_set_functions(bl_b_is_principle, fl_r_inf, fl_r_fsv, <span class="keyword">...</span>
                            ar_forbrblk_r, ar_forbrblk, <span class="keyword">...</span>
                            fl_ap, bl_display_minccost, bl_input_override);
-</pre><p>@include</p><div><ul><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_set_default_param.html">ffs_abz_fibs_set_default_param</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_get_funcgrid.html">ffs_abz_fibs_get_funcgrid</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_match.html">ffs_for_br_block_match</a></li></ul></div><h2 id="3">Default and Parse Parameters</h2><pre class="codeinput">bl_input_override = 0;
+</pre><p>@include</p><div><ul><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_set_default_param.html">ffs_abz_fibs_set_default_param</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_get_funcgrid.html">ffs_abz_fibs_get_funcgrid</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_match.html">ffs_for_br_block_match</a></li></ul></div><p>@seealso</p><div><ul><li>Formal Borrowing Grid: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_gen.html">ffs_for_br_block_gen</a></li><li>Informal Interest Rates: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_r_inf.html">ffs_r_inf</a></li><li>Match Borrowing to Formal Grid: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_match.html">ffs_for_br_block_match</a></li><li>Optimize Formal and Informal, Borrowing and Savings Joint Choices: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost.html">ffs_fibs_min_c_cost</a></li><li>Bridge Loan: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_inf_bridge.html">ffs_fibs_inf_bridge</a></li><li>Overall Optimization: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost_bridge.html">ffs_fibs_min_c_cost_bridge</a></li><li>Discrete Choices: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_identify_discrete.html">ffs_fibs_identify_discrete</a></li></ul></div><h2 id="3">Default and Parse Parameters</h2><pre class="codeinput">bl_input_override = 0;
 <span class="keyword">if</span> (length(varargin) == 8)
     bl_input_override = varargin{8};
 <span class="keyword">end</span>
@@ -99,23 +99,18 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
     params_group = values(param_map, {<span class="string">'bl_b_is_principle'</span>, <span class="string">'fl_r_inf'</span>, <span class="string">'fl_r_fsv'</span>});
     [bl_b_is_principle, fl_r_inf, fl_r_fsv] = params_group{:};
 
+    <span class="comment">% Setting interest rate, if r_inf is very high, that means informal</span>
+    <span class="comment">% option would generally never be chosen, or options that involve</span>
+    <span class="comment">% informal options never choice, either here, or outside.</span>
+<span class="comment">%     fl_r_inf = 10000;</span>
+
     <span class="comment">% Testing COH and Aprime Vectors</span>
-    ar_aprime_nobridge = [-20,-5,-4.5,-4.1,-1.1,-0.1, 0.1, 1]';
+    ar_aprime_nobridge = [-20,-10,-5,-4.5,-4.1,-1.1,-0.1, 0.1, 1]';
 
     <span class="comment">% Set Display Control</span>
     bl_display_minccost = true;
 
 <span class="keyword">end</span>
-</pre><pre class="codeoutput">f_inc
-    @(ar_z,fl_r_inf,ar_for_borr,ar_inf_borr,ar_for_save)(ar_z*fl_w+((ar_for_borr./(1+fl_r_fbr))*fl_r_fbr+(ar_inf_borr./(1+fl_r_inf))*fl_r_inf+(ar_for_save./(1+fl_r_fsv))*fl_r_fsv))
-
-fl_inc=1.228
-with fl_r_inf:0.060, ar_for_borr:-1.000, ar_inf_borr:-0.330, ar_for_save:0.000f_coh_fbis
-    @(ar_z,ar_b)(ar_z*fl_w+ar_b)
-
-f_cons_coh_fbis
-    @(coh,ar_bprime_in_c)(coh-ar_bprime_in_c)
-
 </pre><h2 id="4">Initialize Output Arrays</h2><pre class="codeinput">ar_max_c_nobridge = zeros(size(ar_aprime_nobridge));
 ar_inf_borr_nobridge = zeros(size(ar_aprime_nobridge));
 ar_for_borr = zeros(size(ar_aprime_nobridge));
@@ -164,107 +159,20 @@ ar_aprime_nobridge_br = ar_aprime_nobridge(~ar_aprime_nobridge_pos_idx);
         disp([<span class="string">'informal borrow interest (fl_r_inf):'</span>, num2str(fl_r_inf)]);
         disp(tab_c_infonly);
     <span class="keyword">end</span>
-</pre><pre class="codeoutput">informal borrow interest (fl_r_inf):0.06
+</pre><pre class="codeoutput">informal borrow interest (fl_r_inf):0.045
     ar_aprime_nobridge_br    b_infonly_inf    c_infonly
     _____________________    _____________    _________
 
-             -20                  -20           18.868 
-              -5                   -5            4.717 
-            -4.5                 -4.5           4.2453 
-            -4.1                 -4.1           3.8679 
-            -1.1                 -1.1           1.0377 
-            -0.1                 -0.1          0.09434 
+             -20                  -20           19.139 
+             -10                  -10           9.5694 
+              -5                   -5           4.7847 
+            -4.5                 -4.5           4.3062 
+            -4.1                 -4.1           3.9234 
+            -1.1                 -1.1           1.0526 
+            -0.1                 -0.1         0.095694 
 
 </pre><h2 id="10">Compute Formal Block Sizes</h2><p>Divide each asset choice by each element of the formal choice grid. The numbers closest to 1 above and below indicates the floor and ceil formal borrowing quantity for joint credit market participation choices.</p><pre class="codeinput">    [ar_a_grid_ceil_principle, ar_a_grid_ceil_wthr, ar_a_grid_floor_principle, ar_a_grid_floor_wthr] = <span class="keyword">...</span>
         ffs_for_br_block_match(ar_aprime_nobridge_br, ar_forbrblk, ar_forbrblk_r, bl_b_is_principle);
-</pre><pre class="codeoutput">ar_a
-  -20.0000
-   -5.0000
-   -4.5000
-   -4.1000
-   -1.1000
-   -0.1000
-
-ar_forbrblk_use and ar_forbrblk
-  -10.3500  -10.0000
-   -7.2450   -7.0000
-   -5.1750   -5.0000
-   -4.1400   -4.0000
-   -3.1050   -3.0000
-   -2.0700   -2.0000
-   -1.0350   -1.0000
-         0         0
-
-mt_a_dvd_grid = (ar_a./ar_forbrblk_use)
-
-mt_a_dvd_grid =
-
-  Columns 1 through 7
-
-    1.9324    2.7605    3.8647    4.8309    6.4412    9.6618   19.3237
-    0.4831    0.6901    0.9662    1.2077    1.6103    2.4155    4.8309
-    0.4348    0.6211    0.8696    1.0870    1.4493    2.1739    4.3478
-    0.3961    0.5659    0.7923    0.9903    1.3205    1.9807    3.9614
-    0.1063    0.1518    0.2126    0.2657    0.3543    0.5314    1.0628
-    0.0097    0.0138    0.0193    0.0242    0.0322    0.0483    0.0966
-
-  Column 8
-
-       Inf
-       Inf
-       Inf
-       Inf
-       Inf
-       Inf
-
-(mt_a_dvd_grid &gt;= 1)
-
-ans =
-
-  6&times;8 logical array
-
-   1   1   1   1   1   1   1   1
-   0   0   0   1   1   1   1   1
-   0   0   0   1   1   1   1   1
-   0   0   0   0   1   1   1   1
-   0   0   0   0   0   0   1   1
-   0   0   0   0   0   0   0   1
-
-[~, ar_max_a_on_grid_idx] = max((mt_a_dvd_grid &gt;= 1),[], 2)
-
-ar_max_a_on_grid_idx =
-
-     1
-     4
-     4
-     5
-     7
-     8
-
-ar_a_grid_ceil = ar_forbrblk_use(ar_max_a_on_grid_idx)
-
-ar_a_grid_ceil =
-
-  -10.3500   -4.1400   -4.1400   -3.1050   -1.0350         0
-
-ar_a_grid_floor = ar_forbrblk_use(max(ar_max_a_on_grid_idx - 1, 1))
-
-ar_a_grid_floor =
-
-  -10.3500   -5.1750   -5.1750   -4.1400   -2.0700   -1.0350
-
-ar_a_grid_floor: for borrow + for save
-ar_a_grid_ceil: for + inf borrow
-    ar_a    ar_a_grid_floor    ar_a_grid_ceil
-    ____    _______________    ______________
-
-     -20        -10.35             -10.35    
-      -5        -5.175              -4.14    
-    -4.5        -5.175              -4.14    
-    -4.1         -4.14             -3.105    
-    -1.1         -2.07             -1.035    
-    -0.1        -1.035                  0    
-
 </pre><h2 id="11">Compute Consumption Values Formal + Informal Borrowing Jointly</h2><p>if right on grid, informal could be zero.</p><pre class="codeinput">    <span class="comment">% Generate c Vectors</span>
     <span class="keyword">if</span> (bl_b_is_principle)
 
@@ -290,18 +198,19 @@ ar_a_grid_ceil: for + inf borrow
         disp([<span class="string">'informal borrow interest (fl_r_inf):'</span>, num2str(fl_r_inf)]);
         disp(tab_c_infforb);
     <span class="keyword">end</span>
-</pre><pre class="codeoutput">formal block size (ar_forbrblk):-10  -7  -5  -4  -3  -2  -1   0
-formal borrow interest (ar_forbrblk_r):0.035       0.035       0.035       0.035       0.035       0.035       0.035       0.035
-informal borrow interest (fl_r_inf):0.06
+</pre><pre class="codeoutput">formal block size (ar_forbrblk):-19        -14.5          -10           -7         -5.5           -4         -2.5           -1            0
+formal borrow interest (ar_forbrblk_r):0.035       0.035       0.035       0.035       0.035       0.035       0.035       0.035       0.035
+informal borrow interest (fl_r_inf):0.045
     ar_aprime_nobridge_br    b_infforb_for    b_infforb_inf    c_infforb
     _____________________    _____________    _____________    _________
 
-             -20                -10.35            -9.65          19.104 
-              -5                 -4.14            -0.86          4.8113 
-            -4.5                 -4.14            -0.36          4.3396 
-            -4.1                -3.105           -0.995          3.9387 
-            -1.1                -1.035           -0.065          1.0613 
-            -0.1                     0             -0.1         0.09434 
+             -20                -19.665           -0.335         19.321 
+             -10                 -7.245           -2.755         9.6364 
+              -5                  -4.14            -0.86          4.823 
+            -4.5                  -4.14            -0.36         4.3445 
+            -4.1                -2.5875          -1.5125         3.9474 
+            -1.1                 -1.035           -0.065         1.0622 
+            -0.1                      0             -0.1       0.095694 
 
 </pre><h2 id="12">Compute Consumption Values Formal Borrowing + Formal Savings</h2><pre class="codeinput">    <span class="comment">% Generate c Vectors</span>
     <span class="keyword">if</span> (bl_b_is_principle)
@@ -334,18 +243,19 @@ informal borrow interest (fl_r_inf):0.06
         disp([<span class="string">'savings interest (fl_r_fsv):'</span>, num2str(fl_r_fsv)]);
         disp(tab_c_forbrsv);
     <span class="keyword">end</span>
-</pre><pre class="codeoutput">formal block size (ar_forbrblk):-10  -7  -5  -4  -3  -2  -1   0
-formal borrow interest (ar_forbrblk_r):0.035       0.035       0.035       0.035       0.035       0.035       0.035       0.035
-savings interest (fl_r_fsv):0.01
+</pre><pre class="codeoutput">formal block size (ar_forbrblk):-19        -14.5          -10           -7         -5.5           -4         -2.5           -1            0
+formal borrow interest (ar_forbrblk_r):0.035       0.035       0.035       0.035       0.035       0.035       0.035       0.035       0.035
+savings interest (fl_r_fsv):0.025
     ar_aprime_nobridge_br    b_forbrsv_brr    b_forbrsv_sav    c_forbrsv
     _____________________    _____________    _____________    _________
 
-             -20                     0                0             NaN 
-              -5                -5.175            0.175          4.8267 
-            -4.5                -5.175            0.675          4.3317 
-            -4.1                 -4.14             0.04          3.9604 
-            -1.1                 -2.07             0.97          1.0396 
-            -0.1                -1.035            0.935        0.074257 
+             -20                      0               0             NaN 
+             -10                 -10.35            0.35          9.6585 
+              -5                -5.6925          0.6925          4.8244 
+            -4.5                -5.6925          1.1925          4.3366 
+            -4.1                  -4.14            0.04           3.961 
+            -1.1                -2.5875          1.4875          1.0488 
+            -0.1                 -1.035           0.935        0.087805 
 
 </pre><h2 id="13">Maximize Consumption For non-Bridge Loan Component</h2><p>Trying to minimize consumption costs</p><pre class="codeinput">    <span class="keyword">if</span> (bl_b_is_principle)
 
@@ -366,12 +276,13 @@ savings interest (fl_r_fsv):0.01
 </pre><pre class="codeoutput">    ar_aprime_nobridge_br    ar_max_c_nobridge_br    max_idx    c_infonly    c_infforb    c_forbrsv
     _____________________    ____________________    _______    _________    _________    _________
 
-             -20                    19.104              2         18.868       19.104          NaN 
-              -5                    4.8267              3          4.717       4.8113       4.8267 
-            -4.5                    4.3396              2         4.2453       4.3396       4.3317 
-            -4.1                    3.9604              3         3.8679       3.9387       3.9604 
-            -1.1                    1.0613              2         1.0377       1.0613       1.0396 
-            -0.1                   0.09434              1        0.09434      0.09434     0.074257 
+             -20                     19.321             2         19.139       19.321          NaN 
+             -10                     9.6585             3         9.5694       9.6364       9.6585 
+              -5                     4.8244             3         4.7847        4.823       4.8244 
+            -4.5                     4.3445             2         4.3062       4.3445       4.3366 
+            -4.1                      3.961             3         3.9234       3.9474        3.961 
+            -1.1                     1.0622             2         1.0526       1.0622       1.0488 
+            -0.1                   0.095694             1       0.095694     0.095694     0.087805 
 
 </pre><h2 id="14">Borrowing count up borrowing from different sources</h2><p>Informal borrowing comes from informal only or inffor both</p><pre class="codeinput">    <span class="comment">% Consumption when borrowing</span>
     ar_max_c_nobridge(~ar_aprime_nobridge_pos_idx) = ar_max_c_nobridge_br;
@@ -397,27 +308,29 @@ savings interest (fl_r_fsv):0.01
 </pre><pre class="codeoutput">    ar_aprime_nobridge    ar_max_c_nobridge    ar_average_r    ar_inf_borr_nobridge    ar_for_borr    ar_for_save
     __________________    _________________    ____________    ____________________    ___________    ___________
 
-            -20                 19.104            1.0469               -9.65             -10.35              0   
-             -5                 4.8267            1.0359                   0             -5.175          0.175   
-           -4.5                 4.3396             1.037               -0.36              -4.14              0   
-           -4.1                 3.9604            1.0353                   0              -4.14           0.04   
-           -1.1                 1.0613            1.0364              -0.065             -1.035              0   
-           -0.1                0.09434              1.06                -0.1                  0              0   
-            0.1               -0.09901              1.01                   0                  0            0.1   
-              1                -0.9901              1.01                   0                  0              1   
+            -20                  19.321           1.0352              -0.335             -19.665             0   
+            -10                  9.6585           1.0354                   0              -10.35          0.35   
+             -5                  4.8244           1.0364                   0             -5.6925        0.6925   
+           -4.5                  4.3445           1.0358               -0.36               -4.14             0   
+           -4.1                   3.961           1.0351                   0               -4.14          0.04   
+           -1.1                  1.0622           1.0356              -0.065              -1.035             0   
+           -0.1                0.095694            1.045                -0.1                   0             0   
+            0.1               -0.097561            1.025                   0                   0           0.1   
+              1                -0.97561            1.025                   0                   0             1   
 
 </pre><pre class="codeinput"><span class="keyword">end</span>
 </pre><pre class="codeoutput">
 ans =
 
-   19.1038
-    4.8267
-    4.3396
-    3.9604
-    1.0613
-    0.0943
-   -0.0990
-   -0.9901
+   19.3206
+    9.6585
+    4.8244
+    4.3445
+    3.9610
+    1.0622
+    0.0957
+   -0.0976
+   -0.9756
 
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
@@ -425,6 +338,7 @@ ans =
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
+
 %%
 function [ar_max_c_nobridge, ar_inf_borr_nobridge, ar_for_borr, ar_for_save] = ffs_fibs_min_c_cost(varargin)
 %% FFS_FIBS_MIN_C_COST Minimizes to consumption given aprime.
@@ -501,6 +415,16 @@ function [ar_max_c_nobridge, ar_inf_borr_nobridge, ar_for_borr, ar_for_save] = f
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_get_funcgrid.html ffs_abz_fibs_get_funcgrid>
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_match.html ffs_for_br_block_match>
 %
+% @seealso
+%
+% * Formal Borrowing Grid: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_gen.html ffs_for_br_block_gen>
+% * Informal Interest Rates: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_r_inf.html ffs_r_inf>
+% * Match Borrowing to Formal Grid: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_match.html ffs_for_br_block_match>
+% * Optimize Formal and Informal, Borrowing and Savings Joint Choices: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost.html ffs_fibs_min_c_cost>
+% * Bridge Loan: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_inf_bridge.html ffs_fibs_inf_bridge>
+% * Overall Optimization: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost_bridge.html ffs_fibs_min_c_cost_bridge>
+% * Discrete Choices: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_identify_discrete.html ffs_fibs_identify_discrete>
+%
 
 %% Default and Parse Parameters
 
@@ -531,8 +455,13 @@ else
     params_group = values(param_map, {'bl_b_is_principle', 'fl_r_inf', 'fl_r_fsv'});
     [bl_b_is_principle, fl_r_inf, fl_r_fsv] = params_group{:};
     
+    % Setting interest rate, if r_inf is very high, that means informal
+    % option would generally never be chosen, or options that involve
+    % informal options never choice, either here, or outside. 
+%     fl_r_inf = 10000;
+    
     % Testing COH and Aprime Vectors
-    ar_aprime_nobridge = [-20,-5,-4.5,-4.1,-1.1,-0.1, 0.1, 1]';
+    ar_aprime_nobridge = [-20,-10,-5,-4.5,-4.1,-1.1,-0.1, 0.1, 1]';
     
     % Set Display Control
     bl_display_minccost = true;

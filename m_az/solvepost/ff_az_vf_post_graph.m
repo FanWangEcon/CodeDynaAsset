@@ -75,7 +75,7 @@ else
     result_map = containers.Map('KeyType','char', 'ValueType','any');
     result_map('mt_val') = mt_val;
     result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
-    result_map('cl_mt_cons') = {mt_cons, zeros(1)};
+    result_map('cl_mt_pol_c') = {mt_cons, zeros(1)};
     result_map('cl_mt_coh') = {mt_coh, zeros(1)};
 end
 
@@ -102,9 +102,9 @@ params_group = values(func_map, {'f_coh'});
 [f_coh] = params_group{:};
 
 % result_map
-params_group = values(result_map, {'mt_val', 'cl_mt_cons', 'cl_mt_coh', 'cl_mt_pol_a'});
-[mt_val, cl_mt_cons, cl_mt_coh, cl_mt_pol_a] = params_group{:};
-[mt_cons, mt_coh, mt_pol_a] = deal(cl_mt_cons{1}, cl_mt_coh{1}, cl_mt_pol_a{1});
+params_group = values(result_map, {'mt_val', 'cl_mt_pol_c', 'cl_mt_coh', 'cl_mt_pol_a'});
+[mt_val, cl_mt_pol_c, cl_mt_coh, cl_mt_pol_a] = params_group{:};
+[mt_cons, mt_coh, mt_pol_a] = deal(cl_mt_pol_c{1}, cl_mt_coh{1}, cl_mt_pol_a{1});
 
 % How many zs to Graph
 ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)) (it_z_n)]);

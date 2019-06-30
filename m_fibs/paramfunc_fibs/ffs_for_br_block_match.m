@@ -1,8 +1,9 @@
-%%
+%% Match Borrowing Choices to Formal Grid
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
+%%
 function [ar_a_grid_ceil_principle, ar_a_grid_ceil_wthr, ...
     ar_a_grid_floor_principle, ar_a_grid_floor_wthr] = ffs_for_br_block_match(varargin)
 %% FFS_FOR_BR_BLOCK_MATCH formal borrowing blocks
@@ -53,6 +54,16 @@ function [ar_a_grid_ceil_principle, ar_a_grid_ceil_wthr, ...
 %
 %   [ar_a_grid_ceil, ar_a_grid_floor] = ...
 %        ffs_for_br_block_match(ar_a, ar_forbrblk, ar_forbrblk_r, bl_b_is_principle);
+%
+% @seealso
+%
+% * Formal Borrowing Grid: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_gen.html ffs_for_br_block_gen>
+% * Informal Interest Rates: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_r_inf.html ffs_r_inf>
+% * Match Borrowing to Formal Grid: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_match.html ffs_for_br_block_match>
+% * Optimize Formal and Informal, Borrowing and Savings Joint Choices: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost.html ffs_fibs_min_c_cost>
+% * Bridge Loan: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_inf_bridge.html ffs_fibs_inf_bridge>
+% * Overall Optimization: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost_bridge.html ffs_fibs_min_c_cost_bridge>
+% * Discrete Choices: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_identify_discrete.html ffs_fibs_identify_discrete>
 %
 
 

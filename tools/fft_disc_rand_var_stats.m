@@ -100,6 +100,10 @@ fl_choice_max = max(ar_choice_unique_sorted);
 fl_choice_prob_min = sum(ar_choice_prob(ar_choice_unique_sorted == min(ar_choice_unique_sorted)));
 % prob(outcome=0), fraction of people not saving for example
 fl_choice_prob_zero = sum(ar_choice_prob(ar_choice_unique_sorted == 0));
+% prob(outcome<0), fraction of people borrowing
+fl_choice_prob_below_zero = sum(ar_choice_prob(ar_choice_unique_sorted < 0));
+% prob(outcome>0), fraction of people borrowing
+fl_choice_prob_above_zero = sum(ar_choice_prob(ar_choice_unique_sorted > 0));
 % prob(outcome=max(outcome)), fraction of people saving up to max of grid,
 % in principle if this is large, need to increase grid max value
 fl_choice_prob_max = sum(ar_choice_prob(ar_choice_unique_sorted == max(ar_choice_unique_sorted)));
@@ -148,6 +152,8 @@ ds_stats_map('fl_choice_coefofvar') = fl_choice_coefofvar;
 ds_stats_map('fl_choice_min') = fl_choice_min;
 ds_stats_map('fl_choice_max') = fl_choice_max;
 ds_stats_map('fl_choice_prob_zero') = fl_choice_prob_zero;
+ds_stats_map('fl_choice_prob_below_zero') = fl_choice_prob_below_zero;
+ds_stats_map('fl_choice_prob_above_zero') = fl_choice_prob_above_zero;
 ds_stats_map('fl_choice_prob_min') = fl_choice_prob_min;
 ds_stats_map('fl_choice_prob_max') = fl_choice_prob_max;
 
@@ -168,6 +174,10 @@ if (bl_display_drvstats)
     
     disp('fl_choice_prob_zero');
     disp(fl_choice_prob_zero);
+    disp('fl_choice_prob_below_zero');
+    disp(fl_choice_prob_below_zero);
+    disp('fl_choice_prob_above_zero');
+    disp(fl_choice_prob_above_zero);
     disp('fl_choice_prob_max');
     disp(fl_choice_prob_max);
     

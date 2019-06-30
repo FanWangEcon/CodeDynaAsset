@@ -74,8 +74,8 @@ params_group = values(param_map, {'fl_b_bd', 'bl_default', 'fl_a_min', 'fl_a_max
 params_group = values(param_map, {'fl_crra', 'fl_c_min'});
 [fl_crra, fl_c_min] = params_group{:};
 
-params_group = values(param_map, {'fl_r_save', 'fl_r_borr', 'fl_w'});
-[fl_r_save, fl_r_borr, fl_w] = params_group{:};
+params_group = values(param_map, {'bl_b_is_principle', 'fl_r_save', 'fl_r_borr', 'fl_w'});
+[bl_b_is_principle, fl_r_save, fl_r_borr, fl_w] = params_group{:};
 
 params_group = values(support_map, {'bl_graph_funcgrids', 'bl_display_funcgrids'});
 [bl_graph_funcgrids, bl_display_funcgrids] = params_group{:};
@@ -96,8 +96,9 @@ if (bl_loglin)
     % C:\Users\fan\M4Econ\asset\grid\ff_grid_loglin.m
     ar_a = fft_gen_grid_loglin(it_a_n, fl_a_max, fl_a_min, fl_loglin_threshold);
 else
-    [ar_a, fl_borr_yminbd, fl_borr_ymaxbd] = ffs_abz_gen_borrsave_grid(fl_b_bd, bl_default, ar_z, ...
-        fl_w, fl_r_borr, fl_a_min, fl_a_max, it_a_n);
+    [ar_a, fl_borr_yminbd, fl_borr_ymaxbd] = ffs_abz_gen_borrsave_grid(...
+        fl_b_bd, bl_default, ar_z, fl_w, ...
+        bl_b_is_principle, fl_r_borr, fl_a_min, fl_a_max, it_a_n);
 end
 
 %% Store

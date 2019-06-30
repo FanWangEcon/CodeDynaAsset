@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Tabulate Value and Policy Iteration Results, Store to Mat, Graph Results</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-18"><meta name="DC.source" content="ff_az_vf_post.m"><style type="text/css">
+      --><title>Tabulate Value and Policy Iteration Results, Store to Mat, Graph Results</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-24"><meta name="DC.source" content="ff_az_vf_post.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -84,8 +84,10 @@ bl_input_override = 0;
     <span class="comment">% if invoked from outside overrid fully</span>
     [param_map, support_map, armt_map, func_map, result_map, ~] = varargin{:};
 
-    params_group = values(result_map, {<span class="string">'mt_val'</span>, <span class="string">'mt_pol_a'</span>});
-    [mt_val, mt_pol_a] = params_group{:};
+    params_group = values(result_map, {<span class="string">'mt_val'</span>, <span class="string">'cl_mt_pol_a'</span>});
+    [mt_val, cl_mt_pol_a] = params_group{:};
+    mt_pol_a = deal(cl_mt_pol_a{1});
+
     params_group = values(result_map, {<span class="string">'ar_val_diff_norm'</span>, <span class="string">'ar_pol_diff_norm'</span>, <span class="string">'mt_pol_perc_change'</span>});
     [ar_val_diff_norm, ar_pol_diff_norm, mt_pol_perc_change] = params_group{:};
 
@@ -134,10 +136,10 @@ params_group = values(support_map, {<span class="string">'bl_graph'</span>, <spa
 [bl_graph] = params_group{:};
 params_group = values(support_map, {<span class="string">'bl_mat'</span>, <span class="string">'st_mat_path'</span>, <span class="string">'st_mat_prefix'</span>, <span class="string">'st_mat_name_main'</span>, <span class="string">'st_mat_suffix'</span>});
 [bl_mat, st_mat_path, st_mat_prefix, st_mat_name_main, st_mat_suffix] = params_group{:};
-</pre><h2 id="5">Generate Consumption and Income Matrix</h2><pre class="codeinput"><span class="keyword">if</span> (~isKey(result_map, <span class="string">'cl_mt_cons'</span>))
+</pre><h2 id="5">Generate Consumption and Income Matrix</h2><pre class="codeinput"><span class="keyword">if</span> (~isKey(result_map, <span class="string">'cl_mt_pol_c'</span>))
     f_cons = func_map(<span class="string">'f_cons'</span>);
     mt_cons = f_cons(ar_z, ar_a', mt_pol_a);
-    result_map(<span class="string">'cl_mt_cons'</span>) = {mt_cons, zeros(1)};
+    result_map(<span class="string">'cl_mt_pol_c'</span>) = {mt_cons, zeros(1)};
 <span class="keyword">end</span>
 <span class="keyword">if</span> (~isKey(result_map, <span class="string">'cl_mt_coh'</span>))
     f_coh = func_map(<span class="string">'f_coh'</span>);
@@ -175,9 +177,10 @@ params_group = values(support_map, {<span class="string">'bl_mat'</span>, <span 
     tb_valpol_alliter.Properties.VariableDescriptions{<span class="string">'polgap'</span>} = <span class="string">'norm(mt_pol_a - mt_pol_a_cur)'</span>;
     tb_valpol_alliter.Properties.VariableDescriptions{<span class="string">'z1'</span>} = <span class="string">'z1 perc change: sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n)'</span>;
 
-    disp(<span class="string">'valgap = norm(mt_val - mt_val_cur)'</span>);
-    disp(<span class="string">'polgap = norm(mt_pol_a - mt_pol_a_cur)'</span>);
-    disp(<span class="string">'z1 = z1 perc change: sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n)'</span>);
+    disp(<span class="string">'valgap = norm(mt_val - mt_val_cur): value function difference across iterations'</span>);
+    disp(<span class="string">'polgap = norm(mt_pol_a - mt_pol_a_cur): policy function difference across iterations'</span>);
+    disp([<span class="string">'z1 = z1 perc change: sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n): percentage of state space'</span><span class="keyword">...</span>
+          <span class="string">' points conditional on shock where the policy function is changing across iterations'</span>]);
     disp(tb_valpol_alliter);
 
     <span class="comment">% Display Values by States</span>
@@ -203,14 +206,14 @@ params_group = values(support_map, {<span class="string">'bl_mat'</span>, <span 
     tb_val = array2table(mt_val_print);
     tb_val.Properties.RowNames = strcat(<span class="string">'a'</span>, string(ar_it_rows), <span class="string">'='</span>, string(ar_a(ar_it_rows)));
     tb_val.Properties.VariableNames = matlab.lang.makeValidName(strcat(<span class="string">'z'</span>, string(ar_it_cols), <span class="string">'='</span>, string(ar_z(ar_it_cols))));
-    disp(<span class="string">'tb_val'</span>);
+    disp(<span class="string">'tb_val: V(a,z) value at each state space point'</span>);
     disp(tb_val);
 
     <span class="comment">% Display Optimal Choices</span>
     tb_pol_a = array2table(mt_pol_a_print);
     tb_pol_a.Properties.RowNames = strcat(<span class="string">'a'</span>, string(ar_it_rows), <span class="string">'='</span>, string(ar_a(ar_it_rows)));
     tb_pol_a.Properties.VariableNames = matlab.lang.makeValidName(strcat(<span class="string">'z'</span>, string(ar_it_cols), <span class="string">'='</span>, string(ar_z(ar_it_cols))));
-    disp(<span class="string">'tb_pol_a'</span>);
+    disp(<span class="string">'tb_pol_a: optimal asset choice for each state space point'</span>);
     disp(tb_pol_a);
 
     <span class="comment">% Save to result map</span>
@@ -218,64 +221,64 @@ params_group = values(support_map, {<span class="string">'bl_mat'</span>, <span 
     result_map(<span class="string">'tb_val'</span>) = tb_val;
     result_map(<span class="string">'tb_pol_a'</span>) = tb_pol_a;
 <span class="keyword">end</span>
-</pre><pre class="codeoutput">valgap = norm(mt_val - mt_val_cur)
-polgap = norm(mt_pol_a - mt_pol_a_cur)
-z1 = z1 perc change: sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n)
-                valgap        polgap         z1          z2           z3            z4           z5          z6          z7           z8           z9         z10          z11          z12          z13           z14         z15   
-               _________    __________    ________    ________    __________    __________    ________    ________    _________    _________    ________    ________    _________    _________    __________    _________    ________
+</pre><pre class="codeoutput">valgap = norm(mt_val - mt_val_cur): value function difference across iterations
+polgap = norm(mt_pol_a - mt_pol_a_cur): policy function difference across iterations
+z1 = z1 perc change: sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n): percentage of state space points conditional on shock where the policy function is changing across iterations
+                valgap      polgap         z1           z2          z3          z4           z5           z6          z7          z8          z9           z10         z11         z12          z13         z14          z15   
+               ________    _________    _________    ________    ________    _________    _________    ________    ________    ________    _________    _________    ________    ________    _________    ________    _________
 
-    iter=1       0.41747        0.1618     0.28477     0.90724     0.0034774       0.54571     0.46364     0.88127      0.80311      0.96887     0.62048       0.483      0.29455      0.35525       0.67416      0.90729     0.98224
-    iter=2       0.49234       0.47418     0.73582     0.99057       0.68345       0.61264     0.32842     0.36569      0.74452       0.7098    0.082648     0.43355      0.57057      0.12876       0.80832       0.9346     0.72836
-    iter=3       0.25634       0.83697    0.050458     0.62394       0.26557       0.40857      0.9848     0.79195      0.55379      0.78678     0.13091     0.96051      0.33786      0.82742      0.021339      0.97322     0.19349
-    iter=4       0.49181       0.82772     0.76955     0.65474       0.52566       0.53341      0.1399     0.50606      0.47421      0.44339     0.21446     0.63919     0.019114      0.13783       0.60055    0.0061015     0.80317
-    iter=5       0.56976       0.13493      0.8605     0.35487       0.38158       0.76758       0.242     0.71042      0.75666      0.35642     0.36676     0.98407      0.78237      0.86915       0.41464      0.16527     0.50434
-    iter=6       0.17603       0.75012    0.081038     0.91813        0.5203      0.027357     0.13832     0.23987      0.58373      0.71929     0.41124    0.073946      0.77371      0.76062       0.15911      0.23794     0.34254
-    iter=7       0.25905       0.79182     0.82119    0.017975       0.13136       0.55685     0.34149     0.32717      0.47692      0.32587     0.31642     0.67627      0.23778     0.066423       0.93276      0.51015     0.67986
-    iter=8     0.0096193       0.59161     0.50407     0.73671       0.68867       0.64502     0.78653     0.60407      0.54111      0.98384     0.89398     0.30392      0.35048      0.25407       0.16636      0.88265      0.7989
-    iter=9       0.95921       0.37514     0.56524     0.69379       0.39487       0.50218       0.421    0.080354      0.95484      0.47818     0.52734     0.37956      0.69334      0.40267       0.78495      0.15429     0.41524
-    iter=10      0.21668        0.1561     0.70849    0.050822       0.54502        0.8909      0.6344     0.83114      0.21051     0.023078     0.86276     0.58262      0.40043      0.19772       0.18899      0.19713     0.10479
-    iter=11      0.29184        0.4093     0.35279      0.4134       0.39322       0.51939     0.34911     0.70323      0.55664      0.58197     0.10884     0.43041       0.1991      0.27602       0.90002     0.026653     0.26371
-    iter=12      0.38301       0.40846     0.73722     0.45748        0.1389       0.29882    0.032009     0.85131       0.1567     0.030319     0.32846     0.70812      0.74632      0.14243       0.65071      0.80623     0.95927
-    iter=13      0.29187       0.27692      0.1097     0.11106       0.40251       0.21419     0.56805     0.55803      0.51366      0.70326      0.3284     0.26243      0.89749      0.23797       0.47787      0.66539     0.25113
-    iter=14      0.42612       0.46657     0.99662    0.035028       0.57432       0.43776     0.26384     0.73096      0.23797     0.071532     0.67677     0.74314      0.38388      0.33521       0.23252      0.97877     0.12063
-    iter=15      0.60651       0.54954     0.92521     0.42307       0.83282      0.051391     0.46884     0.60298      0.94869       0.9415     0.43471     0.20853      0.11148      0.60602       0.34208      0.46399     0.38251
-    iter=16      0.96575       0.21774      0.3593     0.89288       0.22643       0.31167     0.38511     0.05988     0.085449     0.028925     0.70794     0.95536      0.66493      0.71671       0.95529     0.095775     0.63637
-    iter=17      0.30298       0.83098     0.27703     0.43769       0.56838       0.27685     0.17412     0.86574       0.1654      0.92158     0.32122     0.79901      0.98828      0.38078       0.15768      0.44401     0.35679
-    iter=18      0.97493       0.74394     0.59197     0.74353       0.42589       0.98791     0.46152      0.7104       0.8632      0.52577     0.11455     0.82767      0.33532       0.0573       0.03251      0.98513     0.25187
-    iter=19        0.256       0.99684     0.42751     0.37578       0.30513       0.16559     0.47367     0.81167      0.77461      0.92459     0.90416     0.20317      0.41184      0.66808       0.55572      0.71946     0.95928
-    iter=20     0.092286        0.5212     0.65287     0.86322       0.38207       0.67511     0.75491     0.07413      0.77371      0.12433    0.051505     0.51135      0.99035       0.5342       0.54137      0.44976     0.46217
-    iter=21     0.019983       0.86853     0.82393     0.21062       0.87019       0.49928     0.48222    0.022098      0.18765      0.77895     0.47831     0.11129      0.12469      0.98658       0.52729      0.31298    0.070853
-    iter=22      0.51316       0.15399     0.09056     0.23493       0.36098       0.29005     0.64426     0.40648     0.027654      0.96077      0.1609     0.37226     0.028896      0.86333        0.9306      0.36602     0.80091
-    iter=23      0.47169       0.69598     0.20926     0.65238      0.061535       0.45314     0.35559     0.14005      0.59709     0.075294     0.86875     0.39783      0.31958      0.33246       0.80487      0.39654     0.94202
-    iter=24      0.29955       0.76368     0.74927     0.55539       0.88111       0.19789     0.45723     0.49927      0.34749    0.0092681     0.93192     0.98875      0.41314      0.80942      0.098939      0.74837     0.41252
-    iter=25      0.74363      0.067105     0.50031    0.048227       0.59618       0.28778     0.71204     0.13571      0.78491      0.26811     0.96276     0.70662      0.33954      0.97057       0.99672      0.20297    0.089865
-    iter=26      0.28293      0.049523     0.50747    0.072958      0.062143       0.58472      0.1017     0.42103      0.82855      0.53501    0.060874     0.30069      0.91309      0.42003        0.1442      0.84074     0.81566
-    iter=27      0.94758    0.00016655     0.46773     0.88257       0.67482      0.047327     0.77931     0.71466      0.96032      0.65723     0.03191     0.26826      0.11875      0.87308       0.70966      0.60505     0.02207
-    iter=28      0.51962       0.17209     0.89956     0.30764       0.85749      0.082986     0.55336     0.18516      0.37132      0.92396    0.032513     0.16354      0.39357      0.65545        0.9411       0.8043     0.18495
-    iter=29     0.063406       0.71355    0.092381    0.094964    0.00028452      0.012572     0.21764     0.60862      0.87606      0.55116    0.045199     0.32399      0.65039      0.44236       0.49741      0.65281     0.96619
-    iter=30      0.53105       0.68124     0.20263     0.53253       0.37338       0.45031     0.74877     0.20154      0.94772      0.53319     0.31126     0.36169       0.2685    0.0057545       0.61765      0.35838     0.78642
-    iter=31      0.73295       0.62805     0.99563     0.77199       0.77149       0.39131     0.72453     0.43531      0.44004      0.77162     0.65392     0.07147     0.051371      0.57494       0.45869      0.80246     0.20443
-    iter=32      0.35711       0.33528     0.15267     0.65423       0.45173       0.46512     0.60645     0.62079      0.20415        0.119     0.55634     0.34346      0.99831      0.17882        0.4771       0.3442       0.309
-    iter=33      0.98653       0.52889     0.13627     0.10939        0.6495       0.25397     0.75513     0.16279      0.19992      0.55949      0.4879     0.17126       0.3517      0.62382       0.17173      0.24111     0.65742
-    iter=34      0.21576       0.47349     0.09751     0.94346       0.20832       0.41881     0.27072     0.20923     0.074265      0.94624     0.94736     0.39938    0.0010463      0.05827       0.93146      0.47338     0.72132
-    iter=35      0.30912       0.32353     0.88125      0.9671        0.2713       0.81542      0.7278     0.40071     0.085426      0.48558     0.16811     0.17723      0.18963      0.53722       0.47111      0.80514     0.22143
-    iter=36      0.40629       0.51204     0.59034     0.46114       0.79568       0.24847     0.37392     0.84412      0.55604       0.2046     0.58923     0.58446      0.78241      0.33345        0.4968      0.76825     0.72508
-    iter=37      0.89622      0.092962     0.35515      0.0996       0.15564       0.77152     0.70154     0.59395      0.32628      0.72552     0.60412     0.63022      0.39157     0.010027       0.15632     0.094975     0.90452
-    iter=38      0.53271       0.66478     0.23583     0.92622       0.43603       0.89736     0.61567      0.3891      0.18246      0.37978     0.40468     0.54938      0.93487      0.34668       0.62981      0.50999     0.12689
-    iter=39     0.031181       0.52418     0.79292     0.67042      0.076173       0.24183    0.085613     0.76634      0.60747      0.83893     0.50291     0.69274       0.4128      0.33476       0.47755      0.98167     0.68683
-    iter=40      0.74149       0.50273     0.49486      0.6329       0.77789       0.90706     0.42877    0.023557      0.23708      0.16575     0.89482     0.64916       0.9574      0.78203       0.16329      0.31325     0.35444
-    iter=41      0.68649       0.97918     0.24077     0.83757       0.77158       0.67443     0.27083     0.14761     0.036138      0.25282     0.86155     0.82862      0.64359       0.4938       0.88815      0.15081     0.38761
-    iter=42      0.92673       0.61438      0.6882     0.67604       0.98468       0.55348     0.27087     0.75835      0.92226      0.90253     0.13239     0.40953      0.50171      0.20192       0.55158      0.76748     0.66173
-    iter=43      0.27798       0.34934     0.30856     0.89505       0.13254       0.11367     0.72301     0.55998    0.0027115      0.41857    0.016345    0.062303     0.014234      0.37135        0.7293      0.76738     0.71564
-    iter=44      0.96973       0.23114     0.67604     0.81576       0.46418       0.25737     0.59543      0.3593      0.19102      0.99115     0.60137     0.38619      0.36994      0.84522       0.78115      0.14266     0.94444
-    iter=45      0.83959       0.90942     0.98387      0.4911       0.84787        0.4458     0.85681        0.46      0.66685      0.45696     0.69439     0.13382      0.75885      0.53271       0.72395     0.062968      0.9492
-    iter=46      0.63203       0.98877     0.63389     0.49762       0.47785    7.1252e-05      0.7093     0.23369      0.67335      0.78208     0.85659     0.89021      0.53866      0.66268       0.30648      0.84773     0.98794
-    iter=47      0.35577       0.45808     0.53988     0.87763       0.21648       0.32824     0.48146     0.50111      0.59588       0.7613     0.70242     0.56193      0.43409      0.40384       0.21905      0.32667     0.37892
-    iter=48      0.29165       0.21872     0.65091      0.2004       0.83903       0.89859     0.15417     0.66605      0.79744      0.24062     0.64714    0.071275      0.06621      0.66579       0.99601      0.78554     0.54991
-    iter=49      0.14363       0.22979     0.10722     0.62809       0.97591       0.55722     0.13701     0.12218      0.79026      0.57923     0.10522     0.76777      0.86385      0.90037    0.00058659      0.85509     0.38303
-    iter=50      0.83504       0.42593     0.67057     0.31574        0.1217       0.66795     0.68286     0.53444      0.77195     0.099104     0.37804    0.063512      0.84428      0.63736       0.39132      0.44743     0.78426
+    iter=1      0.24245     0.012738      0.64997     0.49155     0.79237      0.76857     0.007793     0.76386     0.14681     0.20826       0.8047      0.70263     0.19388     0.79185      0.40632      0.8656      0.74962
+    iter=2      0.67393      0.76327       0.3437     0.91609     0.95784      0.85288      0.95463     0.59804      0.4369      0.9345     0.080937    0.0075527      0.1892     0.23701      0.33348     0.24032       0.9479
+    iter=3      0.70087      0.41641      0.18292     0.62717     0.16839      0.47024      0.35846     0.41316     0.26112     0.95166      0.91441     0.042975     0.35013     0.34116     0.069117     0.88326      0.76871
+    iter=4      0.45833      0.43224      0.80533     0.70648     0.13562      0.71377      0.48832     0.59529      0.3488    0.089854      0.81725      0.03377      0.6153     0.20627    0.0097261    0.057836      0.17287
+    iter=5      0.87055      0.48112     0.068623    0.082111     0.46995      0.31867      0.92409     0.13362     0.80337    0.064074      0.59546      0.52762     0.54242     0.37858       0.2455     0.97133      0.28386
+    iter=6      0.69439      0.44921      0.92977     0.28679     0.86101     0.047173      0.77596     0.48419     0.80323     0.85703      0.70793      0.77651     0.52703     0.73494      0.25462     0.11911      0.67118
+    iter=7      0.89488      0.49747      0.70627     0.99173     0.76707       0.2324      0.24322     0.97213     0.70451     0.56374      0.34582      0.40536     0.86893     0.71443      0.72966     0.88339      0.30945
+    iter=8       0.7532       0.3459      0.47559     0.56042     0.55818    0.0013616     0.096853     0.42772     0.12364     0.21157      0.47056    0.0032299     0.86125     0.18202      0.15737     0.54077      0.40682
+    iter=9      0.52029      0.45335     0.011161     0.78782     0.15678      0.36303      0.84123     0.24288     0.28403     0.46182      0.14736      0.17489      0.8452     0.47692      0.69242     0.56133       0.2558
+    iter=10     0.49869      0.40465      0.39013    0.032482     0.39126      0.49383      0.74706     0.92751      0.9393    0.073746      0.49991       0.9485     0.70245     0.68821      0.73034     0.98066      0.53423
+    iter=11     0.45373      0.51824       0.6458    0.084076     0.71935     0.019407      0.85834     0.61077     0.45253     0.98222      0.78282      0.24466     0.39245     0.73815      0.45972     0.95136      0.86948
+    iter=12    0.021647      0.62327      0.85891     0.10923     0.37341    0.0077298      0.38404     0.72786     0.62184     0.13995       0.5584      0.85339     0.26934     0.63604      0.11765     0.79861      0.23969
+    iter=13     0.53514      0.24104      0.61776    0.015286    0.039119      0.68646      0.49211      0.5434    0.018309     0.80655      0.13348      0.37039     0.95569     0.19482      0.71951     0.65158      0.52954
+    iter=14     0.42297      0.50844      0.39771     0.92198     0.58388      0.10044      0.46502    0.011202     0.51802     0.95818      0.82955       0.5213    0.045285     0.86808      0.91365      0.6777        0.665
+    iter=15     0.15753      0.59462      0.44736     0.25364     0.72013     0.073846      0.31472      0.7557     0.68914     0.71101      0.73799      0.48973     0.61838     0.28845      0.36618     0.13347    0.0065758
+    iter=16     0.11907     0.016948       0.8733     0.99657     0.71477       0.4956      0.33567      0.9787    0.058882    0.088551     0.037355      0.13448     0.84612     0.36992      0.75874     0.46741      0.25297
+    iter=17     0.44935      0.52049      0.35136     0.73813     0.16487      0.71816      0.71865     0.71619     0.11528     0.58998      0.80488      0.36616     0.27191      0.5585      0.74192     0.42917      0.56727
+    iter=18    0.039913      0.23929     0.065158     0.25061     0.33599      0.97717      0.75307     0.80876     0.36837     0.12922      0.86524      0.99964     0.97875     0.85938     0.054042     0.10191       0.8252
+    iter=19     0.98658      0.40454      0.44267      0.9918     0.40917       0.2954      0.86385     0.85159     0.94446     0.86695      0.51238      0.56413     0.88592     0.64965     0.055708    0.011328      0.22796
+    iter=20     0.37812      0.82653      0.99846     0.86853     0.42048      0.11752       0.8449      0.9992      0.2488     0.67283      0.37859      0.46524     0.19933     0.70169      0.67662    0.016268      0.89885
+    iter=21     0.38211      0.32624      0.37977       0.165     0.11416     0.068537      0.75394     0.28861    0.021603     0.94206     0.083479      0.54914     0.27031     0.21637      0.83091     0.73747      0.82457
+    iter=22    0.051126      0.48322      0.19305     0.18532     0.38553      0.20751      0.33278     0.44938     0.80928     0.14589      0.82828      0.26301      0.8973     0.35256      0.92056     0.44746      0.39407
+    iter=23     0.42667     0.024741      0.04513     0.68019     0.50663      0.10005      0.71005     0.54283     0.84925     0.45368    0.0036589      0.56637     0.10925     0.13689      0.14166     0.49057      0.81347
+    iter=24    0.015745      0.30875      0.17097     0.07828     0.71056    0.0033844      0.97262     0.15246      0.5367     0.54356      0.34349      0.72832     0.18848      0.7369      0.58339     0.25356      0.84925
+    iter=25    0.030094      0.63972      0.32406     0.58452     0.56945      0.28507      0.91624     0.48098     0.89305     0.10834      0.32774      0.10568     0.60855     0.94876      0.28205     0.54084      0.28166
+    iter=26      0.3391      0.31516      0.57428    0.066603     0.40493      0.16421      0.97149     0.27698     0.17903     0.67691      0.91201      0.27845     0.14701     0.73487       0.2227     0.12721      0.11515
+    iter=27     0.82097       0.2058      0.66559      0.2213      0.9276      0.01825     0.036208     0.83693     0.27467     0.56644      0.44929      0.20892     0.57255     0.12468      0.73839     0.16355      0.10092
+    iter=28     0.45882      0.29066     0.042819     0.94844     0.59808      0.35463       0.6116     0.34706     0.02045     0.34804      0.88866      0.74488     0.57555     0.69337      0.41319     0.81764      0.88075
+    iter=29    0.014841      0.95438      0.93618     0.49857     0.97479      0.82592      0.21534    0.081685     0.58343     0.41292     0.089295      0.93567     0.59635     0.43323      0.43769    0.027429       0.4944
+    iter=30     0.16322     0.086802      0.23564     0.57371     0.86738      0.30366      0.24656    0.010085     0.88739     0.79623      0.84608      0.42469      0.2507    0.092114       0.8444     0.91601      0.67145
+    iter=31     0.73992      0.46336      0.14906     0.26968     0.67363       0.7101      0.84406     0.86054      0.6064     0.35641      0.61238      0.63325     0.82108     0.99947      0.23868     0.33819      0.39006
+    iter=32     0.73829     0.058387      0.53083     0.44006     0.89931      0.72873      0.75019     0.85885    0.080286     0.97263      0.53792     0.031212     0.97044     0.72413      0.52834     0.93216      0.78025
+    iter=33     0.75452      0.53866      0.67759       0.133     0.99124     0.025556       0.3288     0.93409     0.69322     0.91818      0.30596      0.13149     0.27789     0.62244      0.82771    0.063699      0.82421
+    iter=34     0.35167      0.14604      0.30725     0.51662     0.22088      0.96179      0.51992    0.072546     0.67594    0.078086      0.49037      0.38445     0.86549      0.8731      0.13189      0.3127      0.89254
+    iter=35     0.35228      0.63408      0.66944    0.053956     0.69106      0.13901      0.18833     0.39476     0.16674     0.85242      0.27345      0.66439     0.29305     0.32534      0.59618     0.59317      0.64177
+    iter=36     0.80208       0.2644      0.29429    0.048249     0.91878      0.71746    0.0038272     0.42819     0.82898     0.67378      0.45582      0.64033     0.34893     0.66685      0.83719      0.9378      0.89212
+    iter=37     0.39814      0.69092      0.90217     0.67965      0.0174      0.37944      0.89996     0.86088     0.91239    0.055319      0.76882      0.19216     0.78544     0.46828      0.76447    0.090004      0.86685
+    iter=38     0.72719      0.34715      0.88069    0.054982     0.79949      0.86822      0.70964     0.26142      0.3917     0.95537      0.62549       0.1329     0.13733     0.12395      0.88448     0.80919      0.27164
+    iter=39     0.58112    0.0041685     0.071194     0.52128    0.089403      0.99496      0.52882      0.3022     0.30876     0.83349      0.68053      0.93807    0.061808     0.54107     0.032564     0.61302      0.58855
+    iter=40     0.36434      0.29489       0.1504     0.26603     0.91655      0.19332     0.054099     0.73273     0.57467     0.83268      0.89222      0.35536     0.38663     0.63191      0.69146     0.64001      0.26216
+    iter=41    0.080007     0.081894      0.69806     0.18769     0.61201      0.81946      0.42084     0.18005     0.97252     0.91564     0.052939      0.46043     0.12968     0.47325      0.20394     0.99231      0.63782
+    iter=42     0.11613      0.49504    0.0001201     0.57332     0.16207       0.5055      0.38004     0.63537     0.72496     0.92108      0.19894      0.09536    0.079553     0.12527      0.55702     0.32108      0.89715
+    iter=43     0.88956      0.28889      0.82181     0.29646     0.03941      0.96543      0.17155     0.74221     0.79006     0.21908      0.72419      0.91023     0.58873    0.075283      0.77478     0.36019      0.48314
+    iter=44     0.45234      0.63999      0.35624     0.45638     0.82782      0.65809      0.15619     0.18045     0.76858     0.93736      0.40824      0.66802     0.18397     0.66484      0.42019     0.53585      0.82456
+    iter=45       0.994      0.49994      0.74462     0.13897     0.13949      0.59324      0.17318     0.22194     0.95699     0.04793      0.65021      0.50997      0.3009     0.83791       0.7042     0.62508     0.017105
+    iter=46      0.3639     0.036045     0.044237     0.12649     0.93954      0.22952      0.59684     0.69981     0.81619     0.88143      0.89777      0.43127     0.72909     0.92409      0.84041     0.31175      0.86714
+    iter=47     0.24995      0.31863      0.20926     0.10653    0.090865       0.7187       0.1247      0.7945     0.26831     0.45671        0.736     0.051466    0.092996     0.38819      0.94572     0.70632       0.9442
+    iter=48     0.35054      0.48906     0.070805     0.07156     0.83798       0.2882      0.23855     0.95335      0.2313     0.83117      0.93312      0.21429     0.99397     0.93832      0.54509    0.082125      0.31341
+    iter=49     0.34309       0.5722      0.17982     0.55371     0.42353      0.84576      0.94627     0.30865     0.24209     0.27304      0.15194      0.85608     0.30876      0.8198       0.3161      0.1948      0.70965
+    iter=50     0.63736      0.10487      0.38442     0.75601     0.87274      0.97726      0.21946     0.54863     0.21293     0.75486      0.75663       0.6222     0.54563     0.42404      0.39003    0.013252      0.81923
 
-tb_val
+tb_val: V(a,z) value at each state space point
                     z1_0_34741    z2_0_40076    z3_0_4623    z4_0_5333    z5_0_61519    z6_0_70966    z10_1_2567    z11_1_4496    z12_1_6723    z13_1_9291    z14_2_2253    z15_2_567
                     __________    __________    _________    _________    __________    __________    __________    __________    __________    __________    __________    _________
 
@@ -380,7 +383,7 @@ tb_val
     a749=49.9332         3.944        3.9454       3.9469       3.9486       3.9506         3.953       3.9663         3.971        3.9764        3.9825        3.9895       3.9976  
     a750=50             3.9454        3.9467       3.9482       3.9499        3.952        3.9543       3.9676        3.9723        3.9776        3.9838        3.9908       3.9989  
 
-tb_pol_a
+tb_pol_a: optimal asset choice for each state space point
                     z1_0_34741    z2_0_40076    z3_0_4623    z4_0_5333    z5_0_61519    z6_0_70966    z10_1_2567    z11_1_4496    z12_1_6723    z13_1_9291    z14_2_2253    z15_2_567
                     __________    __________    _________    _________    __________    __________    __________    __________    __________    __________    __________    _________
 
@@ -555,8 +558,10 @@ if (bl_input_override)
     % if invoked from outside overrid fully
     [param_map, support_map, armt_map, func_map, result_map, ~] = varargin{:};
 
-    params_group = values(result_map, {'mt_val', 'mt_pol_a'});
-    [mt_val, mt_pol_a] = params_group{:};
+    params_group = values(result_map, {'mt_val', 'cl_mt_pol_a'});
+    [mt_val, cl_mt_pol_a] = params_group{:};
+    mt_pol_a = deal(cl_mt_pol_a{1});
+    
     params_group = values(result_map, {'ar_val_diff_norm', 'ar_pol_diff_norm', 'mt_pol_perc_change'});
     [ar_val_diff_norm, ar_pol_diff_norm, mt_pol_perc_change] = params_group{:};
 
@@ -611,10 +616,10 @@ params_group = values(support_map, {'bl_mat', 'st_mat_path', 'st_mat_prefix', 's
 
 %% Generate Consumption and Income Matrix
 
-if (~isKey(result_map, 'cl_mt_cons'))
+if (~isKey(result_map, 'cl_mt_pol_c'))
     f_cons = func_map('f_cons');
     mt_cons = f_cons(ar_z, ar_a', mt_pol_a);
-    result_map('cl_mt_cons') = {mt_cons, zeros(1)};
+    result_map('cl_mt_pol_c') = {mt_cons, zeros(1)};
 end
 if (~isKey(result_map, 'cl_mt_coh'))
     f_coh = func_map('f_coh');
@@ -661,9 +666,10 @@ if (bl_display_final)
     tb_valpol_alliter.Properties.VariableDescriptions{'polgap'} = 'norm(mt_pol_a - mt_pol_a_cur)';
     tb_valpol_alliter.Properties.VariableDescriptions{'z1'} = 'z1 perc change: sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n)';
 
-    disp('valgap = norm(mt_val - mt_val_cur)');
-    disp('polgap = norm(mt_pol_a - mt_pol_a_cur)');
-    disp('z1 = z1 perc change: sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n)');
+    disp('valgap = norm(mt_val - mt_val_cur): value function difference across iterations');
+    disp('polgap = norm(mt_pol_a - mt_pol_a_cur): policy function difference across iterations');
+    disp(['z1 = z1 perc change: sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n): percentage of state space'...
+          ' points conditional on shock where the policy function is changing across iterations']);
     disp(tb_valpol_alliter);
 
     % Display Values by States
@@ -689,14 +695,14 @@ if (bl_display_final)
     tb_val = array2table(mt_val_print);
     tb_val.Properties.RowNames = strcat('a', string(ar_it_rows), '=', string(ar_a(ar_it_rows)));
     tb_val.Properties.VariableNames = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));
-    disp('tb_val');
+    disp('tb_val: V(a,z) value at each state space point');
     disp(tb_val);
 
     % Display Optimal Choices
     tb_pol_a = array2table(mt_pol_a_print);
     tb_pol_a.Properties.RowNames = strcat('a', string(ar_it_rows), '=', string(ar_a(ar_it_rows)));
     tb_pol_a.Properties.VariableNames = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));
-    disp('tb_pol_a');
+    disp('tb_pol_a: optimal asset choice for each state space point');
     disp(tb_pol_a);
 
     % Save to result map

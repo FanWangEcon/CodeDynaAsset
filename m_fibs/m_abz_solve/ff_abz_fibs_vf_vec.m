@@ -11,6 +11,21 @@ function result_map = ff_abz_fibs_vf_vec(varargin)
 % <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_fibs_vf.html
 % ff_abz_fibs_vf> shows looped codes. The solution is the same.
 %
+% The model could be invoked mainly in sveral ways:
+%
+% # param_map('bl_default') = true;  param_map('bl_bridge') = false;
+% param_map('bl_rollover') = true; Given these, default is possible, bridge
+% loans are not needed because rollover is allowed for formal loans (or
+% informal loans)
+% # we change param_map('bl_bridge') = true, that means
+% rollover is still allowed, but only allowed using informal sources,
+% formal loans no longer allow for roll-over. Furthermore, if both
+% bl_bridge and bl_rollover are false, that means we are not allowing for
+% rollover at all, so households can not borrow such that they end up with
+% negative cash-on-hand.
+%
+% Default simulation bl_bridge = false.
+%
 % @param param_map container parameter container
 %
 % @param support_map container support container
@@ -62,9 +77,16 @@ function result_map = ff_abz_fibs_vf_vec(varargin)
 %
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_set_default_param.html ffs_abz_fibs_set_default_param>
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_get_funcgrid.html ffs_abz_fibs_get_funcgrid>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost_bridge.html ffs_fibs_min_c_cost_bridge>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_inf_bridge.html ffs_fibs_inf_bridge>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost.html ffs_fibs_min_c_cost>
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_vf_post.html ff_az_vf_post>
 %
 % @seealso
+%
+% * for/inf + save + borr loop: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf.html ff_abz_fibs_vf>
+% * for/inf + borr vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf_vec.html ff_abz_fibs_vf_vec>
+% * for/inf + borr optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf_vecsv.html ff_abz_fibs_vf_vecsv>
 %
 
 %% Default
@@ -73,13 +95,24 @@ function result_map = ff_abz_fibs_vf_vec(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 1;
+it_param_set = 3;
 bl_input_override = true;
 [param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
 
 % Note: param_map and support_map can be adjusted here or outside to override defaults
+% To generate results as if formal informal do not matter
+% param_map('fl_r_fsv') = 0.025;
+% param_map('fl_r_inf') = 0.035;
+% param_map('fl_r_inf_bridge') = 0.035;
+% param_map('fl_r_fbr') = 0.035;
+% param_map('bl_b_is_principle') = false;
+% param_map('st_forbrblk_type') = 'seg3';
+% param_map('fl_forbrblk_brmost') = -19;
+% param_map('fl_forbrblk_brleast') = -1;
+% param_map('fl_forbrblk_gap') = -1.5;
+% param_map('bl_b_is_principle') = false;
 % param_map('it_a_n') = 750;
-% param_map('it_z_n') = 15;
+% param_map('it_z_n') = 25;
 
 [armt_map, func_map] = ffs_abz_fibs_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 default_params = {param_map support_map armt_map func_map};
@@ -151,6 +184,7 @@ mt_val_cur = zeros(length(ar_a),length(ar_z));
 mt_val = mt_val_cur - 1;
 mt_pol_a = zeros(length(ar_a),length(ar_z));
 mt_pol_a_cur = mt_pol_a - 1;
+mt_pol_idx = zeros(length(ar_a),length(ar_z));
 mt_pol_cons = zeros(length(ar_a),length(ar_z));
 
 % collect optimal borrowing formal and informal choices
@@ -228,7 +262,7 @@ while bl_vfi_continue
         % 3. if Bridge Loan is Needed
         
         % 4. *CASE B+C* get negative coh index and get borrowing choices index
-        ar_coh_neg_idx = (ar_coh <= fl_c_min);
+        ar_coh_neg_idx = (ar_coh <= 0);
         
         ar_a_neg_idx = (ar_a < 0);
         ar_coh_neg = ar_coh(ar_coh_neg_idx);
@@ -242,7 +276,7 @@ while bl_vfi_continue
         % informal problem for positive coh level once.
         ar_coh_first_pos_idx = (cumsum(ar_coh_neg_idx == 0) == 1);
         ar_coh_forinfsolve_idx = (ar_coh_first_pos_idx | ar_coh_neg_idx);
-        ar_coh_forinfsolve_a_neg_idx = (ar_coh(ar_coh_forinfsolve_idx) <= fl_c_min);
+        ar_coh_forinfsolve_a_neg_idx = (ar_coh(ar_coh_forinfsolve_idx) <= 0);
         
         % 6. *CASE B + C* Negative asset choices (borrowing), 1 col Case C
         % negp1: negative coh + 1, 1 meaning 1 positive coh, first positive
@@ -345,6 +379,9 @@ while bl_vfi_continue
             mt_utility(mt_c <= fl_c_min) = fl_nan_replace;
         end
         
+        % Set below threshold c to c_min
+        mt_c(mt_c < fl_c_min) = fl_c_min;
+        
         % 5. no bridge and no rollover allowed
         if( ~bl_rollover && ~bl_bridge)
             if (bl_default)
@@ -372,11 +409,12 @@ while bl_vfi_continue
             % if defaulting is optimal choice, at these states, not required
             % to default, non-default possible, but default could be optimal
             ar_opti_aprime_z(ar_opti_c_z <= fl_c_min) = fl_default_aprime;
+            ar_opti_idx_z(ar_opti_c_z <= fl_c_min) = find(ar_a == fl_default_aprime);
         else
             % if default is not allowed, then next period same state as now
             % this is absorbing state, this is the limiting case, single
             % state space point, lowest a and lowest shock has this.
-            ar_opti_aprime_z(ar_opti_c_z <= fl_c_min) = ar_a(ar_opti_c_z <= fl_c_min);
+            ar_opti_aprime_z(ar_opti_c_z <= fl_c_min) = min(ar_a);
         end
         
         % 6. no bridge and no rollover allowed
@@ -459,8 +497,7 @@ end
 
 result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
-result_map('mt_pol_a') = mt_pol_a;
-result_map('mt_cons') = mt_pol_cons;
+result_map('mt_pol_idx') = mt_pol_idx;
 
 % Find optimal Formal Informal Choices. Could have saved earlier, but was
 % wasteful of resources
@@ -485,17 +522,61 @@ for it_z_i = 1:length(ar_z)
     end
 end
 
-result_map('mt_pol_b_bridge') = mt_pol_b_bridge;
-result_map('mt_pol_inf_borr_nobridge') = mt_pol_inf_borr_nobridge;
-result_map('mt_pol_for_borr') = mt_pol_for_borr;
-result_map('mt_pol_for_save') = mt_pol_for_save;
+result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
+result_map('cl_mt_pol_coh') = {f_coh(ar_z, ar_a'), zeros(1)};
+
+result_map('cl_mt_pol_c') = {mt_pol_cons, zeros(1)};
+result_map('cl_mt_pol_b_bridge') = {mt_pol_b_bridge, zeros(1)};
+result_map('cl_mt_pol_inf_borr_nobridge') = {mt_pol_inf_borr_nobridge, zeros(1)};
+result_map('cl_mt_pol_for_borr') = {mt_pol_for_borr, zeros(1)};
+result_map('cl_mt_pol_for_save') = {mt_pol_for_save, zeros(1)};
+
+result_map('ar_st_pol_names') = ["cl_mt_pol_a", "cl_mt_pol_coh", "cl_mt_pol_c", ...
+    "cl_mt_pol_b_bridge", "cl_mt_pol_inf_borr_nobridge", "cl_mt_pol_for_borr", "cl_mt_pol_for_save"];
+
+% Get Discrete Choice Outcomes
+result_map = ffs_fibs_identify_discrete(result_map, bl_input_override);
+
+%% Post Solution Graph and Table Generation
+% Note in comparison with *abz*, results here, even when using identical
+% parameters would differ because in *abz* solved where choices are
+% principle. Here choices are principle + interests in order to facilitate
+% using the informal choice functions. 
+%
+% Note that this means two things are
+% different, on the one hand, the value of asset for to coh is different
+% based on the grid of assets. If the asset grid is negative, now per grid
+% point, there is more coh because that grid point of asset no longer has
+% interest rates. On the other hand, if one has positive asset grid point
+% on arrival, that is worth less to coh. Additionally, when making choices
+% for the next period, now choices aprime includes interests. What these
+% mean is that the a grid no longer has the same meaning. We should expect
+% at higher savings levels, for the same grid points, if optimal grid
+% choices are the same as before, consumption should be lower when b
+% includes interest rates and principle. This is however, not true when
+% arriving in a period with negative a levels, for the same negative a
+% level and same a prime negative choice, could have higher consumption
+% here becasue have to pay less interests on debt. This tends to happen for
+% smaller levels of borrowing choices.
+%
+% Graphically, when using interest + principle, big difference in
+% consumption as a fraction of (coh - aprime) figure. In those figures,
+% when counting in principles only, the gap in coh and aprime is
+% consumption, but now, as more is borrowed only a small fraction of coh
+% and aprime gap is consumption, becuase aprime/(1+r) is put into
+% consumption.
 
 if (bl_post)
     bl_input_override = true;
     result_map('ar_val_diff_norm') = ar_val_diff_norm(1:it_iter_last);
     result_map('ar_pol_diff_norm') = ar_pol_diff_norm(1:it_iter_last);
     result_map('mt_pol_perc_change') = mt_pol_perc_change(1:it_iter_last, :);
+    
+    % Standard AZ graphs
     result_map = ff_az_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    
+    % Graphs for results_map with FIBS contents
+    result_map = ff_az_fibs_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
 end
 
 end

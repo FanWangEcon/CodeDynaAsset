@@ -475,46 +475,125 @@ We solve the joint asset choice problem using the *optimized-vectorized* method 
     * [constant (financial investment) return to scale](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/test/ff_ipwkbz_vf_vecsv/test_prod/html/fsi_ipwkbz_vf_vecsv_crs.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/test/ff_ipwkbz_vf_vecsv/test_prod/fsi_ipwkbz_vf_vecsv_crs.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/test/ff_ipwkbz_vf_vecsv/test_prod/html/fsi_ipwkbz_vf_vecsv_crs.html)
 
 
-
-# 6. Formal + Informal Problem (FIBS)
+# 6. Formal + Informal Problem (ABZ+FIBS)
 
 > *Files for this section are in the [/m_fibs/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_fibs) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository. links: (1) [savings problem](https://fanwangecon.github.io/CodeDynaAsset/#1-the-savings-problem-az) (2) [borrowing and savings problem](https://fanwangecon.github.io/CodeDynaAsset/#2-the-savings--borrowing-problem-abz) (3) [risky and safe asset problem (risky entrepreneur)](https://fanwangecon.github.io/CodeDynaAsset/#3-the-risky--safe-asset-problem-part-1) (4) [percentage choice grids and interpolation](https://fanwangecon.github.io/CodeDynaAsset/#4-the-risky--safe-asset-problem-part-2) (5) [risky asset investment financing through borrowing](https://fanwangecon.github.io/CodeDynaAsset/#5-the-risky--safe-asset-problem-part-3) (6) [Townsend and Wang 2019](https://fanwangecon.github.io/CodeDynaAsset/#6-formal--informal-problem-fibs).*
 
 An application of the codes developed in sections (1) through (5) is the paper: *A Choice Amongst Many: Household Borrowing in a Setting with Multiple Providers* ([**Robert M. Townsend**](http://www.robertmtownsend.net/) and [**Fan Wang**](https://fanwangecon.github.io/) 2019). Below, earlier models are augmented to allow for (a) formal borrowing choice menu, (b) bridge loans, and (c) defaults.
 
-## 6.1 Dynamic Programming Files (FIBS)
+## 6.1 Formal and Informal Choices (ABZ+FIBS)
 
 We have a sequence of files that are specific to solving the joint formal and informal problem.
 
+## 6.1.a Choice Generation
+
 1. [Formal Borrowing Grid](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_gen.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc_fibs/ffs_for_br_block_gen.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_gen.html)
     * A menu of formal borrowing choices
-2. [Match Borrowing to Formal Grid](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_match.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc_fibs/ffs_for_br_block_match.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_match.html)
-    * Given a level of borrowing, what items on the formal borrowing menu are the closest to it
-3. [Optimize Formal and Informal, Borrowing and Savings Joint Choices](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc_fibs/ffs_fibs_min_c_cost.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost.html)
-    * Given interest rates, choose among: formal + informal borrowing, formal borrowing + savings, informal borrowing only, formal borrowing only.
-4. [Bridge Loan](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_inf_bridge.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc_fibs/ffs_fibs_inf_bridge.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_inf_bridge.html)
-    * When cash-on-hand is insufficient for loan repayment, households resort to informal lenders for bridge loans
-5. [Informal Interest Rates](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_r_inf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc_fibs/ffs_r_inf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_r_inf.html)
+2. [Informal Interest Rates](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_r_inf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc_fibs/ffs_r_inf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_r_inf.html)
     * Append onto shock Z interest rate shock representing informal interest rate shocks
 
-## 6.2 One Asset Formal Informal (ABZ+FIBS)
+## 6.1.b Formal and Informal Optimization
 
-1. *abz* model optimized vectorized solution: [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/solve/ff_abz_fibs_vf_vecsv.m)
-    * same as *ipwkbz* with the inclusion of informal choices
+1. [Match Borrowing to Formal Grid](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_match.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc_fibs/ffs_for_br_block_match.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_match.html)
+    * Given a level of borrowing, what items on the formal borrowing menu are the closest to it
+2. [Optimize Formal and Informal, Borrowing and Savings Joint Choices](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc_fibs/ffs_fibs_min_c_cost.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost.html)
+    * Given interest rates, choose among: formal + informal borrowing, formal borrowing + savings, informal borrowing only, formal borrowing only.
+3. [Bridge Loan](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_inf_bridge.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc_fibs/ffs_fibs_inf_bridge.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_inf_bridge.html)
+    * When cash-on-hand is insufficient for loan repayment, households resort to informal lenders for bridge loans
+4. [Overall Optimization](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost_bridge.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc_fibs/ffs_fibs_min_c_cost_bridge.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost_bridge.html)
+    * Overall optimization over joint options, combines *ffs_fibs_inf_bridge.m* and *ffs_fibs_min_c_cost.m*.
+
+## 6.1.c Results Processing
+
+1. [Discrete Choices](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_identify_discrete.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc_fibs/ffs_fibs_identify_discrete.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_identify_discrete.html)
+    * Discrete choice categories from continuous choices: (1) informal only (ignore bridge loan) (2) formal only (ignore bridge loan) (3) formal + informal borrowing (ignore bridge loan) (4) formal borrowing + savings (ignore bridge loan) (5) informal only (with bridge loan) (6) formal + informal (include bridge loan) (7) formal borrowing + informal borrowing + savings (include bridge loan) (8) No borrowing or savings
+
+## 6.2 Dynamic Programming (ABZ+FIBS)
+
+Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_paramfunc/html/ffs_abz_fibs_set_default_param.html), for the benchmark simulation, similar to the *abz* model:
+
+- savings and borrowing (with default) with minimum income
+- **750** grid points for asset states/choices
+- **15** grid points for the AR1 shock
+- benchmark simulation with formal menu
+- [other parameters](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_paramfunc/html/ffs_abz_fibs_set_default_param.html)
+
+Using three algorithm that provide identical solutions:
+
+1. *abz fibs* model [looped solution](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_abz_solve/ff_abz_fibs_vf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/profile/ff_abz_fibs_vf_default_p3/file0.html)
+    * small grid (*a:100+z:11*) simulation for testing
+2. *abz fibs* model [vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf_vec.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_abz_solve/ff_abz_fibs_vf_vec.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf_vec.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/profile/ff_abz_fibs_vf_vec_default_p3/file0.html)    
+    * speed: **56.2** seconds
+3. *abz fibs* model [optimized vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_abz_solve/ff_abz_fibs_vf_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/profile/ff_abz_fibs_vf_vecsv_default_p3/file0.html)    
+    * speed: **2.1** seconds
+
+## 6.3 Asset Distributions (ABZ+FIBS)
+
+The same files are used here as are used under *1.2*:
+
+1. *abz+fibs* model asset distribution [looped](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html)
+2. *abz+fibs* model asset distribution [vectorized](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html)
+3. *abz+fibs* model asset distribution [semi-analytical](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html)
+
+## 6.4 Solution Support Files (ABZ+FIBS)
+
+**Parameters and Function Definitions**:
+
+1. *abz fibs* model [set default parameters](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_set_default_param.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc/ffs_abz_fibs_set_default_param.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_set_default_param.html)
+2. *abz fibs* model [set functions](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_set_functions.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc/ffs_abz_fibs_set_functions.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_set_functions.html)
+3. *abz fibs* model [generate states, choices, and shocks grids](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_get_funcgrid.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc/ffs_abz_fibs_get_funcgrid.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_get_funcgrid.html)
+
+**Output Analysis**:
+1.  *abz fibs* model [solution results processing](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/solvepost_fibs/html/ff_az_fibs_vf_post.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/solvepost_fibs/ff_az_fibs_vf_post.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/solvepost_fibs/html/ff_az_fibs_vf_post.html)
+    * formal and informal choices policy functions
+2. *abz fibs* model [solution results graphing](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/solvepost_fibs/html/ff_az_fibs_vf_post_graph.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/solvepost_fibs/ff_az_fibs_vf_post_graph.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/solvepost_fibs/html/ff_az_fibs_vf_post_graph.html)
+    * formal and informal choices levels, logged levels, and percentages
+
+## 6.5 Borrowing and Savings Testing (ABZ+FIBS)
+
+We solved the exogenously incomplete borrowing and savings problem in *1.4*. Now we analyze model features by adjusting parameters.
+
+### 6.5.a Policy Function Testing
+
+1. *abz fibs* model solution precision
+   * [adjust state/choice grid points](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_precision/html/fsi_abz_fibs_vf_vecsv_a_n.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_precision/fsi_abz_fibs_vf_vecsv_a_n.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_precision/html/fsi_abz_fibs_vf_vecsv_a_n.html)
+   * [adjust shock grid points](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_precision/html/fsi_abz_fibs_vf_vecsv_z_n.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_precision/fsi_abz_fibs_vf_vecsv_z_n.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_precision/html/fsi_abz_fibs_vf_vecsv_z_n.html)
+   * [benchmark vs high-precision](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_precision/html/fsi_abz_fibs_vf_vecsv_main.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_precision/fsi_abz_fibs_vf_vecsv_main.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_precision/html/fsi_abz_fibs_vf_vecsv_main.html)
+2. *abz fibs* model compare saving vs borrowing with and without default
+   * [tabular small grid testing](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_borr/html/ff_abz_fibs_vf_vecsv_default_small.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_borr/ff_abz_fibs_vf_vecsv_default_small.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_borr/html/ff_abz_fibs_vf_vecsv_default_small.html)
+   * [tabular and graphical large grid testing](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_borr/html/ff_abz_fibs_vf_vecsv_default_large.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_borr/ff_abz_fibs_vf_vecsv_default_large.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_borr/html/ff_abz_fibs_vf_vecsv_default_large.html)
+
+### 6.5.b Asset Distribution Testing
+
+1. *abz fibs* borrowing interest rates, bounds, and minimum c
+    * [no default](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/test/ff_az_ds_vecsv/test_borr/html/fsi_abz_fibs_ds_vecsv_nbc.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/test/ff_az_ds_vecsv/test_borr/fsi_abz_fibs_ds_vecsv_nbc.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/test/ff_az_ds_vecsv/test_borr/html/fsi_abz_fibs_ds_vecsv_nbc.html)
+    * [default](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/test/ff_az_ds_vecsv/test_borr/html/fsi_abz_fibs_ds_vecsv_default.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/test/ff_az_ds_vecsv/test_borr/fsi_abz_fibs_ds_vecsv_default.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/test/ff_az_ds_vecsv/test_borr/html/fsi_abz_fibs_ds_vecsv_default.html)
+2. *abz fibs* preference parameters and **asset distributions**
+    * [no default](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/test/ff_az_ds_vecsv/test_pref/html/fsi_abz_fibs_ds_vecsv_pref_nbc.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/test/ff_az_ds_vecsv/test_pref/fsi_abz_fibs_ds_vecsv_pref_nbc.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/test/ff_az_ds_vecsv/test_pref/html/fsi_abz_fibs_ds_vecsv_pref_nbc.html)
+    * [default](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/test/ff_az_ds_vecsv/test_pref/html/fsi_abz_fibs_ds_vecsv_pref_default.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/test/ff_az_ds_vecsv/test_pref/fsi_abz_fibs_ds_vecsv_pref_default.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/test/ff_az_ds_vecsv/fsi_abz_fibs_ds_vecsv_pref_default/html/fsi_abz_fibs_ds_vecsv_pref.html)
+3. *abz fibs* model shock process and **asset distributions**
+    * [no default](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_fibs_ds_vecsv_shk_nbc.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/test/ff_az_ds_vecsv/test_shock/fsi_abz_fibs_ds_vecsv_shk_nbc.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_fibs_ds_vecsv_shk_nbc.html)
+    * [default](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_fibs_ds_vecsv_shk_default.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/test/ff_az_ds_vecsv/test_shock/fsi_abz_fibs_ds_vecsv_shk_default.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_fibs_ds_vecsv_shk_default.html)
 
 
-## 6.3 Two Assets Formal Informal (ipWKBZ+FIBS)
+# 7. Formal + Informal Problem (ipWKBZ+FIBS)
+
+> *Files for this section are in the [/m_fibs/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_fibs) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository. links: (1) [savings problem](https://fanwangecon.github.io/CodeDynaAsset/#1-the-savings-problem-az) (2) [borrowing and savings problem](https://fanwangecon.github.io/CodeDynaAsset/#2-the-savings--borrowing-problem-abz) (3) [risky and safe asset problem (risky entrepreneur)](https://fanwangecon.github.io/CodeDynaAsset/#3-the-risky--safe-asset-problem-part-1) (4) [percentage choice grids and interpolation](https://fanwangecon.github.io/CodeDynaAsset/#4-the-risky--safe-asset-problem-part-2) (5) [risky asset investment financing through borrowing](https://fanwangecon.github.io/CodeDynaAsset/#5-the-risky--safe-asset-problem-part-3) (6) [Townsend and Wang 2019](https://fanwangecon.github.io/CodeDynaAsset/#6-formal--informal-problem-fibs).*
+
+An application of the codes developed in sections (1) through (5) is the paper: *A Choice Amongst Many: Household Borrowing in a Setting with Multiple Providers* ([**Robert M. Townsend**](http://www.robertmtownsend.net/) and [**Fan Wang**](https://fanwangecon.github.io/) 2019). Below, earlier models are augmented to allow for (a) formal borrowing choice menu, (b) bridge loans, and (c) defaults.
+
+## 7.1 Two Assets Formal Informal (ipWKBZ+FIBS)
 
 1. Second Stage with borrowing *fibs* 2nd stage solution: [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/solve/ff_fibs_evf.m)
     * solving for kperc(w,z) = argmax_{kperc'}(E(V(coh(kperc',b'=w-w*kperc'),z')) given z and w.
 2. *fibs* model optimized vectorized solution: [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/solve/ff_fibs_vf_vecsv.m)
     * same as *ipwkbz* with the inclusion of informal choices
 
-## 6.4 Asset Distributions (FIBS)
+## 7.2 Asset Distributions (FIBS)
 
 Solving for the asset distribution.
 
-## 6.5 Solution Support Files (ipWKBZ+FIBS)
+## 7.3 Solution Support Files (ipWKBZ+FIBS)
 
 All solution algorithms share the same support files.
 

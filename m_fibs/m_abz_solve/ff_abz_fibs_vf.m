@@ -44,11 +44,19 @@ function result_map = ff_abz_fibs_vf(varargin)
 %
 % @include
 %
-% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_fibs_set_default_param.html ffs_fibs_set_default_param>
-% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_fibs_get_funcgrid.html ffs_fibs_get_funcgrid>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_set_default_param.html ffs_abz_fibs_set_default_param>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_get_funcgrid.html ffs_abz_fibs_get_funcgrid>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost_bridge.html ffs_fibs_min_c_cost_bridge>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_inf_bridge.html ffs_fibs_inf_bridge>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost.html ffs_fibs_min_c_cost>
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_vf_post.html ff_az_vf_post>
 %
-
+% @seealso
+%
+% * for/inf + save + borr loop: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf.html ff_abz_fibs_vf>
+% * for/inf + borr vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf_vec.html ff_abz_fibs_vf_vec>
+% * for/inf + borr optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf_vecsv.html ff_abz_fibs_vf_vecsv>
+%
 
 %% Default
 % * it_param_set = 1: quick test
@@ -56,13 +64,24 @@ function result_map = ff_abz_fibs_vf(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 1;
+it_param_set = 3;
 bl_input_override = true;
 [param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
 
 % Note: param_map and support_map can be adjusted here or outside to override defaults
-% param_map('it_a_n') = 50;
-% param_map('it_z_n') = 15;
+% To generate results as if formal informal do not matter
+% param_map('fl_r_fsv') = 0.025;
+% param_map('fl_r_inf') = 0.035;
+% param_map('fl_r_inf_bridge') = 0.035;
+% param_map('fl_r_fbr') = 0.035;
+% param_map('bl_b_is_principle') = false;
+% param_map('st_forbrblk_type') = 'seg3';
+% param_map('fl_forbrblk_brmost') = -19;
+% param_map('fl_forbrblk_brleast') = -1;
+% param_map('fl_forbrblk_gap') = -1.5;
+% param_map('bl_b_is_principle') = false;
+param_map('it_a_n') = 100;
+param_map('it_z_n') = 11;
 
 [armt_map, func_map] = ffs_abz_fibs_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 default_params = {param_map support_map armt_map func_map};
@@ -369,7 +388,7 @@ while bl_vfi_continue
                     % if default is not allowed, then next period same state as now
                     % this is absorbing state, this is the limiting case, single
                     % state space point, lowest a and lowest shock has this.
-                    fl_opti_aprime_z = fl_a;
+                    fl_opti_aprime_z = min(ar_a);
                 end
             end
             
@@ -448,19 +467,62 @@ end
 
 result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
-result_map('mt_pol_a') = mt_pol_a;
-result_map('mt_cons') = mt_pol_cons;
-result_map('mt_pol_b_bridge') = mt_pol_b_bridge;
-result_map('mt_pol_inf_borr_nobridge') = mt_pol_inf_borr_nobridge;
-result_map('mt_pol_for_borr') = mt_pol_for_borr;
-result_map('mt_pol_for_save') = mt_pol_for_save;
+
+result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
+result_map('cl_mt_pol_coh') = {f_coh(ar_z, ar_a'), zeros(1)};
+
+result_map('cl_mt_pol_c') = {mt_pol_cons, zeros(1)};
+result_map('cl_mt_pol_b_bridge') = {mt_pol_b_bridge, zeros(1)};
+result_map('cl_mt_pol_inf_borr_nobridge') = {mt_pol_inf_borr_nobridge, zeros(1)};
+result_map('cl_mt_pol_for_borr') = {mt_pol_for_borr, zeros(1)};
+result_map('cl_mt_pol_for_save') = {mt_pol_for_save, zeros(1)};
+
+result_map('ar_st_pol_names') = ["cl_mt_pol_a", "cl_mt_pol_coh", "cl_mt_pol_c", ...
+    "cl_mt_pol_b_bridge", "cl_mt_pol_inf_borr_nobridge", "cl_mt_pol_for_borr", "cl_mt_pol_for_save"];
+
+% Get Discrete Choice Outcomes
+result_map = ffs_fibs_identify_discrete(result_map, bl_input_override);
+
+%% Post Solution Graph and Table Generation
+% Note in comparison with *abz*, results here, even when using identical
+% parameters would differ because in *abz* solved where choices are
+% principle. Here choices are principle + interests in order to facilitate
+% using the informal choice functions. 
+%
+% Note that this means two things are
+% different, on the one hand, the value of asset for to coh is different
+% based on the grid of assets. If the asset grid is negative, now per grid
+% point, there is more coh because that grid point of asset no longer has
+% interest rates. On the other hand, if one has positive asset grid point
+% on arrival, that is worth less to coh. Additionally, when making choices
+% for the next period, now choices aprime includes interests. What these
+% mean is that the a grid no longer has the same meaning. We should expect
+% at higher savings levels, for the same grid points, if optimal grid
+% choices are the same as before, consumption should be lower when b
+% includes interest rates and principle. This is however, not true when
+% arriving in a period with negative a levels, for the same negative a
+% level and same a prime negative choice, could have higher consumption
+% here becasue have to pay less interests on debt. This tends to happen for
+% smaller levels of borrowing choices.
+%
+% Graphically, when using interest + principle, big difference in
+% consumption as a fraction of (coh - aprime) figure. In those figures,
+% when counting in principles only, the gap in coh and aprime is
+% consumption, but now, as more is borrowed only a small fraction of coh
+% and aprime gap is consumption, becuase aprime/(1+r) is put into
+% consumption.
 
 if (bl_post)
     bl_input_override = true;
     result_map('ar_val_diff_norm') = ar_val_diff_norm(1:it_iter_last);
     result_map('ar_pol_diff_norm') = ar_pol_diff_norm(1:it_iter_last);
     result_map('mt_pol_perc_change') = mt_pol_perc_change(1:it_iter_last, :);
+    
+    % Standard AZ graphs
     result_map = ff_az_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    
+    % Graphs for results_map with FIBS contents
+    result_map = ff_az_fibs_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
 end
 
 end

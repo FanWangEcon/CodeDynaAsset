@@ -2,6 +2,7 @@
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
+
 %%
 function [ar_max_c_nobridge, ar_inf_borr_nobridge, ar_for_borr, ar_for_save] = ffs_fibs_min_c_cost(varargin)
 %% FFS_FIBS_MIN_C_COST Minimizes to consumption given aprime.
@@ -78,6 +79,16 @@ function [ar_max_c_nobridge, ar_inf_borr_nobridge, ar_for_borr, ar_for_save] = f
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_get_funcgrid.html ffs_abz_fibs_get_funcgrid>
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_match.html ffs_for_br_block_match>
 %
+% @seealso
+%
+% * Formal Borrowing Grid: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_gen.html ffs_for_br_block_gen>
+% * Informal Interest Rates: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_r_inf.html ffs_r_inf>
+% * Match Borrowing to Formal Grid: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_match.html ffs_for_br_block_match>
+% * Optimize Formal and Informal, Borrowing and Savings Joint Choices: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost.html ffs_fibs_min_c_cost>
+% * Bridge Loan: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_inf_bridge.html ffs_fibs_inf_bridge>
+% * Overall Optimization: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost_bridge.html ffs_fibs_min_c_cost_bridge>
+% * Discrete Choices: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_identify_discrete.html ffs_fibs_identify_discrete>
+%
 
 %% Default and Parse Parameters
 
@@ -111,7 +122,7 @@ else
     % Setting interest rate, if r_inf is very high, that means informal
     % option would generally never be chosen, or options that involve
     % informal options never choice, either here, or outside. 
-    fl_r_inf = 10000;
+%     fl_r_inf = 10000;
     
     % Testing COH and Aprime Vectors
     ar_aprime_nobridge = [-20,-10,-5,-4.5,-4.1,-1.1,-0.1, 0.1, 1]';

@@ -11,6 +11,21 @@ function result_map = ff_abz_fibs_vf_vecsv(varargin)
 % <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_fibs_vf.html
 % ff_abz_fibs_vf> shows looped codes. The solution is the same.
 %
+% The model could be invoked mainly in sveral ways:
+%
+% # param_map('bl_default') = true;  param_map('bl_bridge') = false;
+% param_map('bl_rollover') = true; Given these, default is possible, bridge
+% loans are not needed because rollover is allowed for formal loans (or
+% informal loans)
+% # we change param_map('bl_bridge') = true, that means
+% rollover is still allowed, but only allowed using informal sources,
+% formal loans no longer allow for roll-over. Furthermore, if both
+% bl_bridge and bl_rollover are false, that means we are not allowing for
+% rollover at all, so households can not borrow such that they end up with
+% negative cash-on-hand.
+%
+% Default simulation bl_bridge = false.
+%
 % @param param_map container parameter container
 %
 % @param support_map container support container
@@ -60,13 +75,16 @@ function result_map = ff_abz_fibs_vf_vecsv(varargin)
 %
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_set_default_param.html ffs_abz_fibs_set_default_param>
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_get_funcgrid.html ffs_abz_fibs_get_funcgrid>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost_bridge.html ffs_fibs_min_c_cost_bridge>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_inf_bridge.html ffs_fibs_inf_bridge>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost.html ffs_fibs_min_c_cost>
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_vf_post.html ff_az_vf_post>
 %
 % @seealso
 %
-% * for/inf + save + borr loop: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/solve/html/ff_abz_fibs_vf.html ff_abz_fibs_vf>
-% * for/inf + borr vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/solve/html/ff_abz_fibs_vf_vec.html ff_abz_fibs_vf_vec>
-% * for/inf + borr optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/solve/html/ff_abz_fibs_vf_vecsv.html ff_abz_fibs_vf_vecsv>
+% * for/inf + save + borr loop: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf.html ff_abz_fibs_vf>
+% * for/inf + borr vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf_vec.html ff_abz_fibs_vf_vec>
+% * for/inf + borr optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf_vecsv.html ff_abz_fibs_vf_vecsv>
 %
 
 %% Default
@@ -83,13 +101,24 @@ function result_map = ff_abz_fibs_vf_vecsv(varargin)
 % from ffs_abz_fibs_set_default_param as we possibly change it_a_n and it_z_n
 % here.
 
-it_param_set = 1;
+it_param_set = 4;
 bl_input_override = true;
 [param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
 
 % Note: param_map and support_map can be adjusted here or outside to override defaults
-% param_map('it_a_n') = 7500;
-% param_map('it_z_n') = 15;
+% To generate results as if formal informal do not matter
+% param_map('fl_r_fsv') = 0.025;
+% param_map('fl_r_inf') = 0.035;
+% param_map('fl_r_inf_bridge') = 0.035;
+% param_map('fl_r_fbr') = 0.035;
+% param_map('bl_b_is_principle') = false;
+% param_map('st_forbrblk_type') = 'seg3';
+% param_map('fl_forbrblk_brmost') = -19;
+% param_map('fl_forbrblk_brleast') = -1;
+% param_map('fl_forbrblk_gap') = -1.5;
+% param_map('bl_b_is_principle') = false;
+% param_map('it_a_n') = 750;
+% param_map('it_z_n') = 25;
 
 [armt_map, func_map] = ffs_abz_fibs_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 default_params = {param_map support_map armt_map func_map};
@@ -162,6 +191,7 @@ mt_val = mt_val_cur - 1;
 mt_pol_a = zeros(length(ar_a),length(ar_z));
 mt_pol_a_cur = mt_pol_a - 1;
 mt_pol_idx = zeros(length(ar_a),length(ar_z));
+mt_pol_cons = zeros(length(ar_a),length(ar_z));
 
 % collect optimal borrowing formal and informal choices
 mt_pol_b_bridge = zeros(length(ar_a),length(ar_z));
@@ -209,12 +239,12 @@ end
 % Value Function Iteration
 while bl_vfi_continue
     it_iter = it_iter + 1;
-
+    
     %% Solve Optimization Problem Current Iteration
-
+    
     % loop 1: over exogenous states
     for it_z_i = 1:length(ar_z)
-
+        
         %% Solve the Formal Informal Problem for each a' and coh: c_forinf(a')
         % find the today's consumption maximizing formal and informal
         % choices given a' and coh. The formal and informal choices need to
@@ -233,25 +263,25 @@ while bl_vfi_continue
         % optimize over for+inf save, for+save+borr, inf+borr only, for
         % borrow only.
         %
-
+        
         % 1. Current Shock
         fl_z = ar_z(it_z_i);
-
+        
         % 2. cash-on-hand
         ar_coh = f_coh(fl_z, ar_a);
-
+        
         % Consumption and u(c) only need to be evaluated once
         if (it_iter == 1)
-
+            
             % 3. *CASE A* initiate consumption matrix as if all save
             mt_c = f_cons_coh_save(ar_coh, ar_a');
-
+            
             % 4. *CASE B+C* get negative coh index and get borrowing choices index
-            ar_coh_neg_idx = (ar_coh <= fl_c_min);
+            ar_coh_neg_idx = (ar_coh <= 0);
             ar_a_neg_idx = (ar_a < 0);
             ar_coh_neg = ar_coh(ar_coh_neg_idx);
             ar_a_neg = ar_a(ar_a_neg_idx);
-
+            
             % 5. if coh > 0 and ap < 0, can allow same for+inf result to all coh.
             % The procedure below works regardless of how ar_coh is sorted. get
             % the index of all negative coh elements as well as first
@@ -260,32 +290,32 @@ while bl_vfi_continue
             % informal problem for positive coh level once.
             ar_coh_first_pos_idx = (cumsum(ar_coh_neg_idx == 0) == 1);
             ar_coh_forinfsolve_idx = (ar_coh_first_pos_idx | ar_coh_neg_idx);
-            ar_coh_forinfsolve_a_neg_idx = (ar_coh(ar_coh_forinfsolve_idx) <= fl_c_min);
-
+            ar_coh_forinfsolve_a_neg_idx = (ar_coh(ar_coh_forinfsolve_idx) <= 0);
+            
             % 6. *CASE B + C* Negative asset choices (borrowing), 1 col Case C
             % negp1: negative coh + 1, 1 meaning 1 positive coh, first positive
             % coh column index element grabbed.
             mt_coh_negp1_mesh_neg_aprime = zeros(size(ar_a_neg')) + ar_coh(ar_coh_forinfsolve_idx);
             mt_neg_aprime_mesh_coh_negp1 = zeros(size(mt_coh_negp1_mesh_neg_aprime)) + ar_a_neg';
-
+            
             if (bl_bridge)
                 %         mt_neg_aprime_mesh_coh_1col4poscoh = zeros([length(ar_a_neg), (length(ar_coh_neg)+1)]) + ar_a_neg';
                 %         ar_coh_neg_idx_1col4poscoh = ar_coh_neg_idx(1:(length(ar_coh_neg)+1));
-
+                
                 % 6. *CASE B* Solve for: if (fl_ap < 0) and if (fl_coh < 0)
                 [mt_aprime_nobridge_negcoh, ~, mt_c_bridge_negcoh] = ffs_fibs_inf_bridge(...
                     bl_b_is_principle, fl_r_inf, ...
                     mt_neg_aprime_mesh_coh_negp1(:,ar_coh_forinfsolve_a_neg_idx), ...
                     mt_coh_negp1_mesh_neg_aprime(:,ar_coh_forinfsolve_a_neg_idx), ...
                     bl_display_infbridge, bl_input_override);
-
+                
                 % generate mt_aprime_nobridge
                 mt_neg_aprime_mesh_coh_negp1(:, ar_coh_forinfsolve_a_neg_idx) = mt_aprime_nobridge_negcoh;
             else
                 % no bridge loan needed means roll over is allowed.
                 mt_neg_aprime_mesh_coh_negp1 = ar_a_neg';
             end
-
+            
             % 7. *CASE B + C* formal and informal joint choices, 1 col Case C
             bl_input_override = true;
             [ar_max_c_nobridge, ~, ~, ~] = ...
@@ -294,7 +324,7 @@ while bl_vfi_continue
                 ar_forbrblk_r, ar_forbrblk, ...
                 mt_neg_aprime_mesh_coh_negp1(:), ...
                 bl_display_minccost, bl_input_override);
-
+            
             %% Update Consumption Matrix *CASE A + B + C* Consumptions
             % Current mt_c is assuming all to be case A
             %
@@ -304,20 +334,20 @@ while bl_vfi_continue
             % * Update Columns for all case C: ~ar_coh_neg_idx using 1 column
             % result
             %
-
+            
             % 1. Initalize all Neg Aprime consumption cost of aprime inputs
             % Initialize
             mt_max_c_nobridge_a_neg = zeros([length(ar_a_neg), length(ar_coh)]) + 0;
             mt_c_bridge_coh_a_neg = zeros(size(mt_max_c_nobridge_a_neg)) + 0;
-
+            
             % 2. Fill in *Case B* and *Case C* (one column) Other C-cost
             mt_max_c_nobridge_negcohp1 = reshape(ar_max_c_nobridge, [size(mt_neg_aprime_mesh_coh_negp1)]);
-
-            if (bl_bridge)                
+            
+            if (bl_bridge)
                 % 2. Fill in *Case B* Bridge C-cost
                 mt_c_bridge_coh_a_neg(:, ar_coh_neg_idx) = mt_c_bridge_negcoh;
-                                
-                % 2. Fill in *Case B* and *Case C* (one column) Other C-cost                
+                
+                % 2. Fill in *Case B* and *Case C* (one column) Other C-cost
                 mt_max_c_nobridge_a_neg(:, ar_coh_forinfsolve_idx) = mt_max_c_nobridge_negcohp1;
                 mt_max_c_nobridge_a_neg(:, ~ar_coh_forinfsolve_idx) = ...
                     zeros(size(mt_c(ar_a_neg_idx, ~ar_coh_forinfsolve_idx))) ...
@@ -325,15 +355,15 @@ while bl_vfi_continue
             else
                 mt_max_c_nobridge_a_neg = zeros([length(ar_a_neg), length(ar_coh)]) + mt_max_c_nobridge_negcohp1;
             end
-
+            
             % 3. Consumption for B + C Cases
             % note, the c cost of aprime is the same for all coh > 0, but mt_c
             % is different still for each coh and aprime.
             mt_c_forinfsolve = f_cons_coh_fbis(ar_coh, mt_c_bridge_coh_a_neg + mt_max_c_nobridge_a_neg);
-
+            
             % 4. Update with Case B and C
             mt_c(ar_a_neg_idx, :) = mt_c_forinfsolve;
-
+            
             %% Evaluate u(c) and store
             % 1. EVAL current utility: N by N, f_util defined earlier
             if (fl_crra == 1)
@@ -343,35 +373,40 @@ while bl_vfi_continue
                 mt_utility = f_util_crra(mt_c);
                 fl_u_cmin = f_util_crra(fl_c_min);
             end
-
-            % 2. Eliminate Complex Numbers
+            
+            % 2. Invliad consumption points
             mt_it_c_valid_idx = (mt_c <= fl_c_min);
+            % Set below threshold c to c_min
+            mt_c(mt_c < fl_c_min) = fl_c_min;
+            
+            % 3. Invalid points if bridge not possible also no rollover
             if( ~bl_rollover && ~bl_bridge)
                 mt_it_c_valid_idx(:, ar_coh_neg_idx) = 1;
             end
             
+            % 4. Eliminate Complex Numbers
             mt_utility(mt_it_c_valid_idx) = fl_u_cmin;
             
-            % 3. Store in cells
+            % 5. Store in cells
             cl_c_store{it_z_i} = mt_c;
             cl_u_c_store{it_z_i} = mt_utility;
             cl_c_valid_idx{it_z_i} = mt_it_c_valid_idx;
-
+            
         end
-
+        
         %% Solve Optimization Problem: max_{a'} (u(c_forinf(a')) + EV(a',z'))
-
+        
         % 1. f(z'|z)
         ar_z_trans_condi = mt_z_trans(it_z_i,:);
-
+        
         % 2. EVAL EV((A',K'),Z'|Z) = V((A',K'),Z') x p(z'|z)', (N by Z) x (Z by 1) = N by 1
         % Note: transpose ar_z_trans_condi from 1 by Z to Z by 1
         % Note: matrix multiply not dot multiply
         mt_evzp_condi_z = mt_val_cur * ar_z_trans_condi';
-
+        
         % 3. EVAL add on future utility, N by N + N by 1, broadcast again
         mt_utility = cl_u_c_store{it_z_i} + fl_beta*mt_evzp_condi_z;
-
+        
         % 4. Index update
         % using the method below is much faster than index replace
         % see <https://fanwangecon.github.io/M4Econ/support/speed/index/fs_subscript.html fs_subscript>
@@ -384,7 +419,7 @@ while bl_vfi_continue
         else
             % if default is not allowed: v = u(cmin)
             mt_utility = mt_utility.*(~mt_it_c_valid_idx) + fl_nan_replace*(mt_it_c_valid_idx);
-        end        
+        end
         
         % Optimization: remember matlab is column major, rows must be
         % choices, columns must be states
@@ -396,19 +431,20 @@ while bl_vfi_continue
         ar_opti_linear_idx_z = ar_opti_idx_z + ar_add_grid;
         ar_opti_aprime_z = ar_a(ar_opti_idx_z);
         ar_opti_c_z = cl_c_store{it_z_i}(ar_opti_linear_idx_z);
-
+        
         % Handle Default is optimal or not
         if (bl_default)
             % if defaulting is optimal choice, at these states, not required
             % to default, non-default possible, but default could be optimal
             ar_opti_aprime_z(ar_opti_c_z <= fl_c_min) = fl_default_aprime;
+            ar_opti_idx_z(ar_opti_c_z <= fl_c_min) = find(ar_a == fl_default_aprime);
         else
             % if default is not allowed, then next period same state as now
             % this is absorbing state, this is the limiting case, single
             % state space point, lowest a and lowest shock has this.
-            ar_opti_aprime_z(ar_opti_c_z <= fl_c_min) = ar_a(ar_opti_c_z <= fl_c_min);
+            ar_opti_aprime_z(ar_opti_c_z <= fl_c_min) = min(ar_a);
         end
-
+        
         % 6. no bridge and no rollover allowed
         if( ~bl_rollover && ~bl_bridge)
             if (bl_default)
@@ -424,23 +460,23 @@ while bl_vfi_continue
         mt_val(:,it_z_i) = ar_opti_val_z;
         mt_pol_a(:,it_z_i) = ar_opti_aprime_z;
         mt_pol_cons(:,it_z_i) = ar_opti_c_z;
-
+        
         if (it_iter == (it_maxiter_val + 1))
             mt_pol_idx(:,it_z_i) = ar_opti_idx_z;
         end
     end
-
+    
     %% Check Tolerance and Continuation
-
+    
     % Difference across iterations
     ar_val_diff_norm(it_iter) = norm(mt_val - mt_val_cur);
     ar_pol_diff_norm(it_iter) = norm(mt_pol_a - mt_pol_a_cur);
     mt_pol_perc_change(it_iter, :) = sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n);
-
+    
     % Update
     mt_val_cur = mt_val;
     mt_pol_a_cur = mt_pol_a;
-
+    
     % Print Iteration Results
     if (bl_display && (rem(it_iter, it_display_every)==0))
         fprintf('VAL it_iter:%d, fl_diff:%d, fl_diff_pol:%d\n', ...
@@ -455,7 +491,7 @@ while bl_vfi_continue
         disp('Hap = mt_pol_a_cur(it_a_n,:), highest a state choice')
         disp(tb_valpol_iter);
     end
-
+    
     % Continuation Conditions:
     % 1. if value function convergence criteria reached
     % 2. if policy function variation over iterations is less than
@@ -469,7 +505,7 @@ while bl_vfi_continue
         it_iter_last = it_iter;
         it_iter = it_maxiter_val;
     end
-
+    
 end
 
 % End Timer
@@ -489,6 +525,7 @@ end
 
 result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
+result_map('mt_pol_idx') = mt_pol_idx;
 
 % Find optimal Formal Informal Choices. Could have saved earlier, but was
 % wasteful of resources
@@ -498,45 +535,76 @@ for it_z_i = 1:length(ar_z)
         fl_a = ar_a(it_a_j);
         fl_coh = f_coh(fl_z, fl_a);
         fl_a_opti = mt_pol_a(it_a_j, it_z_i);
-
+        
         % call formal and informal function.
         [~, fl_opti_b_bridge, fl_opti_inf_borr_nobridge, fl_opti_for_borr, fl_opti_for_save] = ...
             ffs_fibs_min_c_cost_bridge(fl_a_opti, fl_coh, ...
-                param_map, support_map, armt_map, func_map, bl_input_override);
-
+            param_map, support_map, armt_map, func_map, bl_input_override);
+        
         % store savings and borrowing formal and inf optimal choices
         mt_pol_b_bridge(it_a_j,it_z_i) = fl_opti_b_bridge;
         mt_pol_inf_borr_nobridge(it_a_j,it_z_i) = fl_opti_inf_borr_nobridge;
         mt_pol_for_borr(it_a_j,it_z_i) = fl_opti_for_borr;
         mt_pol_for_save(it_a_j,it_z_i) = fl_opti_for_save;
-
+        
     end
 end
 
 result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
 result_map('cl_mt_pol_coh') = {f_coh(ar_z, ar_a'), zeros(1)};
+
 result_map('cl_mt_pol_c') = {mt_pol_cons, zeros(1)};
 result_map('cl_mt_pol_b_bridge') = {mt_pol_b_bridge, zeros(1)};
 result_map('cl_mt_pol_inf_borr_nobridge') = {mt_pol_inf_borr_nobridge, zeros(1)};
 result_map('cl_mt_pol_for_borr') = {mt_pol_for_borr, zeros(1)};
 result_map('cl_mt_pol_for_save') = {mt_pol_for_save, zeros(1)};
+
 result_map('ar_st_pol_names') = ["cl_mt_pol_a", "cl_mt_pol_coh", "cl_mt_pol_c", ...
     "cl_mt_pol_b_bridge", "cl_mt_pol_inf_borr_nobridge", "cl_mt_pol_for_borr", "cl_mt_pol_for_save"];
 
+% Get Discrete Choice Outcomes
+result_map = ffs_fibs_identify_discrete(result_map, bl_input_override);
 
 %% Post Solution Graph and Table Generation
+% Note in comparison with *abz*, results here, even when using identical
+% parameters would differ because in *abz* solved where choices are
+% principle. Here choices are principle + interests in order to facilitate
+% using the informal choice functions. 
+%
+% Note that this means two things are
+% different, on the one hand, the value of asset for to coh is different
+% based on the grid of assets. If the asset grid is negative, now per grid
+% point, there is more coh because that grid point of asset no longer has
+% interest rates. On the other hand, if one has positive asset grid point
+% on arrival, that is worth less to coh. Additionally, when making choices
+% for the next period, now choices aprime includes interests. What these
+% mean is that the a grid no longer has the same meaning. We should expect
+% at higher savings levels, for the same grid points, if optimal grid
+% choices are the same as before, consumption should be lower when b
+% includes interest rates and principle. This is however, not true when
+% arriving in a period with negative a levels, for the same negative a
+% level and same a prime negative choice, could have higher consumption
+% here becasue have to pay less interests on debt. This tends to happen for
+% smaller levels of borrowing choices.
+%
+% Graphically, when using interest + principle, big difference in
+% consumption as a fraction of (coh - aprime) figure. In those figures,
+% when counting in principles only, the gap in coh and aprime is
+% consumption, but now, as more is borrowed only a small fraction of coh
+% and aprime gap is consumption, becuase aprime/(1+r) is put into
+% consumption.
 
-% if (bl_post)
-%     bl_input_override = true;
-%     result_map('ar_val_diff_norm') = ar_val_diff_norm(1:it_iter_last);
-%     result_map('ar_pol_diff_norm') = ar_pol_diff_norm(1:it_iter_last);
-%     result_map('mt_pol_perc_change') = mt_pol_perc_change(1:it_iter_last, :);
-%
-%     % Standard AZ graphs
-%     result_map = ff_az_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
-%
-%     % Graphs for results_map with FIBS contents
-%     result_map = ff_az_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
-% end
+if (bl_post)
+    bl_input_override = true;
+    result_map('ar_val_diff_norm') = ar_val_diff_norm(1:it_iter_last);
+    result_map('ar_pol_diff_norm') = ar_pol_diff_norm(1:it_iter_last);
+    result_map('mt_pol_perc_change') = mt_pol_perc_change(1:it_iter_last, :);
+    
+    % Standard AZ graphs
+    result_map = ff_az_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    
+    % Graphs for results_map with FIBS contents
+    result_map = ff_az_fibs_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+end
 
 end

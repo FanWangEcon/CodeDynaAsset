@@ -56,7 +56,16 @@ function [fl_max_c, fl_b_bridge, fl_inf_borr_nobridge, fl_for_borr, fl_for_save]
 %        ffs_fibs_min_c_cost_bridge(fl_ap, fl_coh, ...
 %            param_map, support_map, armt_map, func_map, bl_input_override);
 %
-
+% @seealso
+%
+% * Formal Borrowing Grid: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_gen.html ffs_for_br_block_gen>
+% * Informal Interest Rates: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_r_inf.html ffs_r_inf>
+% * Match Borrowing to Formal Grid: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_match.html ffs_for_br_block_match>
+% * Optimize Formal and Informal, Borrowing and Savings Joint Choices: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost.html ffs_fibs_min_c_cost>
+% * Bridge Loan: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_inf_bridge.html ffs_fibs_inf_bridge>
+% * Overall Optimization: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost_bridge.html ffs_fibs_min_c_cost_bridge>
+% * Discrete Choices: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_identify_discrete.html ffs_fibs_identify_discrete>
+%
 
 %% Default 
 
@@ -67,7 +76,7 @@ end
 if (bl_input_override)
     % override when called from outside
     [fl_ap, fl_coh, param_map, support_map, armt_map, func_map, ~] = varargin{:};
-    
+    bl_display_minccost_bridge = false;
 else
     
     close all
@@ -81,11 +90,16 @@ else
     % Testing COH and Aprime Vectors
     fl_ap = -10;
     fl_coh = 5;
-        
+
+%     % Example where aprime choice can not repay debt. 
+%     fl_ap = -5;
+%     fl_coh = -10;
+    
     % Set Display Control
     support_map('bl_display_infbridge') = true;
     support_map('bl_display_minccost') = true;
     
+    bl_display_minccost_bridge = true;
 end
 
 %% Parse Parameters
@@ -95,8 +109,8 @@ params_group = values(armt_map, {'ar_forbrblk', 'ar_forbrblk_r'});
 [ar_forbrblk, ar_forbrblk_r] = params_group{:};
 
 % Gather Inputs from param_map
-params_group = values(param_map, {'bl_default', 'bl_bridge', 'bl_b_is_principle', 'fl_r_inf', 'fl_r_fsv', 'fl_c_min'});
-[bl_default, bl_bridge, bl_b_is_principle, fl_r_inf, fl_r_fsv, fl_c_min] = params_group{:};
+params_group = values(param_map, {'bl_rollover', 'bl_default', 'bl_bridge', 'bl_b_is_principle', 'fl_r_inf', 'fl_r_fsv', 'fl_c_min'});
+[bl_rollover, bl_default, bl_bridge, bl_b_is_principle, fl_r_inf, fl_r_fsv, fl_c_min] = params_group{:};
 
 % func_map
 params_group = values(func_map, {'f_cons_coh_fbis', 'f_cons_coh_save'});
@@ -154,12 +168,12 @@ if (fl_ap < 0)
     
     % Compute Consumption given Formal and Informal joint
     % consumption with formal borrow menu + bridge loans.
-    fl_max_c = f_cons_coh_fbis(fl_coh, fl_max_c_nobridge + fl_c_bridge);
+    fl_max_c_raw = f_cons_coh_fbis(fl_coh, fl_max_c_nobridge + fl_c_bridge);
     
 else
     
     % consumption with savings
-    fl_max_c = f_cons_coh_save(fl_coh, fl_ap);
+    fl_max_c_raw = f_cons_coh_save(fl_coh, fl_ap);
     
     % assign values for formal and informal choices
     % possible that fl_coh < 0, but if then fl_ap > 0 is
@@ -170,7 +184,9 @@ end
 
 %% Compute Utility With Default
 % assign u(c)
-if (fl_max_c <= fl_c_min)
+
+if (fl_max_c_raw <= fl_c_min || ( ~bl_rollover && ~bl_bridge && fl_coh < fl_c_min))
+    
     if (bl_default)
         % Replace Consumption if default cmin
         fl_max_c = fl_c_min;
@@ -178,6 +194,28 @@ if (fl_max_c <= fl_c_min)
         % Replace Consumption if no default nan
         fl_max_c = 0;
     end
+    % if coh < 0 but aprime > coh, choice not sufficient to pay debt, then
+    % fl_for_save ends up > 0, but that is not possible, not a real choice.
+    if (fl_for_save > 0)
+        fl_for_save = 0;
+    end
+else
+    fl_max_c = fl_max_c_raw;
+end
+
+%% Display
+
+if (bl_display_minccost_bridge)
+
+    disp('fl_max_c_raw');
+    disp(fl_max_c_raw);    
+    
+    disp('fl_max_c');
+    disp(fl_max_c);
+    
+    disp('fl_for_save');
+    disp(fl_for_save);
+    
 end
 
 end

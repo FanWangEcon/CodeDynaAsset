@@ -4,9 +4,9 @@
 % Table of Content.*
 %
 % Testing the
-% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html
-% ff_az_ds> program for solving the savings only dynamic
-% programming problem.
+% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html
+% ff_az_ds_vecsv> program for solving the savings + borrowing problem using
+% full-states-markov eigenvector-sparse-matrix approach.
 %
 % defaults in ffs_abz_set_default_param.m are:
 %
@@ -38,8 +38,10 @@ ar_fl_beta = [0.94, 0.96, 0.98];
 ar_fl_crra = [1, 1.5, 2.0];
 
 % Accuracy
-ar_it_a_n_hg = [750, 1250, 2250];
-ar_it_z_n_hg = [15, 19, 27];
+% ar_it_a_n_hg = [750, 1250, 1750, 2250];
+% ar_it_z_n_hg = [15, 19, 23, 27];
+ar_it_a_n_hg = [750];
+ar_it_z_n_hg = [15];
 
 % Borrowing/Savings Parameters
 it_a_n = 750;
@@ -136,7 +138,7 @@ for fl_crra = ar_fl_crra
     [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
 
     % Preference
-    param_map('fl_beta') = ar_fl_beta(1);
+    param_map('fl_beta') = ar_fl_beta(2);
     param_map('fl_crra') = fl_crra;
 
     % Borrowing Parameters
@@ -200,7 +202,7 @@ for fl_crra = ar_fl_crra
     [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
 
     % Preference
-    param_map('fl_beta') = ar_fl_beta(1);
+    param_map('fl_beta') = ar_fl_beta(3);
     param_map('fl_crra') = fl_crra;
 
     % Borrowing Parameters

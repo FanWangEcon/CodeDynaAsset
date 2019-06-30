@@ -4,8 +4,9 @@
 % Table of Content.*
 %
 % Testing the
-% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html
-% ff_az_ds_vecsv> program for solving the savings and borrowing problem. 
+% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html
+% ff_az_ds_vecsv> program for solving the savings + borrowing problem using
+% full-states-markov eigenvector-sparse-matrix approach.
 %
 % defaults in ffs_abz_set_default_param.m are:
 %
@@ -41,9 +42,11 @@ clear all;
 ar_fl_z_rho = [0.65, 0.80, 0.95];
 ar_fl_z_sig = [0.05, 0.20, 0.35];
 
-% High Accuracy
-ar_it_a_n_hg = [750, 1250, 1750, 2250];
-ar_it_z_n_hg = [15, 19, 23, 27];
+% Accuracy
+% ar_it_a_n_hg = [750, 1250, 1750, 2250];
+% ar_it_z_n_hg = [15, 19, 23, 27];
+ar_it_a_n_hg = [750];
+ar_it_z_n_hg = [15];
 
 % Borrowing/Savings Parameters
 bl_default = true;

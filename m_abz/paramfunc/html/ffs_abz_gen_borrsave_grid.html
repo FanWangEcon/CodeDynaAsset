@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Generate Borrowing and Savings Grid</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-16"><meta name="DC.source" content="ffs_abz_gen_borrsave_grid.m"><style type="text/css">
+      --><title>Generate Borrowing and Savings Grid</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-26"><meta name="DC.source" content="ffs_abz_gen_borrsave_grid.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -75,27 +75,46 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 bl_default = 1;
 ar_z = [0.3474 0.4008 0.4623 0.5333 0.6152 0.7097 0.8186 0.9444 1.0894 1.2567 1.4496 1.6723 1.9291 2.2253 2.5670];
 fl_w = 1;
+bl_b_is_principle = true; <span class="comment">% if false, b = principle + interest rates</span>
 fl_r_borr = 0.05;
 fl_a_min = 0;
 fl_a_max = 50;
 it_a_n = 100;
 
-cl_params = {fl_b_bd bl_default ar_z <span class="keyword">...</span>
-             fl_w fl_r_borr fl_a_min fl_a_max it_a_n};
+cl_params = {fl_b_bd bl_default ar_z fl_w <span class="keyword">...</span>
+             bl_b_is_principle fl_r_borr fl_a_min fl_a_max it_a_n};
 </pre><h2 id="4">Parse Parameters</h2><p>numvarargs is the number of varagin inputted</p><pre class="codeinput">[cl_params{1:cl_params_len}] = varargin{:};
 fl_b_bd = cl_params{1};
 bl_default = cl_params{2};
 ar_z = cl_params{3};
 fl_w = cl_params{4};
-fl_r_borr = cl_params{5};
-fl_a_min = cl_params{6};
-fl_a_max = cl_params{7};
-it_a_n = cl_params{8};
-</pre><h2 id="5">Min and Max Income</h2><p>With the discretized exogenous income process, there are minimum and maximum levels of income next period given the vector of shocks.</p><pre class="codeinput">fl_ar_z_min = min(ar_z);
-fl_borr_yminbd = -(fl_ar_z_min*fl_w)/fl_r_borr;
 
-fl_ar_z_max = max(ar_z);
-fl_borr_ymaxbd = -(fl_ar_z_max*fl_w)/fl_r_borr;
+bl_b_is_principle = cl_params{5};
+fl_r_borr = cl_params{6};
+fl_a_min = cl_params{7};
+fl_a_max = cl_params{8};
+it_a_n = cl_params{9};
+</pre><h2 id="5">Min and Max Income</h2><p>With the discretized exogenous income process, there are minimum and maximum levels of income next period given the vector of shocks.</p><pre class="codeinput"><span class="keyword">if</span> (bl_b_is_principle)
+    <span class="comment">% If principle, have to worry about if can repay interest rate</span>
+    fl_ar_z_min = min(ar_z);
+    fl_borr_yminbd = -(fl_ar_z_min*fl_w)/fl_r_borr;
+
+    fl_ar_z_max = max(ar_z);
+    fl_borr_ymaxbd = -(fl_ar_z_max*fl_w)/fl_r_borr;
+
+<span class="keyword">else</span>
+    <span class="comment">% B is principle + interest rate, next period repay, constraint is now</span>
+    <span class="comment">% different: min_wage - b/(1+r) &gt;= - b. If do not use these but use the</span>
+    <span class="comment">% bounds from above, there will be households who are at the min</span>
+    <span class="comment">% borrowing bound even though default is not allowed.</span>
+
+    fl_ar_z_min = min(ar_z);
+    fl_borr_yminbd = -(fl_ar_z_min*fl_w)*((1+fl_r_borr)/fl_r_borr);
+
+    fl_ar_z_max = max(ar_z);
+    fl_borr_ymaxbd = -(fl_ar_z_max*fl_w)*((1+fl_r_borr)/fl_r_borr);
+
+<span class="keyword">end</span>
 </pre><h2 id="6">Savings Only</h2><pre class="codeinput"><span class="keyword">if</span> (fl_b_bd &gt;= 0)
     <span class="comment">% interpret this as minimum savings level if 0 is not allowed</span>
     fl_a_min = fl_a_min;
@@ -109,77 +128,89 @@ fl_borr_ymaxbd = -(fl_ar_z_max*fl_w)/fl_r_borr;
     <span class="keyword">end</span>
 </pre><pre class="codeinput"><span class="keyword">end</span>
 </pre><h2 id="12">Grid</h2><pre class="codeinput">ar_a = linspace(fl_a_min, fl_a_max, it_a_n);
-</pre><h2 id="13">Add Zero</h2><pre class="codeinput">ar_a = [0 ar_a];
-ar_a = sort(unique(ar_a));
+</pre><h2 id="13">Add Zero</h2><p>allow for not saving or borrowing, but if add zero, preserve ar_a length to be it_a_n still.</p><pre class="codeinput"><span class="keyword">if</span> (ismember(0, ar_a))
+    ar_a = sort(unique(ar_a));
+<span class="keyword">else</span>
+    ar_a = linspace(fl_a_min, fl_a_max, it_a_n-1);
+
+    <span class="keyword">if</span> (ismember(0, ar_a))
+        <span class="comment">% add a mid point between 0 and lowest savings point above zero.</span>
+        ar_a = [(ar_a(2)-ar_a(1))/2, ar_a];
+        ar_a = sort(unique(ar_a));
+    <span class="keyword">else</span>
+        ar_a = [0 ar_a];
+        ar_a = sort(unique(ar_a));
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
 </pre><pre class="codeinput"><span class="keyword">end</span>
 </pre><pre class="codeoutput">
 ans =
 
   Columns 1 through 7
 
-  -51.3400  -50.3164  -49.2927  -48.2691  -47.2455  -46.2218  -45.1982
+  -51.3400  -50.3059  -49.2718  -48.2378  -47.2037  -46.1696  -45.1355
 
   Columns 8 through 14
 
-  -44.1745  -43.1509  -42.1273  -41.1036  -40.0800  -39.0564  -38.0327
+  -44.1014  -43.0673  -42.0333  -40.9992  -39.9651  -38.9310  -37.8969
 
   Columns 15 through 21
 
-  -37.0091  -35.9855  -34.9618  -33.9382  -32.9145  -31.8909  -30.8673
+  -36.8629  -35.8288  -34.7947  -33.7606  -32.7265  -31.6924  -30.6584
 
   Columns 22 through 28
 
-  -29.8436  -28.8200  -27.7964  -26.7727  -25.7491  -24.7255  -23.7018
+  -29.6243  -28.5902  -27.5561  -26.5220  -25.4880  -24.4539  -23.4198
 
   Columns 29 through 35
 
-  -22.6782  -21.6545  -20.6309  -19.6073  -18.5836  -17.5600  -16.5364
+  -22.3857  -21.3516  -20.3176  -19.2835  -18.2494  -17.2153  -16.1812
 
   Columns 36 through 42
 
-  -15.5127  -14.4891  -13.4655  -12.4418  -11.4182  -10.3945   -9.3709
+  -15.1471  -14.1131  -13.0790  -12.0449  -11.0108   -9.9767   -8.9427
 
   Columns 43 through 49
 
-   -8.3473   -7.3236   -6.3000   -5.2764   -4.2527   -3.2291   -2.2055
+   -7.9086   -6.8745   -5.8404   -4.8063   -3.7722   -2.7382   -1.7041
 
   Columns 50 through 56
 
-   -1.1818   -0.1582         0    0.8655    1.8891    2.9127    3.9364
+   -0.6700         0    0.3641    1.3982    2.4322    3.4663    4.5004
 
   Columns 57 through 63
 
-    4.9600    5.9836    7.0073    8.0309    9.0545   10.0782   11.1018
+    5.5345    6.5686    7.6027    8.6367    9.6708   10.7049   11.7390
 
   Columns 64 through 70
 
-   12.1255   13.1491   14.1727   15.1964   16.2200   17.2436   18.2673
+   12.7731   13.8071   14.8412   15.8753   16.9094   17.9435   18.9776
 
   Columns 71 through 77
 
-   19.2909   20.3145   21.3382   22.3618   23.3855   24.4091   25.4327
+   20.0116   21.0457   22.0798   23.1139   24.1480   25.1820   26.2161
 
   Columns 78 through 84
 
-   26.4564   27.4800   28.5036   29.5273   30.5509   31.5745   32.5982
+   27.2502   28.2843   29.3184   30.3524   31.3865   32.4206   33.4547
 
   Columns 85 through 91
 
-   33.6218   34.6455   35.6691   36.6927   37.7164   38.7400   39.7636
+   34.4888   35.5229   36.5569   37.5910   38.6251   39.6592   40.6933
 
   Columns 92 through 98
 
-   40.7873   41.8109   42.8345   43.8582   44.8818   45.9055   46.9291
+   41.7273   42.7614   43.7955   44.8296   45.8637   46.8978   47.9318
 
-  Columns 99 through 101
+  Columns 99 through 100
 
-   47.9527   48.9764   50.0000
+   48.9659   50.0000
 
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% Generate Borrowing and Savings Grid
 % *back to <https://fanwangecon.github.io Fan>'s
-% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository> 
+% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
 %%
@@ -202,7 +233,7 @@ function [ar_a, fl_borr_yminbd, fl_borr_ymaxbd] = ffs_abz_gen_borrsave_grid(vara
 % is tighter than the natural borrowing constraint based on minimum income
 % in the case where defaults are not allowed. And if it is tighther than
 % the defaults borrowing constraint based on maximium income in the case
-% where defaults are allowed.  
+% where defaults are allowed.
 %
 % @param bl_default boolean if fl_b_bd is below zero, then is defaults
 % allowed or not? What does default mean? No-default means households under
@@ -212,10 +243,10 @@ function [ar_a, fl_borr_yminbd, fl_borr_ymaxbd] = ffs_abz_gen_borrsave_grid(vara
 % here. What does default mean, it means under some states of shocks,
 % households face debt that they can not repay, so they go to minimum
 % consumption, which is utility for default. Their optimal choice is
-% savings = 0 for the next period. 
+% savings = 0 for the next period.
 %
 % @param ar_z array array of exogenous income shocks for the exogeous
-% shocks to inelastic labor supply 
+% shocks to inelastic labor supply
 %
 % @return fl_w float wage
 %
@@ -238,13 +269,15 @@ fl_b_bd = -100;
 bl_default = 1;
 ar_z = [0.3474 0.4008 0.4623 0.5333 0.6152 0.7097 0.8186 0.9444 1.0894 1.2567 1.4496 1.6723 1.9291 2.2253 2.5670];
 fl_w = 1;
+bl_b_is_principle = true; % if false, b = principle + interest rates
 fl_r_borr = 0.05;
 fl_a_min = 0;
 fl_a_max = 50;
 it_a_n = 100;
 
-cl_params = {fl_b_bd bl_default ar_z ...
-             fl_w fl_r_borr fl_a_min fl_a_max it_a_n};
+cl_params = {fl_b_bd bl_default ar_z fl_w ...
+             bl_b_is_principle fl_r_borr fl_a_min fl_a_max it_a_n};
+
 
 %% Parse Parameters
 % numvarargs is the number of varagin inputted
@@ -253,20 +286,38 @@ fl_b_bd = cl_params{1};
 bl_default = cl_params{2};
 ar_z = cl_params{3};
 fl_w = cl_params{4};
-fl_r_borr = cl_params{5};
-fl_a_min = cl_params{6};
-fl_a_max = cl_params{7};
-it_a_n = cl_params{8};
+
+bl_b_is_principle = cl_params{5};
+fl_r_borr = cl_params{6};
+fl_a_min = cl_params{7};
+fl_a_max = cl_params{8};
+it_a_n = cl_params{9};
 
 %% Min and Max Income
 % With the discretized exogenous income process, there are minimum and
-% maximum levels of income next period given the vector of shocks. 
+% maximum levels of income next period given the vector of shocks.
 
-fl_ar_z_min = min(ar_z);
-fl_borr_yminbd = -(fl_ar_z_min*fl_w)/fl_r_borr;
+if (bl_b_is_principle)
+    % If principle, have to worry about if can repay interest rate
+    fl_ar_z_min = min(ar_z);
+    fl_borr_yminbd = -(fl_ar_z_min*fl_w)/fl_r_borr;
 
-fl_ar_z_max = max(ar_z);
-fl_borr_ymaxbd = -(fl_ar_z_max*fl_w)/fl_r_borr;
+    fl_ar_z_max = max(ar_z);
+    fl_borr_ymaxbd = -(fl_ar_z_max*fl_w)/fl_r_borr;
+    
+else
+    % B is principle + interest rate, next period repay, constraint is now
+    % different: min_wage - b/(1+r) >= - b. If do not use these but use the
+    % bounds from above, there will be households who are at the min
+    % borrowing bound even though default is not allowed.
+           
+    fl_ar_z_min = min(ar_z);
+    fl_borr_yminbd = -(fl_ar_z_min*fl_w)*((1+fl_r_borr)/fl_r_borr);
+
+    fl_ar_z_max = max(ar_z);
+    fl_borr_ymaxbd = -(fl_ar_z_max*fl_w)*((1+fl_r_borr)/fl_r_borr);
+    
+end
 
 %% Savings Only
 if (fl_b_bd >= 0)
@@ -276,25 +327,40 @@ end
 
 %% Borrowing
 if (fl_b_bd < 0)
-    
+
     %% Borrowing not allowing for default
     if (~bl_default)
         fl_a_min = max(fl_b_bd, fl_borr_yminbd);
     end
-    
+
     %% Borrowing allowing for default
     if (bl_default)
         fl_a_min = max(fl_b_bd, fl_borr_ymaxbd);
-    end    
-    
+    end
+
 end
 
 %% Grid
 ar_a = linspace(fl_a_min, fl_a_max, it_a_n);
 
 %% Add Zero
-ar_a = [0 ar_a];
-ar_a = sort(unique(ar_a));
+% allow for not saving or borrowing, but if add zero, preserve ar_a length
+% to be it_a_n still. 
+
+if (ismember(0, ar_a))
+    ar_a = sort(unique(ar_a));
+else
+    ar_a = linspace(fl_a_min, fl_a_max, it_a_n-1);
+    
+    if (ismember(0, ar_a))
+        % add a mid point between 0 and lowest savings point above zero.
+        ar_a = [(ar_a(2)-ar_a(1))/2, ar_a];
+        ar_a = sort(unique(ar_a));
+    else
+        ar_a = [0 ar_a];
+        ar_a = sort(unique(ar_a));        
+    end
+end
 
 end
 
