@@ -15,7 +15,8 @@ function [ar_aprime_nobridge, ar_b_bridge, ar_c_bridge] = ffs_fibs_inf_bridge(va
 %
 % @param bl_b_is_principle boolean solving with aggregate savings as
 % savings + debt principles + interests, or just principles no interests.
-% if true, principels only, no interests.
+% if true, principels only, no interests. These refer to the _ar_aprime_
+% vector.
 %
 % @param fl_r_bridge float interest rate for bridge loan
 %
@@ -75,12 +76,12 @@ else
 
     % Default
     it_param_set = 4;
-    [param_map, ~] = ffs_abz_fibs_set_default_param(it_param_set);
+    [param_map, ~] = ffs_ipwkbz_fibs_set_default_param(it_param_set);
 
     % Gather Inputs from param_map
     params_group = values(param_map, {'bl_b_is_principle', 'fl_r_inf'});
     [bl_b_is_principle, fl_r_inf] = params_group{:};
-
+    
     % For benchmark, assume that the informal lender
     fl_r_bridge = fl_r_inf;
 
@@ -143,7 +144,7 @@ if (bl_display_infbridge)
     tab_aprime_bridge.Properties.VariableDescriptions{'ar_b_bridge'} = ...
         '*ar_b_bridge*: amount of bridge loan required to cover negative coh (includes interest if bl_b_is_principle = false)';
     tab_aprime_bridge.Properties.VariableDescriptions{'ar_c_bridge'} = ...
-        '*ar_c_bridge*: consumption gain today from the bridge loan to cover negative coh';
+        '*ar_c_bridge*: consumption gain today from the bridge loan to cover negative coh; or consumption cost tomorrow for debt which increases c today';
     tab_aprime_bridge.Properties.VariableDescriptions{'ar_aprime_nobridge'} = ...
         ['*ar_aprime_nobridge*ar_aprime_nobridge:' ...
          'aprime = -10, -5 for bridge; -5 left for other borrowing choices;' ...

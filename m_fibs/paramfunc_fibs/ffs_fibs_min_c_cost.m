@@ -108,13 +108,15 @@ else
     % Default
     it_param_set = 4;
     bl_input_override = true;
-    [param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
-    [armt_map, ~] = ffs_abz_fibs_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
+    [param_map, support_map] = ffs_ipwkbz_fibs_set_default_param(it_param_set);
     
     % Gather Inputs from armt_map
-    params_group = values(armt_map, {'ar_forbrblk', 'ar_forbrblk_r'});
-    [ar_forbrblk, ar_forbrblk_r] = params_group{:};
-    
+    params_group = values(param_map, ...
+        {'fl_r_fbr', 'st_forbrblk_type', 'fl_forbrblk_brmost', 'fl_forbrblk_brleast', 'fl_forbrblk_gap'});
+    [fl_r_fbr, st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap] = params_group{:};
+    [ar_forbrblk, ar_forbrblk_r] = ...
+        ffs_for_br_block_gen(fl_r_fbr, st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap);
+
     % Gather Inputs from param_map
     params_group = values(param_map, {'bl_b_is_principle', 'fl_r_inf', 'fl_r_fsv'});
     [bl_b_is_principle, fl_r_inf, fl_r_fsv] = params_group{:};
@@ -125,10 +127,14 @@ else
 %     fl_r_inf = 10000;
     
     % Testing COH and Aprime Vectors
-    ar_aprime_nobridge = [-20,-10,-5,-4.5,-4.1,-1.1,-0.1, 0.1, 1]';
+    ar_aprime_nobridge = [-20, -14, -11, -6.8, ...
+                          -5.5, -4.5, -4.1, -1.1, ...
+                          -0.1, ...
+                          0.1, 1, 2, 10]';
     
     % Set Display Control
     bl_display_minccost = true;
+    
     
 end
 
@@ -220,7 +226,7 @@ if (sum(~ar_aprime_nobridge_pos_idx))
         
         % c_infforb is cost of borrowing in next period consumption
         b_infforb_inf = (ar_aprime_nobridge_br - ar_a_grid_ceil_principle);
-        b_infforb_for = -(ar_a_grid_ceil_principle);
+        b_infforb_for = (ar_a_grid_ceil_principle);
         c_infforb =  (b_infforb_inf.*(1+fl_r_inf) + ar_a_grid_ceil_wthr);
         
     else
@@ -248,7 +254,7 @@ if (sum(~ar_aprime_nobridge_pos_idx))
         
         % c_forbrsv is cost of borrowing in next period consumption
         b_forbrsv_sav = (ar_aprime_nobridge_br - ar_a_grid_floor_principle);
-        b_forbrsv_brr = -(ar_a_grid_floor_principle);
+        b_forbrsv_brr = (ar_a_grid_floor_principle);
         c_forbrsv = (b_forbrsv_sav*(1+fl_r_fsv) + ar_a_grid_floor_wthr);
         
     else
@@ -280,8 +286,8 @@ if (sum(~ar_aprime_nobridge_pos_idx))
     
     if (bl_b_is_principle)
         
-        % minimize consumption cost to the future
-        [ar_max_c_nobridge_br, max_idx] = min([c_infonly c_infforb c_forbrsv],[], 2);
+        % minimize consumption cost to the future (also maximizing)
+        [ar_max_c_nobridge_br, max_idx] = max([c_infonly c_infforb c_forbrsv],[], 2);
         
     else
         
@@ -318,7 +324,13 @@ end
 
 %% Display Final 
 if (bl_display_minccost)
-    ar_average_r = (-1)*(ar_aprime_nobridge./ar_max_c_nobridge);
+    
+    if (bl_b_is_principle)
+        ar_average_r = (-1)*(ar_max_c_nobridge./ar_aprime_nobridge);
+    else
+        ar_average_r = (-1)*(ar_aprime_nobridge./ar_max_c_nobridge);
+    end
+    
     tab_opti_borrow = table(ar_aprime_nobridge, ar_max_c_nobridge, ...
         ar_average_r, ar_inf_borr_nobridge, ar_for_borr, ar_for_save);
     disp(tab_opti_borrow);
@@ -326,17 +338,3 @@ end
 
 
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-

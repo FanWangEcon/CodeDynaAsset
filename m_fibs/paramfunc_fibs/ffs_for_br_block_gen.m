@@ -37,7 +37,8 @@ function [ar_forbrblk, ar_forbrblk_r] = ffs_for_br_block_gen(varargin)
 %
 % @return ar_forbrblk array array of formal borrowing grid points. should
 % be ordered from lowest to highest including zero at the top. i.e.: [-4,
-% -2, -1, 0]. These are assumed to be in principles units always. 
+% -2, -1, 0]. These are assumed to be in principles units always.
+% PRINCIPLES only, do not include interest rates.
 %
 % @return ar_forbrblk_r array interest rates associated with equal-length
 % _ar_forbrblk_. ar_forbrblk_r multiplied element-wise with ar_forbrblk

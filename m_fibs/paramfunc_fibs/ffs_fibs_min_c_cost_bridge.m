@@ -84,17 +84,41 @@ else
     % Default
     it_param_set = 4;
     bl_input_override = true;
-    [param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
-    [armt_map, func_map] = ffs_abz_fibs_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
+    [param_map, support_map] = ffs_ipwkbz_fibs_set_default_param(it_param_set);
+    
+    % Gather Inputs from armt_map
+    params_group = values(param_map, ...
+        {'fl_r_fbr', 'st_forbrblk_type', 'fl_forbrblk_brmost', 'fl_forbrblk_brleast', 'fl_forbrblk_gap'});
+    [fl_r_fbr, st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap] = params_group{:};
+    [ar_forbrblk, ar_forbrblk_r] = ...
+        ffs_for_br_block_gen(fl_r_fbr, st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap);
+    
+    armt_map = containers.Map('KeyType','char', 'ValueType','any');
+    armt_map('ar_forbrblk') = ar_forbrblk;
+    armt_map('ar_forbrblk_r') = ar_forbrblk_r;
+    
+    % Get Functions
+    params_group = values(param_map, {'fl_crra', 'fl_c_min', 'fl_b_bd'});
+    [fl_crra, fl_c_min, fl_b_bd] = params_group{:};
+    params_group = values(param_map, {'fl_Amean', 'fl_alpha', 'fl_delta'});
+    [fl_Amean, fl_alpha, fl_delta] = params_group{:};
+    params_group = values(param_map, {'fl_r_fsv', 'fl_w'});
+    [fl_r_fsv, fl_w] = params_group{:};
+    [~, ~, ~, ~, ~, f_coh_fbis, f_coh_save, ~] = ...
+        ffs_ipwkbz_fibs_set_functions(fl_crra, fl_c_min, fl_b_bd, fl_Amean, fl_alpha, fl_delta, fl_w, fl_r_fbr, fl_r_fsv);
+    
+    func_map = containers.Map('KeyType','char', 'ValueType','any');
+    func_map('f_coh_fbis') = f_coh_fbis;
+    func_map('f_coh_save') = f_coh_save;
     
     % Testing COH and Aprime Vectors
     fl_ap = -10;
     fl_coh = 5;
 
-%     % Example where aprime choice can not repay debt. 
-%     fl_ap = -5;
-%     fl_coh = -10;
-    
+    % Example where aprime choice can not repay debt. 
+    fl_ap = -5;
+    fl_coh = -10;
+
     % Set Display Control
     support_map('bl_display_infbridge') = true;
     support_map('bl_display_minccost') = true;
@@ -113,8 +137,15 @@ params_group = values(param_map, {'bl_rollover', 'bl_default', 'bl_bridge', 'bl_
 [bl_rollover, bl_default, bl_bridge, bl_b_is_principle, fl_r_inf, fl_r_fsv, fl_c_min] = params_group{:};
 
 % func_map
-params_group = values(func_map, {'f_cons_coh_fbis', 'f_cons_coh_save'});
-[f_cons_coh_fbis, f_cons_coh_save] = params_group{:};
+if (bl_b_is_principle)
+    % when savings is principle: mimizing cost cost tomorrow
+    params_group = values(func_map, {'f_coh_fbis', 'f_coh_save'});
+    [f_coh_fbis, f_coh_save] = params_group{:};
+else
+    % when not principle, but principle + interest: maximize c gain today
+    params_group = values(func_map, {'f_cons_coh_fbis', 'f_cons_coh_save'});
+    [f_cons_coh_fbis, f_cons_coh_save] = params_group{:};
+end
 
 % support_map
 params_group = values(support_map, {'bl_display_minccost', 'bl_display_infbridge'});
@@ -168,12 +199,20 @@ if (fl_ap < 0)
     
     % Compute Consumption given Formal and Informal joint
     % consumption with formal borrow menu + bridge loans.
-    fl_max_c_raw = f_cons_coh_fbis(fl_coh, fl_max_c_nobridge + fl_c_bridge);
+    if (bl_b_is_principle)
+        fl_max_c_or_coh_raw = f_coh_fbis(fl_r_inf, fl_for_borr, fl_b_bridge + fl_inf_borr_nobridge, fl_for_save);
+    else
+        fl_max_c_or_coh_raw = f_cons_coh_fbis(fl_coh, fl_max_c_nobridge + fl_c_bridge);
+    end      
     
 else
     
     % consumption with savings
-    fl_max_c_raw = f_cons_coh_save(fl_coh, fl_ap);
+    if (bl_b_is_principle)    
+        fl_max_c_or_coh_raw = f_coh_save(fl_ap);
+    else
+        fl_max_c_or_coh_raw = f_cons_coh_save(fl_coh, fl_ap);
+    end
     
     % assign values for formal and informal choices
     % possible that fl_coh < 0, but if then fl_ap > 0 is
@@ -185,7 +224,7 @@ end
 %% Compute Utility With Default
 % assign u(c)
 
-if (fl_max_c_raw <= fl_c_min || ( ~bl_rollover && ~bl_bridge && fl_coh < fl_c_min))
+if (fl_max_c_or_coh_raw <= fl_c_min || ( ~bl_rollover && ~bl_bridge && fl_coh < fl_c_min))
     
     if (bl_default)
         % Replace Consumption if default cmin
@@ -200,7 +239,7 @@ if (fl_max_c_raw <= fl_c_min || ( ~bl_rollover && ~bl_bridge && fl_coh < fl_c_mi
         fl_for_save = 0;
     end
 else
-    fl_max_c = fl_max_c_raw;
+    fl_max_c = fl_max_c_or_coh_raw;
 end
 
 %% Display
@@ -208,7 +247,7 @@ end
 if (bl_display_minccost_bridge)
 
     disp('fl_max_c_raw');
-    disp(fl_max_c_raw);    
+    disp(fl_max_c_or_coh_raw);    
     
     disp('fl_max_c');
     disp(fl_max_c);

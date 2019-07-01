@@ -1,0 +1,188 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Set Model Functions (Interpolated + Percentage + Risky + Safe Asset)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-30"><meta name="DC.source" content="ffs_ipwkbz_fibs_set_functions.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Set Model Functions (Interpolated + Percentage + Risky + Safe Asset)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FFS_IPWKZ_FIBS_SET_FUNCTIONS setting model functions</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Equations Utility</a></li><li><a href="#6">Equations Production</a></li><li><a href="#7">Equations Income</a></li><li><a href="#8">Equations Cash-on-Hand</a></li><li><a href="#9">Equations Consumption (b=principle)</a></li><li><a href="#10">Equations Stand-in Fake Utility for Graphs</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [f_util_log, f_util_crra, f_util_standin, <span class="keyword">...</span>
+    f_prod, f_inc, f_coh_fbis, f_coh_save, f_cons] = ffs_ipwkbz_fibs_set_functions(varargin)
+</pre><h2 id="2">FFS_IPWKZ_FIBS_SET_FUNCTIONS setting model functions</h2><h2 id="3">Default</h2><pre class="codeinput">[fl_crra, fl_c_min, fl_b_bd] = deal(1.5, 0.001, -20);
+[fl_Amean, fl_alpha, fl_delta] = deal(1, 0.36, 0.08);
+[fl_w, fl_r_fbr, fl_r_fsv] = deal(1.28, 0.035, 0.025);
+bl_display_setfunc = false;
+
+default_params = {fl_crra fl_c_min fl_b_bd <span class="keyword">...</span>
+    fl_Amean fl_alpha fl_delta fl_w fl_r_fbr fl_r_fsv bl_display_setfunc};
+</pre><h2 id="4">Parse Parameters</h2><pre class="codeinput"><span class="comment">% numvarargs is the number of varagin inputted</span>
+[default_params{1:length(varargin)}] = varargin{:};
+[fl_crra, fl_c_min, fl_b_bd, fl_Amean, fl_alpha, fl_delta, <span class="keyword">...</span>
+    fl_w, fl_r_fbr, fl_r_fsv, bl_display_setfunc] = default_params{:};
+</pre><h2 id="5">Equations Utility</h2><pre class="codeinput">f_util_log = @(c) log(c);
+f_util_crra = @(c) (((c).^(1-fl_crra)-1)./(1-fl_crra));
+</pre><h2 id="6">Equations Production</h2><pre class="codeinput">f_prod = @(z, k) ((fl_Amean.*(z)).*(k.^(fl_alpha)));
+</pre><h2 id="7">Equations Income</h2><pre class="codeinput">f_inc = @(z, k, fl_r_inf, ar_for_borr, ar_inf_borr, ar_for_save) <span class="keyword">...</span>
+    (f_prod(z, k) - (fl_delta)*k + fl_w + <span class="keyword">...</span>
+        (ar_for_borr.*(fl_r_fbr) + ar_inf_borr.*(fl_r_inf) + <span class="keyword">...</span>
+         ar_for_save.*(fl_r_fsv)));
+</pre><h2 id="8">Equations Cash-on-Hand</h2><p><b>b_cons_cost</b>: For borrowing, given the overall b choice, function <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost_bridge.html">ffs_fibs_min_c_cost_bridge</a> finds the optimal formal and informal joint choices, and we obtain the consumption cost of borrowing from that</p><p>Unlike for the <b>abz (fibs)</b> problem, where the equations below are in terms of consumption, here we know b is principle due to two stage solution method.</p><pre class="codeinput"><span class="comment">% If borrowing overall, various files in</span>
+f_coh_fbis = @(z, b_cons_cost, k) (f_prod(z, k) + k*(1-fl_delta) - b_cons_cost);
+
+<span class="comment">% If saving overall</span>
+f_coh_save = @(z, b, k) (f_prod(z, k) + k*(1-fl_delta) - b./(1+fl_r_fsv));
+</pre><h2 id="9">Equations Consumption (b=principle)</h2><p>Note this is different from <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_paramfunc/html/ffs_abz_fibs_set_functions.html">ffs_abz_fibs_set_functions</a>, here only need to deal with b = principle, otherwise two stage solution does not work. So from today's perspective, choosing k and b for next period in principles.</p><pre class="codeinput">f_cons = @(coh, bprime, kprime) (coh - kprime - bprime);
+</pre><h2 id="10">Equations Stand-in Fake Utility for Graphs</h2><p>Utility for graphing with random data, note that when we graph with coh as the state variable using this equation here, there is no effect of shock on utility, it is fully captured by the coh.</p><pre class="codeinput">f_util_standin = @(z, b, k) f_util_log((f_coh_fbis(z,b,k)-fl_b_bd).*((f_coh_fbis(z,b,k) - fl_b_bd) &gt; fl_c_min) + <span class="keyword">...</span>
+                                        fl_c_min.*((f_coh_fbis(z,b,k) - fl_b_bd) &lt;= fl_c_min));
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><pre class="codeoutput">
+ans =
+
+  function_handle with value:
+
+    @(c)log(c)
+
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Set Model Functions (Interpolated + Percentage + Risky + Safe Asset)
+% *back to <https://fanwangecon.github.io Fan>'s
+% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
+% Table of Content.*
+
+%%
+function [f_util_log, f_util_crra, f_util_standin, ...
+    f_prod, f_inc, f_coh_fbis, f_coh_save, f_cons] = ffs_ipwkbz_fibs_set_functions(varargin)
+%% FFS_IPWKZ_FIBS_SET_FUNCTIONS setting model functions
+
+%% Default
+
+[fl_crra, fl_c_min, fl_b_bd] = deal(1.5, 0.001, -20);
+[fl_Amean, fl_alpha, fl_delta] = deal(1, 0.36, 0.08);
+[fl_w, fl_r_fbr, fl_r_fsv] = deal(1.28, 0.035, 0.025);
+bl_display_setfunc = false;
+
+default_params = {fl_crra fl_c_min fl_b_bd ...
+    fl_Amean fl_alpha fl_delta fl_w fl_r_fbr fl_r_fsv bl_display_setfunc};
+
+%% Parse Parameters
+
+% numvarargs is the number of varagin inputted
+[default_params{1:length(varargin)}] = varargin{:};
+[fl_crra, fl_c_min, fl_b_bd, fl_Amean, fl_alpha, fl_delta, ...
+    fl_w, fl_r_fbr, fl_r_fsv, bl_display_setfunc] = default_params{:};
+
+%% Equations Utility
+
+f_util_log = @(c) log(c);
+f_util_crra = @(c) (((c).^(1-fl_crra)-1)./(1-fl_crra));
+
+%% Equations Production
+
+f_prod = @(z, k) ((fl_Amean.*(z)).*(k.^(fl_alpha)));
+
+%% Equations Income
+
+f_inc = @(z, k, fl_r_inf, ar_for_borr, ar_inf_borr, ar_for_save) ...
+    (f_prod(z, k) - (fl_delta)*k + fl_w + ...
+        (ar_for_borr.*(fl_r_fbr) + ar_inf_borr.*(fl_r_inf) + ...
+         ar_for_save.*(fl_r_fsv)));
+
+%% Equations Cash-on-Hand
+%
+% *b_cons_cost*: For borrowing, given the overall b choice, function
+% <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost_bridge.html
+% ffs_fibs_min_c_cost_bridge> finds the optimal formal and informal joint
+% choices, and we obtain the consumption cost of borrowing from that 
+% 
+% Unlike for the *abz (fibs)* problem, where the equations below are in
+% terms of consumption, here we know b is principle due to two stage
+% solution method.
+%
+
+% If borrowing overall, various files in
+f_coh_fbis = @(z, b_cons_cost, k) (f_prod(z, k) + k*(1-fl_delta) - b_cons_cost);
+
+% If saving overall
+f_coh_save = @(z, b, k) (f_prod(z, k) + k*(1-fl_delta) - b./(1+fl_r_fsv));
+
+%% Equations Consumption (b=principle)
+% Note this is different from
+% <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_paramfunc/html/ffs_abz_fibs_set_functions.html
+% ffs_abz_fibs_set_functions>, here only need to deal with b = principle,
+% otherwise two stage solution does not work. So from today's perspective,
+% choosing k and b for next period in principles.
+
+f_cons = @(coh, bprime, kprime) (coh - kprime - bprime);
+
+%% Equations Stand-in Fake Utility for Graphs
+% Utility for graphing with random data, note that when we graph with coh
+% as the state variable using this equation here, there is no effect of
+% shock on utility, it is fully captured by the coh.
+f_util_standin = @(z, b, k) f_util_log((f_coh_fbis(z,b,k)-fl_b_bd).*((f_coh_fbis(z,b,k) - fl_b_bd) > fl_c_min) + ...
+                                        fl_c_min.*((f_coh_fbis(z,b,k) - fl_b_bd) <= fl_c_min));
+
+
+end
+
+##### SOURCE END #####
+--></body></html>

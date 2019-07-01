@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Formal and Informal Choices Given Aprime and cash-on-hand</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-29"><meta name="DC.source" content="ffs_fibs_min_c_cost_bridge.m"><style type="text/css">
+      --><title>Formal and Informal Choices Given Aprime and cash-on-hand</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-30"><meta name="DC.source" content="ffs_fibs_min_c_cost_bridge.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -87,16 +87,40 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
     <span class="comment">% Default</span>
     it_param_set = 4;
     bl_input_override = true;
-    [param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
-    [armt_map, func_map] = ffs_abz_fibs_get_funcgrid(param_map, support_map, bl_input_override); <span class="comment">% 1 for override</span>
+    [param_map, support_map] = ffs_ipwkbz_fibs_set_default_param(it_param_set);
+
+    <span class="comment">% Gather Inputs from armt_map</span>
+    params_group = values(param_map, <span class="keyword">...</span>
+        {<span class="string">'fl_r_fbr'</span>, <span class="string">'st_forbrblk_type'</span>, <span class="string">'fl_forbrblk_brmost'</span>, <span class="string">'fl_forbrblk_brleast'</span>, <span class="string">'fl_forbrblk_gap'</span>});
+    [fl_r_fbr, st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap] = params_group{:};
+    [ar_forbrblk, ar_forbrblk_r] = <span class="keyword">...</span>
+        ffs_for_br_block_gen(fl_r_fbr, st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap);
+
+    armt_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
+    armt_map(<span class="string">'ar_forbrblk'</span>) = ar_forbrblk;
+    armt_map(<span class="string">'ar_forbrblk_r'</span>) = ar_forbrblk_r;
+
+    <span class="comment">% Get Functions</span>
+    params_group = values(param_map, {<span class="string">'fl_crra'</span>, <span class="string">'fl_c_min'</span>, <span class="string">'fl_b_bd'</span>});
+    [fl_crra, fl_c_min, fl_b_bd] = params_group{:};
+    params_group = values(param_map, {<span class="string">'fl_Amean'</span>, <span class="string">'fl_alpha'</span>, <span class="string">'fl_delta'</span>});
+    [fl_Amean, fl_alpha, fl_delta] = params_group{:};
+    params_group = values(param_map, {<span class="string">'fl_r_fsv'</span>, <span class="string">'fl_w'</span>});
+    [fl_r_fsv, fl_w] = params_group{:};
+    [~, ~, ~, ~, ~, f_coh_fbis, f_coh_save, ~] = <span class="keyword">...</span>
+        ffs_ipwkbz_fibs_set_functions(fl_crra, fl_c_min, fl_b_bd, fl_Amean, fl_alpha, fl_delta, fl_w, fl_r_fbr, fl_r_fsv);
+
+    func_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
+    func_map(<span class="string">'f_coh_fbis'</span>) = f_coh_fbis;
+    func_map(<span class="string">'f_coh_save'</span>) = f_coh_save;
 
     <span class="comment">% Testing COH and Aprime Vectors</span>
     fl_ap = -10;
     fl_coh = 5;
 
-<span class="comment">%     % Example where aprime choice can not repay debt.</span>
-<span class="comment">%     fl_ap = -5;</span>
-<span class="comment">%     fl_coh = -10;</span>
+    <span class="comment">% Example where aprime choice can not repay debt.</span>
+    fl_ap = -5;
+    fl_coh = -10;
 
     <span class="comment">% Set Display Control</span>
     support_map(<span class="string">'bl_display_infbridge'</span>) = true;
@@ -113,8 +137,15 @@ params_group = values(param_map, {<span class="string">'bl_rollover'</span>, <sp
 [bl_rollover, bl_default, bl_bridge, bl_b_is_principle, fl_r_inf, fl_r_fsv, fl_c_min] = params_group{:};
 
 <span class="comment">% func_map</span>
-params_group = values(func_map, {<span class="string">'f_cons_coh_fbis'</span>, <span class="string">'f_cons_coh_save'</span>});
-[f_cons_coh_fbis, f_cons_coh_save] = params_group{:};
+<span class="keyword">if</span> (bl_b_is_principle)
+    <span class="comment">% when savings is principle: mimizing cost cost tomorrow</span>
+    params_group = values(func_map, {<span class="string">'f_coh_fbis'</span>, <span class="string">'f_coh_save'</span>});
+    [f_coh_fbis, f_coh_save] = params_group{:};
+<span class="keyword">else</span>
+    <span class="comment">% when not principle, but principle + interest: maximize c gain today</span>
+    params_group = values(func_map, {<span class="string">'f_cons_coh_fbis'</span>, <span class="string">'f_cons_coh_save'</span>});
+    [f_cons_coh_fbis, f_cons_coh_save] = params_group{:};
+<span class="keyword">end</span>
 
 <span class="comment">% support_map</span>
 params_group = values(support_map, {<span class="string">'bl_display_minccost'</span>, <span class="string">'bl_display_infbridge'</span>});
@@ -148,12 +179,20 @@ params_group = values(support_map, {<span class="string">'bl_display_minccost'</
 
     <span class="comment">% Compute Consumption given Formal and Informal joint</span>
     <span class="comment">% consumption with formal borrow menu + bridge loans.</span>
-    fl_max_c_raw = f_cons_coh_fbis(fl_coh, fl_max_c_nobridge + fl_c_bridge);
+    <span class="keyword">if</span> (bl_b_is_principle)
+        fl_max_c_or_coh_raw = f_coh_fbis(fl_r_inf, fl_for_borr, fl_b_bridge + fl_inf_borr_nobridge, fl_for_save);
+    <span class="keyword">else</span>
+        fl_max_c_or_coh_raw = f_cons_coh_fbis(fl_coh, fl_max_c_nobridge + fl_c_bridge);
+    <span class="keyword">end</span>
 
 <span class="keyword">else</span>
 
     <span class="comment">% consumption with savings</span>
-    fl_max_c_raw = f_cons_coh_save(fl_coh, fl_ap);
+    <span class="keyword">if</span> (bl_b_is_principle)
+        fl_max_c_or_coh_raw = f_coh_save(fl_ap);
+    <span class="keyword">else</span>
+        fl_max_c_or_coh_raw = f_cons_coh_save(fl_coh, fl_ap);
+    <span class="keyword">end</span>
 
     <span class="comment">% assign values for formal and informal choices</span>
     <span class="comment">% possible that fl_coh &lt; 0, but if then fl_ap &gt; 0 is</span>
@@ -165,7 +204,7 @@ params_group = values(support_map, {<span class="string">'bl_display_minccost'</
     ar_aprime_nobridge_br    b_infonly_inf    c_infonly
     _____________________    _____________    _________
 
-             -10                  -10          9.5694  
+             -5                   -5           -5.225  
 
 formal block size (ar_forbrblk):-19        -14.5          -10           -7         -5.5           -4         -2.5           -1            0
 formal borrow interest (ar_forbrblk_r):0.035       0.035       0.035       0.035       0.035       0.035       0.035       0.035       0.035
@@ -173,7 +212,7 @@ informal borrow interest (fl_r_inf):0.045
     ar_aprime_nobridge_br    b_infforb_for    b_infforb_inf    c_infforb
     _____________________    _____________    _____________    _________
 
-             -10                -7.245           -2.755         9.6364  
+             -5                   -4               -1           -5.185  
 
 formal block size (ar_forbrblk):-19        -14.5          -10           -7         -5.5           -4         -2.5           -1            0
 formal borrow interest (ar_forbrblk_r):0.035       0.035       0.035       0.035       0.035       0.035       0.035       0.035       0.035
@@ -181,19 +220,19 @@ savings interest (fl_r_fsv):0.025
     ar_aprime_nobridge_br    b_forbrsv_brr    b_forbrsv_sav    c_forbrsv
     _____________________    _____________    _____________    _________
 
-             -10                -10.35            0.35          9.6585  
+             -5                  -5.5              0.5           -5.18  
 
     ar_aprime_nobridge_br    ar_max_c_nobridge_br    max_idx    c_infonly    c_infforb    c_forbrsv
     _____________________    ____________________    _______    _________    _________    _________
 
-             -10                    9.6585              3        9.5694       9.6364       9.6585  
+             -5                     -5.18               3        -5.225       -5.185        -5.18  
 
     ar_aprime_nobridge    ar_max_c_nobridge    ar_average_r    ar_inf_borr_nobridge    ar_for_borr    ar_for_save
     __________________    _________________    ____________    ____________________    ___________    ___________
 
-           -10                 9.6585             1.0354                0                -10.35          0.35    
+            -5                  -5.18             -1.036                0                 -5.5            0.5    
 
-</pre><h2 id="6">Compute Utility With Default</h2><p>assign u(c)</p><pre class="codeinput"><span class="keyword">if</span> (fl_max_c_raw &lt;= fl_c_min || ( ~bl_rollover &amp;&amp; ~bl_bridge &amp;&amp; fl_coh &lt; fl_c_min))
+</pre><h2 id="6">Compute Utility With Default</h2><p>assign u(c)</p><pre class="codeinput"><span class="keyword">if</span> (fl_max_c_or_coh_raw &lt;= fl_c_min || ( ~bl_rollover &amp;&amp; ~bl_bridge &amp;&amp; fl_coh &lt; fl_c_min))
 
     <span class="keyword">if</span> (bl_default)
         <span class="comment">% Replace Consumption if default cmin</span>
@@ -208,12 +247,12 @@ savings interest (fl_r_fsv):0.025
         fl_for_save = 0;
     <span class="keyword">end</span>
 <span class="keyword">else</span>
-    fl_max_c = fl_max_c_raw;
+    fl_max_c = fl_max_c_or_coh_raw;
 <span class="keyword">end</span>
 </pre><h2 id="7">Display</h2><pre class="codeinput"><span class="keyword">if</span> (bl_display_minccost_bridge)
 
     disp(<span class="string">'fl_max_c_raw'</span>);
-    disp(fl_max_c_raw);
+    disp(fl_max_c_or_coh_raw);
 
     disp(<span class="string">'fl_max_c'</span>);
     disp(fl_max_c);
@@ -223,19 +262,19 @@ savings interest (fl_r_fsv):0.025
 
 <span class="keyword">end</span>
 </pre><pre class="codeoutput">fl_max_c_raw
-   14.6585
+   -5.1800
 
 fl_max_c
-   14.6585
+   1.0000e-03
 
 fl_for_save
-    0.3500
+     0
 
 </pre><pre class="codeinput"><span class="keyword">end</span>
 </pre><pre class="codeoutput">
 ans =
 
-   14.6585
+   1.0000e-03
 
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
@@ -325,17 +364,41 @@ else
     % Default
     it_param_set = 4;
     bl_input_override = true;
-    [param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
-    [armt_map, func_map] = ffs_abz_fibs_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
+    [param_map, support_map] = ffs_ipwkbz_fibs_set_default_param(it_param_set);
+    
+    % Gather Inputs from armt_map
+    params_group = values(param_map, ...
+        {'fl_r_fbr', 'st_forbrblk_type', 'fl_forbrblk_brmost', 'fl_forbrblk_brleast', 'fl_forbrblk_gap'});
+    [fl_r_fbr, st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap] = params_group{:};
+    [ar_forbrblk, ar_forbrblk_r] = ...
+        ffs_for_br_block_gen(fl_r_fbr, st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap);
+    
+    armt_map = containers.Map('KeyType','char', 'ValueType','any');
+    armt_map('ar_forbrblk') = ar_forbrblk;
+    armt_map('ar_forbrblk_r') = ar_forbrblk_r;
+    
+    % Get Functions
+    params_group = values(param_map, {'fl_crra', 'fl_c_min', 'fl_b_bd'});
+    [fl_crra, fl_c_min, fl_b_bd] = params_group{:};
+    params_group = values(param_map, {'fl_Amean', 'fl_alpha', 'fl_delta'});
+    [fl_Amean, fl_alpha, fl_delta] = params_group{:};
+    params_group = values(param_map, {'fl_r_fsv', 'fl_w'});
+    [fl_r_fsv, fl_w] = params_group{:};
+    [~, ~, ~, ~, ~, f_coh_fbis, f_coh_save, ~] = ...
+        ffs_ipwkbz_fibs_set_functions(fl_crra, fl_c_min, fl_b_bd, fl_Amean, fl_alpha, fl_delta, fl_w, fl_r_fbr, fl_r_fsv);
+    
+    func_map = containers.Map('KeyType','char', 'ValueType','any');
+    func_map('f_coh_fbis') = f_coh_fbis;
+    func_map('f_coh_save') = f_coh_save;
     
     % Testing COH and Aprime Vectors
     fl_ap = -10;
     fl_coh = 5;
 
-%     % Example where aprime choice can not repay debt. 
-%     fl_ap = -5;
-%     fl_coh = -10;
-    
+    % Example where aprime choice can not repay debt. 
+    fl_ap = -5;
+    fl_coh = -10;
+
     % Set Display Control
     support_map('bl_display_infbridge') = true;
     support_map('bl_display_minccost') = true;
@@ -354,8 +417,15 @@ params_group = values(param_map, {'bl_rollover', 'bl_default', 'bl_bridge', 'bl_
 [bl_rollover, bl_default, bl_bridge, bl_b_is_principle, fl_r_inf, fl_r_fsv, fl_c_min] = params_group{:};
 
 % func_map
-params_group = values(func_map, {'f_cons_coh_fbis', 'f_cons_coh_save'});
-[f_cons_coh_fbis, f_cons_coh_save] = params_group{:};
+if (bl_b_is_principle)
+    % when savings is principle: mimizing cost cost tomorrow
+    params_group = values(func_map, {'f_coh_fbis', 'f_coh_save'});
+    [f_coh_fbis, f_coh_save] = params_group{:};
+else
+    % when not principle, but principle + interest: maximize c gain today
+    params_group = values(func_map, {'f_cons_coh_fbis', 'f_cons_coh_save'});
+    [f_cons_coh_fbis, f_cons_coh_save] = params_group{:};
+end
 
 % support_map
 params_group = values(support_map, {'bl_display_minccost', 'bl_display_infbridge'});
@@ -409,12 +479,20 @@ if (fl_ap < 0)
     
     % Compute Consumption given Formal and Informal joint
     % consumption with formal borrow menu + bridge loans.
-    fl_max_c_raw = f_cons_coh_fbis(fl_coh, fl_max_c_nobridge + fl_c_bridge);
+    if (bl_b_is_principle)
+        fl_max_c_or_coh_raw = f_coh_fbis(fl_r_inf, fl_for_borr, fl_b_bridge + fl_inf_borr_nobridge, fl_for_save);
+    else
+        fl_max_c_or_coh_raw = f_cons_coh_fbis(fl_coh, fl_max_c_nobridge + fl_c_bridge);
+    end      
     
 else
     
     % consumption with savings
-    fl_max_c_raw = f_cons_coh_save(fl_coh, fl_ap);
+    if (bl_b_is_principle)    
+        fl_max_c_or_coh_raw = f_coh_save(fl_ap);
+    else
+        fl_max_c_or_coh_raw = f_cons_coh_save(fl_coh, fl_ap);
+    end
     
     % assign values for formal and informal choices
     % possible that fl_coh < 0, but if then fl_ap > 0 is
@@ -426,7 +504,7 @@ end
 %% Compute Utility With Default
 % assign u(c)
 
-if (fl_max_c_raw <= fl_c_min || ( ~bl_rollover && ~bl_bridge && fl_coh < fl_c_min))
+if (fl_max_c_or_coh_raw <= fl_c_min || ( ~bl_rollover && ~bl_bridge && fl_coh < fl_c_min))
     
     if (bl_default)
         % Replace Consumption if default cmin
@@ -441,7 +519,7 @@ if (fl_max_c_raw <= fl_c_min || ( ~bl_rollover && ~bl_bridge && fl_coh < fl_c_mi
         fl_for_save = 0;
     end
 else
-    fl_max_c = fl_max_c_raw;
+    fl_max_c = fl_max_c_or_coh_raw;
 end
 
 %% Display
@@ -449,7 +527,7 @@ end
 if (bl_display_minccost_bridge)
 
     disp('fl_max_c_raw');
-    disp(fl_max_c_raw);    
+    disp(fl_max_c_or_coh_raw);    
     
     disp('fl_max_c');
     disp(fl_max_c);

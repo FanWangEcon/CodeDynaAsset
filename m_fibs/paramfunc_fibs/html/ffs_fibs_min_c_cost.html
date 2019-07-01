@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Formal Informal Cost Minimizer</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-29"><meta name="DC.source" content="ffs_fibs_min_c_cost.m"><style type="text/css">
+      --><title>Formal Informal Cost Minimizer</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-30"><meta name="DC.source" content="ffs_fibs_min_c_cost.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -88,12 +88,14 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
     <span class="comment">% Default</span>
     it_param_set = 4;
     bl_input_override = true;
-    [param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
-    [armt_map, ~] = ffs_abz_fibs_get_funcgrid(param_map, support_map, bl_input_override); <span class="comment">% 1 for override</span>
+    [param_map, support_map] = ffs_ipwkbz_fibs_set_default_param(it_param_set);
 
     <span class="comment">% Gather Inputs from armt_map</span>
-    params_group = values(armt_map, {<span class="string">'ar_forbrblk'</span>, <span class="string">'ar_forbrblk_r'</span>});
-    [ar_forbrblk, ar_forbrblk_r] = params_group{:};
+    params_group = values(param_map, <span class="keyword">...</span>
+        {<span class="string">'fl_r_fbr'</span>, <span class="string">'st_forbrblk_type'</span>, <span class="string">'fl_forbrblk_brmost'</span>, <span class="string">'fl_forbrblk_brleast'</span>, <span class="string">'fl_forbrblk_gap'</span>});
+    [fl_r_fbr, st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap] = params_group{:};
+    [ar_forbrblk, ar_forbrblk_r] = <span class="keyword">...</span>
+        ffs_for_br_block_gen(fl_r_fbr, st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap);
 
     <span class="comment">% Gather Inputs from param_map</span>
     params_group = values(param_map, {<span class="string">'bl_b_is_principle'</span>, <span class="string">'fl_r_inf'</span>, <span class="string">'fl_r_fsv'</span>});
@@ -105,10 +107,14 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 <span class="comment">%     fl_r_inf = 10000;</span>
 
     <span class="comment">% Testing COH and Aprime Vectors</span>
-    ar_aprime_nobridge = [-20,-10,-5,-4.5,-4.1,-1.1,-0.1, 0.1, 1]';
+    ar_aprime_nobridge = [-20, -14, -11, -6.8, <span class="keyword">...</span>
+                          -5.5, -4.5, -4.1, -1.1, <span class="keyword">...</span>
+                          -0.1, <span class="keyword">...</span>
+                          0.1, 1, 2, 10]';
 
     <span class="comment">% Set Display Control</span>
     bl_display_minccost = true;
+
 
 <span class="keyword">end</span>
 </pre><h2 id="4">Initialize Output Arrays</h2><pre class="codeinput">ar_max_c_nobridge = zeros(size(ar_aprime_nobridge));
@@ -163,13 +169,15 @@ ar_aprime_nobridge_br = ar_aprime_nobridge(~ar_aprime_nobridge_pos_idx);
     ar_aprime_nobridge_br    b_infonly_inf    c_infonly
     _____________________    _____________    _________
 
-             -20                  -20           19.139 
-             -10                  -10           9.5694 
-              -5                   -5           4.7847 
-            -4.5                 -4.5           4.3062 
-            -4.1                 -4.1           3.9234 
-            -1.1                 -1.1           1.0526 
-            -0.1                 -0.1         0.095694 
+             -20                  -20            -20.9 
+             -14                  -14           -14.63 
+             -11                  -11          -11.495 
+            -6.8                 -6.8           -7.106 
+            -5.5                 -5.5          -5.7475 
+            -4.5                 -4.5          -4.7025 
+            -4.1                 -4.1          -4.2845 
+            -1.1                 -1.1          -1.1495 
+            -0.1                 -0.1          -0.1045 
 
 </pre><h2 id="10">Compute Formal Block Sizes</h2><p>Divide each asset choice by each element of the formal choice grid. The numbers closest to 1 above and below indicates the floor and ceil formal borrowing quantity for joint credit market participation choices.</p><pre class="codeinput">    [ar_a_grid_ceil_principle, ar_a_grid_ceil_wthr, ar_a_grid_floor_principle, ar_a_grid_floor_wthr] = <span class="keyword">...</span>
         ffs_for_br_block_match(ar_aprime_nobridge_br, ar_forbrblk, ar_forbrblk_r, bl_b_is_principle);
@@ -178,7 +186,7 @@ ar_aprime_nobridge_br = ar_aprime_nobridge(~ar_aprime_nobridge_pos_idx);
 
         <span class="comment">% c_infforb is cost of borrowing in next period consumption</span>
         b_infforb_inf = (ar_aprime_nobridge_br - ar_a_grid_ceil_principle);
-        b_infforb_for = -(ar_a_grid_ceil_principle);
+        b_infforb_for = (ar_a_grid_ceil_principle);
         c_infforb =  (b_infforb_inf.*(1+fl_r_inf) + ar_a_grid_ceil_wthr);
 
     <span class="keyword">else</span>
@@ -204,20 +212,22 @@ informal borrow interest (fl_r_inf):0.045
     ar_aprime_nobridge_br    b_infforb_for    b_infforb_inf    c_infforb
     _____________________    _____________    _____________    _________
 
-             -20                -19.665           -0.335         19.321 
-             -10                 -7.245           -2.755         9.6364 
-              -5                  -4.14            -0.86          4.823 
-            -4.5                  -4.14            -0.36         4.3445 
-            -4.1                -2.5875          -1.5125         3.9474 
-            -1.1                 -1.035           -0.065         1.0622 
-            -0.1                      0             -0.1       0.095694 
+             -20                  -19               -1           -20.71 
+             -14                  -10               -4           -14.53 
+             -11                  -10               -1          -11.395 
+            -6.8                 -5.5             -1.3           -7.051 
+            -5.5                 -5.5                0          -5.6925 
+            -4.5                   -4             -0.5          -4.6625 
+            -4.1                   -4             -0.1          -4.2445 
+            -1.1                   -1             -0.1          -1.1395 
+            -0.1                    0             -0.1          -0.1045 
 
 </pre><h2 id="12">Compute Consumption Values Formal Borrowing + Formal Savings</h2><pre class="codeinput">    <span class="comment">% Generate c Vectors</span>
     <span class="keyword">if</span> (bl_b_is_principle)
 
         <span class="comment">% c_forbrsv is cost of borrowing in next period consumption</span>
         b_forbrsv_sav = (ar_aprime_nobridge_br - ar_a_grid_floor_principle);
-        b_forbrsv_brr = -(ar_a_grid_floor_principle);
+        b_forbrsv_brr = (ar_a_grid_floor_principle);
         c_forbrsv = (b_forbrsv_sav*(1+fl_r_fsv) + ar_a_grid_floor_wthr);
 
     <span class="keyword">else</span>
@@ -249,18 +259,20 @@ savings interest (fl_r_fsv):0.025
     ar_aprime_nobridge_br    b_forbrsv_brr    b_forbrsv_sav    c_forbrsv
     _____________________    _____________    _____________    _________
 
-             -20                      0               0             NaN 
-             -10                 -10.35            0.35          9.6585 
-              -5                -5.6925          0.6925          4.8244 
-            -4.5                -5.6925          1.1925          4.3366 
-            -4.1                  -4.14            0.04           3.961 
-            -1.1                -2.5875          1.4875          1.0488 
-            -0.1                 -1.035           0.935        0.087805 
+             -20                     0               0              NaN 
+             -14                 -14.5             0.5          -14.495 
+             -11                 -14.5             3.5           -11.42 
+            -6.8                    -7             0.2            -7.04 
+            -5.5                    -7             1.5          -5.7075 
+            -4.5                  -5.5               1          -4.6675 
+            -4.1                  -5.5             1.4          -4.2575 
+            -1.1                  -2.5             1.4          -1.1525 
+            -0.1                    -1             0.9          -0.1125 
 
 </pre><h2 id="13">Maximize Consumption For non-Bridge Loan Component</h2><p>Trying to minimize consumption costs</p><pre class="codeinput">    <span class="keyword">if</span> (bl_b_is_principle)
 
-        <span class="comment">% minimize consumption cost to the future</span>
-        [ar_max_c_nobridge_br, max_idx] = min([c_infonly c_infforb c_forbrsv],[], 2);
+        <span class="comment">% minimize consumption cost to the future (also maximizing)</span>
+        [ar_max_c_nobridge_br, max_idx] = max([c_infonly c_infforb c_forbrsv],[], 2);
 
     <span class="keyword">else</span>
 
@@ -276,13 +288,15 @@ savings interest (fl_r_fsv):0.025
 </pre><pre class="codeoutput">    ar_aprime_nobridge_br    ar_max_c_nobridge_br    max_idx    c_infonly    c_infforb    c_forbrsv
     _____________________    ____________________    _______    _________    _________    _________
 
-             -20                     19.321             2         19.139       19.321          NaN 
-             -10                     9.6585             3         9.5694       9.6364       9.6585 
-              -5                     4.8244             3         4.7847        4.823       4.8244 
-            -4.5                     4.3445             2         4.3062       4.3445       4.3366 
-            -4.1                      3.961             3         3.9234       3.9474        3.961 
-            -1.1                     1.0622             2         1.0526       1.0622       1.0488 
-            -0.1                   0.095694             1       0.095694     0.095694     0.087805 
+             -20                    -20.71              2          -20.9       -20.71          NaN 
+             -14                   -14.495              3         -14.63       -14.53      -14.495 
+             -11                   -11.395              2        -11.495      -11.395       -11.42 
+            -6.8                     -7.04              3         -7.106       -7.051        -7.04 
+            -5.5                   -5.6925              2        -5.7475      -5.6925      -5.7075 
+            -4.5                   -4.6625              2        -4.7025      -4.6625      -4.6675 
+            -4.1                   -4.2445              2        -4.2845      -4.2445      -4.2575 
+            -1.1                   -1.1395              2        -1.1495      -1.1395      -1.1525 
+            -0.1                   -0.1045              1        -0.1045      -0.1045      -0.1125 
 
 </pre><h2 id="14">Borrowing count up borrowing from different sources</h2><p>Informal borrowing comes from informal only or inffor both</p><pre class="codeinput">    <span class="comment">% Consumption when borrowing</span>
     ar_max_c_nobridge(~ar_aprime_nobridge_pos_idx) = ar_max_c_nobridge_br;
@@ -300,7 +314,13 @@ savings interest (fl_r_fsv):0.025
         b_forbrsv_sav.*(max_idx == 3);
 </pre><pre class="codeinput"><span class="keyword">end</span>
 </pre><h2 id="16">Display Final</h2><pre class="codeinput"><span class="keyword">if</span> (bl_display_minccost)
-    ar_average_r = (-1)*(ar_aprime_nobridge./ar_max_c_nobridge);
+
+    <span class="keyword">if</span> (bl_b_is_principle)
+        ar_average_r = (-1)*(ar_max_c_nobridge./ar_aprime_nobridge);
+    <span class="keyword">else</span>
+        ar_average_r = (-1)*(ar_aprime_nobridge./ar_max_c_nobridge);
+    <span class="keyword">end</span>
+
     tab_opti_borrow = table(ar_aprime_nobridge, ar_max_c_nobridge, <span class="keyword">...</span>
         ar_average_r, ar_inf_borr_nobridge, ar_for_borr, ar_for_save);
     disp(tab_opti_borrow);
@@ -308,29 +328,37 @@ savings interest (fl_r_fsv):0.025
 </pre><pre class="codeoutput">    ar_aprime_nobridge    ar_max_c_nobridge    ar_average_r    ar_inf_borr_nobridge    ar_for_borr    ar_for_save
     __________________    _________________    ____________    ____________________    ___________    ___________
 
-            -20                  19.321           1.0352              -0.335             -19.665             0   
-            -10                  9.6585           1.0354                   0              -10.35          0.35   
-             -5                  4.8244           1.0364                   0             -5.6925        0.6925   
-           -4.5                  4.3445           1.0358               -0.36               -4.14             0   
-           -4.1                   3.961           1.0351                   0               -4.14          0.04   
-           -1.1                  1.0622           1.0356              -0.065              -1.035             0   
-           -0.1                0.095694            1.045                -0.1                   0             0   
-            0.1               -0.097561            1.025                   0                   0           0.1   
-              1                -0.97561            1.025                   0                   0             1   
+            -20                 -20.71           -1.0355                 -1                 -19             0    
+            -14                -14.495           -1.0354                  0               -14.5           0.5    
+            -11                -11.395           -1.0359                 -1                 -10             0    
+           -6.8                  -7.04           -1.0353                  0                  -7           0.2    
+           -5.5                -5.6925            -1.035                  0                -5.5             0    
+           -4.5                -4.6625           -1.0361               -0.5                  -4             0    
+           -4.1                -4.2445           -1.0352               -0.1                  -4             0    
+           -1.1                -1.1395           -1.0359               -0.1                  -1             0    
+           -0.1                -0.1045            -1.045               -0.1                   0             0    
+            0.1                 0.1025            -1.025                  0                   0           0.1    
+              1                  1.025            -1.025                  0                   0             1    
+              2                   2.05            -1.025                  0                   0             2    
+             10                  10.25            -1.025                  0                   0            10    
 
 </pre><pre class="codeinput"><span class="keyword">end</span>
 </pre><pre class="codeoutput">
 ans =
 
-   19.3206
-    9.6585
-    4.8244
-    4.3445
-    3.9610
-    1.0622
-    0.0957
-   -0.0976
-   -0.9756
+  -20.7100
+  -14.4950
+  -11.3950
+   -7.0400
+   -5.6925
+   -4.6625
+   -4.2445
+   -1.1395
+   -0.1045
+    0.1025
+    1.0250
+    2.0500
+   10.2500
 
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
@@ -444,13 +472,15 @@ else
     % Default
     it_param_set = 4;
     bl_input_override = true;
-    [param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
-    [armt_map, ~] = ffs_abz_fibs_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
+    [param_map, support_map] = ffs_ipwkbz_fibs_set_default_param(it_param_set);
     
     % Gather Inputs from armt_map
-    params_group = values(armt_map, {'ar_forbrblk', 'ar_forbrblk_r'});
-    [ar_forbrblk, ar_forbrblk_r] = params_group{:};
-    
+    params_group = values(param_map, ...
+        {'fl_r_fbr', 'st_forbrblk_type', 'fl_forbrblk_brmost', 'fl_forbrblk_brleast', 'fl_forbrblk_gap'});
+    [fl_r_fbr, st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap] = params_group{:};
+    [ar_forbrblk, ar_forbrblk_r] = ...
+        ffs_for_br_block_gen(fl_r_fbr, st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap);
+
     % Gather Inputs from param_map
     params_group = values(param_map, {'bl_b_is_principle', 'fl_r_inf', 'fl_r_fsv'});
     [bl_b_is_principle, fl_r_inf, fl_r_fsv] = params_group{:};
@@ -461,10 +491,14 @@ else
 %     fl_r_inf = 10000;
     
     % Testing COH and Aprime Vectors
-    ar_aprime_nobridge = [-20,-10,-5,-4.5,-4.1,-1.1,-0.1, 0.1, 1]';
+    ar_aprime_nobridge = [-20, -14, -11, -6.8, ...
+                          -5.5, -4.5, -4.1, -1.1, ...
+                          -0.1, ...
+                          0.1, 1, 2, 10]';
     
     % Set Display Control
     bl_display_minccost = true;
+    
     
 end
 
@@ -556,7 +590,7 @@ if (sum(~ar_aprime_nobridge_pos_idx))
         
         % c_infforb is cost of borrowing in next period consumption
         b_infforb_inf = (ar_aprime_nobridge_br - ar_a_grid_ceil_principle);
-        b_infforb_for = -(ar_a_grid_ceil_principle);
+        b_infforb_for = (ar_a_grid_ceil_principle);
         c_infforb =  (b_infforb_inf.*(1+fl_r_inf) + ar_a_grid_ceil_wthr);
         
     else
@@ -584,7 +618,7 @@ if (sum(~ar_aprime_nobridge_pos_idx))
         
         % c_forbrsv is cost of borrowing in next period consumption
         b_forbrsv_sav = (ar_aprime_nobridge_br - ar_a_grid_floor_principle);
-        b_forbrsv_brr = -(ar_a_grid_floor_principle);
+        b_forbrsv_brr = (ar_a_grid_floor_principle);
         c_forbrsv = (b_forbrsv_sav*(1+fl_r_fsv) + ar_a_grid_floor_wthr);
         
     else
@@ -616,8 +650,8 @@ if (sum(~ar_aprime_nobridge_pos_idx))
     
     if (bl_b_is_principle)
         
-        % minimize consumption cost to the future
-        [ar_max_c_nobridge_br, max_idx] = min([c_infonly c_infforb c_forbrsv],[], 2);
+        % minimize consumption cost to the future (also maximizing)
+        [ar_max_c_nobridge_br, max_idx] = max([c_infonly c_infforb c_forbrsv],[], 2);
         
     else
         
@@ -654,7 +688,13 @@ end
 
 %% Display Final 
 if (bl_display_minccost)
-    ar_average_r = (-1)*(ar_aprime_nobridge./ar_max_c_nobridge);
+    
+    if (bl_b_is_principle)
+        ar_average_r = (-1)*(ar_max_c_nobridge./ar_aprime_nobridge);
+    else
+        ar_average_r = (-1)*(ar_aprime_nobridge./ar_max_c_nobridge);
+    end
+    
     tab_opti_borrow = table(ar_aprime_nobridge, ar_max_c_nobridge, ...
         ar_average_r, ar_inf_borr_nobridge, ar_for_borr, ar_for_save);
     disp(tab_opti_borrow);
@@ -662,20 +702,6 @@ end
 
 
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ##### SOURCE END #####
 --></body></html>
