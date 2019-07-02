@@ -4,7 +4,7 @@
 % Table of Content.*
 
 %%
-function result_map = ff_ipwkbz_vf_vecsv(varargin)
+function result_map = ff_ipwkbz_fibs_vf_vecsv(varargin)
 %% FF_IPWKBZ_VF_VECSV solve infinite horizon exo shock + endo asset problem
 % This program solves the infinite horizon dynamic savings and risky
 % capital asset problem with some ar1 shock. This is the two step solution
@@ -47,7 +47,6 @@ function result_map = ff_ipwkbz_vf_vecsv(varargin)
 % * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/paramfunc/ffs_ipwkbz_get_funcgrid.m ffs_ipwkbz_get_funcgrid>
 % * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solvepost/ff_akz_vf_post.m ff_akz_vf_post>
 %
-
 
 %% Default
 % * it_param_set = 1: quick test
@@ -235,35 +234,58 @@ while bl_vfi_continue
     end
     bl_input_override = true;
     [mt_ev_condi_z_max, ~, mt_ev_condi_z_max_kp, ~] = ...
-        ff_ipwkbz_evf(mt_val_wkb_interpolated, param_map, support_map, armt_map, bl_input_override);
+        ff_ipwkbz_fibs_evf(mt_val_wkb_interpolated, param_map, support_map, armt_map, bl_input_override);
 
     %% Solve First Stage Problem w*(z) given k*(w,z)
-
+    % Refer to
+    % <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_vf_vecsv.html
+    % ff_ipwkbz_vf_vecsv> where the problem was solved without formal and
+    % informal choices that allow for bridge loans to see line by line how
+    % code differ. Some of the comments from that file are not here to save
+    % space. Comments here address differences and are specific to formal
+    % and informal choices. 
+    
     % loop 1: over exogenous states
     for it_z_i = 1:length(ar_z)
 
-        % Generate interpolant for (2) k*(ar_w_perc) from k*(ar_w_level,z)
-        % There are two w=k'+b' arrays. ar_w_level is the level even grid based
-        % on which we solve the 2nd stage problem in ff_ipwkbz_evf.m. Here for
-        % each coh level, we have a different vector of w levels, but the same
-        % vector of percentage ws. So we need to interpolate to get the optimal
-        % k* and b* choices at each percentage level of w.
-        f_interpolante_w_level_kstar_z = griddedInterpolant(ar_w_level, mt_ev_condi_z_max_kp(:, it_z_i)', 'linear', 'nearest');
-
-        % Interpolate (2), shift from w_level to w_perc
-        mt_w_kstar_interp_z = f_interpolante_w_level_kstar_z(mt_w_by_interp_coh_interp_grid);
+        %% A. Interpolate FULL to get k*(coh_level, w_perc, z), b*(k,w) based on k*(coh_perc, w_level)
+        % we solved the second period problem in ff_ipwkbz_fibs_evf.m
+        % above. To use results, we need to interpolate in the following
+        % way to obtain *mt_w_kstar_interp_z* as well as *mt_ev_condi_z_max_interp_z*:
+        %
+        % # Interp STG1A: for $w > 0$, 1D interpolate over w level, given z
+        % # Interp STG1B: for $w < 0$, 2D interpolate over w level and coh
+        % perceng, given z
+        %
+        
+        % 1. Interp STG1A for w > 0
+        % Interpolant
+        f_interpolante_w_level_pos_kstar_z = griddedInterpolant(ar_w_level, mt_ev_condi_z_max_kp(:, it_z_i)', 'linear', 'nearest');
+        % Interpolate
+        mt_w_kstar_interp_z = f_interpolante_w_level_pos_kstar_z(mt_w_by_interp_coh_interp_grid);
         mt_w_astar_interp_z = mt_w_by_interp_coh_interp_grid - mt_w_kstar_interp_z;
 
-        % changes in w_perc kstar choices
+        % 2. Interp STG1B for w <= 0 
+        % Interpolant
+%         f_grid_interpolant_value = griddedInterpolant(...
+%             mt_z_mesh_coh_interp_grid', mt_interp_coh_grid_mesh_z', mt_val_cur', 'linear', 'nearest');
+%         % Interpoalte for v(coh(k(w,z),b(w,z),z),z)
+%         mt_val_wkb_interpolated = f_grid_interpolant_value(mt_z_mesh_coh_wkb, mt_coh_wkb);        
+        f_interpolante_w_level_pos_kstar_z = griddedInterpolant(ar_w_level, XXXar_coh_perc, ...                
+                                                                mt_ev_condi_z_max_kp(:, it_z_i)', ...
+                                                                'linear', 'nearest');
+        % Interpolate
+        mt_w_kstar_interp_z = f_interpolante_w_level_pos_kstar_z(mt_w_by_interp_coh_interp_grid, XXXCOH);
+        mt_w_astar_interp_z = mt_w_by_interp_coh_interp_grid - mt_w_kstar_interp_z;
+        
+        
+        % 3. Combine positive and negative aggregate savings matrix
+
+        
+        % 4. changes in w_perc kstar choices
         mt_w_kstar_diff_idx = (cl_w_kstar_interp_z{it_z_i} ~= mt_w_kstar_interp_z);
 
-
-        % Consumption Update
-        % Note that compared to
-        % <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html
-        % ffs_akz_set_functions> the mt_c here is much smaller the same
-        % number of columns (states) as in the ffs_akz_set_functions file,
-        % but the number of rows equal to ar_w length.
+        %% B. Calculate UPDATE u(c) Update: u(c(coh_level, w_perc)) given k*_interp, b*_interp
         ar_c = f_cons(mt_interp_coh_grid_mesh_w_perc(mt_w_kstar_diff_idx), ...
                       mt_w_astar_interp_z(mt_w_kstar_diff_idx), ...
                       mt_w_kstar_interp_z(mt_w_kstar_diff_idx));
@@ -281,11 +303,14 @@ while bl_vfi_continue
             cl_c_valid_idx{it_z_i}(mt_w_kstar_diff_idx) = ar_it_c_valid_idx;
         end
         cl_w_kstar_interp_z{it_z_i} = mt_w_kstar_interp_z;
-
+        
+        %% C. Interpolate FULL EV(k*(coh_level, w_perc, z), w - b*|z) based on EV(k*(coh_perc, w_level))
         % Generate Interpolant for (3) EV(k*(ar_w_perc),Z)
         f_interpolante_ev_condi_z_max_z = griddedInterpolant(ar_w_level, mt_ev_condi_z_max(:, it_z_i)', 'linear', 'nearest');
         % Interpolate (3), EVAL add on future utility, N by N + N by N
         mt_ev_condi_z_max_interp_z = f_interpolante_ev_condi_z_max_z(mt_w_by_interp_coh_interp_grid);
+        
+        %% D. Compute FULL U(coh_level, w_perc, z) over all w_perc
         mt_utility = cl_u_c_store{it_z_i} + fl_beta*mt_ev_condi_z_max_interp_z;
 
         % Index update
@@ -301,11 +326,12 @@ while bl_vfi_continue
             % if default is not allowed: v = u(cmin)
             mt_utility = mt_utility.*(~mt_it_c_valid_idx) + fl_nan_replace*(mt_it_c_valid_idx);
         end
-
+        
         % percentage algorithm does not have invalid (check to make sure
         % min percent is not 0 in ffs_ipwkbz_get_funcgrid.m)
         % mt_utility = mt_utility.*(~mt_it_c_valid_idx) + fl_u_neg_c*(mt_it_c_valid_idx);
 
+        %% E. Optimize Over Choices: max_{w_perc} U(coh_level, w_perc, z)
         % Optimization: remember matlab is column major, rows must be
         % choices, columns must be states
         % <https://en.wikipedia.org/wiki/Row-_and_column-major_order COLUMN-MAJOR>
@@ -324,7 +350,7 @@ while bl_vfi_continue
         if (bl_default)
             % if defaulting is optimal choice, at these states, not required
             % to default, non-default possible, but default could be optimal
-            fl_default_opti_kprime = f_interpolante_w_level_kstar_z(fl_default_wprime);
+            fl_default_opti_kprime = f_interpolante_w_level_pos_kstar_z(fl_default_wprime);
             ar_opti_aprime_z(ar_opti_c_z <= fl_c_min) = fl_default_wprime - fl_default_opti_kprime;
             ar_opti_kprime_z(ar_opti_c_z <= fl_c_min) = fl_default_opti_kprime;
         else
@@ -335,6 +361,7 @@ while bl_vfi_continue
             ar_opti_kprime_z(ar_opti_c_z <= fl_c_min) = min(ar_k_mesha);
         end
 
+        %% F. Store Results
         mt_val(:,it_z_i) = ar_opti_val_z;
         mt_pol_a(:,it_z_i) = ar_opti_aprime_z;
         mt_pol_k(:,it_z_i) = ar_opti_kprime_z;

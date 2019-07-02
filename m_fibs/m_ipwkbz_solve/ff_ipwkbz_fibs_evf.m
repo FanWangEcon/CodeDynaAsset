@@ -4,17 +4,30 @@
 % Table of Content.*
 
 %%
-function [mt_ev_condi_z_max, mt_ev_condi_z_max_idx, mt_ev_condi_z_max_kp, mt_ev_condi_z_max_bp] = ff_ipwkbz_evf(varargin)
-%% FF_IPWKBZ_EVF solves the k' vs b' problem given aggregate savings
-% This function follows the structure set up here:
-% <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_evf.html
-% ff_wkz_evf> but now we solve the second stage with percentage choice grid
+function [mt_ev_condi_z_max, mt_ev_condi_z_max_idx, mt_ev_condi_z_max_kp, mt_ev_condi_z_max_bp] = ff_ipwkbz_fibs_evf(varargin)
+%% FF_IPWKBZ_FIBS_EVF solves the k' vs b' problem given aggregate savings
+% This file is based on
+% <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_evf.html
+% ff_ipwkbz_evf>, see that file for more comments. Compare graphs side by
+% side from this file and
+% <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_evf.html
+% ff_ipwkbz_evf> to see visually the effect of introducing formal and
+% informal choices with bridge loan. 
 %
-% We solve along a vector of w_n vector, that is an interpolation vector,
-% not a vector of actual w choices picked in the first stage. k' choices
-% are in terms of percentages. Compared to ff_wkz_evf where we only had an
-% upper triangle of choices, now we have a full matrix of percentage
-% choices.
+% In contrast to ff_ipwkbz_evf.m, here, we need to deal with borrowing and
+% savings formal and informal. These will change how the testing matrix is
+% constructed. When bridge loan is allowed, we also need to construct the
+% output matrixes differently. In ff_ipwkbz_evf.m, the assumption is that
+% coh today does not matter, so to find optimal k* choice, we only need to
+% know the aggregate savings level. But now, we need to know the coh level
+% as well.
+%
+% Below two reachable coh matrixes are constructed, one for when aggregate
+% savings choice w >= 0, and another for when aggregate savings <= 0. Then
+% they are stacked together. And we still have the same outputs as
+% ff_ipwkbz_evf.m. The difference is that while for savings where w >=0,
+% each row are w levels for the output matrixes, but for w <=0, each row is
+% for w level + coh percentage combinations. 
 %
 % @param mt_val matrix state_n I^2 by shock_n. This is the value
 % matrix each row is a feasible reachable state given the choice
@@ -27,32 +40,40 @@ function [mt_ev_condi_z_max, mt_ev_condi_z_max_idx, mt_ev_condi_z_max_kp, mt_ev_
 % @param armt_map container container with states, choices and shocks
 % grids that are inputs for grid based solution algorithm
 %
-% @return mt_ev_condi_z_max matrix choice_w_n by shock_n
-% max_{k'}(E(V(coh(k',b'=w-k'),z'|z,w)) conditional on z and w, at the
-% optimal k' choice (w=k'+b') what is the expected utility? This is the
-% value result from the 2nd stage problem. Note the result integrates over
-% z'.
+% @return mt_ev_condi_z_max matrix *(choice_w_pos_n + choice_w_neg_n x
+% coh_perc_n)* by *shock_n* max_{k'}(E(V(coh(k',b'=w-k'),z'|z,w)) conditional
+% on z and w, at the optimal k' choice (w=k'+b') what is the expected
+% utility? This is the value result from the 2nd stage problem. Note the
+% result integrates over z'.
 %
-% @return mt_ev_condi_z_max_idx matrix choice_w_n by shock_n this is the
-% argmax from max_{k'}(E(V(coh(k',b'=w-k'),z'|z,w)). Given the vector of k'
-% choices, which index maximized conditional on z and w integrating over
-% z'/
+% @return mt_ev_condi_z_max_idx matrix *(choice_w_pos_n + choice_w_neg_n x
+% coh_perc_n)* by *(shock_n)* this is the argmax from
+% max_{k'}(E(V(coh(k',b'=w-k'),z'|z,w)). Given the vector of k' choices,
+% which index maximized conditional on z and w integrating over z'.
 %
-% @return mt_ev_condi_z_max_kp matrix choice_w_level_n by shock_n the k'
-% choice at max_{k'}(E(V(coh(k',b'=w-k'),z'|z,w))
+% @return mt_ev_condi_z_max_kp matrix  *(choice_w_pos_n + choice_w_neg_n x
+% coh_perc_n)* by *(shock_n)* the k' choice at
+% max_{k'}(E(V(coh(k',b'=w-k'),z'|z,w))
 %
-% @return mt_ev_condi_z_max_bp matrix choice_w_n by shock_n the b'=w-k'
-% choice at max_{k'}(E(V(coh(k',b'=w-k'),z'|z,w))
+% @return mt_ev_condi_z_max_bp matrix  *(choice_w_pos_n + choice_w_neg_n x
+% coh_perc_n)* by *(shock_n)* the b'=w-k' choice at
+% max_{k'}(E(V(coh(k',b'=w-k'),z'|z,w))
 %
 % @example
 %
 % @include
 %
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/paramfunc/ffs_ipwkbz_set_default_param.m ffs_ipwkbz_set_default_param>
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/paramfunc/ffs_ipwkbz_get_funcgrid.m ffs_ipwkbz_get_funcgrid>
+% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_ipwkbz_paramfunc/ffs_ipwkbz_fibs_set_default_param.m ffs_ipwkbz_fibs_set_default_param>
+% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_ipwkbz_paramfunc/ffs_ipwkbz_fibs_get_funcgrid.m ffs_ipwkbz_fibs_get_funcgrid>
 %
 
 %% Default
+% If comparing with
+% <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_evf.html
+% ff_ipwkbz_evf>, note that the borrowing and savings interest rates are
+% the same there. Run st_param_which = 'default' to replicate identical
+% result as ff_ipwkbz_evf.m.
+%
 
 params_len = length(varargin);
 bl_input_override = 0;
@@ -69,33 +90,80 @@ else
     % Not default parameters, but parameters that generate defaults
     it_param_set = 4;
     bl_input_override = true;
-    [param_map, support_map] = ffs_ipwkbz_set_default_param(it_param_set);
+    [param_map, support_map] = ffs_ipwkbz_fibs_set_default_param(it_param_set);            
     
     support_map('bl_graph_evf') = true;
-    support_map('bl_display_evf') = true;
+    support_map('bl_display_evf') = true;    
+    
+    st_param_which = 'default';
+    
+    if (strcmp(st_param_which, 'default'))
         
-    param_map('it_ak_perc_n') = 250;
+        param_map('it_ak_perc_n') = 250;
+        
+        param_map('fl_r_inf') = 0.030;
+        param_map('fl_r_inf_bridge') = 0.030;
+        param_map('fl_r_fbr') = 0.0275;
+        param_map('fl_r_fsv') = 0.025;
+        
+        param_map('bl_bridge') = true;
+%         param_map('it_coh_bridge_perc_n') = 3;
+        
+    elseif (strcmp(st_param_which, 'small'))
+        
+        param_map('it_w_perc_n') = 7;
+        param_map('it_ak_perc_n') = 7;
+        param_map('it_coh_bridge_perc_n') = 3;
+        param_map('fl_w_interp_grid_gap') = 2;
+        param_map('fl_coh_interp_grid_gap') = 2;
+        
+        param_map('bl_bridge') = true;
+        param_map('it_coh_bridge_perc_n') = 3;
+        
+    elseif (strcmp(st_param_which, 'ff_ipwkbz_evf'))
+                
+        param_map('fl_r_fsv') = 0.025;
+        param_map('fl_r_inf') = 0.025;
+        param_map('fl_r_inf_bridge') = 0.025;
+        param_map('fl_r_fbr') = 0.025;        
+        param_map('it_ak_perc_n') = 250;
+        
+        param_map('bl_bridge') = false;
+        
+    end
+        
     param_map('fl_w_interp_grid_gap') = (param_map('fl_w_max')-param_map('fl_b_bd'))/param_map('it_ak_perc_n');    
 
-    [armt_map, func_map] = ffs_ipwkbz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
+    [armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
     
     % Generating Defaults
-    params_group = values(armt_map, {'ar_a_meshk', 'ar_k_mesha', 'ar_z'});
-    [ar_a_meshk, ar_k_mesha, ar_z] = params_group{:};
-    params_group = values(func_map, {'f_util_standin', 'f_coh'});
-    [f_util_standin, f_coh] = params_group{:};
-    mt_val = f_util_standin(ar_z, ar_a_meshk, ar_k_mesha);
-    mt_coh = f_coh(ar_z, ar_a_meshk, ar_k_mesha);
-       
+    params_group = values(armt_map, {'ar_ameshk_tnext_with_r', 'ar_k_mesha', 'ar_z'});
+    [ar_ameshk_tnext_with_r, ar_k_mesha, ar_z] = params_group{:};
+    params_group = values(func_map, {'f_util_standin'});
+    [f_util_standin] = params_group{:};
+    
+    % works with replicating ff_ipwkbz_evf.m result
+    mt_val = f_util_standin(ar_z, ar_ameshk_tnext_with_r, ar_k_mesha);
+
 end
 
 %% Parse Parameters
+
+% armt_map
 params_group = values(armt_map, {'mt_z_trans', 'ar_z',...
-    'ar_w_level', 'ar_k_mesha', 'ar_a_meshk', 'mt_k'});
-[mt_z_trans, ar_z, ar_w_level, ...
-    ar_k_mesha, ar_a_meshk, mt_k] = params_group{:};
+    'ar_w_level', 'ar_w_level_full', 'ar_coh_bridge_perc', ...
+    'ar_k_mesha', 'ar_a_meshk', 'ar_ameshk_tnext_with_r', 'mt_k'});
+[mt_z_trans, ar_z, ...
+    ar_w_level, ar_w_level_full, ar_coh_bridge_perc, ...
+    ar_k_mesha, ar_a_meshk, ar_ameshk_tnext_with_r, mt_k] = params_group{:};
+
+% param_map
 params_group = values(param_map, {'it_z_n', 'fl_nan_replace', 'fl_b_bd'});
 [it_z_n, fl_nan_replace, fl_b_bd] = params_group{:};
+params_group = values(param_map, {'bl_bridge'});
+[bl_bridge] = params_group{:};
+
+% support_map
 params_group = values(support_map, {'bl_graph_onebyones','bl_display_evf', 'bl_graph_evf'});
 [bl_graph_onebyones, bl_display_evf, bl_graph_evf] = params_group{:};
 params_group = values(support_map, {'bl_img_save', 'st_img_path', 'st_img_prefix', 'st_img_name_main', 'st_img_suffix'});
@@ -151,8 +219,8 @@ if(bl_display_evf)
     disp('mt_ev_condi_z_full: J by IxM');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(mt_ev_condi_z_full));
-    disp(head(array2table(mt_ev_condi_z_full), 20));
-    disp(tail(array2table(mt_ev_condi_z_full), 20));
+%     disp(head(array2table(mt_ev_condi_z_full), 20));
+%     disp(tail(array2table(mt_ev_condi_z_full), 20));
     
     
     disp('----------------------------------------');
@@ -298,7 +366,7 @@ if (bl_graph_evf)
         i_ctr = 0;
         for i = ar_it_z_graph
             i_ctr = i_ctr + 1;
-            ar_x = ar_w_level;
+            ar_x = ar_w_level_full;
             ar_y = mt_outcome(:, i);
             scatter(ar_x, ar_y, 5, ...
                 'MarkerEdgeColor', clr(i_ctr,:), ...
@@ -332,7 +400,7 @@ if (bl_graph_evf)
     %% Graph 3, at max(EV) optimal choice category, color regions, borrow save
     
     % Borrow Vs Save
-    [ar_z_mw, ar_w_mz] = meshgrid(ar_z, ar_w_level);
+    [ar_z_mw, ar_w_mz] = meshgrid(ar_z, ar_w_level_full);
     mt_it_borr_idx = (mt_ev_condi_z_max_bp < 0);
     mt_it_riskyhalf_idx = ((mt_ev_condi_z_max_kp./mt_ev_condi_z_max_bp) > 0.5);
     mt_it_kzero_idx = (mt_ev_condi_z_max_kp == 0);
@@ -373,8 +441,22 @@ if (bl_graph_evf)
     end
     
     %% Graph 4, Optimal K' and B' Levels
+    % compare results here to results from <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_evf.html
+    % ff_ipwkbz_evf>. Several key differences:
+    %
+    % # Each color line is thicker here, because there is in effect another
+    % state that is relevant now in the 2nd stage, which is the
+    % cash-on-hand percentage, which is implemented as a percentage of the
+    % w = k' + b' choice that needs to go cover bridge loan. So different
+    % percentages have the same color, hence thicker lines fore each color
+    % # Jump between saving and borrowing, here, the borrowing and savings
+    % interest rates differ
+    % # Finally, the discontinuities in choices, they occur here because of
+    % the formal menu of choices, the little squiggly up and downs are due
+    % to households using informal choices to complement formal choices. 
+    %
     
-    [~, ar_w_mz] = meshgrid(ar_z, ar_w_level);
+    [~, ar_w_mz] = meshgrid(ar_z, ar_w_level_full);
     for sub_j=1:1:4
         
         if (bl_graph_onebyones)
@@ -409,20 +491,18 @@ if (bl_graph_evf)
             if(~bl_graph_onebyones)
                 subplot(1,2,sub_j-2);
             end
-            mt_y = mt_ev_condi_z_max_kp./(ar_w_level'-fl_b_bd);
+            mt_y = mt_ev_condi_z_max_kp./(ar_w_level_full'-fl_b_bd);
         end
         
         hold on;
-        chart = plot(ar_w_level, mt_y);
-        clr = jet(numel(chart));
-        
-        if (length(ar_w_level) <= 100)
-            scatter(ar_w_mz(:), mt_y(:), 3, 'filled', 'MarkerEdgeColor', 'b', 'MarkerFaceColor', 'b');
+        clr = jet(length(ar_z));                
+        for m = 1:length(ar_z)
+            chart(m) = scatter(ar_w_level_full, mt_y(:, m), 3, ...
+                'Marker', 'O', ...
+                'MarkerEdgeColor', clr(m,:), 'MarkerFaceAlpha', 0.75, ...
+                'MarkerFaceColor', clr(m,:), 'MarkerEdgeAlpha', 0.75);
         end
-        
-        for m = 1:numel(chart)
-            set(chart(m),'Color',clr(m,:))
-        end
+                
         legend2plot = fliplr([1 round(numel(chart)/3) round((2*numel(chart))/3)  numel(chart)]);
         legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
         

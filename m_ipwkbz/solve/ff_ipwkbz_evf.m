@@ -1,4 +1,4 @@
-%% 2nd Stage Optimization (Interpolated + Percentage + Risky + Safe Asset)
+%% 2nd Stage Optimization for Risky + Safe Asset (Save + Borr) Interpolated-Percentage
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*

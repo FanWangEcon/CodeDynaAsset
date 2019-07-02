@@ -107,11 +107,11 @@ else
     [ar_a_inf, fl_borr_yminbd_inf, fl_borr_ymaxbd_inf] = ffs_abz_gen_borrsave_grid(...
         fl_b_bd, bl_default, ar_z, fl_w, ...
         bl_b_is_principle, fl_r_inf, fl_a_min, fl_a_max, it_a_n);
-    
+
     [ar_a_for, fl_borr_yminbd_for, fl_borr_ymaxbd_for] = ffs_abz_gen_borrsave_grid(...
         fl_b_bd, bl_default, ar_z, fl_w, ...
         bl_b_is_principle, fl_r_fbr, fl_a_min, fl_a_max, it_a_n);
-    
+
     if (min(ar_a_for) <= min(ar_a_inf))
         ar_a = ar_a_for;
         fl_borr_yminbd = fl_borr_yminbd_for;
@@ -119,9 +119,9 @@ else
     else
         ar_a = ar_a_inf;
         fl_borr_yminbd = fl_borr_yminbd_inf;
-        fl_borr_ymaxbd = fl_borr_ymaxbd_inf;        
+        fl_borr_ymaxbd = fl_borr_ymaxbd_inf;
     end
-    
+
 end
 
 

@@ -186,6 +186,51 @@ ar_k_mesha = ar_k_mesha_full;
 
 mt_coh_wkb_full = f_coh(ar_z, ar_a_meshk_full, ar_k_mesha_full);
 
+
+if (bl_display_funcgrids)
+    
+    % Generate Aggregate Variables
+    ar_aplusk_mesha = ar_a_meshk_full + ar_k_mesha_full;
+    
+    % Genereate Table
+    tab_ak_choices = array2table([ar_aplusk_mesha, ar_k_mesha_full, ar_a_meshk_full]);
+    cl_col_names = {'ar_aplusk_mesha', 'ar_k_mesha_full', 'ar_a_meshk_full'};
+    tab_ak_choices.Properties.VariableNames = cl_col_names;
+    
+    % Label Table Variables
+    tab_ak_choices.Properties.VariableDescriptions{'ar_aplusk_mesha'} = ...
+        '*ar_aplusk_mesha*: ar_aplusk_mesha = ar_a_meshk_full + ar_k_mesha_full;';
+    tab_ak_choices.Properties.VariableDescriptions{'ar_a_meshk_full'} = ...
+        '*ar_a_meshk_full*:';
+    tab_ak_choices.Properties.VariableDescriptions{'ar_k_mesha_full'} = ...
+        '*ar_k_mesha_full*:';
+
+    cl_var_desc = tab_ak_choices.Properties.VariableDescriptions;
+    for it_var_name = 1:length(cl_var_desc)
+        disp(cl_var_desc{it_var_name});
+    end
+    
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('mt_w_by_interp_coh_interp_grid');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    it_rows_toshow = length(ar_w_level)*2;
+    disp(size(tab_ak_choices));
+    disp(head(array2table(tab_ak_choices), it_rows_toshow));
+    disp(tail(array2table(tab_ak_choices), it_rows_toshow));
+
+
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('mt_coh_wkb_full');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp(size(mt_coh_wkb_full));
+    disp(head(array2table(mt_coh_wkb_full), it_rows_toshow));
+    disp(tail(array2table(mt_coh_wkb_full), it_rows_toshow));
+    
+end
+
+
 %% Check if COH is within Borrowing Bounds
 % some coh levels are below borrowing bound, can not borrow enough to pay
 % debt
@@ -582,14 +627,6 @@ if (bl_display_funcgrids)
     disp('ar_k_mesha');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     summary(array2table(ar_k_mesha));
-
-    disp('----------------------------------------');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp('mt_coh_wkb_full');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp(size(mt_coh_wkb_full));
-    disp(head(array2table(mt_coh_wkb_full), 10));
-    disp(tail(array2table(mt_coh_wkb_full), 10));
 
     param_map_keys = keys(func_map);
     param_map_vals = values(func_map);

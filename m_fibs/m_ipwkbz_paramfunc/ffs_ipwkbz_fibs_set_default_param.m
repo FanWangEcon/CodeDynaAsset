@@ -72,7 +72,6 @@ param_map('fl_forbrblk_gap') = -1.5;
 param_map('fl_c_min') = 0.001;
 param_map('fl_nan_replace') = -9999;
 
-
 % Asset Grids
 % Toal savings aggregate grid (see discussion on top). 35 points picked for
 % for this problem w_max is overall for everyone, but each individual coh
@@ -92,6 +91,9 @@ param_map('it_w_perc_n') = 50;
 param_map('fl_k_min') = 0;
 param_map('fl_k_max') = (param_map('fl_w_max') - param_map('fl_b_bd'));
 param_map('it_ak_perc_n') = param_map('it_w_perc_n'); % grid for a and k the same
+
+% Percentage for Cash-on-hand share that needs to go pay for bridge loan
+param_map('it_coh_bridge_perc_n') = param_map('it_w_perc_n');
 
 % Interpolation
 % fl_coh_interp_grid_gap controls the number of coh points at which to solve the model

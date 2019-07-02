@@ -5,7 +5,7 @@
 
 %%
 function [f_util_log, f_util_crra, f_util_standin, ...
-    f_prod, f_inc, f_coh_fbis, f_coh_save, f_cons] = ffs_ipwkbz_fibs_set_functions(varargin)
+    f_prod, f_inc, f_coh, f_coh_fbis, f_coh_save, f_cons] = ffs_ipwkbz_fibs_set_functions(varargin)
 %% FFS_IPWKZ_FIBS_SET_FUNCTIONS setting model functions
 
 %% Default
@@ -53,8 +53,9 @@ f_inc = @(z, k, fl_r_inf, ar_for_borr, ar_inf_borr, ar_for_save) ...
 % solution method.
 %
 
-% If borrowing overall, various files in
-f_coh = @(z, b_with_r, k) (f_prod(z, k) + k*(1-fl_delta) - b_with_r);
+% coh, where the b_with_r include various formal and informal choices with
+% interest rate.
+f_coh = @(z, b_with_r, k) (f_prod(z, k) + k*(1-fl_delta) + fl_w + b_with_r);
 
 % If borrowing overall, various files in
 f_coh_fbis = @(fl_r_inf, ar_for_borr, ar_inf_borr, ar_for_save) ...
@@ -78,8 +79,8 @@ f_cons = @(coh, bprime, kprime) (coh - kprime - bprime);
 % Utility for graphing with random data, note that when we graph with coh
 % as the state variable using this equation here, there is no effect of
 % shock on utility, it is fully captured by the coh.
-f_util_standin = @(z, b, k) f_util_log((f_coh_fbis(z,b,k)-fl_b_bd).*((f_coh_fbis(z,b,k) - fl_b_bd) > fl_c_min) + ...
-                                        fl_c_min.*((f_coh_fbis(z,b,k) - fl_b_bd) <= fl_c_min));
+f_util_standin = @(z, b, k) f_util_log((f_coh(z,b,k)-fl_b_bd).*((f_coh(z,b,k) - fl_b_bd) > fl_c_min) + ...
+                                        fl_c_min.*((f_coh(z,b,k) - fl_b_bd) <= fl_c_min));
 
 
 end

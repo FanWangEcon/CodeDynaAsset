@@ -1,8 +1,9 @@
-%%
+%% 2nd Stage Optimization for Risky + Safe Asset (Saving Only) Interpolated-Percentage
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
+%%
 function [mt_ev_condi_z_max, mt_ev_condi_z_max_idx, mt_ev_condi_z_max_kp, mt_ev_condi_z_max_bp] = ff_ipwkz_evf(varargin)
 %% FF_IPWKZ_EVF solves the k' vs b' problem given aggregate savings
 % This function follows the structure set up here:

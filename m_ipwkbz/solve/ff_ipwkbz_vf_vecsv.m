@@ -1,4 +1,4 @@
-%% Risky + Safe Asset (Save + Borr) Only Interpolated-Percentage (Optimized-Vectorized)
+%% Risky + Safe Asset (Save + Borr) Interpolated-Percentage (Optimized-Vectorized)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
@@ -242,6 +242,7 @@ while bl_vfi_continue
     % loop 1: over exogenous states
     for it_z_i = 1:length(ar_z)
 
+        %% A. Interpolate FULL to get k*(w_perc, z), b*(k,w) based on k*(w_level, z)
         % Generate interpolant for (2) k*(ar_w_perc) from k*(ar_w_level,z)
         % There are two w=k'+b' arrays. ar_w_level is the level even grid based
         % on which we solve the 2nd stage problem in ff_ipwkbz_evf.m. Here for
@@ -257,8 +258,7 @@ while bl_vfi_continue
         % changes in w_perc kstar choices
         mt_w_kstar_diff_idx = (cl_w_kstar_interp_z{it_z_i} ~= mt_w_kstar_interp_z);
 
-
-        % Consumption Update
+        %% B. Calculate UPDATE u(c): u(c(coh_level, w_perc)) given k*_interp, b*_interp
         % Note that compared to
         % <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html
         % ffs_akz_set_functions> the mt_c here is much smaller the same
@@ -282,10 +282,13 @@ while bl_vfi_continue
         end
         cl_w_kstar_interp_z{it_z_i} = mt_w_kstar_interp_z;
 
+        %% C. Interpolate FULL EV(k*(coh_level, w_perc, z), w - b*|z) based on EV(k*(w_level, z))
         % Generate Interpolant for (3) EV(k*(ar_w_perc),Z)
         f_interpolante_ev_condi_z_max_z = griddedInterpolant(ar_w_level, mt_ev_condi_z_max(:, it_z_i)', 'linear', 'nearest');
         % Interpolate (3), EVAL add on future utility, N by N + N by N
         mt_ev_condi_z_max_interp_z = f_interpolante_ev_condi_z_max_z(mt_w_by_interp_coh_interp_grid);
+        
+        %% D. Compute FULL U(coh_level, w_perc, z) over all w_perc
         mt_utility = cl_u_c_store{it_z_i} + fl_beta*mt_ev_condi_z_max_interp_z;
 
         % Index update
@@ -306,6 +309,7 @@ while bl_vfi_continue
         % min percent is not 0 in ffs_ipwkbz_get_funcgrid.m)
         % mt_utility = mt_utility.*(~mt_it_c_valid_idx) + fl_u_neg_c*(mt_it_c_valid_idx);
 
+        %% E. Optimize Over Choices: max_{w_perc} U(coh_level, w_perc, z)        
         % Optimization: remember matlab is column major, rows must be
         % choices, columns must be states
         % <https://en.wikipedia.org/wiki/Row-_and_column-major_order COLUMN-MAJOR>
@@ -335,6 +339,7 @@ while bl_vfi_continue
             ar_opti_kprime_z(ar_opti_c_z <= fl_c_min) = min(ar_k_mesha);
         end
 
+        %% F. Store Results        
         mt_val(:,it_z_i) = ar_opti_val_z;
         mt_pol_a(:,it_z_i) = ar_opti_aprime_z;
         mt_pol_k(:,it_z_i) = ar_opti_kprime_z;
