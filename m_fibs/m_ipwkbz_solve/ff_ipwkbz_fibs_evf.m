@@ -1,4 +1,4 @@
-%% 2nd Stage Optimization (Interpolated + Percentage + Risky + Safe Asset)
+%% 2nd Stage Optimization (Interpolated + Percentage + Risky + Safe Asse + Save + Borr + FIBSt)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
@@ -12,7 +12,7 @@ function [mt_ev_condi_z_max, mt_ev_condi_z_max_idx, mt_ev_condi_z_max_kp, mt_ev_
 % side from this file and
 % <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_evf.html
 % ff_ipwkbz_evf> to see visually the effect of introducing formal and
-% informal choices with bridge loan. 
+% informal choices with bridge loan.
 %
 % In contrast to ff_ipwkbz_evf.m, here, we need to deal with borrowing and
 % savings formal and informal. These will change how the testing matrix is
@@ -27,7 +27,7 @@ function [mt_ev_condi_z_max, mt_ev_condi_z_max_idx, mt_ev_condi_z_max_kp, mt_ev_
 % they are stacked together. And we still have the same outputs as
 % ff_ipwkbz_evf.m. The difference is that while for savings where w >=0,
 % each row are w levels for the output matrixes, but for w <=0, each row is
-% for w level + coh percentage combinations. 
+% for w level + coh percentage combinations.
 %
 % @param mt_val matrix state_n I^2 by shock_n. This is the value
 % matrix each row is a feasible reachable state given the choice
@@ -86,62 +86,63 @@ if (bl_input_override)
 else
     clear all;
     close all;
-    
+
     % Not default parameters, but parameters that generate defaults
     it_param_set = 4;
     bl_input_override = true;
-    [param_map, support_map] = ffs_ipwkbz_fibs_set_default_param(it_param_set);            
-    
+    [param_map, support_map] = ffs_ipwkbz_fibs_set_default_param(it_param_set);
+
     support_map('bl_graph_evf') = true;
-    support_map('bl_display_evf') = true;    
-    
+    support_map('bl_display_evf') = true;
+
     st_param_which = 'default';
-    
+
     if (strcmp(st_param_which, 'default'))
-        
+
         param_map('it_ak_perc_n') = 250;
-        
+
         param_map('fl_r_inf') = 0.030;
         param_map('fl_r_inf_bridge') = 0.030;
         param_map('fl_r_fbr') = 0.0275;
         param_map('fl_r_fsv') = 0.025;
-        
+
         param_map('bl_bridge') = true;
 %         param_map('it_coh_bridge_perc_n') = 3;
-        
+
     elseif (strcmp(st_param_which, 'small'))
-        
+
         param_map('it_w_perc_n') = 7;
         param_map('it_ak_perc_n') = 7;
         param_map('it_coh_bridge_perc_n') = 3;
         param_map('fl_w_interp_grid_gap') = 2;
         param_map('fl_coh_interp_grid_gap') = 2;
-        
+
         param_map('bl_bridge') = true;
         param_map('it_coh_bridge_perc_n') = 3;
-        
+
     elseif (strcmp(st_param_which, 'ff_ipwkbz_evf'))
-                
+
         param_map('fl_r_fsv') = 0.025;
         param_map('fl_r_inf') = 0.025;
         param_map('fl_r_inf_bridge') = 0.025;
-        param_map('fl_r_fbr') = 0.025;        
+        param_map('fl_r_fbr') = 0.025;
         param_map('it_ak_perc_n') = 250;
-        
+
         param_map('bl_bridge') = false;
+        param_map('it_coh_bridge_perc_n') = 1;
         
     end
-        
-    param_map('fl_w_interp_grid_gap') = (param_map('fl_w_max')-param_map('fl_b_bd'))/param_map('it_ak_perc_n');    
+
+    param_map('fl_w_interp_grid_gap') = (param_map('fl_w_max')-param_map('fl_b_bd'))/param_map('it_ak_perc_n');
 
     [armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
-    
+
     % Generating Defaults
     params_group = values(armt_map, {'ar_ameshk_tnext_with_r', 'ar_k_mesha', 'ar_z'});
     [ar_ameshk_tnext_with_r, ar_k_mesha, ar_z] = params_group{:};
     params_group = values(func_map, {'f_util_standin'});
     [f_util_standin] = params_group{:};
-    
+
     % works with replicating ff_ipwkbz_evf.m result
     mt_val = f_util_standin(ar_z, ar_ameshk_tnext_with_r, ar_k_mesha);
 
@@ -221,8 +222,8 @@ if(bl_display_evf)
     disp(size(mt_ev_condi_z_full));
 %     disp(head(array2table(mt_ev_condi_z_full), 20));
 %     disp(tail(array2table(mt_ev_condi_z_full), 20));
-    
-    
+
+
     disp('----------------------------------------');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_ev_condi_z_max: I by M');
@@ -230,7 +231,7 @@ if(bl_display_evf)
     disp(size(mt_ev_condi_z_max));
     disp(head(array2table(mt_ev_condi_z_max), 20));
     disp(tail(array2table(mt_ev_condi_z_max), 20));
-    
+
 
     disp('----------------------------------------');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
@@ -239,7 +240,7 @@ if(bl_display_evf)
     disp(size(mt_ev_condi_z_max_idx));
     disp(head(array2table(mt_ev_condi_z_max_idx), 20));
     disp(tail(array2table(mt_ev_condi_z_max_idx), 20));
-    
+
 end
 
 %% Reindex K' and B' Choices for each State at the Optimal *w'=k'+b'* choice
@@ -255,7 +256,7 @@ if(bl_display_evf)
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(mt_ev_condi_z_max_idx));
     disp(head(array2table(mt_ev_condi_z_max_idx), 20));
-    disp(tail(array2table(mt_ev_condi_z_max_idx), 20));    
+    disp(tail(array2table(mt_ev_condi_z_max_idx), 20));
 end
 
 mt_ev_condi_z_max_kp = reshape(ar_k_mesha(mt_ev_condi_z_max_idx), [it_mt_bp_coln, it_z_n]);
@@ -268,59 +269,59 @@ if(bl_display_evf)
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(mt_ev_condi_z_max_kp));
     disp(head(array2table(mt_ev_condi_z_max_kp), 20));
-    disp(tail(array2table(mt_ev_condi_z_max_kp), 20));        
-    
+    disp(tail(array2table(mt_ev_condi_z_max_kp), 20));
+
     disp('----------------------------------------');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_ev_condi_z_max_bp: I by M');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(mt_ev_condi_z_max_bp));
     disp(head(array2table(mt_ev_condi_z_max_bp), 20));
-    disp(tail(array2table(mt_ev_condi_z_max_bp), 20));    
+    disp(tail(array2table(mt_ev_condi_z_max_bp), 20));
 end
 
 %% Graph
 
 if (bl_graph_evf)
-    
+
     %% Graph 1, V and EV
     if (~bl_graph_onebyones)
         figure('PaperPosition', [0 0 14 4]);
         hold on;
     end
-    
-    
+
+
     for subplot_j=1:1:2
-        
+
         if (~bl_graph_onebyones)
             hAxis(subplot_j) = subplot(1,2,subplot_j);
         else
             figure('PaperPosition', [0 0 7 4]);
         end
-        
+
         if (subplot_j==1)
             chart = plot(mt_val);
         end
         if (subplot_j==2)
             chart = plot(mt_ev_condi_z);
         end
-        
+
         clr = jet(numel(chart));
         for m = 1:numel(chart)
             set(chart(m),'Color',clr(m,:))
         end
-        
+
         legend2plot = fliplr([1 round(numel(chart)/3) round((2*numel(chart))/3)  numel(chart)]);
         legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
         legend(chart(legend2plot), legendCell(legend2plot), 'Location','southeast');
-        
+
         if (subplot_j==1)
             title('V(coh,zp); w(k+b),k,z');
         end
         if (subplot_j==2)
             title('E_z(V(coh,zp|z))');
         end
-        
+
         ylabel('Next Period Value');
         xlabel({'Index of Cash-on-Hand Discrete Point'...
             'Each Segment is a w=k+b; within segment increasing k'...
@@ -328,39 +329,39 @@ if (bl_graph_evf)
         grid on;
         grid minor;
     end
-    
+
     % Share y axis
     if (~bl_graph_onebyones)
         linkaxes(hAxis,'y');
     end
-    
+
     % save file
     if (bl_img_save)
         mkdir(support_map('st_img_path'));
         st_file_name = [st_img_prefix st_img_name_main '_vev' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
-    
+
     %% Graph 2, max(EV)
-    
+
     if(~bl_graph_onebyones)
         figure('PaperPosition', [0 0 7 4]);
     end
-    
+
     for sub_j=1:1:1
-        
+
         if(sub_j==1)
             mt_outcome = mt_ev_condi_z_max;
             st_y_label = 'max_{k''}(E(V(coh(k'',b''=w-k''),z''|z,w))';
         end
-        
+
         if(~bl_graph_onebyones)
             subplot(1,1,sub_j)
         else
             figure('PaperPosition', [0 0 7 4]);
         end
         hold on;
-        
+
         ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)) (it_z_n)]);
         clr = jet(length(ar_it_z_graph));
         i_ctr = 0;
@@ -372,40 +373,40 @@ if (bl_graph_evf)
                 'MarkerEdgeColor', clr(i_ctr,:), ...
                 'MarkerFaceColor', clr(i_ctr,:));
         end
-        
+
         grid on;
         grid minor;
         title(['2nd Stage Exp Value at Optimal K given W=K''+B'''])
         ylabel(st_y_label)
         xlabel({'Aggregate Savings'})
-        
+
         legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
         legendCell{length(legendCell) + 1} = 'max-agg-save';
         legend(legendCell([ar_it_z_graph length(legendCell)]), 'Location','southeast');
-        
+
         xline0 = xline(0);
         xline0.HandleVisibility = 'off';
         yline0 = yline(0);
         yline0.HandleVisibility = 'off';
-        
+
     end
-    
+
     % save file
     if (bl_img_save)
         mkdir(support_map('st_img_path'));
         st_file_name = [st_img_prefix st_img_name_main '_maxev' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
-    
+
     %% Graph 3, at max(EV) optimal choice category, color regions, borrow save
-    
+
     % Borrow Vs Save
     [ar_z_mw, ar_w_mz] = meshgrid(ar_z, ar_w_level_full);
     mt_it_borr_idx = (mt_ev_condi_z_max_bp < 0);
     mt_it_riskyhalf_idx = ((mt_ev_condi_z_max_kp./mt_ev_condi_z_max_bp) > 0.5);
     mt_it_kzero_idx = (mt_ev_condi_z_max_kp == 0);
     mt_it_isnan_idx = (isnan(mt_ev_condi_z_max_kp));
-    
+
     figure('PaperPosition', [0 0 7 4]);
     % States: ar_w, ar_z
     % Choices: mt_ev_condi_z_max_kp, mt_ev_condi_z_max_bp
@@ -432,14 +433,14 @@ if (bl_graph_evf)
     ylabel('Shocks')
     xlabel({'Total Savings w=k+b'})
     grid on;
-    
+
     % save file
     if (bl_img_save)
         mkdir(support_map('st_img_path'));
         st_file_name = [st_img_prefix st_img_name_main '_maxbrsv' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
-    
+
     %% Graph 4, Optimal K' and B' Levels
     % compare results here to results from <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_evf.html
     % ff_ipwkbz_evf>. Several key differences:
@@ -453,16 +454,16 @@ if (bl_graph_evf)
     % interest rates differ
     % # Finally, the discontinuities in choices, they occur here because of
     % the formal menu of choices, the little squiggly up and downs are due
-    % to households using informal choices to complement formal choices. 
+    % to households using informal choices to complement formal choices.
     %
-    
+
     [~, ar_w_mz] = meshgrid(ar_z, ar_w_level_full);
     for sub_j=1:1:4
-        
+
         if (bl_graph_onebyones)
             figure('PaperPosition', [0 0 7 4]);
         end
-        
+
         if (sub_j==1)
             if(~bl_graph_onebyones)
                 figure('PaperPosition', [0 0 14 4]);
@@ -474,7 +475,7 @@ if (bl_graph_evf)
             if(~bl_graph_onebyones)
                 subplot(1,2,sub_j);
             end
-            
+
             mt_y = mt_ev_condi_z_max_kp;
         end
         if (sub_j==3)
@@ -493,19 +494,19 @@ if (bl_graph_evf)
             end
             mt_y = mt_ev_condi_z_max_kp./(ar_w_level_full'-fl_b_bd);
         end
-        
+
         hold on;
-        clr = jet(length(ar_z));                
+        clr = jet(length(ar_z));
         for m = 1:length(ar_z)
             chart(m) = scatter(ar_w_level_full, mt_y(:, m), 3, ...
                 'Marker', 'O', ...
                 'MarkerEdgeColor', clr(m,:), 'MarkerFaceAlpha', 0.75, ...
                 'MarkerFaceColor', clr(m,:), 'MarkerEdgeAlpha', 0.75);
         end
-                
+
         legend2plot = fliplr([1 round(numel(chart)/3) round((2*numel(chart))/3)  numel(chart)]);
         legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
-        
+
         xline0 = xline(0);
         xline0.HandleVisibility = 'off';
         yline0 = yline(0);
@@ -517,7 +518,7 @@ if (bl_graph_evf)
             hline.LineStyle = ':';
             hline.HandleVisibility = 'off';
         end
-        
+
         if (sub_j==1)
             title('B Choices of W');
             ylabel('B Choices');
@@ -530,7 +531,7 @@ if (bl_graph_evf)
             xlabel({'Total Savings w=k+b'});
             legend(chart(legend2plot), legendCell(legend2plot), 'Location','northwest');
         end
-        
+
         if (sub_j==3)
             title('B Fraction of Borrow Max and Save');
             ylabel('B/bar(B) if br or B/W if sv');
@@ -547,16 +548,16 @@ if (bl_graph_evf)
             ylim([0 1.1]);
             legend(chart(legend2plot), legendCell(legend2plot), 'Location','northeast');
         end
-        
+
     end
-    
+
     % save file
     if (bl_img_save)
         mkdir(support_map('st_img_path'));
         st_file_name = [st_img_prefix st_img_name_main '_wkbopti' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
-    
+
 end
 
 end

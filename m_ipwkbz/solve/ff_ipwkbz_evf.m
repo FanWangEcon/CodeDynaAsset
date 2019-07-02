@@ -144,6 +144,7 @@ mt_ev_condi_z_full = reshape(mt_ev_condi_z, [it_mt_bp_rown, it_mt_bp_coln*it_z_n
 [ar_ev_condi_z_max, ar_ev_condi_z_max_idx] = max(mt_ev_condi_z_full);
 mt_ev_condi_z_max = reshape(ar_ev_condi_z_max, [it_mt_bp_coln, it_z_n]);
 mt_ev_condi_z_max_idx = reshape(ar_ev_condi_z_max_idx, [it_mt_bp_coln, it_z_n]);
+
 if(bl_display_evf)
 
     disp('----------------------------------------');
@@ -151,10 +152,9 @@ if(bl_display_evf)
     disp('mt_ev_condi_z_full: J by IxM');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(mt_ev_condi_z_full));
-    disp(head(array2table(mt_ev_condi_z_full), 20));
-    disp(tail(array2table(mt_ev_condi_z_full), 20));
-    
-    
+%     disp(head(array2table(mt_ev_condi_z_full), 20));
+%     disp(tail(array2table(mt_ev_condi_z_full), 20));
+        
     disp('----------------------------------------');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_ev_condi_z_max: I by M');

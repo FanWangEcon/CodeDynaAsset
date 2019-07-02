@@ -121,9 +121,13 @@ st_img_name_main = [st_func_name st_img_name_main];
 
 mt_ev_condi_z = mt_val*mt_z_trans';
 if(bl_display_evf)
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_ev_condi_z: Q by M');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(mt_ev_condi_z));
-    summary(array2table(mt_ev_condi_z));
+    disp(head(array2table(mt_ev_condi_z), 20));
+    disp(tail(array2table(mt_ev_condi_z), 20));    
 end
 
 %% Reshape *E(V(coh,z'|z,w))* to allow for maxing
@@ -138,16 +142,32 @@ mt_ev_condi_z_full = reshape(mt_ev_condi_z, [it_mt_bp_rown, it_mt_bp_coln*it_z_n
 [ar_ev_condi_z_max, ar_ev_condi_z_max_idx] = max(mt_ev_condi_z_full);
 mt_ev_condi_z_max = reshape(ar_ev_condi_z_max, [it_mt_bp_coln, it_z_n]);
 mt_ev_condi_z_max_idx = reshape(ar_ev_condi_z_max_idx, [it_mt_bp_coln, it_z_n]);
+
 if(bl_display_evf)
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_ev_condi_z_full: J by IxM');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(mt_ev_condi_z_full));
-    %     disp(mt_ev_condi_z_full);
+%     disp(head(array2table(mt_ev_condi_z_full), 20));
+%     disp(tail(array2table(mt_ev_condi_z_full), 20));
+        
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_ev_condi_z_max: I by M');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(mt_ev_condi_z_max));
-    summary(array2table(mt_ev_condi_z_max));
+    disp(head(array2table(mt_ev_condi_z_max), 20));
+    disp(tail(array2table(mt_ev_condi_z_max), 20));
+    
+
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_ev_condi_z_max_idx: I by M');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(mt_ev_condi_z_max_idx));
-    %     disp(mt_ev_condi_z_max_idx);
+    disp(head(array2table(mt_ev_condi_z_max_idx), 20));
+    disp(tail(array2table(mt_ev_condi_z_max_idx), 20));
 end
 
 %% Reindex K' and B' Choices for each State at the Optimal *w'=k'+b'* choice
@@ -157,19 +177,34 @@ ar_add_grid = linspace(0, it_mt_bp_rown*(it_mt_bp_coln-1), it_mt_bp_coln);
 mt_ev_condi_z_max_idx = mt_ev_condi_z_max_idx + ar_add_grid';
 
 if(bl_display_evf)
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_ev_condi_z_max_idx: I by M');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(mt_ev_condi_z_max_idx));
-    %     disp(mt_ev_condi_z_max_idx(1:it_mt_bp_coln,:));
+    disp(head(array2table(mt_ev_condi_z_max_idx), 20));
+    disp(tail(array2table(mt_ev_condi_z_max_idx), 20));    
 end
+
 mt_ev_condi_z_max_kp = reshape(ar_k_mesha(mt_ev_condi_z_max_idx), [it_mt_bp_coln, it_z_n]);
 mt_ev_condi_z_max_bp = reshape(ar_a_meshk(mt_ev_condi_z_max_idx), [it_mt_bp_coln, it_z_n]);
+
 if(bl_display_evf)
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_ev_condi_z_max_kp: I by M');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(mt_ev_condi_z_max_kp));
-    summary(array2table(mt_ev_condi_z_max_kp));
+    disp(head(array2table(mt_ev_condi_z_max_kp), 20));
+    disp(tail(array2table(mt_ev_condi_z_max_kp), 20));        
+    
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_ev_condi_z_max_bp: I by M');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(mt_ev_condi_z_max_bp));
-    summary(array2table(mt_ev_condi_z_max_bp));
+    disp(head(array2table(mt_ev_condi_z_max_bp), 20));
+    disp(tail(array2table(mt_ev_condi_z_max_bp), 20));    
 end
 
 %% Graph

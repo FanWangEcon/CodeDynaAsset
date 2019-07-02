@@ -10,7 +10,7 @@ function [armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(varargin)
 % <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_get_funcgrid.html
 % ffs_ipwkbz_get_funcgrid>, see that file for more comments and compare
 % differences in graphs and tables to see how the inclusion of formal and
-% informal choices that consider bridge loans impact choice sets. 
+% informal choices that consider bridge loans impact choice sets.
 %
 % Also compare against
 % <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_paramfunc/html/ffs_abz_fibs_get_funcgrid.html
@@ -30,7 +30,7 @@ function [armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(varargin)
 % they are stacked together. And we still have the same outputs as
 % ff_ipwkbz_evf.m. The difference is that while for savings where w >=0,
 % each row are w levels for the output matrixes, but for w <=0, each row is
-% for w level + coh percentage combinations. 
+% for w level + coh percentage combinations.
 %
 % * _ar_w_level_: What are the feasible grid of w = k'+b', these are to be interpolated
 % later, these are level grid, not percentage grid
@@ -54,14 +54,14 @@ function [armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(varargin)
 % <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_get_funcgrid.html
 % ffs_ipwkbz_get_funcgrid>, we have to expand the grid by another
 % percentage dimension--percentages of b' going to bridge--for negative
-% levels of w=k'+b' overall choice. 
+% levels of w=k'+b' overall choice.
 %
 
 %% Default
 % Results identical to
 % <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_get_funcgrid.html
 % ffs_ipwkbz_get_funcgrid> is obtained by running default with:
-% st_param_which = 'ffs_ipwkbz_get_funcgrid'; 
+% st_param_which = 'ffs_ipwkbz_get_funcgrid';
 %
 
 bl_input_override = 0;
@@ -77,11 +77,11 @@ else
     support_map('bl_graph_funcgrids') = true;
     support_map('bl_graph_funcgrids_detail') = true;
     support_map('bl_display_funcgrids') = true;
-    
+
     st_param_which = 'small';
-    
+
     if (ismember(st_param_which, ['default', 'ffs_ipwkbz_get_funcgrid']))
-        
+
         % to be able to visually see choice grid points
         param_map('fl_b_bd') = -20; % borrow bound, = 0 if save only
         param_map('fl_default_aprime') = 0;
@@ -90,33 +90,34 @@ else
         param_map('fl_w_min') = param_map('fl_b_bd');
         param_map('it_w_perc_n') = 25;
         param_map('it_ak_perc_n') = 45;
-        
+
         param_map('fl_w_interp_grid_gap') = 2;
         param_map('fl_coh_interp_grid_gap') = 2;
-    
+        
+        % Note it_coh_bridge_perc is percentage NOT for BRIDGE
         if (strcmp(st_param_which, 'default'))
             
             param_map('it_coh_bridge_perc_n') = 3;
-            
+
             % Adjust interest rates
             param_map('fl_r_inf') = 0.30;
             param_map('fl_r_inf_bridge') = 0.30;
             param_map('bl_bridge') = true;
-            
+
         elseif (strcmp(st_param_which, 'ffs_ipwkbz_get_funcgrid'))
-            
-            param_map('it_coh_bridge_perc_n') = 1;
-            
+
+
             param_map('fl_r_inf') = 0.025;
             param_map('fl_r_inf_bridge') = 0.025;
             param_map('bl_bridge') = false;
-            
-        end        
-            
+            % when bl_bridge = false, it_coh_bridge_perc_n = 1
+
+        end
+
     elseif (strcmp(st_param_which, 'small'))
-        
+
         param_map('bl_bridge') = true;
-        
+
         % Adjust interest rates
         param_map('fl_r_inf') = 0.30;
         param_map('fl_r_inf_bridge') = 0.30;
@@ -124,19 +125,19 @@ else
         % to be able to visually see choice grid points
         param_map('fl_b_bd') = -20; % borrow bound, = 0 if save only
         param_map('fl_default_aprime') = 0;
-        param_map('bl_default') = false; % if borrowing is default allowed        
+        param_map('bl_default') = false; % if borrowing is default allowed
 
         param_map('fl_w_min') = param_map('fl_b_bd');
         param_map('it_w_perc_n') = 7;
         param_map('it_ak_perc_n') = 7;
         param_map('it_coh_bridge_perc_n') = 3;
-        
+
         param_map('fl_w_interp_grid_gap') = 2;
         param_map('fl_coh_interp_grid_gap') = 2;
-        
+
     end
-    
-    
+
+
     default_maps = {param_map, support_map};
 
     % numvarargs is the number of varagin inputted
@@ -184,7 +185,7 @@ params_group = values(support_map, {'bl_display_minccost', 'bl_graph_funcgrids',
 % ffs_ipwkbz_fibs_set_default_param> for details.
 %
 % @example
-%    
+%
 %    % For 2nd stage Grid
 %    ar_w_level = [-2,0,2]
 %    fl_b_bd = -4
@@ -198,7 +199,7 @@ params_group = values(support_map, {'bl_display_minccost', 'bl_graph_funcgrids',
 % solving optimal k given w and z.
 ar_w_perc = linspace(0.001, 0.999, it_w_perc_n);
 it_w_interp_n = (fl_w_max-fl_w_min)/(fl_w_interp_grid_gap);
-ar_w_level_full = linspace(fl_w_min, fl_w_max, it_w_interp_n);
+ar_w_level_full = fft_array_add_zero(linspace(fl_w_min, fl_w_max, it_w_interp_n), true);
 ar_w_level = ar_w_level_full;
 
 % max k given w, need to consider the possibility of borrowing.
@@ -227,7 +228,7 @@ end
 % Crucially, when a fraction of overall borrowing/savings needs to go pay
 % negative coh, that comes out of w, fraction of w = k' + b' that goes to
 % this. NOT a fraction of the b' choice condition on w, which would change
-% for the same w as w' changes. We are fixing bridge repay level for w. 
+% for the same w as w' changes. We are fixing bridge repay level for w.
 %
 % @example
 %
@@ -239,71 +240,80 @@ end
 %    ar_ak_perc = [0.001, 0.1,0.3,0.7,0.9, 0.999]
 %    mt_k = (ar_k_max'*ar_ak_perc)'
 %    mt_a = (ar_w_level - mt_k)
-%    
+%
 %    % fraction of borrowing for bridge loan
 %    ar_coh_bridge_perc = [0, 0.5, 0.999];
-%    
+%
 %    % Expand matrix to include coh percentage dimension
 %    mt_k = repmat(mt_k, [1, length(ar_coh_bridge_perc)])
 %    mt_a = repmat(mt_a, [1, length(ar_coh_bridge_perc)])
-%    
+%
 %    % bridge loan component of borrowing
 %    ar_brdige_a = (ar_coh_bridge_perc'*ar_w_level)'
 %    ar_brdige_a = ar_brdige_a(:)'
-%    
+%
 %    % borrowing choices excluding bridge loan
 %    mt_a_nobridge = mt_a - ar_brdige_a
 %
 
+% 1. negative part of w
+ar_bl_w_neg = (ar_w_level < 0);
+ar_w_level_neg = ar_w_level(ar_bl_w_neg);
+
 if (bl_bridge)
-    
+
     % 1. select mt_k and mt_a where w_level <= 0
-    ar_bl_w_neg = (ar_w_level < 0);
-    ar_w_level_neg = ar_w_level(ar_bl_w_neg);
     mt_a_wneg_cols = mt_a(:, ar_bl_w_neg);
     mt_k_wneg_cols = mt_k(:, ar_bl_w_neg);
-    
-    % 2. fraction of borrowing for bridge loan
-    % start at 0, some borrowing no bridge loan needed, coh > 0 
-    ar_coh_bridge_perc = fliplr(linspace(0, 1.0, it_coh_bridge_perc_n));
+
+    % 2. fraction of borrowing NOT for bridge loan
+    % 0 means 100 percent of w will go to bridge, 1 mean nothing for bridge
+    ar_coh_bridge_perc = linspace(0, 1.0, it_coh_bridge_perc_n);
 
     % 3. Expand matrix to include coh percentage dimension
     mt_k_wneg_cols = repmat(mt_k_wneg_cols, [1, length(ar_coh_bridge_perc)]);
     mt_a_wneg_cols = repmat(mt_a_wneg_cols, [1, length(ar_coh_bridge_perc)]);
 
     % 4. bridge loan component of borrowing
-    ar_brdige_a = (ar_coh_bridge_perc'*ar_w_level_neg)';
+    ar_brdige_a = ((1-ar_coh_bridge_perc)'*ar_w_level_neg)';
     ar_brdige_a = ar_brdige_a(:)';
 
     % 5. borrowing choices excluding bridge loan
     mt_a_wneg_nobridge = mt_a_wneg_cols - ar_brdige_a;
-    
+
     % 6. Matrix combine, negative than positive
     mt_a_wpos_cols = mt_a(:, ~ar_bl_w_neg);
     mt_k_wpos_cols = mt_k(:, ~ar_bl_w_neg);
     mt_a_nobridge = [mt_a_wneg_nobridge  mt_a_wpos_cols];
     mt_k = [mt_k_wneg_cols                mt_k_wpos_cols];
-    
+
     % 7. Expand Bridge Choices to have the same size as mt_a
     mt_bridge_a= zeros(size(mt_a_nobridge));
     mt_bridge_a(:, 1:1:size(mt_a_wneg_nobridge,2)) = zeros(size(mt_a_wneg_nobridge)) + ar_brdige_a;
-    
+
     % 8. Overall borrowing and savings choices
     mt_a = mt_a_nobridge + mt_bridge_a;
-    
+
     % 9. Update w
     ar_w_level_full = zeros(size(mt_a_nobridge(1,:)));
-    ar_w_level_neg_rep = repmat(ar_w_level_neg, [1, length(ar_coh_bridge_perc)]);    
+    ar_w_level_neg_rep = repmat(ar_w_level_neg, [1, length(ar_coh_bridge_perc)]);
     ar_w_level_full(1:1:size(mt_a_wneg_nobridge,2)) = ar_w_level_neg_rep;
     ar_w_level_full((size(mt_a_wneg_nobridge,2)+1):1:length(ar_w_level_full)) = ar_w_level(~ar_bl_w_neg);
     
-else
+    % 10. Pre-generate Interpolation matrix for negative w levels
+    [mt_w_level_neg_mesh_coh_bridge_perc, mt_coh_bridge_perc_mesh_w_level_neg] = ...
+        ndgrid(ar_w_level_neg, ar_coh_bridge_perc);
     
+else
+
     % If bridge loans are not needed, do not need to do expansions
     % All zeros, no bridge
     mt_bridge_a = zeros(size(mt_a));
     mt_a_nobridge = mt_a;
     ar_coh_bridge_perc = [1];
+
+    [mt_w_level_neg_mesh_coh_bridge_perc, mt_coh_bridge_perc_mesh_w_level_neg] = ...
+        ndgrid(ar_w_level_neg, ar_coh_bridge_perc);
     
 end
 
@@ -317,7 +327,7 @@ end
 % alot when w >= 0. The mt_a_nobridge
 % # *mt_a_nobridge* includes all aggregate/total borrowing and savings
 % whether w > 0 or w < 0, however, it subtracts away the borrowing that is
-% for bridge loans when b < 0 
+% for bridge loans when b < 0
 % # *mt_bridge_a* is the bridge loan amount.
 %
 
@@ -349,7 +359,7 @@ ar_bridge_a = ar_bridge_a_full;
 % Here we solve for the optimal formal and informal choices given b. Note
 % that kind of like the static firm's maximization problem. Here the
 % optimization problem is static, and can be done independently of the
-% overall dynamic optimization problem. 
+% overall dynamic optimization problem.
 
 % When borrowing index and array
 % note index for negative is from _ar_a_meshk_full_, but value from
@@ -391,7 +401,7 @@ ar_coh_fbis_aneg = f_coh_fbis(fl_r_inf, ...
                                 ar_for_borr_aneg, ...
                                 ar_inf_borr_nobridge_aneg + ar_bridge_a(ar_bl_ameshk_neg_idx), ...
                                 ar_for_save_aneg);
-                            
+
 %% FIBS3: Generate C cost Cash-on-Hand/State Matrix when aggregate savings is positive
 % *ar_coh_save_apos*: the consumption gain to t+1 from savings in t
 
@@ -401,7 +411,7 @@ ar_coh_save_apos = f_coh_save(ar_a_meshk_apos);
 %% COH1: Combine overall Reachable Cash-on-Hand Levels
 % N_neg*N^2 + N_pos*N rows total row count, and N_z shock column count.
 % These are the cash-on-hand points reachable given percentage grid choice
-% structure and the possibility of bridge loans. 
+% structure and the possibility of bridge loans.
 
 ar_ameshk_tnext_with_r = zeros(size(ar_k_mesha));
 ar_ameshk_tnext_with_r(ar_bl_ameshk_neg_idx) = ar_coh_fbis_aneg;
@@ -410,18 +420,18 @@ ar_ameshk_tnext_with_r(~ar_bl_ameshk_neg_idx) = ar_coh_save_apos;
 mt_coh_wkb_full = f_coh(ar_z, ar_ameshk_tnext_with_r, ar_k_mesha);
 
 if (bl_display_funcgrids)
-    
+
     % Generate Aggregate Variables
     ar_aplusk_mesha = ar_a_meshk + ar_k_mesha;
     ar_bwithrplusk_mesha = ar_ameshk_tnext_with_r + ar_k_mesha;
-    
+
     % Genereate Table
     tab_ak_choices = array2table([ar_bwithrplusk_mesha, ar_aplusk_mesha, ...
         ar_k_mesha, ar_ameshk_tnext_with_r, ar_a_meshk, ar_a_nobridge_meshk, ar_bridge_a]);
     cl_col_names = {'ar_bwithrplusk_mesha', 'ar_aplusk_mesha', ...
         'ar_k_mesha', 'ar_ameshk_tnext_with_r', 'ar_a_meshk', 'ar_a_nobridge_meshk', 'ar_bridge_a'};
     tab_ak_choices.Properties.VariableNames = cl_col_names;
-    
+
     % Label Table Variables
     tab_ak_choices.Properties.VariableDescriptions{'ar_bwithrplusk_mesha'} = ...
         '*ar_bwithrplusk_mesha*: ';
@@ -442,10 +452,10 @@ if (bl_display_funcgrids)
     for it_var_name = 1:length(cl_var_desc)
         disp(cl_var_desc{it_var_name});
     end
-    
+
     disp('----------------------------------------');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp('mt_w_by_interp_coh_interp_grid');
+    disp('tab_ak_choices');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     it_rows_toshow = length(ar_w_level)*2;
     disp(size(tab_ak_choices));
@@ -459,7 +469,7 @@ if (bl_display_funcgrids)
     disp(size(mt_coh_wkb_full));
     disp(head(array2table(mt_coh_wkb_full), it_rows_toshow));
     disp(tail(array2table(mt_coh_wkb_full), it_rows_toshow));
-    
+
 end
 
 %% COH2: Check if COH is within Borrowing Bounds
@@ -514,7 +524,7 @@ fl_max_mt_coh = max(max(mt_coh_wkb));
 fl_min_mt_coh = fl_b_bd;
 
 it_coh_interp_n = (fl_max_mt_coh-fl_min_mt_coh)/(fl_coh_interp_grid_gap);
-ar_interp_coh_grid = linspace(fl_min_mt_coh, fl_max_mt_coh, it_coh_interp_n);
+ar_interp_coh_grid = fft_array_add_zero(linspace(fl_min_mt_coh, fl_max_mt_coh, it_coh_interp_n), true);
 [mt_interp_coh_grid_mesh_z, mt_z_mesh_coh_interp_grid] = ndgrid(ar_interp_coh_grid, ar_z);
 mt_interp_coh_grid_mesh_w_perc = repmat(ar_interp_coh_grid, [it_w_perc_n, 1]);
 
@@ -528,6 +538,7 @@ mt_interp_coh_grid_mesh_w_perc = repmat(ar_interp_coh_grid, [it_w_perc_n, 1]);
 % of aggregate savings choices
 %
 
+% 1. Given COH grid, w choices in terms of cash-on-hand percentages
 if (fl_min_mt_coh < 0)
     % borrowing bound is below zero
     mt_w_by_interp_coh_interp_grid = ((ar_interp_coh_grid-fl_min_mt_coh)'*ar_w_perc)' + fl_min_mt_coh;
@@ -536,6 +547,30 @@ else
     mt_w_by_interp_coh_interp_grid = ((ar_interp_coh_grid)'*ar_w_perc)';
 end
 
+% 2. Some w < 0, some w > 0. When w < 0, coh > 0 or coh < 0 both possible.
+% Need to interplate in ff_ipwkbz_fibs_vecsv differently for w < 0 because
+% there both w as well as coh matters, if coh < 0 and w < 0, a fraction of
+% w goes to getting informal bridge loans.
+mt_bl_w_by_interp_coh_interp_grid_wneg = (mt_w_by_interp_coh_interp_grid < 0);
+mt_w_by_interp_coh_interp_grid_wneg = mt_w_by_interp_coh_interp_grid(mt_bl_w_by_interp_coh_interp_grid_wneg);
+mt_w_by_interp_coh_interp_grid_wpos = mt_w_by_interp_coh_interp_grid(~mt_bl_w_by_interp_coh_interp_grid_wneg);
+
+%% Generate 1st Stage Choices: Percent of W for Covering Bridge Loans
+% If bridge loan does not matter, do not need to cover bridge loan. Then
+% these percentages should reflect what happens when param_map('bl_bridge')
+% = false, and, param_map('it_coh_bridge_perc_n') = 1;
+
+% 1. Expand cash-on-hand by w_perc grid
+mt_interp_coh_grid_mesh_w_perc = zeros(size(mt_w_by_interp_coh_interp_grid)) + ar_interp_coh_grid;
+
+% 2. How much is coh as perc of w_perc grid level choice based on w_perc
+mt_coh_w_perc_ratio = (1-(mt_interp_coh_grid_mesh_w_perc./mt_w_by_interp_coh_interp_grid));
+
+% 3. The ratio only relevant for where w < 0 and where coh < 0. Note the
+% ratio we want is: ar_coh_bridge_perc, which is percent of w NOT going to
+% bridge.
+mt_coh_w_perc_ratio(mt_interp_coh_grid_mesh_w_perc >= 0) = 1;
+mt_coh_w_perc_ratio_wneg = mt_coh_w_perc_ratio(mt_bl_w_by_interp_coh_interp_grid_wneg);
 
 %% Generate Interpolation Consumption Grid
 % We also interpolate over consumption to speed the program up. We only
@@ -554,7 +589,8 @@ armtdesc_map = containers.Map('KeyType','char', 'ValueType','any');
 %% Store armt_map (1): 2nd Stage Problem Arrays and Matrixes
 % ar_a_meshk is t: b
 % ar_ameshk_tnext_with_r is t+1: b*(1+r) with for inf
- 
+% ar_coh_bridge_perc: this is percentage of w NOT for bridge loan
+
 armt_map('ar_coh_bridge_perc') = ar_coh_bridge_perc;
 armt_map('ar_ak_perc') = ar_ak_perc;
 armt_map('mt_k') = mt_k;
@@ -566,14 +602,25 @@ armt_map('mt_coh_wkb') = mt_coh_wkb_full;
 armt_map('mt_z_mesh_coh_wkb') = mt_z_mesh_coh_wkb;
 
 %% Store armt_map (2): First Stage Aggregate Savings
-% w = k' + b', w is aggregate Savings%
+% w = k' + b', w is aggregate Savings
 %
-% # *ar_w_perc* 1st stage, percentage w choice given coh, at each coh
-% level the number of choice points is the same for this problem with
-% percentage grid points.
+% # *ar_w_perc* 1st stage, percentage w choice given coh, at each coh level
+% the number of choice points is the same for this problem with percentage
+% grid points.
 % # *ar_w_level* 2nd stage, level of w over which we solve the optimal
 % percentage k' choices. Need to generate interpolant based on this so that
 % we know optimal k* given ar_w_perc(coh) in the 1st stage
+% # *ar_w_level_full*: in
+% <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_vf_vecsv.html
+% ff_ipwkbz_vf_vecsv>, _ar_w_level_ and _ar_w_level_full_ were the same.
+% Now have this thing which is stored (length(ar_w_level_full)) by
+% (length(ar_z)). _ar_w_level_full_ includes not just different levels of
+% _ar_w_level_, but also repeats the elements of _ar_w_level_ that are < 0
+% by _it_coh_bridge_perc_n_ times, starting with what corresponds to 100
+% percent of w should go to cover bridge loan, until 0 percent for w < 0,
+% which then proceeds to w > 0. So the last segment of _ar_w_level_full_ is
+% the same as ar_w_level: ar_w_level_full((end-length(ar_w_level)+1):end) =
+% ar_w_level.
 % # *mt_w_by_interp_coh_interp_grid* 1st stage, generate w(coh, percent),
 % meaning the level of w given coh and the percentage grid of ar_w_perc.
 % Mesh this with the coh grid, Rows here correspond to percentage of w
@@ -585,8 +632,17 @@ armt_map('mt_z_mesh_coh_wkb') = mt_z_mesh_coh_wkb;
 armt_map('ar_w_perc') = ar_w_perc;
 armt_map('ar_w_level') = ar_w_level;
 armt_map('ar_w_level_full') = ar_w_level_full;
+
+armt_map('mt_w_level_neg_mesh_coh_bridge_perc') = mt_w_level_neg_mesh_coh_bridge_perc;
+armt_map('mt_coh_bridge_perc_mesh_w_level_neg') = mt_coh_bridge_perc_mesh_w_level_neg;
+
 armt_map('mt_w_by_interp_coh_interp_grid') = mt_w_by_interp_coh_interp_grid;
 armt_map('mt_interp_coh_grid_mesh_w_perc') = mt_interp_coh_grid_mesh_w_perc;
+
+armt_map('mt_bl_w_by_interp_coh_interp_grid_wneg') = mt_bl_w_by_interp_coh_interp_grid_wneg;
+armt_map('mt_w_by_interp_coh_interp_grid_wneg') = mt_w_by_interp_coh_interp_grid_wneg;
+armt_map('mt_w_by_interp_coh_interp_grid_wpos') = mt_w_by_interp_coh_interp_grid_wpos;
+armt_map('mt_coh_w_perc_ratio_wneg') = mt_coh_w_perc_ratio_wneg;
 
 %% Store armt_map (3): First Stage Consumption and Cash-on-Hand Grids
 
@@ -625,27 +681,27 @@ if (bl_graph_funcgrids)
     %
     % Plot end because earlier parts have repeating w and a levels due to
     % potentially bridge which are coh percentage dependent. This will only
-    % plot out the grid basically when coh percentage for bridge loan = 0 
+    % plot out the grid basically when coh percentage for bridge loan = 0
     %
-    
+
     figure('PaperPosition', [0 0 7 4]);
     hold on;
-        
+
     it_col_end = size(mt_a, 2);
     it_col_start = size(mt_a, 2) - length(ar_w_level) + 1;
-    
+
     chart = plot(mt_a(:,it_col_start:it_col_end), ...
                  mt_k(:,it_col_start:it_col_end), ...
                  'blue');
-             
+
     clr = jet(numel(chart));
     for m = 1:numel(chart)
         set(chart(m),'Color',clr(m,:))
     end
-    
+
     it_col_end = length(ar_a_meshk);
     it_col_start = length(ar_a_meshk) - length(ar_w_level)*it_ak_perc_n + 1;
-    
+
 %     if (length(ar_w_level_full) <= 100)
     scatter(ar_a_meshk(it_col_start:it_col_end), ...
             ar_k_mesha(it_col_start:it_col_end), ...

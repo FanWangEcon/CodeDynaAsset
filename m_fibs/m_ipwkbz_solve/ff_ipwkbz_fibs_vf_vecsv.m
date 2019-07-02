@@ -1,4 +1,4 @@
-%% Risky + Safe Asset (Save + Borr) Only Interpolated-Percentage (Optimized-Vectorized)
+%% Risky + Safe Asset (Save + Borr + FIBS) Interpolated-Percentage (Optimized-Vectorized)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
@@ -6,11 +6,13 @@
 %%
 function result_map = ff_ipwkbz_fibs_vf_vecsv(varargin)
 %% FF_IPWKBZ_VF_VECSV solve infinite horizon exo shock + endo asset problem
-% This program solves the infinite horizon dynamic savings and risky
-% capital asset problem with some ar1 shock. This is the two step solution
-% with interpolation and with percentage asset grids version of
-% <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf_vecsv.html
-% ff_iwkz_vf_vecsv>. See that file for more descriptions.
+% This is a modified version of
+% <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_vf_vecsv.html
+% ff_ipwkbz_vf_vecsv>, to see how this function solves the formal and
+% savings risky and safe asset problem with formal and informal choices,
+% compare the code here and from
+% <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_vf_vecsv.html
+% ff_ipwkbz_vf_vecsv> side by side.
 %
 % @param param_map container parameter container
 %
@@ -56,7 +58,41 @@ function result_map = ff_ipwkbz_fibs_vf_vecsv(varargin)
 
 it_param_set = 4;
 bl_input_override = true;
-[param_map, support_map] = ffs_ipwkbz_set_default_param(it_param_set);
+[param_map, support_map] = ffs_ipwkbz_fibs_set_default_param(it_param_set);
+
+st_param_which = 'default';
+if (strcmp(st_param_which, 'default'))
+    
+    param_map('fl_r_inf') = 0.045;
+    param_map('fl_r_inf_bridge') = 0.045;
+    param_map('fl_r_fbr') = 0.035;
+    param_map('fl_r_fsv') = 0.025;
+
+    param_map('bl_bridge') = true;
+
+elseif (strcmp(st_param_which, 'small'))
+
+    param_map('it_w_perc_n') = 7;
+    param_map('it_ak_perc_n') = 7;
+    param_map('it_coh_bridge_perc_n') = 3;
+    
+    param_map('fl_w_interp_grid_gap') = 2;
+    param_map('fl_coh_interp_grid_gap') = 2;
+
+    param_map('bl_bridge') = true;
+    param_map('it_coh_bridge_perc_n') = 3;
+
+elseif (strcmp(st_param_which, 'ff_ipwkbz_vf_vecsv'))
+
+    param_map('fl_r_fsv') = 0.025;
+    param_map('fl_r_inf') = 0.025;
+    param_map('fl_r_inf_bridge') = 0.025;
+    param_map('fl_r_fbr') = 0.025;
+
+    param_map('bl_bridge') = false;
+    param_map('it_coh_bridge_perc_n') = 1;
+
+end
 
 % parameters can be set inside ffs_ipwkbz_set_default_param or updated here
 % param_map('it_w_perc_n') = 50;
@@ -71,9 +107,9 @@ bl_input_override = true;
 % param_map('fl_coh_interp_grid_gap') = 0.1;
 % param_map('it_c_interp_grid_gap') = 10^-4;
 % param_map('fl_w_interp_grid_gap') = 0.1;
-%
+
 % get armt and func map
-[armt_map, func_map] = ffs_ipwkbz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
+[armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 default_params = {param_map support_map armt_map func_map};
 
 %% Parse Parameters 1
@@ -87,7 +123,7 @@ if params_len >= 1 && params_len <= 2
     % If override param_map, re-generate armt and func if they are not
     % provided
     bl_input_override = true;
-    [armt_map, func_map] = ffs_ipwkbz_get_funcgrid(param_map, support_map, bl_input_override);
+    [armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(param_map, support_map, bl_input_override);
 else
     % Override all
     armt_map = [armt_map; default_params{3}];
@@ -95,7 +131,7 @@ else
 end
 
 % append function name
-st_func_name = 'ff_ipwkbz_vf_vecsv';
+st_func_name = 'ff_ipwkbz_fibs_vf_vecsv';
 support_map('st_profile_name_main') = [st_func_name support_map('st_profile_name_main')];
 support_map('st_mat_name_main') = [st_func_name support_map('st_mat_name_main')];
 support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')];
@@ -103,17 +139,25 @@ support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')]
 %% Parse Parameters 2
 
 % armt_map
-params_group = values(armt_map, {'ar_w_perc', 'ar_w_level', 'ar_z'});
-[ar_w_perc, ar_w_level, ar_z] = params_group{:};
+params_group = values(armt_map, {'ar_w_perc', 'ar_w_level', 'ar_w_level_full', 'ar_z'});
+[ar_w_perc, ar_w_level, ar_w_level_full, ar_z] = params_group{:};
 params_group = values(armt_map, {'ar_interp_c_grid', 'ar_interp_coh_grid', ...
     'ar_a_meshk', 'ar_k_mesha', ...
     'mt_interp_coh_grid_mesh_z', 'mt_z_mesh_coh_interp_grid',...
     'mt_interp_coh_grid_mesh_w_perc',...
-    'mt_w_by_interp_coh_interp_grid'});
+    'mt_w_by_interp_coh_interp_grid',...
+    'mt_w_level_neg_mesh_coh_bridge_perc', 'mt_coh_bridge_perc_mesh_w_level_neg',...
+    'mt_bl_w_by_interp_coh_interp_grid_wneg', ...
+    'mt_w_by_interp_coh_interp_grid_wneg', 'mt_w_by_interp_coh_interp_grid_wpos', 'mt_coh_w_perc_ratio_wneg'});
 [ar_interp_c_grid, ar_interp_coh_grid, ar_a_meshk, ar_k_mesha, ...
     mt_interp_coh_grid_mesh_z, mt_z_mesh_coh_interp_grid, ...
     mt_interp_coh_grid_mesh_w_perc,...
-    mt_w_by_interp_coh_interp_grid] = params_group{:};
+    mt_w_by_interp_coh_interp_grid,...
+    mt_w_level_neg_mesh_coh_bridge_perc, mt_coh_bridge_perc_mesh_w_level_neg, ...
+    mt_bl_w_by_interp_coh_interp_grid_wneg, ...
+    mt_w_by_interp_coh_interp_grid_wneg, mt_w_by_interp_coh_interp_grid_wpos, mt_coh_w_perc_ratio_wneg] ...
+        = params_group{:};
+
 params_group = values(armt_map, {'mt_coh_wkb', 'mt_z_mesh_coh_wkb'});
 [mt_coh_wkb, mt_z_mesh_coh_wkb] = params_group{:};
 
@@ -122,9 +166,11 @@ params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons'});
 [f_util_log, f_util_crra, f_cons] = params_group{:};
 
 % param_map
+params_group = values(param_map, {'it_coh_bridge_perc_n'});
+[it_coh_bridge_perc_n] = params_group{:};
 params_group = values(param_map, {'it_z_n', 'fl_crra', 'fl_beta', ...
-    'fl_nan_replace', 'fl_c_min', 'bl_default', 'fl_default_wprime'});
-[it_z_n, fl_crra, fl_beta, fl_nan_replace, fl_c_min, bl_default, fl_default_wprime] = params_group{:};
+    'fl_nan_replace', 'fl_c_min', 'bl_bridge', 'bl_default', 'fl_default_wprime'});
+[it_z_n, fl_crra, fl_beta, fl_nan_replace, fl_c_min, bl_bridge, bl_default, fl_default_wprime] = params_group{:};
 params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol', 'it_tol_pol_nochange'});
 [it_maxiter_val, fl_tol_val, fl_tol_pol, it_tol_pol_nochange] = params_group{:};
 
@@ -210,24 +256,33 @@ while bl_vfi_continue
 
 
     %% Interpolate (1) reacahble v(coh(k(w,z),b(w,z),z),z) given v(coh, z)
-    % v(coh,z) solved on ar_interp_coh_grid, ar_z grids, see
-    % ffs_ipwkbz_get_funcgrid.m. Generate interpolant based on that, Then
-    % interpolate for the coh reachable levels given the k(w,z) percentage
-    % choice grids in the second stage of the problem
+    % This is the same as <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_vf_vecsv.html
+    % ff_ipwkbz_vf_vecsv>. For the FIBS problem, the cash-on-hand
+    % interpolation grid stays the same, and the shock grid stays the same
+    % as well. The results will not be the same, for example, the coh_grid
+    % max is the max of reachable cash-on-hand levels (min is however just
+    % the borrowing bound).
 
     % Generate Interpolant for v(coh,z)
     f_grid_interpolant_value = griddedInterpolant(...
         mt_z_mesh_coh_interp_grid', mt_interp_coh_grid_mesh_z', mt_val_cur', 'linear', 'nearest');
 
-    % Interpoalte for v(coh(k(w,z),b(w,z),z),z)
+    % Interpolate for v(coh(k(w,z),b(w,z),z),z)
     mt_val_wkb_interpolated = f_grid_interpolant_value(mt_z_mesh_coh_wkb, mt_coh_wkb);
 
     %% Solve Second Stage Problem k*(w,z)
-    % This is the key difference between this function and
-    % <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html
-    % ffs_akz_set_functions> which solves the two stages jointly
-    % Interpolation first, because solution coh grid is not the same as all
-    % points reachable by k and b choices given w.
+    % This is again the same as <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_vf_vecsv.html
+    % ff_ipwkbz_vf_vecsv>. But the output matrix sizes are different.
+    % Previously, they were (length(ar_w_level)) by (length(ar_z)). Now
+    % have this thing which is stored (length(ar_w_level_full)) by
+    % (length(ar_z)). _ar_w_level_full_ includes not just different levels
+    % of _ar_w_level_, but also repeats the elements of _ar_w_level_ that
+    % are < 0 by _it_coh_bridge_perc_n_ times, starting with what
+    % corresponds to 100 percent of w should go to cover bridge loan, until
+    % 0 percent for w < 0, which then proceeds to w > 0. So the last
+    % segment of _ar_w_level_full_ is the same as ar_w_level:
+    % ar_w_level_full((end-length(ar_w_level)+1):end) = ar_w_level.
+    
     support_map('bl_graph_evf') = false;
     if (it_iter == (it_maxiter_val + 1))
         support_map('bl_graph_evf') = bl_graph_evf;
@@ -238,8 +293,8 @@ while bl_vfi_continue
 
     %% Solve First Stage Problem w*(z) given k*(w,z)
     % Refer to
-    % <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_vf_vecsv.html
-    % ff_ipwkbz_vf_vecsv> where the problem was solved without formal and
+    % <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_fibs_vf_vecsv.html
+    % ff_ipwkbz_fibs_vf_vecsv> where the problem was solved without formal and
     % informal choices that allow for bridge loans to see line by line how
     % code differ. Some of the comments from that file are not here to save
     % space. Comments here address differences and are specific to formal
@@ -249,40 +304,82 @@ while bl_vfi_continue
     for it_z_i = 1:length(ar_z)
 
         %% A. Interpolate FULL to get k*(coh_level, w_perc, z), b*(k,w) based on k*(coh_perc, w_level)
-        % we solved the second period problem in ff_ipwkbz_fibs_evf.m
+        % additionally, Interpolate FULL EV(k*(coh_level, w_perc, z), w -
+        % b*|z) based on EV(k*(coh_perc, w_level))
+        %
+        % we solved the second period problem in ff_ipwkbz_fibs_fibs_evf.m
         % above. To use results, we need to interpolate in the following
-        % way to obtain *mt_w_kstar_interp_z* as well as *mt_ev_condi_z_max_interp_z*:
+        % way to obtain *mt_w_kstar_interp_z* as well as
+        % *mt_ev_condi_z_max_interp_z*:
         %
         % # Interp STG1A: for $w > 0$, 1D interpolate over w level, given z
         % # Interp STG1B: for $w < 0$, 2D interpolate over w level and coh
         % perceng, given z
         %
         
-        % 1. Interp STG1A for w > 0
-        % Interpolant
-        f_interpolante_w_level_pos_kstar_z = griddedInterpolant(ar_w_level, mt_ev_condi_z_max_kp(:, it_z_i)', 'linear', 'nearest');
-        % Interpolate
-        mt_w_kstar_interp_z = f_interpolante_w_level_pos_kstar_z(mt_w_by_interp_coh_interp_grid);
-        mt_w_astar_interp_z = mt_w_by_interp_coh_interp_grid - mt_w_kstar_interp_z;
-
-        % 2. Interp STG1B for w <= 0 
-        % Interpolant
-%         f_grid_interpolant_value = griddedInterpolant(...
-%             mt_z_mesh_coh_interp_grid', mt_interp_coh_grid_mesh_z', mt_val_cur', 'linear', 'nearest');
-%         % Interpoalte for v(coh(k(w,z),b(w,z),z),z)
-%         mt_val_wkb_interpolated = f_grid_interpolant_value(mt_z_mesh_coh_wkb, mt_coh_wkb);        
-        f_interpolante_w_level_pos_kstar_z = griddedInterpolant(ar_w_level, XXXar_coh_perc, ...                
-                                                                mt_ev_condi_z_max_kp(:, it_z_i)', ...
-                                                                'linear', 'nearest');
-        % Interpolate
-        mt_w_kstar_interp_z = f_interpolante_w_level_pos_kstar_z(mt_w_by_interp_coh_interp_grid, XXXCOH);
-        mt_w_astar_interp_z = mt_w_by_interp_coh_interp_grid - mt_w_kstar_interp_z;
+        % 1. Negative Elements of w grid expanded by w percentages for bridge        
+        ar_bl_w_level_full_neg = (ar_w_level_full < 0);
         
+        % 2. Current Positve w and negative w optimal k choices
+        it_wneg_mt_row = sum(ar_bl_w_level_full_neg)/it_coh_bridge_perc_n;
+        % for mt_ev_condi_z_max_kp
+        ar_ev_condi_z_max_kp_wpos = mt_ev_condi_z_max_kp(~ar_bl_w_level_full_neg, it_z_i)';
+        ar_ev_condi_z_max_kp_wneg = mt_ev_condi_z_max_kp(ar_bl_w_level_full_neg, it_z_i)';
+        mt_ev_condi_z_max_kp_wneg = reshape(ar_ev_condi_z_max_kp_wneg, [it_wneg_mt_row, it_coh_bridge_perc_n]);
+        % for mt_ev_condi_z_max
+        ar_ev_condi_z_max_wpos = mt_ev_condi_z_max(~ar_bl_w_level_full_neg, it_z_i)';
+        ar_ev_condi_z_max_wneg = mt_ev_condi_z_max(ar_bl_w_level_full_neg, it_z_i)';
+        mt_ev_condi_z_max_wneg = reshape(ar_ev_condi_z_max_wneg, [it_wneg_mt_row, it_coh_bridge_perc_n]);
         
-        % 3. Combine positive and negative aggregate savings matrix
-
+        % 2. Interp STG1A for w > 0        
+        ar_w_level_full_pos = ar_w_level_full(~ar_bl_w_level_full_neg);
+        % Interpolation for mt_ev_condi_z_max_kp 
+        f_interpolante_w_level_pos_kstar_z = griddedInterpolant(ar_w_level_full_pos, ar_ev_condi_z_max_kp_wpos, 'linear', 'nearest');       
+        mt_w_kstar_interp_z_wpos = f_interpolante_w_level_pos_kstar_z(mt_w_by_interp_coh_interp_grid_wpos(:));
+        mt_w_astar_interp_z_wpos = mt_w_by_interp_coh_interp_grid_wpos(:) - mt_w_kstar_interp_z_wpos;
+        % Interpolation for mt_ev_condi_z_max
+        f_interpolante_w_level_pos_ev_z = griddedInterpolant(ar_w_level_full_pos, ar_ev_condi_z_max_wpos, 'linear', 'nearest');       
+        mt_w_ev_interp_z_wpos = f_interpolante_w_level_pos_ev_z(mt_w_by_interp_coh_interp_grid_wpos(:));
+                
+        % 3. Interp STG1B for w <= 0 
+        if (bl_bridge)
+            % Interpolation for mt_ev_condi_z_max_kp
+            f_interpolante_w_level_neg_kstar_z = griddedInterpolant(...
+                mt_coh_bridge_perc_mesh_w_level_neg', mt_w_level_neg_mesh_coh_bridge_perc', ...
+                mt_ev_condi_z_max_kp_wneg', 'linear', 'nearest');
+            mt_w_kstar_interp_z_wneg = f_interpolante_w_level_neg_kstar_z(mt_coh_w_perc_ratio_wneg(:), mt_w_by_interp_coh_interp_grid_wneg(:));
+            mt_w_astar_interp_z_wneg = mt_w_by_interp_coh_interp_grid_wneg(:) - mt_w_kstar_interp_z_wneg;
+            % Interpolation for mt_ev_condi_z_max
+            f_interpolante_w_level_neg_ev_z = griddedInterpolant(...
+                mt_coh_bridge_perc_mesh_w_level_neg', mt_w_level_neg_mesh_coh_bridge_perc', ...
+                mt_ev_condi_z_max_wneg', 'linear', 'nearest');
+            mt_w_ev_interp_z_wneg = f_interpolante_w_level_neg_ev_z(mt_coh_w_perc_ratio_wneg(:), mt_w_by_interp_coh_interp_grid_wneg(:));
+        else
+            ar_w_level_full_neg = ar_w_level_full(ar_bl_w_level_full_neg);
+            % Interpolation for mt_ev_condi_z_max_kp 
+            f_interpolante_w_level_neg_kstar_z = griddedInterpolant(ar_w_level_full_neg, ar_ev_condi_z_max_kp_wneg, 'linear', 'nearest');       
+            mt_w_kstar_interp_z_wneg = f_interpolante_w_level_neg_kstar_z(mt_w_by_interp_coh_interp_grid_wneg(:));
+            mt_w_astar_interp_z_wneg = mt_w_by_interp_coh_interp_grid_wneg(:) - mt_w_kstar_interp_z_wneg;
+            % Interpolation for mt_ev_condi_z_max
+            f_interpolante_w_level_neg_ev_z = griddedInterpolant(ar_w_level_full_neg, ar_ev_condi_z_max_wneg, 'linear', 'nearest');       
+            mt_w_ev_interp_z_wneg = f_interpolante_w_level_neg_ev_z(mt_w_by_interp_coh_interp_grid_wneg(:));            
+        end
+                
+        % 4. Combine positive and negative aggregate savings matrix
+        % check: mt_w_by_interp_coh_interp_grid vs mt_w_astar_interp_z + mt_w_kstar_interp_z
+        % combine for mt_ev_condi_z_max_kp
+        mt_w_kstar_interp_z = zeros(size(mt_bl_w_by_interp_coh_interp_grid_wneg));
+        mt_w_kstar_interp_z(~mt_bl_w_by_interp_coh_interp_grid_wneg) = mt_w_kstar_interp_z_wpos;
+        mt_w_kstar_interp_z(mt_bl_w_by_interp_coh_interp_grid_wneg)  = mt_w_kstar_interp_z_wneg;
+        mt_w_astar_interp_z = zeros(size(mt_bl_w_by_interp_coh_interp_grid_wneg));
+        mt_w_astar_interp_z(~mt_bl_w_by_interp_coh_interp_grid_wneg) = mt_w_astar_interp_z_wpos;
+        mt_w_astar_interp_z(mt_bl_w_by_interp_coh_interp_grid_wneg)  = mt_w_astar_interp_z_wneg;                
+        % combine for mt_ev_condi_z_max
+        mt_ev_condi_z_max_interp_z = zeros(size(mt_bl_w_by_interp_coh_interp_grid_wneg));
+        mt_ev_condi_z_max_interp_z(~mt_bl_w_by_interp_coh_interp_grid_wneg) = mt_w_ev_interp_z_wpos;
+        mt_ev_condi_z_max_interp_z(mt_bl_w_by_interp_coh_interp_grid_wneg)  = mt_w_ev_interp_z_wneg;
         
-        % 4. changes in w_perc kstar choices
+        % 5. changes in w_perc kstar choices
         mt_w_kstar_diff_idx = (cl_w_kstar_interp_z{it_z_i} ~= mt_w_kstar_interp_z);
 
         %% B. Calculate UPDATE u(c) Update: u(c(coh_level, w_perc)) given k*_interp, b*_interp
@@ -304,12 +401,6 @@ while bl_vfi_continue
         end
         cl_w_kstar_interp_z{it_z_i} = mt_w_kstar_interp_z;
         
-        %% C. Interpolate FULL EV(k*(coh_level, w_perc, z), w - b*|z) based on EV(k*(coh_perc, w_level))
-        % Generate Interpolant for (3) EV(k*(ar_w_perc),Z)
-        f_interpolante_ev_condi_z_max_z = griddedInterpolant(ar_w_level, mt_ev_condi_z_max(:, it_z_i)', 'linear', 'nearest');
-        % Interpolate (3), EVAL add on future utility, N by N + N by N
-        mt_ev_condi_z_max_interp_z = f_interpolante_ev_condi_z_max_z(mt_w_by_interp_coh_interp_grid);
-        
         %% D. Compute FULL U(coh_level, w_perc, z) over all w_perc
         mt_utility = cl_u_c_store{it_z_i} + fl_beta*mt_ev_condi_z_max_interp_z;
 
@@ -320,7 +411,7 @@ while bl_vfi_continue
         % Default or Not Utility Handling
         if (bl_default)
             % if default: only today u(cmin), transition out next period, debt wiped out
-            fl_v_default = fl_u_cmin + fl_beta*f_interpolante_ev_condi_z_max_z(fl_default_wprime);
+            fl_v_default = fl_u_cmin + fl_beta*f_interpolante_w_level_pos_ev_z(fl_default_wprime);
             mt_utility = mt_utility.*(~mt_it_c_valid_idx) + fl_v_default*(mt_it_c_valid_idx);
         else
             % if default is not allowed: v = u(cmin)
@@ -328,7 +419,7 @@ while bl_vfi_continue
         end
         
         % percentage algorithm does not have invalid (check to make sure
-        % min percent is not 0 in ffs_ipwkbz_get_funcgrid.m)
+        % min percent is not 0 in ffs_ipwkbz_fibs_get_funcgrid.m)
         % mt_utility = mt_utility.*(~mt_it_c_valid_idx) + fl_u_neg_c*(mt_it_c_valid_idx);
 
         %% E. Optimize Over Choices: max_{w_perc} U(coh_level, w_perc, z)

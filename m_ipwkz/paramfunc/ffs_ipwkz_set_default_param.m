@@ -1,8 +1,9 @@
-%%
+%% Set Model Parameters (Interpolated + Percentage + Risky + Safe Asset + Save + Borrow)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
+%%
 function [param_map, support_map] = ffs_ipwkz_set_default_param(varargin)
 %% FFS_IPKZ_SET_DEFAULT_PARAM setting model default parameters
 % Define model parameters, similar to

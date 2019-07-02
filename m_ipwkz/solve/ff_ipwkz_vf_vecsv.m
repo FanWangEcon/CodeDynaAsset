@@ -55,7 +55,7 @@ function result_map = ff_ipwkz_vf_vecsv(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 1;
+it_param_set = 4;
 bl_input_override = true;
 [param_map, support_map] = ffs_ipwkz_set_default_param(it_param_set);
 
@@ -216,7 +216,7 @@ while bl_vfi_continue
     f_grid_interpolant_value = griddedInterpolant(...
         mt_z_mesh_coh_interp_grid', mt_interp_coh_grid_mesh_z', mt_val_cur', 'linear', 'nearest');
     
-    % Interpoalte for v(coh(k(w,z),b(w,z),z),z)
+    % Interpolate for v(coh(k(w,z),b(w,z),z),z)
     mt_val_wkb_interpolated = f_grid_interpolant_value(mt_z_mesh_coh_wkb, mt_coh_wkb);
     
     %% Solve Second Stage Problem k*(w,z)

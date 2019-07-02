@@ -1,4 +1,4 @@
-%% Generate States, Choices and Shocks Grids and Get Functions (Interpolated + Percentage + Risky + Safe Asset)
+%% Generate States/Choices/Shocks Grids, get Functions (Interpolated + Percentage + Risky + Safe Asset + Save + Borrow)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
@@ -138,7 +138,7 @@ params_group = values(support_map, {'bl_graph_funcgrids', 'bl_graph_funcgrids_de
 % solving optimal k given w and z.
 ar_w_perc = linspace(0.001, 0.999, it_w_perc_n);
 it_w_interp_n = (fl_w_max-fl_w_min)/(fl_w_interp_grid_gap);
-ar_w_level_full = linspace(fl_w_min, fl_w_max, it_w_interp_n);
+ar_w_level_full = fft_array_add_zero(linspace(fl_w_min, fl_w_max, it_w_interp_n), true);
 ar_w_level = ar_w_level_full;
 
 % max k given w, need to consider the possibility of borrowing.
@@ -283,7 +283,7 @@ fl_max_mt_coh = max(max(mt_coh_wkb));
 fl_min_mt_coh = fl_b_bd;
 
 it_coh_interp_n = (fl_max_mt_coh-fl_min_mt_coh)/(fl_coh_interp_grid_gap);
-ar_interp_coh_grid = linspace(fl_min_mt_coh, fl_max_mt_coh, it_coh_interp_n);
+ar_interp_coh_grid = fft_array_add_zero(linspace(fl_min_mt_coh, fl_max_mt_coh, it_coh_interp_n), true);
 [mt_interp_coh_grid_mesh_z, mt_z_mesh_coh_interp_grid] = ndgrid(ar_interp_coh_grid, ar_z);
 mt_interp_coh_grid_mesh_w_perc = repmat(ar_interp_coh_grid, [it_w_perc_n, 1]);
 

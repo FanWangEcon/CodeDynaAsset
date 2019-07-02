@@ -92,7 +92,8 @@ param_map('fl_k_min') = 0;
 param_map('fl_k_max') = (param_map('fl_w_max') - param_map('fl_b_bd'));
 param_map('it_ak_perc_n') = param_map('it_w_perc_n'); % grid for a and k the same
 
-% Percentage for Cash-on-hand share that needs to go pay for bridge loan
+% Percentage of w that is not for bridge loan, when param_map('bl_bridge') = false
+% ar_coh_bridge_perc = [1]
 param_map('it_coh_bridge_perc_n') = param_map('it_w_perc_n');
 
 % Interpolation

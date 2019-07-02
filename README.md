@@ -5,7 +5,7 @@
 1. consumption when borrowing not calculated correctly when households default.
 -->
 
-This is a work-in-progress (*updated: 2019-06-23*) [website](https://fanwangecon.github.io/CodeDynaAsset/) for solving several infinite-horizon exogenously-incomplete dynamic assets models in discrete-time. Section **(1)** solves the [savings problem](https://fanwangecon.github.io/CodeDynaAsset/#1-the-savings-problem-az). Section **(2)** solves the [borrowing and savings problem](https://fanwangecon.github.io/CodeDynaAsset/#2-the-savings--borrowing-problem-abz). Section **(3)** solve the [risky and safe asset problem (risky entrepreneur)](https://fanwangecon.github.io/CodeDynaAsset/#3-the-risky--safe-asset-problem-part-1). Section **(4)** solves the same problem as (3) with [percentage choice grids and interpolation](https://fanwangecon.github.io/CodeDynaAsset/#4-the-risky--safe-asset-problem-part-2). Section **(5)** analyzes the risky and safe asset problem allowing for [risky asset investment financing through borrowing](https://fanwangecon.github.io/CodeDynaAsset/#5-the-risky--safe-asset-problem-part-3). Section **(6)** is an application/extension of the earlier models: models from (1) through (5) are augmented following [*A Choice Amongst Many: Household Borrowing in a Setting with Multiple Providers*](https://fanwangecon.github.io/CodeDynaAsset/#6-formal--informal-problem-abzfibs) ([**Robert M. Townsend**](http://www.robertmtownsend.net/) and [**Fan Wang**](https://fanwangecon.github.io/) 2019).
+This is a work-in-progress (*updated: 2019-06-23*) [website](https://fanwangecon.github.io/CodeDynaAsset/) for solving several infinite-horizon exogenously-incomplete dynamic assets models in discrete-time. Section **(1)** solves the [savings problem](https://fanwangecon.github.io/CodeDynaAsset/#1-the-savings-problem-az). Section **(2)** solves the [borrowing and savings problem](https://fanwangecon.github.io/CodeDynaAsset/#2-the-savings--borrowing-problem-abz). Section **(3)** solve the [risky and safe asset problem (risky entrepreneur)](https://fanwangecon.github.io/CodeDynaAsset/#3-the-risky--safe-asset-problem-part-1). Section **(4)** solves the same problem as (3) with [percentage choice grids and interpolation](https://fanwangecon.github.io/CodeDynaAsset/#4-the-risky--safe-asset-problem-part-2). Section **(5) and (6)** analyzes the risky and safe asset problem allowing for [risky asset investment financing through borrowing](https://fanwangecon.github.io/CodeDynaAsset/#5-one-asset-formal--informal). 
 
 Key elements for solution algorithms from (1) through (5) are described and developed in [**Wang (2019)**](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3316939). Generally, looped, vectorized, and optimized-vectorized implementations of the same solution algorithm with tabular, graphical and profiling results are shown. Separate subsections show files that solve policy functions and derive asset distributions. Looped codes are shown for clarity, vectorized codes are shown for speed. Codes are designed to not require special hardware or explicit parallelization. Codes are tested on Windows 10 with [Matlab 2019a](https://www.mathworks.com/company/newsroom/mathworks-announces-release-2019a-of-matlab-and-simulink.html) for replicability. The algorithms here are platform agnostic and could be implemented in alternative languages, but speed variations across languages is generally small for the algorithms described here. Please contact [FanWangEcon](https://fanwangecon.github.io/) for problems.
 
@@ -19,7 +19,7 @@ For an introduction to savings and borrowing problems, see [Fan](https://fanwang
 
 # 1. The Savings Problem (AZ)
 
-> *Files for this section are in the [/m_az/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_az) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository. links: (1) [savings problem](https://fanwangecon.github.io/CodeDynaAsset/#1-the-savings-problem-az) (2) [borrowing and savings problem](https://fanwangecon.github.io/CodeDynaAsset/#2-the-savings--borrowing-problem-abz) (3) [risky and safe asset problem (risky entrepreneur)](https://fanwangecon.github.io/CodeDynaAsset/#3-the-risky--safe-asset-problem-part-1) (4) [percentage choice grids and interpolation](https://fanwangecon.github.io/CodeDynaAsset/#4-the-risky--safe-asset-problem-part-2) (5) [risky asset investment financing through borrowing](https://fanwangecon.github.io/CodeDynaAsset/#5-the-risky--safe-asset-problem-part-3) (6) [Townsend and Wang 2019 Single Asset](https://fanwangecon.github.io/CodeDynaAsset/#6-one-asset-formal--informal-abzfibs) (7) [Townsend and Wang 2019 Safe + Risky Asset](https://fanwangecon.github.io/CodeDynaAsset/#7-two-assets-formal--informal-ipwkbzfibs).*
+> *Files for this section are in the [/m_az/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_az) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository. links: (1) [savings problem](https://fanwangecon.github.io/CodeDynaAsset/#1-the-savings-problem-az) (2) [borrowing and savings problem](https://fanwangecon.github.io/CodeDynaAsset/#2-the-savings--borrowing-problem-abz) (3) [risky and safe asset problem (risky entrepreneur)](https://fanwangecon.github.io/CodeDynaAsset/#3-the-risky--safe-asset-problem-part-1) (4) [percentage choice grids and interpolation](https://fanwangecon.github.io/CodeDynaAsset/#4-the-risky--safe-asset-problem-part-2) (5) [Townsend and Wang 2019 Single Asset](https://fanwangecon.github.io/CodeDynaAsset/#5-one-asset-formal--informal) (6) [Townsend and Wang 2019 Safe + Risky Asset](https://fanwangecon.github.io/CodeDynaAsset/#6-two-assets-formal--informal).*
 
 
 This section solves the standard household-side problem of the [Bewley](https://en.wikipedia.org/wiki/Truman_Bewley)/[Aiyagari](https://en.wikipedia.org/wiki/S._Rao_Aiyagari) type [heterogeneous agent](https://en.wikipedia.org/wiki/Heterogeneity_in_economics) model. The supply of credit in [Aiygari (1994)](https://www.jstor.org/stable/2118417#metadata_info_tab_contents) can be derived by invoking *1.1* and *1.2* with different interest rates.
@@ -122,7 +122,7 @@ We analyze model features by adjusting parameters.
 
 # 2. The Savings + Borrowing Problem (ABZ)
 
-> *Files for this section are in the [/m_abz/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_abz) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository. links: (1) [savings problem](https://fanwangecon.github.io/CodeDynaAsset/#1-the-savings-problem-az) (2) [borrowing and savings problem](https://fanwangecon.github.io/CodeDynaAsset/#2-the-savings--borrowing-problem-abz) (3) [risky and safe asset problem (risky entrepreneur)](https://fanwangecon.github.io/CodeDynaAsset/#3-the-risky--safe-asset-problem-part-1) (4) [percentage choice grids and interpolation](https://fanwangecon.github.io/CodeDynaAsset/#4-the-risky--safe-asset-problem-part-2) (5) [risky asset investment financing through borrowing](https://fanwangecon.github.io/CodeDynaAsset/#5-the-risky--safe-asset-problem-part-3) (6) [Townsend and Wang 2019 Single Asset](https://fanwangecon.github.io/CodeDynaAsset/#6-one-asset-formal--informal-abzfibs) (7) [Townsend and Wang 2019 Safe + Risky Asset](https://fanwangecon.github.io/CodeDynaAsset/#7-two-assets-formal--informal-ipwkbzfibs).*
+> *Files for this section are in the [/m_abz/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_abz) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository. links: (1) [savings problem](https://fanwangecon.github.io/CodeDynaAsset/#1-the-savings-problem-az) (2) [borrowing and savings problem](https://fanwangecon.github.io/CodeDynaAsset/#2-the-savings--borrowing-problem-abz) (3) [risky and safe asset problem (risky entrepreneur)](https://fanwangecon.github.io/CodeDynaAsset/#3-the-risky--safe-asset-problem-part-1) (4) [percentage choice grids and interpolation](https://fanwangecon.github.io/CodeDynaAsset/#4-the-risky--safe-asset-problem-part-2) (5) [Townsend and Wang 2019 Single Asset](https://fanwangecon.github.io/CodeDynaAsset/#5-one-asset-formal--informal) (6) [Townsend and Wang 2019 Safe + Risky Asset](https://fanwangecon.github.io/CodeDynaAsset/#6-two-assets-formal--informal).*
 
 Codes from *1.1-1.3* are adjusted slightly to deal with both savings as well as borrowing for the household (not a firm's static borrowing problem given shock). The programs allow for default.
 
@@ -198,7 +198,7 @@ We solved the exogenously incomplete borrowing and savings problem in *1.4*. Now
 
 # 3. The Risky + Safe Asset Problem (Part 1)
 
-> *Files for this section are in the [/m_akz/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_akz) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository. links: (1) [savings problem](https://fanwangecon.github.io/CodeDynaAsset/#1-the-savings-problem-az) (2) [borrowing and savings problem](https://fanwangecon.github.io/CodeDynaAsset/#2-the-savings--borrowing-problem-abz) (3) [risky and safe asset problem (risky entrepreneur)](https://fanwangecon.github.io/CodeDynaAsset/#3-the-risky--safe-asset-problem-part-1) (4) [percentage choice grids and interpolation](https://fanwangecon.github.io/CodeDynaAsset/#4-the-risky--safe-asset-problem-part-2) (5) [risky asset investment financing through borrowing](https://fanwangecon.github.io/CodeDynaAsset/#5-the-risky--safe-asset-problem-part-3) (6) [Townsend and Wang 2019 Single Asset](https://fanwangecon.github.io/CodeDynaAsset/#6-one-asset-formal--informal-abzfibs) (7) [Townsend and Wang 2019 Safe + Risky Asset](https://fanwangecon.github.io/CodeDynaAsset/#7-two-assets-formal--informal-ipwkbzfibs).*
+> *Files for this section are in the [/m_akz/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_akz) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository. links: (1) [savings problem](https://fanwangecon.github.io/CodeDynaAsset/#1-the-savings-problem-az) (2) [borrowing and savings problem](https://fanwangecon.github.io/CodeDynaAsset/#2-the-savings--borrowing-problem-abz) (3) [risky and safe asset problem (risky entrepreneur)](https://fanwangecon.github.io/CodeDynaAsset/#3-the-risky--safe-asset-problem-part-1) (4) [percentage choice grids and interpolation](https://fanwangecon.github.io/CodeDynaAsset/#4-the-risky--safe-asset-problem-part-2) (5) [Townsend and Wang 2019 Single Asset](https://fanwangecon.github.io/CodeDynaAsset/#5-one-asset-formal--informal) (6) [Townsend and Wang 2019 Safe + Risky Asset](https://fanwangecon.github.io/CodeDynaAsset/#6-two-assets-formal--informal).*
 
 Two endogenous assets, one safe one risky. Risky asset could be stocks with constant return to scale, or physical capital investment with depreciation and decreasing return to scale (risky entrepreneur). The risky asset choice is made ex-ante the realization of the shock for that risky asset, hence risky. This contrasts with a firm's within period optimal physical capital choice problem, which is made after the realization of shocks. Note that the utility function is CRRA, however, households do not have constant share of risky investment for any wealth (cash-on-hand) levels when risky asset has decreasing return to scale and/or shock is persistent and/or there is minimum income.
 
@@ -328,13 +328,12 @@ We solve the joint asset choice problem using the *optimized-vectorized* method 
 
 # 4. The Risky + Safe Asset Problem (Part 2)
 
-> *Files for this section are in the [/m_ipwkz/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_ipwkz) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository. links: (1) [savings problem](https://fanwangecon.github.io/CodeDynaAsset/#1-the-savings-problem-az) (2) [borrowing and savings problem](https://fanwangecon.github.io/CodeDynaAsset/#2-the-savings--borrowing-problem-abz) (3) [risky and safe asset problem (risky entrepreneur)](https://fanwangecon.github.io/CodeDynaAsset/#3-the-risky--safe-asset-problem-part-1) (4) [percentage choice grids and interpolation](https://fanwangecon.github.io/CodeDynaAsset/#4-the-risky--safe-asset-problem-part-2) (5) [risky asset investment financing through borrowing](https://fanwangecon.github.io/CodeDynaAsset/#5-the-risky--safe-asset-problem-part-3) (6) [Townsend and Wang 2019 Single Asset](https://fanwangecon.github.io/CodeDynaAsset/#6-one-asset-formal--informal-abzfibs) (7) [Townsend and Wang 2019 Safe + Risky Asset](https://fanwangecon.github.io/CodeDynaAsset/#7-two-assets-formal--informal-ipwkbzfibs).*
+> *Files for this section are in the [/m_ipwkz/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_ipwkz) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository. links: (1) [savings problem](https://fanwangecon.github.io/CodeDynaAsset/#1-the-savings-problem-az) (2) [borrowing and savings problem](https://fanwangecon.github.io/CodeDynaAsset/#2-the-savings--borrowing-problem-abz) (3) [risky and safe asset problem (risky entrepreneur)](https://fanwangecon.github.io/CodeDynaAsset/#3-the-risky--safe-asset-problem-part-1) (4) [percentage choice grids and interpolation](https://fanwangecon.github.io/CodeDynaAsset/#4-the-risky--safe-asset-problem-part-2) (5) [Townsend and Wang 2019 Single Asset](https://fanwangecon.github.io/CodeDynaAsset/#5-one-asset-formal--informal) (6) [Townsend and Wang 2019 Safe + Risky Asset](https://fanwangecon.github.io/CodeDynaAsset/#6-two-assets-formal--informal).*
 
 In Section 3, we solved the two asset problem in levels. Here, the same model is solved, but using an alternative algorithm. Now the model is solved in percentages. Households choose the percentage of cash-on-hand to allocate to aggregate savings, and then given that the percentage of total savings to allocate to safe vs risky asset.
 
-## 4.1 Two Stage Percentage Interpolation (ipWKZ)
 
-### 4.1.a Algorithm Description
+### 4.1 Two Stage Percentage Interpolation Algorithm Description
 
 In the levels solution above, households at different state space points face the same choice set, but almost half of the choice points are invalid because they would lead to negative consumption today. Solving the problem in percentages allow all households to have the same choice grid in terms of percentage levels. This potentially offers much more precise solutions under some model parameters combinations. One could compare testing results from *3.6* above and *4.4* below. Additionally, the levels based grid solution might lead to degenerate steady state asset distributions. This is because at low levels of cash-on-hand, if the risky asset's lowest level of choice is invalid, then an individual could be stuck in that state. (see appendix in [Wang 2019](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3316939) for details)
 
@@ -347,7 +346,7 @@ We have three sets of interpolations now:
 
 In section 3.4 below, I show how solution results change for *ipwkz* as we increase aggregate savings grid points, shock grid points, reduce the interpolation gaps, or change production function parameters from decreasing to constant return to scale.
 
-### 4.1.b Algorithm Implementation
+## 4.2 Risky + Safe Asset (Savings, ipWKZ)
 
 Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/paramfunc/html/ffs_ipwkz_set_default_param.html), for the benchmark simulation, same as *3.3*, but we introduce several additional measures of precision:
 
@@ -368,30 +367,45 @@ Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_
     * interpolate u(c), interpolate v(coh,z), interpolate EV(w,z)
     * store u(c) in cells, update when k*(w,z) changes
 
-## 4.2 Asset Distributions (ipWKZ)
+## 4.3 Risky + Safe Asset (Save + Borrow, ipWKBZ)
+
+The code from *4.1* are modified to allow for default. Set up for default is the same as in the *abz* model discussed in section *2*. Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_set_default_param.html), for the benchmark simulation, same parameters as *4.1*.
+
+1. Second Stage with borrowing *ipwkbz* [2nd stage solution](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_evf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/solve/ff_ipwkbz_evf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_evf.html)
+    * solving for kperc(w,z) = argmax_{kperc'}(E(V(coh(kperc',b'=w-w*kperc'),z')) given z and w.
+2. *ipwkbz* model [optimized vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_vf_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/solve/ff_ipwkbz_vf_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_vf_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/profile/ff_ipwkbz_vf_vecsv_default_p3/file0.html)    
+    * speed: **2.5** seconds
+    * Step One solve kperc(w,z); Step Two solve wperc(z,coh(b,k,z)) given kperc(w,z)
+    * loops: 1 for VFI, 1 for shocks, vectorize remaining
+    * interpolate u(c), interpolate v(coh,z), interpolate EV(w,z)
+    * store u(c) in cells, update when k*(w,z) changes
+
+
+## 4.4 Asset Distributions (ipWKZ + ipWKBZ)
 
 Solving for the asset distribution.
 
-## 4.3 Solution Support Files (ipWKZ)
+## 4.5 Solution Support Files (ipWKZ + ipWKBZ)
 
 All solution algorithms share the same support files.
 
-**Parameters and Function Definitions**:
+**Parameters and Function Definitions (ipwkz)**:
 1. *ipwkz* model [set default parameters](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/paramfunc/html/ffs_ipwkz_set_default_param.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/paramfunc/ffs_ipwkz_set_default_param.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/paramfunc/html/ffs_ipwkz_set_default_param.html)
-    * param_map: container map for carrying parameters across functions
-    * support_map: container map for carrying programming instructions etc across functions
 2. *ipwkz* model [set functions](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/paramfunc/html/ffs_ipwkz_set_functions.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/paramfunc/ffs_ipwkz_set_functions.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/paramfunc/html/ffs_ipwkz_set_functions.html)
-    * functions: centrally define functions as function handles
 3. *ipwkz* model [generate states, choices, and shocks grids](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/paramfunc/html/ffs_ipwkz_get_funcgrid.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/paramfunc/ffs_ipwkz_get_funcgrid.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/paramfunc/html/ffs_ipwkz_get_funcgrid.html)
-    * func_map: container map containing function handles
-    * armt_map: container map containing matrixes for states and choices.
+
+**Parameters and Function Definitions (ipwkbz)**:
+1. *ipwkbz* model [set default parameters](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_set_default_param.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/paramfunc/ffs_ipwkbz_set_default_param.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_set_default_param.html)
+2. *ipwkbz* model [set functions](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_set_functions.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/paramfunc/ffs_ipwkbz_set_functions.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_set_functions.html)
+3. *ipwkbz* model [generate states, choices, and shocks grids](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_get_funcgrid.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/paramfunc/ffs_ipwkbz_get_funcgrid.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_get_funcgrid.html)
 
 **Output Analysis**:
-1. *ipwkz* shares with *akz+wkz+iwkz* models [solution results processing](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_vf_post.html) codes.
-2. *ipwkz* shares with *akz+wkz+iwkz* models [solution results graphing](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_vf_post_graph.html) codes.
+1. *ipwkz+ipwkbz* shares with *akz+wkz+iwkz* models [solution results processing](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_vf_post.html) codes.
+2. *ipwkz+ipwkbz* shares with *akz+wkz+iwkz* models [solution results graphing](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_vf_post_graph.html) codes.
 
+## 4.6 Borrowing and Savings Testing (ipWKZ + ipWKBZ)
 
-## 4.4 The Risky + Safe Asset Problem Testing (ipWKZ)
+### 4.6.a Savings Testing (ipWKZ)
 
 We solve the joint asset choice problem using the *optimized-vectorized* method for *ipwkz* algorithm from *3.3*. Now we analyze model features by adjusting parameters.
 
@@ -409,45 +423,7 @@ We solve the joint asset choice problem using the *optimized-vectorized* method 
 4. *ipwkz* model shift shock persistence
     * [constant (financial investment) return to scale](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_vf_vecsv/test_prod/html/fsi_ipwkz_vf_vecsv_crs.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/test/ff_ipwkz_vf_vecsv/test_prod/fsi_ipwkz_vf_vecsv_crs.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_vf_vecsv/test_prod/html/fsi_ipwkz_vf_vecsv_crs.html)
 
-
-# 5. The Risky + Safe Asset Problem (Part 3)
-
-> *Files for this section are in the [/m_ipwkbz/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_ipwkbz) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository. links: (1) [savings problem](https://fanwangecon.github.io/CodeDynaAsset/#1-the-savings-problem-az) (2) [borrowing and savings problem](https://fanwangecon.github.io/CodeDynaAsset/#2-the-savings--borrowing-problem-abz) (3) [risky and safe asset problem (risky entrepreneur)](https://fanwangecon.github.io/CodeDynaAsset/#3-the-risky--safe-asset-problem-part-1) (4) [percentage choice grids and interpolation](https://fanwangecon.github.io/CodeDynaAsset/#4-the-risky--safe-asset-problem-part-2) (5) [risky asset investment financing through borrowing](https://fanwangecon.github.io/CodeDynaAsset/#5-the-risky--safe-asset-problem-part-3) (6) [Townsend and Wang 2019 Single Asset](https://fanwangecon.github.io/CodeDynaAsset/#6-one-asset-formal--informal-abzfibs) (7) [Townsend and Wang 2019 Safe + Risky Asset](https://fanwangecon.github.io/CodeDynaAsset/#7-two-assets-formal--informal-ipwkbzfibs).*
-
-Now we set up the model with borrowing, allowing for defaults. The *ipwkz* code works with borrowing as well,
-
-## 5.1 Two Stage Percentage Interp Borrow (ipWKBZ)
-
-The algorithm is the same as for *ipwkz* with slight modifications to allow for borrowing and defaults. Set up for default is the same as in the *abz* model discussed in section *2*. Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_set_default_param.html), for the benchmark simulation, same parameters as *4.1*.
-
-1. Second Stage with borrowing *ipwkbz* [2nd stage solution](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_evf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/solve/ff_ipwkbz_evf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_evf.html)
-    * solving for kperc(w,z) = argmax_{kperc'}(E(V(coh(kperc',b'=w-w*kperc'),z')) given z and w.
-2. *ipwkbz* model [optimized vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_vf_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/solve/ff_ipwkbz_vf_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_vf_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/profile/ff_ipwkbz_vf_vecsv_default_p3/file0.html)    
-    * speed: **2.5** seconds
-    * Step One solve kperc(w,z); Step Two solve wperc(z,coh(b,k,z)) given kperc(w,z)
-    * loops: 1 for VFI, 1 for shocks, vectorize remaining
-    * interpolate u(c), interpolate v(coh,z), interpolate EV(w,z)
-    * store u(c) in cells, update when k*(w,z) changes
-
-## 5.2 Asset Distributions (ipWKBZ)
-
-Solving for the asset distribution.
-
-## 5.3 Solution Support Files (ipWKBZ)
-
-All solution algorithms share the same support files.
-
-**Parameters and Function Definitions**:
-1. *ipwkbz* model [set default parameters](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_set_default_param.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/paramfunc/ffs_ipwkbz_set_default_param.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_set_default_param.html)
-2. *ipwkbz* model [set functions](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_set_functions.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/paramfunc/ffs_ipwkbz_set_functions.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_set_functions.html)
-3. *ipwkbz* model [generate states, choices, and shocks grids](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_get_funcgrid.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/paramfunc/ffs_ipwkbz_get_funcgrid.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_get_funcgrid.html)
-
-**Output Analysis**:
-1. *ipwkbz* shares with *akz+wkz+iwkz* models [solution results processing](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_vf_post.html) codes.
-2. *ipwkbz* shares with *akz+wkz+iwkz* models [solution results graphing](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_vf_post_graph.html) codes.
-
-
-## 5.4 Risky + Safe Borrowing Testing (ipWKBZ)
+### 4.6.b Savings + Borrowing Testing (ipWKBZ)
 
 We solve the joint asset choice problem using the *optimized-vectorized* method for *ipwkbz* algorithm from *3.3*. Now we analyze model features by adjusting parameters.
 
@@ -465,24 +441,24 @@ We solve the joint asset choice problem using the *optimized-vectorized* method 
     * [constant (financial investment) return to scale](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/test/ff_ipwkbz_vf_vecsv/test_prod/html/fsi_ipwkbz_vf_vecsv_crs.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/test/ff_ipwkbz_vf_vecsv/test_prod/fsi_ipwkbz_vf_vecsv_crs.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/test/ff_ipwkbz_vf_vecsv/test_prod/html/fsi_ipwkbz_vf_vecsv_crs.html)
 
 
-# 6. One Asset Formal + Informal (ABZ+FIBS)
+# 5. One Asset Formal + Informal
 
-> *Files for this section are in the [/m_fibs/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_fibs) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository. links: (1) [savings problem](https://fanwangecon.github.io/CodeDynaAsset/#1-the-savings-problem-az) (2) [borrowing and savings problem](https://fanwangecon.github.io/CodeDynaAsset/#2-the-savings--borrowing-problem-abz) (3) [risky and safe asset problem (risky entrepreneur)](https://fanwangecon.github.io/CodeDynaAsset/#3-the-risky--safe-asset-problem-part-1) (4) [percentage choice grids and interpolation](https://fanwangecon.github.io/CodeDynaAsset/#4-the-risky--safe-asset-problem-part-2) (5) [risky asset investment financing through borrowing](https://fanwangecon.github.io/CodeDynaAsset/#5-the-risky--safe-asset-problem-part-3) (6) [Townsend and Wang 2019 Single Asset](https://fanwangecon.github.io/CodeDynaAsset/#6-one-asset-formal--informal-abzfibs) (7) [Townsend and Wang 2019 Safe + Risky Asset](https://fanwangecon.github.io/CodeDynaAsset/#7-two-assets-formal--informal-ipwkbzfibs).*
+> *Files for this section are in the [/m_fibs/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_fibs) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository. links: (1) [savings problem](https://fanwangecon.github.io/CodeDynaAsset/#1-the-savings-problem-az) (2) [borrowing and savings problem](https://fanwangecon.github.io/CodeDynaAsset/#2-the-savings--borrowing-problem-abz) (3) [risky and safe asset problem (risky entrepreneur)](https://fanwangecon.github.io/CodeDynaAsset/#3-the-risky--safe-asset-problem-part-1) (4) [percentage choice grids and interpolation](https://fanwangecon.github.io/CodeDynaAsset/#4-the-risky--safe-asset-problem-part-2) (5) [Townsend and Wang 2019 Single Asset](https://fanwangecon.github.io/CodeDynaAsset/#5-one-asset-formal--informal) (6) [Townsend and Wang 2019 Safe + Risky Asset](https://fanwangecon.github.io/CodeDynaAsset/#6-two-assets-formal--informal).*
 
 An application of the codes developed in sections (1) through (5) is the paper: *A Choice Amongst Many: Household Borrowing in a Setting with Multiple Providers* ([**Robert M. Townsend**](http://www.robertmtownsend.net/) and [**Fan Wang**](https://fanwangecon.github.io/) 2019). Below, earlier models are augmented to allow for (a) formal borrowing choice menu, (b) bridge loans, and (c) defaults. This section solves the model in the single asset setting.
 
-## 6.1 Formal and Informal Choices (ABZ+FIBS)
+## 5.1 Formal and Informal Choices (ABZ+FIBS)
 
 We have a sequence of files that are specific to solving the joint formal and informal problem.
 
-## 6.1.a Choice Generation
+## 5.1.a Choice Generation
 
 1. [Formal Borrowing Grid](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_gen.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc_fibs/ffs_for_br_block_gen.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_gen.html)
     * A menu of formal borrowing choices
 2. [Informal Interest Rates](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_r_inf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc_fibs/ffs_r_inf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_r_inf.html)
     * Append onto shock Z interest rate shock representing informal interest rate shocks
 
-## 6.1.b Formal and Informal Optimization
+## 5.1.b Formal and Informal Optimization
 
 1. [Match Borrowing to Formal Grid](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_match.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc_fibs/ffs_for_br_block_match.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_match.html)
     * Given a level of borrowing, what items on the formal borrowing menu are the closest to it
@@ -493,12 +469,12 @@ We have a sequence of files that are specific to solving the joint formal and in
 4. [Overall Optimization](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost_bridge.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc_fibs/ffs_fibs_min_c_cost_bridge.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost_bridge.html)
     * Overall optimization over joint options, combines *ffs_fibs_inf_bridge.m* and *ffs_fibs_min_c_cost.m*.
 
-## 6.1.c Results Processing
+## 5.1.c Results Processing
 
 1. [Discrete Choices](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_identify_discrete.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc_fibs/ffs_fibs_identify_discrete.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_identify_discrete.html)
     * Discrete choice categories from continuous choices: (1) informal only (ignore bridge loan) (2) formal only (ignore bridge loan) (3) formal + informal borrowing (ignore bridge loan) (4) formal borrowing + savings (ignore bridge loan) (5) informal only (with bridge loan) (6) formal + informal (include bridge loan) (7) formal borrowing + informal borrowing + savings (include bridge loan) (8) No borrowing or savings
 
-## 6.2 Dynamic Programming (ABZ+FIBS)
+## 5.2 Dynamic Programming (ABZ+FIBS)
 
 Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_paramfunc/html/ffs_abz_fibs_set_default_param.html), for the benchmark simulation, similar to the *abz* model:
 
@@ -517,7 +493,7 @@ Using three algorithm that provide identical solutions:
 3. *abz fibs* model [optimized vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_abz_solve/ff_abz_fibs_vf_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/profile/ff_abz_fibs_vf_vecsv_default_p3/file0.html)    
     * speed: **2.1** seconds
 
-## 6.3 Asset Distributions (ABZ+FIBS)
+## 5.3 Asset Distributions (ABZ+FIBS)
 
 The same files are used here as are used under *1.2*:
 
@@ -525,7 +501,7 @@ The same files are used here as are used under *1.2*:
 2. *abz+fibs* model asset distribution [vectorized](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html)
 3. *abz+fibs* model asset distribution [semi-analytical](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html)
 
-## 6.4 Solution Support Files (ABZ+FIBS)
+## 5.4 Solution Support Files (ABZ+FIBS)
 
 **Parameters and Function Definitions**:
 
@@ -539,11 +515,11 @@ The same files are used here as are used under *1.2*:
 2. *abz fibs* model [solution results graphing](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/solvepost_fibs/html/ff_az_fibs_vf_post_graph.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/solvepost_fibs/ff_az_fibs_vf_post_graph.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/solvepost_fibs/html/ff_az_fibs_vf_post_graph.html)
     * formal and informal choices levels, logged levels, and percentages
 
-## 6.5 Borrowing and Savings Testing (ABZ+FIBS)
+## 5.5 Borrowing and Savings Testing (ABZ+FIBS)
 
 We solved the exogenously incomplete borrowing and savings problem in *1.4*. Now we analyze model features by adjusting parameters.
 
-### 6.5.a Policy Function Testing
+### 5.5.a Policy Function Testing
 
 1. *abz fibs* model solution precision
    * [adjust state/choice grid points](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_precision/html/fsi_abz_fibs_vf_vecsv_a_n.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_precision/fsi_abz_fibs_vf_vecsv_a_n.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_precision/html/fsi_abz_fibs_vf_vecsv_a_n.html)
@@ -553,7 +529,7 @@ We solved the exogenously incomplete borrowing and savings problem in *1.4*. Now
    * [tabular small grid testing](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_borr/html/ff_abz_fibs_vf_vecsv_default_small.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_borr/ff_abz_fibs_vf_vecsv_default_small.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_borr/html/ff_abz_fibs_vf_vecsv_default_small.html)
    * [tabular and graphical large grid testing](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_borr/html/ff_abz_fibs_vf_vecsv_default_large.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_borr/ff_abz_fibs_vf_vecsv_default_large.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_borr/html/ff_abz_fibs_vf_vecsv_default_large.html)
 
-### 6.5.b Asset Distribution Testing
+### 5.5.b Asset Distribution Testing
 
 1. *abz fibs* borrowing interest rates, bounds, and minimum c
     * [no default](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_az_ds_vecsv/test_borr/html/fsi_abz_fibs_ds_vecsv_nbc.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_abz_test/ff_az_ds_vecsv/test_borr/fsi_abz_fibs_ds_vecsv_nbc.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_az_ds_vecsv/test_borr/html/fsi_abz_fibs_ds_vecsv_nbc.html)
@@ -566,13 +542,13 @@ We solved the exogenously incomplete borrowing and savings problem in *1.4*. Now
     * [default](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_az_ds_vecsv/test_shock/html/fsi_abz_fibs_ds_vecsv_shk_default.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_abz_test/ff_az_ds_vecsv/test_shock/fsi_abz_fibs_ds_vecsv_shk_default.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_az_ds_vecsv/test_shock/html/fsi_abz_fibs_ds_vecsv_shk_default.html)
 
 
-# 7. Two Assets Formal + Informal (ipWKBZ+FIBS)
+# 6. Two Assets Formal + Informal
 
-> *Files for this section are in the [/m_fibs/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_fibs) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository. links: (1) [savings problem](https://fanwangecon.github.io/CodeDynaAsset/#1-the-savings-problem-az) (2) [borrowing and savings problem](https://fanwangecon.github.io/CodeDynaAsset/#2-the-savings--borrowing-problem-abz) (3) [risky and safe asset problem (risky entrepreneur)](https://fanwangecon.github.io/CodeDynaAsset/#3-the-risky--safe-asset-problem-part-1) (4) [percentage choice grids and interpolation](https://fanwangecon.github.io/CodeDynaAsset/#4-the-risky--safe-asset-problem-part-2) (5) [risky asset investment financing through borrowing](https://fanwangecon.github.io/CodeDynaAsset/#5-the-risky--safe-asset-problem-part-3) (6) [Townsend and Wang 2019 Single Asset](https://fanwangecon.github.io/CodeDynaAsset/#6-one-asset-formal--informal-abzfibs) (7) [Townsend and Wang 2019 Safe + Risky Asset](https://fanwangecon.github.io/CodeDynaAsset/#7-two-assets-formal--informal-ipwkbzfibs).*
+> *Files for this section are in the [/m_fibs/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_fibs) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository. links: (1) [savings problem](https://fanwangecon.github.io/CodeDynaAsset/#1-the-savings-problem-az) (2) [borrowing and savings problem](https://fanwangecon.github.io/CodeDynaAsset/#2-the-savings--borrowing-problem-abz) (3) [risky and safe asset problem (risky entrepreneur)](https://fanwangecon.github.io/CodeDynaAsset/#3-the-risky--safe-asset-problem-part-1) (4) [percentage choice grids and interpolation](https://fanwangecon.github.io/CodeDynaAsset/#4-the-risky--safe-asset-problem-part-2) (5) [Townsend and Wang 2019 Single Asset](https://fanwangecon.github.io/CodeDynaAsset/#5-one-asset-formal--informal) (6) [Townsend and Wang 2019 Safe + Risky Asset](https://fanwangecon.github.io/CodeDynaAsset/#6-two-assets-formal--informal).*
 
 An application of the codes developed in sections (1) through (5) is the paper: *A Choice Amongst Many: Household Borrowing in a Setting with Multiple Providers* ([**Robert M. Townsend**](http://www.robertmtownsend.net/) and [**Fan Wang**](https://fanwangecon.github.io/) 2019). Below, earlier models are augmented to allow for (a) formal borrowing choice menu, (b) bridge loans, and (c) defaults. We do this in the context of the safe and risky asset setting.
 
-## 7.1 Two Assets Formal Informal (ipWKBZ+FIBS)
+## 6.1 Two Assets Formal Informal (ipWKBZ+FIBS)
 
 1. Use *ipwkz+fibs* [2nd stage solution with Formal Informal and Bridge](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbz_solve/html/ff_ipwkbz_fibs_evf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_ipwkbz_solve/ff_ipwkbz_fibs_evf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbz_solve/html/ff_ipwkbz_fibs_evf.html)
     * solving for kperc(w,z) = argmax_{kperc'}(E(V(coh'(kperc', f_{fibs}(b'=w-w*kperc', coh)),z')) given z and w.
@@ -583,11 +559,11 @@ An application of the codes developed in sections (1) through (5) is the paper: 
     * interpolate u(c), interpolate v(coh,z), interpolate EV(w,z)
     * store u(c) in cells, update when k*(w,z) changes
 
-## 7.2 Asset Distributions (FIBS)
+## 6.2 Asset Distributions (ipWKBZ+FIBS)
 
 Solving for the asset distribution.
 
-## 7.3 Solution Support Files (ipWKBZ+FIBS)
+## 6.3 Solution Support Files (ipWKBZ+FIBS)
 
 All solution algorithms share the same support files.
 

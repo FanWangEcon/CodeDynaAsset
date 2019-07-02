@@ -209,7 +209,6 @@ end
 while bl_vfi_continue
     it_iter = it_iter + 1;
 
-
     %% Interpolate (1) reacahble v(coh(k(w,z),b(w,z),z),z) given v(coh, z)
     % v(coh,z) solved on ar_interp_coh_grid, ar_z grids, see
     % ffs_ipwkbz_get_funcgrid.m. Generate interpolant based on that, Then
@@ -220,9 +219,11 @@ while bl_vfi_continue
     f_grid_interpolant_value = griddedInterpolant(...
         mt_z_mesh_coh_interp_grid', mt_interp_coh_grid_mesh_z', mt_val_cur', 'linear', 'nearest');
 
-    % Interpoalte for v(coh(k(w,z),b(w,z),z),z)
+    % Interpolate for v(coh(k(w,z),b(w,z),z),z)
     mt_val_wkb_interpolated = f_grid_interpolant_value(mt_z_mesh_coh_wkb, mt_coh_wkb);
-
+%     ar_val_wkb_interpolated = f_grid_interpolant_value(mt_z_mesh_coh_wkb(:), mt_coh_wkb(:));
+%     mt_val_wkb_interpolated = reshape(ar_val_wkb_interpolated, size(mt_z_mesh_coh_wkb));
+    
     %% Solve Second Stage Problem k*(w,z)
     % This is the key difference between this function and
     % <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html
