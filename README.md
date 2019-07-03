@@ -5,7 +5,7 @@
 1. consumption when borrowing not calculated correctly when households default.
 -->
 
-This is a work-in-progress (*updated: 2019-06-23*) [website](https://fanwangecon.github.io/CodeDynaAsset/) for solving several infinite-horizon exogenously-incomplete dynamic assets models in discrete-time. Section **(1)** solves the [savings problem](https://fanwangecon.github.io/CodeDynaAsset/#1-the-savings-problem-az). Section **(2)** solves the [borrowing and savings problem](https://fanwangecon.github.io/CodeDynaAsset/#2-the-savings--borrowing-problem-abz). Section **(3)** solve the [risky and safe asset problem (risky entrepreneur)](https://fanwangecon.github.io/CodeDynaAsset/#3-the-risky--safe-asset-problem-part-1). Section **(4)** solves the same problem as (3) with [percentage choice grids and interpolation](https://fanwangecon.github.io/CodeDynaAsset/#4-the-risky--safe-asset-problem-part-2). Section **(5) and (6)** is an application/extension of the earlier models: models from (1) through (4) are augmented following [*A Choice Amongst Many: Household Borrowing in a Setting with Multiple Providers*](https://fanwangecon.github.io/CodeDynaAsset/#5-one-asset-formal--informal) ([**Robert M. Townsend**](http://www.robertmtownsend.net/) and [**Fan Wang**](https://fanwangecon.github.io/) 2019)
+This is a work-in-progress (*updated: 2019-06-23*) [website](https://fanwangecon.github.io/CodeDynaAsset/) for solving several infinite-horizon exogenously-incomplete dynamic assets models in discrete-time. Section **(1)** solves the [savings problem](https://fanwangecon.github.io/CodeDynaAsset/#1-the-savings-problem-az). Section **(2)** solves the [borrowing and savings problem](https://fanwangecon.github.io/CodeDynaAsset/#2-the-savings--borrowing-problem-abz). Section **(3)** solve the [risky and safe asset problem (risky entrepreneur)](https://fanwangecon.github.io/CodeDynaAsset/#3-the-risky--safe-asset-problem-part-1). Section **(4)** solves the same problem as (3) with [percentage choice grids and interpolation](https://fanwangecon.github.io/CodeDynaAsset/#4-the-risky--safe-asset-problem-part-2). Section **(5) and (6)** is an application/extension of the earlier models: models from (1) through (4) are augmented following [*A Choice Amongst Many: Household Borrowing in a Setting with Multiple Providers*](https://fanwangecon.github.io/CodeDynaAsset/#5-one-asset-formal--informal) ([**Robert M. Townsend**](http://www.robertmtownsend.net/) and [**Fan Wang**](https://fanwangecon.github.io/) 2019).
 
 Key elements for solution algorithms from (1) through (5) are described and developed in [**Wang (2019)**](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3316939). Generally, looped, vectorized, and optimized-vectorized implementations of the same solution algorithm with tabular, graphical and profiling results are shown. Separate subsections show files that solve policy functions and derive asset distributions. Looped codes are shown for clarity, vectorized codes are shown for speed. Codes are designed to not require special hardware or explicit parallelization. Codes are tested on Windows 10 with [Matlab 2019a](https://www.mathworks.com/company/newsroom/mathworks-announces-release-2019a-of-matlab-and-simulink.html) for replicability. The algorithms here are platform agnostic and could be implemented in alternative languages, but speed variations across languages is generally small for the algorithms described here. Please contact [FanWangEcon](https://fanwangecon.github.io/) for problems.
 
@@ -54,24 +54,24 @@ Solve for the stationary probability mass function over states using *non-simula
 
 - joint and marginal probability mass functions: *P(y,z)*, *P(y,a)* and *P(y)*
 - *E(Y)*, *var(Y)*, *P(Y=0)*, *P(Y=max(Y))*, etc
-- percentiles and fraction of *y* held by households up to current percentile
+- percentiles and fraction of *y* held by households up to percentiles
 
-Algorithms 1 and 2 approximate 3 (speed does not include *1.1* speed):
+Algorithms 1 and 2 approximate 3 (speed does not include *1.1* speed), the vectorized and semi-analytical programs work for the risky and safe asset problems in section [*3.1 and 3.2*](https://fanwangecon.github.io/CodeDynaAsset/#3-the-risky--safe-asset-problem-part-1) as well:
 
-1. *az* model asset distribution [looped](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solve/ff_az_ds.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/profile/ff_az_ds_default_p7/file0.html)
+1. *az* asset distribution [looped](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solve/ff_az_ds.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/profile/ff_az_ds_default_p7/file0.html)
     * speed: **5.0** seconds
     * loops: 1 for pmf iteration, 1 for shocks, 1 for asset state, 1 for future shocks
-2. *az* model asset distribution [vectorized](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solve/ff_az_ds_vec.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/profile/ff_az_ds_vec_default_p7/file0.html)
+2. *az+akz+wkz* asset distribution [vectorized](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solve/ff_az_ds_vec.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/profile/ff_az_ds_vec_default_p7/file0.html)
     * speed: **0.8** seconds
     * loops: 1 for pmf iteration, 1 for shocks, policy index match
-3. *az* model asset distribution [semi-analytical](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solve/ff_az_ds_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/profile/ff_az_ds_vecsv_default_p7/file0.html)
+3. *az+akz+wkz* asset distribution [semi-analytical](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solve/ff_az_ds_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/profile/ff_az_ds_vecsv_default_p7/file0.html)
     * speed: **0.2** seconds **sparse eigenvector approach**
     * iteration free, construct full-states markov, sparse matrix, eigenvector/projection/Nth-power
 
 
 ### 1.2.b Statistics Support Functions
 
-Deriving asset distributions relies on two functions from the [/tools/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/tools) folder for computing pmf for choice/outcome as well as distributional statistics based on pmf which apply to all models:
+Deriving asset distributions relies on two functions from the [/tools/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/tools) folder for computing pmf for choice/outcome as well as distributional statistics based on pmf which apply to all models in later sections as well:
 
 1. all model [f(y) from f(a,z) and y(a,z)](https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/fft_disc_rand_var_mass2outcomes.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html)
     * from pmf *f(a,z)* and outcome/policy *y(a,z)*, derive *f(y,z)*, *f(y,a)* and *f(y)*
@@ -165,11 +165,11 @@ Add parameters [*bl_default*](https://fanwangecon.github.io/CodeDynaAsset/m_abz/
 
 **Output Analysis**: shared files with *az*.
 
-## 2.4 Borrowing and Savings Testing (ABZ)
+## 2.4 Borrow and Save Testing (ABZ)
 
 We solved the exogenously incomplete borrowing and savings problem in *1.4*. Now we analyze model features by adjusting parameters.
 
-### 2.4.a Policy Function Testing
+**Policy Function Testing**
 
 1. *abz* borrowing and savings choice grid with default
     * [choice grid](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ffs_abz_get_funcgrid/test_borr/html/ffs_abz_get_funcgrid_defnodfalt.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/test/ffs_abz_get_funcgrid/test_borr/html/ffs_abz_get_funcgrid_defnodfalt.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ffs_abz_get_funcgrid/test_borr/html/ffs_abz_get_funcgrid_defnodfalt.html)
@@ -181,7 +181,7 @@ We solved the exogenously incomplete borrowing and savings problem in *1.4*. Now
    * [tabular small grid testing](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_abz_vf_vecsv/test_borr/html/ff_abz_vf_vecsv_default_small.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/test/ff_abz_vf_vecsv/test_borr/ff_abz_vf_vecsv_default_small.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_abz_vf_vecsv/test_borr/html/ff_abz_vf_vecsv_default_small.html)
    * [tabular and graphical large grid testing](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_abz_vf_vecsv/test_borr/html/ff_abz_vf_vecsv_default_large.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/test/ff_abz_vf_vecsv/test_borr/ff_abz_vf_vecsv_default_large.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_abz_vf_vecsv/test_borr/html/ff_abz_vf_vecsv_default_large.html)
 
-### 2.4.b Asset Distribution Testing
+**Asset Distribution Testing**
 
 1. *abz* borrowing interest rates, bounds, and minimum c
    * [no default](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_borr/html/fsi_abz_ds_vecsv_nbc.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/test/ff_az_ds_vecsv/test_borr/fsi_abz_ds_vecsv_nbc.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_borr/html/fsi_abz_ds_vecsv_nbc.html)
@@ -208,7 +208,7 @@ There are more analytical ways of solving the basic version of this problem. Her
 - In **3.2**, solve the problem in two stages
 - In **3.3**, two stage solution with interpolation
 
-## 3.1 Concurrent Solution (AKZ)
+## 3.1 Concurrent Dynamic Programming (AKZ)
 
 > *Files for this section have the **akz** in file names and are in the [/m_akz/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_akz) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository.*
 
@@ -230,7 +230,7 @@ The *akz* problem. Parameters can be adjusted [here](https://fanwangecon.github.
     * loops: 1 for VFI, 1 for shocks, vectorize remaining
     * reuse u(c) in cells, speed improvements described [here](https://fanwangecon.github.io/M4Econ/)
 
-## 3.2 Two Stage Solution (WKZ)
+## 3.2 Two-Stage Dynamic Programming (WKZ)
 
 > *Files for this section have the **wkz** in file names and are in the [/m_akz/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_akz) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository.*
 
@@ -254,11 +254,11 @@ Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_
     * loops: 1 for VFI, 1 for shocks, vectorize remaining
     * store u(c) in cells, update when k*(w,z) changes, speed improvements described [here](https://fanwangecon.github.io/M4Econ/)
 
-## 3.3 Two Stage with Interpolation (iWKZ)
+## 3.3 Two-Stage DP with Interpolation (iWKZ)
 
 > *Files for this section have the **iwkz** in file names and are in the [/m_akz/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_akz) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository.*
 
-### 3.3.a Algorithm Description
+**Algorithm Description**
 
 The *iwkz* problem, interpolated version of 2.2. Takes significantly less time than *3.2* at larger choice grids, produces approximately identical results as *3.2*. Simulations below are at the same grid points as *3.2* and *3.1* for comparison, but at these low accuracy grid points, *iwkz* is not necessarily faster than *3.2*.
 
@@ -266,7 +266,7 @@ The reason that *iWKZ* is faster then *3.2* is that when we increase aggregate s
 
 In section *3.6* below, I show how solution results change for *iwkz* as we increase aggregate savings grid points, shock grid points, reduce the interpolation gaps, or change production function parameters from decreasing to constant return to scale.
 
-### 3.3.b Algorithm Implementation
+**Algorithm Implementation**
 
 Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html), for the benchmark simulation, same grid size parameters as *3.1* and *3.2*, but we introduce two additional measures of precision:
 
@@ -292,9 +292,20 @@ Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_
     * interpolate u(c), interpolate v(coh,z)
     * store u(c) in cells, update when k*(w,z) changes
 
-## 3.4 Asset Distributions (AKZ + WKZ + iWKZ)
+## 3.4 Asset Distributions (AKZ + WKZ)
 
-Solving for the asset distribution.
+Solve for the stationary probability mass function over states using *non-simulation* methods. The algorithms in this section works for situations where (1) state-space grid is identical to the choice-space grid, and (2) the endogenous element of the state-space are last period choices. The second point means that we are interested in f(y,z), where y'(y,z), but not y'(y,z,z').
+
+The looped program is new but very similar to the looped code from *1.2.a* earlier. The vectorized and semi-analytical programs invoke the corresponding programs from *1.2.a*. The codes compute, with [benchmark parameters](https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html) and after invoking the *optimized-vecotrized* dynamic programming code from above for *akz* or *wkz*, for each outcome y various distributional statistics of interest, including: *P(y,z)*, *P(y)*, etc.
+
+Algorithms 1 and 2 approximate 3 (speed does not include 3.1 and 3.2 speed):
+
+1. *akz+wkz* asset distribution [looped](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_ds.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_akz_ds.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_ds.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/profile/ff_akz_ds_default_p7/file0.html)
+    * speed: **18.8** seconds
+2. *akz+wkz* asset distribution [vectorized](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_ds_vec.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_akz_ds_vec.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_ds_vec.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/profile/ff_akz_ds_vec_default_p7/file0.html)
+    * speed: **1.9** seconds
+3. *akz+wkz* asset distribution [semi-analytical](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_ds_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_akz_ds_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_ds_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/profile/ff_akz_ds_vecsv_default_p7/file0.html)
+    * speed: **0.9** seconds **sparse eigenvector approach**
 
 ## 3.5 Solution Support Files (Shared)
 
@@ -405,7 +416,7 @@ All solution algorithms share the same support files.
 
 ## 4.6 Borrowing and Savings Testing (ipWKZ + ipWKBZ)
 
-### 4.6.a Savings Testing (ipWKZ)
+**Savings Testing (ipWKZ)**
 
 We solve the joint asset choice problem using the *optimized-vectorized* method for *ipwkz* algorithm from *3.3*. Now we analyze model features by adjusting parameters.
 
@@ -423,7 +434,7 @@ We solve the joint asset choice problem using the *optimized-vectorized* method 
 4. *ipwkz* model shift shock persistence
     * [constant (financial investment) return to scale](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_vf_vecsv/test_prod/html/fsi_ipwkz_vf_vecsv_crs.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/test/ff_ipwkz_vf_vecsv/test_prod/fsi_ipwkz_vf_vecsv_crs.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_vf_vecsv/test_prod/html/fsi_ipwkz_vf_vecsv_crs.html)
 
-### 4.6.b Savings + Borrowing Testing (ipWKBZ)
+**Savings + Borrowing Testing (ipWKBZ)**
 
 We solve the joint asset choice problem using the *optimized-vectorized* method for *ipwkbz* algorithm from *3.3*. Now we analyze model features by adjusting parameters.
 
@@ -451,14 +462,14 @@ An application of the codes developed in sections (1) through (5) is the paper: 
 
 We have a sequence of files that are specific to solving the joint formal and informal problem.
 
-## 5.1.a Choice Generation
+**Choice Generation**
 
 1. [Formal Borrowing Grid](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_gen.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc_fibs/ffs_for_br_block_gen.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_gen.html)
     * A menu of formal borrowing choices
 2. [Informal Interest Rates](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_r_inf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc_fibs/ffs_r_inf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_r_inf.html)
     * Append onto shock Z interest rate shock representing informal interest rate shocks
 
-## 5.1.b Formal and Informal Optimization
+**Formal and Informal Optimization**
 
 1. [Match Borrowing to Formal Grid](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_match.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc_fibs/ffs_for_br_block_match.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_for_br_block_match.html)
     * Given a level of borrowing, what items on the formal borrowing menu are the closest to it
@@ -469,7 +480,7 @@ We have a sequence of files that are specific to solving the joint formal and in
 4. [Overall Optimization](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost_bridge.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc_fibs/ffs_fibs_min_c_cost_bridge.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost_bridge.html)
     * Overall optimization over joint options, combines *ffs_fibs_inf_bridge.m* and *ffs_fibs_min_c_cost.m*.
 
-## 5.1.c Results Processing
+**Results Processing**
 
 1. [Discrete Choices](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_identify_discrete.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/paramfunc_fibs/ffs_fibs_identify_discrete.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_identify_discrete.html)
     * Discrete choice categories from continuous choices: (1) informal only (ignore bridge loan) (2) formal only (ignore bridge loan) (3) formal + informal borrowing (ignore bridge loan) (4) formal borrowing + savings (ignore bridge loan) (5) informal only (with bridge loan) (6) formal + informal (include bridge loan) (7) formal borrowing + informal borrowing + savings (include bridge loan) (8) No borrowing or savings
@@ -519,7 +530,7 @@ The same files are used here as are used under *1.2*:
 
 We solved the exogenously incomplete borrowing and savings problem in *1.4*. Now we analyze model features by adjusting parameters.
 
-### 5.5.a Policy Function Testing
+**Policy Function Testing**
 
 1. *abz fibs* model solution precision
    * [adjust state/choice grid points](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_precision/html/fsi_abz_fibs_vf_vecsv_a_n.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_precision/fsi_abz_fibs_vf_vecsv_a_n.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_precision/html/fsi_abz_fibs_vf_vecsv_a_n.html)
@@ -529,7 +540,7 @@ We solved the exogenously incomplete borrowing and savings problem in *1.4*. Now
    * [tabular small grid testing](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_borr/html/ff_abz_fibs_vf_vecsv_default_small.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_borr/ff_abz_fibs_vf_vecsv_default_small.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_borr/html/ff_abz_fibs_vf_vecsv_default_small.html)
    * [tabular and graphical large grid testing](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_borr/html/ff_abz_fibs_vf_vecsv_default_large.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_borr/ff_abz_fibs_vf_vecsv_default_large.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_abz_fibs_vf_vecsv/test_borr/html/ff_abz_fibs_vf_vecsv_default_large.html)
 
-### 5.5.b Asset Distribution Testing
+**Asset Distribution Testing**
 
 1. *abz fibs* borrowing interest rates, bounds, and minimum c
     * [no default](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_az_ds_vecsv/test_borr/html/fsi_abz_fibs_ds_vecsv_nbc.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_abz_test/ff_az_ds_vecsv/test_borr/fsi_abz_fibs_ds_vecsv_nbc.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_test/ff_az_ds_vecsv/test_borr/html/fsi_abz_fibs_ds_vecsv_nbc.html)

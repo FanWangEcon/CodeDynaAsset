@@ -69,12 +69,12 @@ st_var_name = 'binom';
 bl_display_drvstats = false;
 
 % default
-default_params = {st_var_name ar_choice_unique_sorted ar_choice_prob ar_fl_percentiles bl_display_drvstats};
+default_params = {st_var_name ar_choice_unique_sorted ar_choice_prob bl_display_drvstats ar_fl_percentiles};
 
 %% Parse Parameters
 
 [default_params{1:length(varargin)}] = varargin{:};
-[st_var_name, ar_choice_unique_sorted, ar_choice_prob, ar_fl_percentiles, bl_display_drvstats] = default_params{:};
+[st_var_name, ar_choice_unique_sorted, ar_choice_prob, bl_display_drvstats, ar_fl_percentiles] = default_params{:};
 
 %% *f(y), f(c), f(a)*: Compute Scalar Statistics for outcomes
 % Compute these outcomes:
@@ -164,6 +164,12 @@ ds_stats_map('ar_choice_perc_fracheld') = ar_choice_perc_fracheld;
 
 %% Display
 if (bl_display_drvstats)
+    
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp(['Summary Statistics for: ' char(st_var_name)])
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('----------------------------------------');
     
     disp('fl_choice_mean');
     disp(fl_choice_mean);

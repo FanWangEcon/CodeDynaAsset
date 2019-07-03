@@ -20,6 +20,12 @@ function [result_map] = ff_az_ds(varargin)
 % introduce simulation and associated errors once we have fixed the shock
 % process that generates randomness. 
 %
+% The code here works when we are looking for the distribution of f(a,z),
+% where a'(a,z), meaning that the a next period is determined by a last
+% period and some shock. Given this, the a' is fixed for all z'. If
+% however, the outcome of interest is such that: y'(y,z,z'), meaning that
+% y' is different depending on realized z', the code below does not work.
+%
 % The function here accomplishes two tasks: (1) deriving the asset
 % distribution as a discrete random variable over the states (2)
 % calculating various statistics based on the discrete joint random
@@ -160,8 +166,8 @@ support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')]
 % result_map
 % ar_st_pol_names is from section _Process Optimal Choices_ in the value
 % function code.
-params_group = values(result_map, {'cl_mt_pol_a', 'ar_st_pol_names'});
-[cl_mt_pol_a, ar_st_pol_names] = params_group{:};
+params_group = values(result_map, {'cl_mt_pol_a'});
+[cl_mt_pol_a] = params_group{:};
 mt_pol_a = deal(cl_mt_pol_a{1});
 
 % armt_map
@@ -177,10 +183,10 @@ params_group = values(param_map, {'it_maxiter_dist', 'fl_tol_dist'});
 % support_map
 params_group = values(support_map, {'bl_profile_dist', 'st_profile_path', ...
     'st_profile_prefix', 'st_profile_name_main', 'st_profile_suffix',...
-    'bl_time', 'bl_display_dist', 'it_display_every', 'bl_display_final_dist', 'bl_post'});
+    'bl_time', 'bl_display_dist', 'it_display_every'});
 [bl_profile_dist, st_profile_path, ...
     st_profile_prefix, st_profile_name_main, st_profile_suffix, ...
-    bl_time, bl_display_dist, it_display_every, bl_display_final_dist, bl_post] = params_group{:};
+    bl_time, bl_display_dist, it_display_every] = params_group{:};
 
 %% Start Profiler and Timer
 
@@ -212,6 +218,22 @@ mt_dist_perc_change = zeros([it_maxiter_dist, it_z_n]);
 
 %% *f(a,z)*: Derive Stationary Distribution
 % Iterate over the discrete joint random variable variables (a,z)
+%
+% We are looking for the distribution of: $p(a,z)$ where $a'(a,z)$, meaning
+% that the a next period is determined by a last period and some shock.
+% Given this, the $a'$ is fixed for all $z'$
+%
+% To make the code work for life-cycle model:
+% # _mt_dist_az_init_: Initialize with potentially exogenous initial asset
+% distribution
+% # _mt_dist_az_: change mt_dist_az to tensor with a third dimension for
+% age
+% # at the beginning of the third loop over ar_z, get mass at current age,
+% meaning: fl_cur_za_prob = ts_dist_az(it_a_prime_idx, it_zp_q, age)
+% # at the end of the third loop over ar_z, add accumulated mass to next
+% period, meaning: ts_dist_az(it_a_prime_idx, it_zp_q, age+1) =+ fl_zfromza
+%
+
 while (bl_histiter_continue)
     
     it_iter = it_iter + 1;

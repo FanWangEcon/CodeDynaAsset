@@ -130,8 +130,12 @@ param_map('it_c_interp_grid_gap') = 10^-4;
 
 % Solution Accuracy
 param_map('it_maxiter_val') = 250;
+param_map('it_maxiter_dist') = 1000;
+param_map('st_analytical_stationary_type') = 'eigenvector'; % could be eigenvector, projection, power
 param_map('fl_tol_val') = 10^-5;
 param_map('fl_tol_pol') = 10^-5;
+param_map('fl_tol_dist') = 10^-5;
+param_map('it_trans_power_dist') = 1000;
 param_map('it_tol_pol_nochange') = 25; % number of iterations where policy does not change
 
 %% Setting support_map container
@@ -139,7 +143,7 @@ param_map('it_tol_pol_nochange') = 25; % number of iterations where policy does 
 support_map = containers.Map('KeyType','char', 'ValueType','any');
 
 % root directory
-[st_root_path] = preamble();
+[st_root_path] = preamble(false);
 st_matimg_path_root = [st_root_path '/m_akz/'];
 support_map('st_matimg_path_root') = st_matimg_path_root;
 
@@ -148,19 +152,22 @@ support_map('bl_time') = true;
 
 % Print Controls
 support_map('bl_display') = true;
+support_map('bl_display_dist') = false;
 support_map('it_display_every') = 5; % how often to print results
 
 % Profile Controls
 support_map('bl_profile') = false;
+support_map('bl_profile_dist') = false; % distribution profile
 support_map('st_profile_path') = [st_matimg_path_root '/solve/profile/'];
 support_map('st_profile_prefix') = [''];
 support_map('st_profile_name_main') = ['_default'];
 support_map('st_profile_suffix') = ['_p' num2str(it_subset)];
 
 support_map('bl_post') = false;
-
 % Final Print
 support_map('bl_display_final') = false; % print finalized results
+support_map('bl_display_final_dist') = false; % print finalized results
+support_map('bl_display_final_dist_detail') = false;
 support_map('it_display_final_rowmax') = 100; % max row to print (states/iters)
 support_map('it_display_final_colmax') = 12; % max col to print (shocks)
 
@@ -242,6 +249,76 @@ if (ismember(it_subset, [1,2,3,4]))
         support_map('bl_time') = true;
     end
 end
+
+%% Subset Options for Distribution solutions
+%
+% # it_subset = 5 is basic invoke quick test
+% # it_subset = 6 is invoke full test
+% # it_subset = 7 is profiling invoke
+% # it_subset = 8 is matlab publish
+% # it_subset = 9 is invoke operational (only final stats) and coh graph
+%
+
+if (ismember(it_subset, [5,6,7,8,9]))
+    if (ismember(it_subset, [5]))
+        % TEST quick (need to enough to have distribution)
+        param_map('it_w_n') = 20;
+        param_map('it_k_n') = param_map('it_w_n');
+        param_map('it_z_n') = 3;
+        param_map('it_maxiter_val') = 50;
+        param_map('fl_coh_interp_grid_gap') = 0.25;
+        param_map('it_c_interp_grid_gap') = 0.001;
+        param_map('it_tol_pol_nochange') = 1000;
+        support_map('bl_display') = true;
+        support_map('it_display_every') = 1;
+        support_map('bl_display_dist') = true;
+    end
+    if (ismember(it_subset, [6, 8, 9]))
+        % close all
+        close all;
+        % Main Run
+        support_map('bl_time') = true;
+        support_map('bl_display') = false;
+        support_map('bl_display_dist') = true;
+        support_map('it_display_every') = 20;
+
+        support_map('bl_post') = true;
+        support_map('bl_display_final_dist') = true;
+        support_map('bl_mat') = false;
+        support_map('bl_graph') = true;
+        support_map('bl_graph_onebyones') = false;
+        support_map('bl_img_save') = true;
+
+        % do not generate all graphs when solving for distribution
+        support_map('bl_graph_val') = false;
+        support_map('bl_graph_pol_lvl') = false;
+        support_map('bl_graph_pol_pct') = false;
+        support_map('bl_graph_coh_t_coh') = true;
+
+        if (ismember(it_subset, [8, 9]))
+            support_map('bl_time') = false;
+            support_map('bl_display') = false;
+            support_map('bl_display_dist') = false;
+            support_map('bl_display_final_dist_detail') = true;
+            support_map('bl_graph_onebyones') = true;
+            support_map('bl_img_save') = false;
+            if (ismember(it_subset, [9]))
+                % quietly turn off all graphs, only tables
+                support_map('bl_display_final_dist_detail') = false;
+                support_map('bl_graph_coh_t_coh') = false;
+            end
+        end
+
+    end
+    if (ismember(it_subset, [7]))
+        % Profile run
+        support_map('bl_profile_dist') = true;
+        support_map('bl_display') = false; % don't print
+        support_map('bl_display_dist') = false; % don't print
+        support_map('bl_time') = true;
+    end
+end
+
 
 %% Display
 

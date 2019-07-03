@@ -1,0 +1,457 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Derive Two Asset (Risky + Safe) and Choices/Outcomes Distribution (Vectorized)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-03"><meta name="DC.source" content="ff_akz_ds_vec.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Derive Two Asset (Risky + Safe) and Choices/Outcomes Distribution (Vectorized)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><p>This uses <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html">ff_az_ds_vec</a>, which works for single and multiple assets.</p><p>The function here works with both <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vecsv.html">ff_akz_vf_vecsv</a> as well as <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf_vecsv.html">ff_wkz_vf_vecsv</a>. Results are identical, but <i>ff_wkz_vf_vecsv</i> is significantly faster.</p><p>@include</p><div><ul><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vecsv.html">ff_az_vf_vecsv</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf_vecsv.html">ff_wkz_vf_vecsv</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html">ff_az_ds_vec</a></li></ul></div><p>@seealso</p><div><ul><li>derive distribution loop: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_ds.html">ff_akz_ds</a></li><li>derive distribution vectorized: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_ds_vec.html">ff_akz_ds_vec</a></li><li>derive distribution semi-analytical: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_ds_vecsv.html">ff_akz_ds_vecsv</a></li></ul></div><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Set Parameters Main</a></li><li><a href="#2">Get Parameters</a></li><li><a href="#3">Alternative 1: Solving the Dynamic Programming Problem (AKZ)</a></li><li><a href="#4">Alternative 2: Solving the Dynamic Programming Problem (AWZ)</a></li><li><a href="#5">Distribution Start Profiler and Timer</a></li><li><a href="#6">Derive Distribution</a></li><li><a href="#7">End profiler and Timer</a></li></ul></div><h2 id="1">Set Parameters Main</h2><p>Options for Distribution solutions</p><div><ol><li>it_subset = 5 is basic invoke quick test</li><li>it_subset = 6 is invoke full test</li><li>it_subset = 7 is profiling invoke</li><li>it_subset = 8 is matlab publish</li><li>it_subset = 9 is invoke operational (only final stats) and coh graph</li></ol></div><pre class="codeinput">close <span class="string">all</span>;
+clear <span class="string">all</span>;
+
+it_param_set = 8;
+st_akz_or_wkz = <span class="string">'wkz'</span>;
+</pre><h2 id="2">Get Parameters</h2><p>Note that akz and wkz share the smae funcgrid and default_param functions</p><pre class="codeinput"><span class="comment">% Set Parameters</span>
+bl_input_override = true;
+[param_map, support_map] = ffs_akz_set_default_param(it_param_set);
+support_map(<span class="string">'bl_profile_dist'</span>) = false;
+
+<span class="comment">% Call Grid Generator &lt;https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html ffs_akz_get_funcgrid&gt;</span>
+[armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override); <span class="comment">% 1 for override</span>
+</pre><h2 id="3">Alternative 1: Solving the Dynamic Programming Problem (AKZ)</h2><pre class="codeinput"><span class="keyword">if</span> (strcmp(st_akz_or_wkz, <span class="string">'akz'</span>))
+    result_map = ff_akz_vf_vecsv(param_map, support_map, armt_map, func_map);
+<span class="keyword">end</span>
+</pre><h2 id="4">Alternative 2: Solving the Dynamic Programming Problem (AWZ)</h2><pre class="codeinput"><span class="keyword">if</span> (strcmp(st_akz_or_wkz, <span class="string">'wkz'</span>))
+    result_map = ff_wkz_vf_vecsv(param_map, support_map, armt_map, func_map);
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="ff_akz_ds_vec_01.png" alt=""> <img vspace="5" hspace="5" src="ff_akz_ds_vec_02.png" alt=""> <h2 id="5">Distribution Start Profiler and Timer</h2><pre class="codeinput"><span class="comment">% Start Profiling</span>
+<span class="keyword">if</span> (it_param_set == 7)
+    profile <span class="string">off</span>;
+    profile <span class="string">on</span>;
+<span class="keyword">end</span>
+
+<span class="comment">% Start Timer</span>
+<span class="keyword">if</span> (support_map(<span class="string">'bl_time'</span>))
+    tic;
+<span class="keyword">end</span>
+
+<span class="comment">% Get Profile name</span>
+st_profile_name_main = support_map(<span class="string">'st_profile_name_main'</span>);
+</pre><h2 id="6">Derive Distribution</h2><pre class="codeinput"><span class="comment">% Call Distribution Program &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html ff_az_ds_vec&gt;</span>
+result_map = ff_az_ds_vec(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+</pre><pre class="codeoutput">----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Summary Statistics for: cl_mt_pol_coh
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+fl_choice_mean
+    6.6378
+
+fl_choice_sd
+    3.2117
+
+fl_choice_coefofvar
+    0.4838
+
+fl_choice_prob_zero
+     0
+
+fl_choice_prob_below_zero
+     0
+
+fl_choice_prob_above_zero
+    1.0000
+
+fl_choice_prob_max
+     0
+
+tb_prob_drv
+    percentiles    cl_mt_pol_cohPercentileValues    fracOfSumHeldBelowThisPercentile
+    ___________    _____________________________    ________________________________
+
+        0.1                   2.7703                           0.00075046           
+          1                   2.9189                            0.0046305           
+          5                   3.3795                              0.03197           
+         10                   3.9458                             0.053693           
+         15                   4.1803                             0.098284           
+         20                   4.3216                              0.13576           
+         25                   4.4846                              0.17805           
+         35                   4.6727                              0.21843           
+         50                    5.557                               0.3322           
+         65                   6.8355                              0.47334           
+         75                   7.8814                              0.58557           
+         80                   8.4891                              0.65283           
+         85                   9.5307                              0.71365           
+         90                    10.63                              0.78803           
+         95                   13.177                              0.87786           
+         99                   18.291                              0.96894           
+       99.9                   24.692                              0.99598           
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Summary Statistics for: cl_mt_pol_a
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+fl_choice_mean
+    0.3116
+
+fl_choice_sd
+    1.1459
+
+fl_choice_coefofvar
+    3.6775
+
+fl_choice_prob_zero
+    0.8815
+
+fl_choice_prob_below_zero
+     0
+
+fl_choice_prob_above_zero
+    0.1185
+
+fl_choice_prob_max
+     0
+
+tb_prob_drv
+    percentiles    cl_mt_pol_aPercentileValues    fracOfSumHeldBelowThisPercentile
+    ___________    ___________________________    ________________________________
+
+        0.1                       0                                 0             
+          1                       0                                 0             
+          5                       0                                 0             
+         10                       0                                 0             
+         15                       0                                 0             
+         20                       0                                 0             
+         25                       0                                 0             
+         35                       0                                 0             
+         50                       0                                 0             
+         65                       0                                 0             
+         75                       0                                 0             
+         80                       0                                 0             
+         85                       0                                 0             
+         90                  1.0204                           0.11915             
+         95                  2.0408                           0.33873             
+         99                  6.1224                           0.75304             
+       99.9                  11.224                           0.95765             
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Summary Statistics for: cl_mt_pol_k
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+fl_choice_mean
+    4.5080
+
+fl_choice_sd
+    2.2205
+
+fl_choice_coefofvar
+    0.4926
+
+fl_choice_prob_zero
+   7.8431e-04
+
+fl_choice_prob_below_zero
+     0
+
+fl_choice_prob_above_zero
+    0.9992
+
+fl_choice_prob_max
+   2.7782e-07
+
+tb_prob_drv
+    percentiles    cl_mt_pol_kPercentileValues    fracOfSumHeldBelowThisPercentile
+    ___________    ___________________________    ________________________________
+
+        0.1                  2.0408                           0.048346            
+          1                  2.0408                           0.048346            
+          5                  2.0408                           0.048346            
+         10                  2.0408                           0.048346            
+         15                  3.0612                            0.27929            
+         20                  3.0612                            0.27929            
+         25                  3.0612                            0.27929            
+         35                  3.0612                            0.27929            
+         50                  4.0816                             0.4288            
+         65                   5.102                            0.61593            
+         75                   5.102                            0.61593            
+         80                  6.1224                            0.74117            
+         85                  6.1224                            0.74117            
+         90                  7.1429                            0.80373            
+         95                  9.1837                            0.91265            
+         99                  12.245                            0.97174            
+       99.9                  17.347                            0.99698            
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Summary Statistics for: cl_mt_pol_c
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+fl_choice_mean
+    1.8182
+
+fl_choice_sd
+    0.5550
+
+fl_choice_coefofvar
+    0.3052
+
+fl_choice_prob_zero
+     0
+
+fl_choice_prob_below_zero
+     0
+
+fl_choice_prob_above_zero
+    1.0000
+
+fl_choice_prob_max
+     0
+
+tb_prob_drv
+    percentiles    cl_mt_pol_cPercentileValues    fracOfSumHeldBelowThisPercentile
+    ___________    ___________________________    ________________________________
+
+        0.1                  0.72951                         0.00086242           
+          1                  0.87804                          0.0050293           
+          5                  0.99654                           0.027155           
+         10                   1.1191                           0.059227           
+         15                   1.2604                            0.11019           
+         20                   1.2946                            0.12438           
+         25                   1.4234                              0.195           
+         35                   1.5074                            0.25417           
+         50                   1.7334                            0.38021           
+         65                   2.0197                            0.53371           
+         75                    2.162                            0.64853           
+         80                    2.295                            0.71753           
+         85                   2.3829                            0.77202           
+         90                    2.597                            0.84228           
+         95                   2.8274                            0.91558           
+         99                   3.2736                            0.98017           
+       99.9                   3.9464                            0.99782           
+
+xxx All Variables PERCENTILES AND STATS xxx
+tb_outcomes_meansdperc: mean, sd, percentiles
+                      mean        sd      coefofvar      min       max        pYis0       pYls0     pYgr0      pYisMINY      pYisMAXY      p0_1        p1         p5        p10       p15       p20       p25       p35       p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
+                     _______    ______    _________    _______    ______    __________    _____    _______    __________    __________    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_coh     6.6378    3.2117     0.48385     0.44365    57.277             0      0            1    0.00078431             0     2.7703     2.9189     3.3795    3.9458    4.1803    4.3216    4.4846    4.6727     5.557    6.8355    7.8814    8.4891    9.5307     10.63    13.177    18.291    24.692
+    cl_mt_pol_a      0.31159    1.1459      3.6775           0    44.898       0.88152      0      0.11848       0.88152             0          0          0          0         0         0         0         0         0         0         0         0         0         0    1.0204    2.0408    6.1224    11.224
+    cl_mt_pol_k        4.508    2.2205     0.49256           0    22.449    0.00078431      0      0.99922    0.00078431    2.7782e-07     2.0408     2.0408     2.0408    2.0408    3.0612    3.0612    3.0612    3.0612    4.0816     5.102     5.102    6.1224    6.1224    7.1429    9.1837    12.245    17.347
+    cl_mt_pol_c       1.8182     0.555     0.30524     0.44365    7.2772             0      0            1    0.00078431             0    0.72951    0.87804    0.99654    1.1191    1.2604    1.2946    1.4234    1.5074    1.7334    2.0197     2.162     2.295    2.3829     2.597    2.8274    3.2736    3.9464
+
+xxx All Variables Fraction of Y Held up to Percentile xxx
+tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
+                     fracByP0_1    fracByP1     fracByP5    fracByP10    fracByP15    fracByP20    fracByP25    fracByP35    fracByP50    fracByP65    fracByP75    fracByP80    fracByP85    fracByP90    fracByP95    fracByP99    fracByP99_9
+                     __________    _________    ________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    ___________
+
+    cl_mt_pol_coh    0.00075046    0.0046305     0.03197    0.053693     0.098284      0.13576      0.17805      0.21843       0.3322      0.47334      0.58557      0.65283      0.71365      0.78803      0.87786      0.96894       0.99598  
+    cl_mt_pol_a               0            0           0           0            0            0            0            0            0            0            0            0            0      0.11915      0.33873      0.75304       0.95765  
+    cl_mt_pol_k        0.048346     0.048346    0.048346    0.048346      0.27929      0.27929      0.27929      0.27929       0.4288      0.61593      0.61593      0.74117      0.74117      0.80373      0.91265      0.97174       0.99698  
+    cl_mt_pol_c      0.00086242    0.0050293    0.027155    0.059227      0.11019      0.12438        0.195      0.25417      0.38021      0.53371      0.64853      0.71753      0.77202      0.84228      0.91558      0.98017       0.99782  
+
+</pre><h2 id="7">End profiler and Timer</h2><pre class="codeinput"><span class="comment">% End Timer</span>
+<span class="keyword">if</span> (support_map(<span class="string">'bl_time'</span>))
+    toc;
+<span class="keyword">end</span>
+
+<span class="comment">% End Profiling</span>
+<span class="keyword">if</span> (it_param_set == 7)
+    profile <span class="string">off</span>
+    profile <span class="string">viewer</span>
+
+    <span class="comment">% append function name</span>
+    st_func_name = <span class="string">'ff_akz_ds_vec'</span>;
+    support_map(<span class="string">'st_profile_path'</span>) = [support_map(<span class="string">'st_matimg_path_root'</span>) <span class="string">'/solve/profile/'</span>];
+    support_map(<span class="string">'st_profile_name_main'</span>) = [st_func_name st_profile_name_main];
+
+    <span class="comment">% support_map</span>
+    params_group = values(support_map, {<span class="string">'st_profile_path'</span>, <span class="keyword">...</span>
+        <span class="string">'st_profile_prefix'</span>, <span class="string">'st_profile_name_main'</span>, <span class="string">'st_profile_suffix'</span>});
+    [st_profile_path, st_profile_prefix, st_profile_name_main, st_profile_suffix] = params_group{:};
+
+    <span class="comment">% Save</span>
+    st_file_name = [st_profile_prefix st_profile_name_main st_profile_suffix];
+    profsave(profile(<span class="string">'info'</span>), strcat(st_profile_path, st_file_name));
+<span class="keyword">end</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Derive Two Asset (Risky + Safe) and Choices/Outcomes Distribution (Vectorized)
+% *back to <https://fanwangecon.github.io Fan>'s
+% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
+% Table of Content.*
+%
+% This uses
+% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html
+% ff_az_ds_vec>, which works for single and multiple assets.
+%
+% The function here works with both
+% <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vecsv.html
+% ff_akz_vf_vecsv> as well as
+% <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf_vecsv.html
+% ff_wkz_vf_vecsv>. Results are identical, but _ff_wkz_vf_vecsv_ is
+% significantly faster.
+%
+% @include
+%
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vecsv.html ff_az_vf_vecsv>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf_vecsv.html ff_wkz_vf_vecsv>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html ff_az_ds_vec>
+%
+% @seealso
+%
+% * derive distribution loop: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_ds.html ff_akz_ds>
+% * derive distribution vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_ds_vec.html ff_akz_ds_vec>
+% * derive distribution semi-analytical: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_ds_vecsv.html ff_akz_ds_vecsv>
+%
+
+%% Set Parameters Main
+% Options for Distribution solutions
+%
+% # it_subset = 5 is basic invoke quick test
+% # it_subset = 6 is invoke full test
+% # it_subset = 7 is profiling invoke
+% # it_subset = 8 is matlab publish
+% # it_subset = 9 is invoke operational (only final stats) and coh graph
+%
+
+close all;
+clear all;
+
+it_param_set = 8;
+st_akz_or_wkz = 'wkz';
+
+%% Get Parameters
+% Note that akz and wkz share the smae funcgrid and default_param functions
+
+% Set Parameters
+bl_input_override = true;
+[param_map, support_map] = ffs_akz_set_default_param(it_param_set);
+support_map('bl_profile_dist') = false;
+
+% Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html ffs_akz_get_funcgrid>
+[armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
+
+%% Alternative 1: Solving the Dynamic Programming Problem (AKZ)
+
+if (strcmp(st_akz_or_wkz, 'akz'))
+    result_map = ff_akz_vf_vecsv(param_map, support_map, armt_map, func_map);
+end
+
+%% Alternative 2: Solving the Dynamic Programming Problem (AWZ)
+
+if (strcmp(st_akz_or_wkz, 'wkz'))
+    result_map = ff_wkz_vf_vecsv(param_map, support_map, armt_map, func_map);
+end
+
+%% Distribution Start Profiler and Timer
+
+% Start Profiling
+if (it_param_set == 7)
+    profile off;
+    profile on;
+end
+
+% Start Timer
+if (support_map('bl_time'))
+    tic;
+end
+
+% Get Profile name
+st_profile_name_main = support_map('st_profile_name_main');
+
+%% Derive Distribution
+
+% Call Distribution Program <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html ff_az_ds_vec>
+result_map = ff_az_ds_vec(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+
+%% End profiler and Timer
+
+% End Timer
+if (support_map('bl_time'))
+    toc;
+end
+
+% End Profiling
+if (it_param_set == 7)
+    profile off
+    profile viewer
+        
+    % append function name
+    st_func_name = 'ff_akz_ds_vec';
+    support_map('st_profile_path') = [support_map('st_matimg_path_root') '/solve/profile/'];    
+    support_map('st_profile_name_main') = [st_func_name st_profile_name_main];    
+    
+    % support_map
+    params_group = values(support_map, {'st_profile_path', ...
+        'st_profile_prefix', 'st_profile_name_main', 'st_profile_suffix'});
+    [st_profile_path, st_profile_prefix, st_profile_name_main, st_profile_suffix] = params_group{:};
+    
+    % Save
+    st_file_name = [st_profile_prefix st_profile_name_main st_profile_suffix];
+    profsave(profile('info'), strcat(st_profile_path, st_file_name));    
+end
+
+##### SOURCE END #####
+--></body></html>

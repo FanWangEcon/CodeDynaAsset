@@ -121,8 +121,13 @@ end
 %% Parse
 
 % support_map
-params_group = values(support_map, {'bl_display_final_dist'});
-[bl_display_final_dist] = params_group{:};
+params_group = values(support_map, {'bl_display_final_dist', 'bl_display_final_dist_detail'});
+[bl_display_final_dist, bl_display_final_dist_detail] = params_group{:};
+if (bl_display_final_dist_detail)
+    bl_display_drvstats = true;
+else
+    bl_display_drvstats = false;
+end
 
 % result_map
 params_group = values(result_map, {'ar_st_pol_names'});
@@ -182,7 +187,7 @@ for it_outcome_ctr=1:length(ar_st_pol_names)
 
     % run function fft_disc_rand_var_stats.m from tools:
     % <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html>
-    [ds_stats_map] = fft_disc_rand_var_stats(st_cur_output_key, ar_choice_unique_sorted_byY', ar_choice_prob_byY');
+    [ds_stats_map] = fft_disc_rand_var_stats(st_cur_output_key, ar_choice_unique_sorted_byY', ar_choice_prob_byY', bl_display_drvstats);
 
     % prcess results
     % retrieve scalar statistics:
@@ -199,12 +204,6 @@ for it_outcome_ctr=1:length(ar_st_pol_names)
     % retrieve distributional array stats
     ar_choice_percentiles = ds_stats_map('ar_choice_percentiles');
     ar_choice_perc_fracheld = ds_stats_map('ar_choice_perc_fracheld');
-
-    % Display
-%     if (bl_display_final_dist)
-%         disp(['tb_prob_drv, Percentiles of Y, and Share of Y Held by Households up to this Percentile: ', st_cur_output_key])
-%         disp(tb_prob_drv);
-%     end
 
     %% *f(y), f(c), f(a)*: Store Statistics Specific to Each Outcome
     % see intro section
@@ -243,6 +242,8 @@ result_map('mt_outcomes_fracheld') = mt_outcomes_fracheld;
 % Display
 if (bl_display_final_dist)
 
+    disp('xxx All Variables PERCENTILES AND STATS xxx')
+    
     % Process mean and and percentiles
     tb_outcomes_meansdperc = array2table(mt_outcomes_meansdperc);
     ar_fl_percentiles = ds_stats_map('ar_fl_percentiles');
@@ -253,6 +254,11 @@ if (bl_display_final_dist)
 
     disp('tb_outcomes_meansdperc: mean, sd, percentiles')
     disp(tb_outcomes_meansdperc);
+end
+
+if (bl_display_final_dist_detail)
+    
+    disp('xxx All Variables Fraction of Y Held up to Percentile xxx')
     
     % Process Aset Held by up to percentiles
     tb_outcomes_fracheld = array2table(mt_outcomes_fracheld);
@@ -260,8 +266,8 @@ if (bl_display_final_dist)
     tb_outcomes_fracheld.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
     tb_outcomes_fracheld.Properties.RowNames = matlab.lang.makeValidName(cl_outcome_names);
     
-%     disp('tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile')
-%     disp(tb_outcomes_fracheld);
+    disp('tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile')
+    disp(tb_outcomes_fracheld);
 
 end
 

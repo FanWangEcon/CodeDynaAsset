@@ -1,8 +1,9 @@
-%% 
+%% Risky + Safe Asset Dyna Prog Two-Step Solution (Vectorized)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository> 
 % Table of Content.*
 
+%%
 function result_map = ff_wkz_vf_vec(varargin)
 %% FF_WKZ_VF_VEC solve infinite horizon exo shock + endo asset problem
 % This program solves the infinite horizon dynamic savings and risky
@@ -41,12 +42,23 @@ function result_map = ff_wkz_vf_vec(varargin)
 %
 % @include
 %
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ff_wkz_evf.m ff_wkz_evf>
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ffs_akz_set_default_param.m ffs_akz_set_default_param>
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ffs_akz_get_funcgrid.m ffs_akz_get_funcgrid>
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solvepost/ff_akz_vf_post.m ff_akz_vf_post>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_evf.html ff_wkz_evf>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html ffs_akz_set_default_param>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html ffs_akz_get_funcgrid>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_vf_post.html ff_akz_vf_post>
 %
-
+% @seealso
+%
+% * concurrent (safe + risky) loop: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf.html ff_akz_vf>
+% * concurrent (safe + risky) vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vec.html ff_akz_vf_vec>
+% * concurrent (safe + risky) optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vecsv.html ff_akz_vf_vecsv>
+% * two-stage (safe + risky) loop: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf.html ff_wkz_vf>
+% * two-stage (safe + risky) vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf_vec.html ff_wkz_vf_vec>
+% * two-stage (safe + risky) optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf_vecsv.html ff_wkz_vf_vecsv>
+% * two-stage + interpolate (safe + risky) loop: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf.html ff_iwkz_vf>
+% * two-stage + interpolate (safe + risky) vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf_vec.html ff_iwkz_vf_vec>
+% * two-stage + interpolate (safe + risky) optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf_vecsv.html ff_iwkz_vf_vecsv>
+%
 
 %% Default
 % * it_param_set = 1: quick test
@@ -58,9 +70,9 @@ it_param_set = 4;
 bl_input_override = true;
 [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
 
-% parameters can be set inside ffs_akz_set_default_param or updated here
-param_map('it_w_n') = 50;
-param_map('it_z_n') = 15;
+% Note: param_map and support_map can be adjusted here or outside to override defaults
+% param_map('it_w_n') = 50;
+% param_map('it_z_n') = 15;
 
 % get armt and func map
 [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
@@ -98,8 +110,8 @@ params_group = values(armt_map, {'ar_w', 'ar_z'});
 params_group = values(armt_map, {'ar_a_meshk', 'ar_k_mesha', 'mt_coh_wkb', 'it_ameshk_n'});
 [ar_a_meshk, ar_k_mesha, mt_coh_wkb, it_ameshk_n] = params_group{:};
 % func_map
-params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons'});
-[f_util_log, f_util_crra, f_cons] = params_group{:};
+params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons', 'f_coh'});
+[f_util_log, f_util_crra, f_cons, f_coh] = params_group{:};
 % param_map
 params_group = values(param_map, {'fl_r_save', 'fl_r_borr', 'fl_w',...
     'it_z_n', 'fl_crra', 'fl_beta', 'fl_c_min'});
@@ -208,8 +220,35 @@ while bl_vfi_continue
         mt_val(:,it_z_i) = ar_opti_val1_z;
         mt_pol_a(:,it_z_i) = ar_w_astar_z(ar_opti_idx_z);
         mt_pol_k(:,it_z_i) = ar_w_kstar_z(ar_opti_idx_z);        
+        
+        %% Obtain Choice Index for Vectorized/Analytical Distribution Programs
+        % For deriving distributions using vectorized and semi-analytical
+        % methods, at convergence, what index do optimal choices correspond
+        % to in terms of the rows of mt_val and mt_pol_a, and mt_pol_k.
         if (it_iter == (it_maxiter_val + 1))
-            mt_pol_idx(:,it_z_i) = ar_opti_idx_z;
+            
+            ar_a_opti = mt_pol_a(:,it_z_i);
+            ar_k_opti = mt_pol_k(:,it_z_i);
+            
+            % For the LHS matrixes here, each column a different optimal
+            % choice, each row a different element of the a_meshk and
+            % k_mesha vectors. 
+            [mt_a_meshk_mesh_a_opti, mt_a_opti_mesh_a_meshk] = ndgrid(ar_a_meshk, ar_a_opti);
+            [mt_k_meshk_mesh_k_opti, mt_k_opti_mesh_k_meshk] = ndgrid(ar_k_mesha, ar_k_opti);
+            
+            % For each column (one optimal choice), which row has that
+            % optimal choice's k' and b' values. 
+            mt_a_opti_match = (mt_a_meshk_mesh_a_opti == mt_a_opti_mesh_a_meshk);
+            mt_k_opti_match = (mt_k_meshk_mesh_k_opti == mt_k_opti_mesh_k_meshk);            
+            mt_ak_joint_match = mt_a_opti_match.*mt_k_opti_match;
+            
+            % Full index, meaning, not in terms of the w=k'+b' grid's
+            % length, but in terms of the full partial triangular matched
+            % up combination of k' and b'.
+            [~, ar_opti_fullakvec_idx_z] = max(mt_ak_joint_match);
+            
+            % Save full index
+            mt_pol_idx(:,it_z_i) = ar_opti_fullakvec_idx_z;
         end
 
     end
@@ -282,8 +321,14 @@ end
 
 result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
-result_map('mt_pol_a') = mt_pol_a;
-result_map('mt_pol_k') = mt_pol_k;
+result_map('mt_pol_idx') = mt_pol_idx;
+
+mt_coh = f_coh(ar_z, ar_a_meshk, ar_k_mesha);
+result_map('cl_mt_pol_coh') = {mt_coh, zeros(1)};
+result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
+result_map('cl_mt_pol_k') = {mt_pol_k, zeros(1)};
+result_map('cl_mt_pol_c') = {f_cons(mt_coh, mt_pol_a, mt_pol_k), zeros(1)};
+result_map('ar_st_pol_names') = ["cl_mt_pol_coh", "cl_mt_pol_a", "cl_mt_pol_k", "cl_mt_pol_c"];
 
 if (bl_post)
     bl_input_override = true;

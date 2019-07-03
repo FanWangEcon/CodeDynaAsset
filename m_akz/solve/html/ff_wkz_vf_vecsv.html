@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>ff_wkz_vf_vecsv</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-18"><meta name="DC.source" content="ff_wkz_vf_vecsv.m"><style type="text/css">
+      --><title>Risky + Safe Asset Dyna Prog Two-Step Solution (Optimized-Vectorized)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-03"><meta name="DC.source" content="ff_wkz_vf_vecsv.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,8 +66,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">FF_WKZ_VF_VECSV solve infinite horizon exo shock + endo asset problem</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1</a></li><li><a href="#5">Parse Parameters 2</a></li><li><a href="#6">Initialize Output Matrixes</a></li><li><a href="#7">Initialize Convergence Conditions</a></li><li><a href="#8">Iterate Value Function</a></li><li><a href="#10">Solve Second Stage Problem k*(w,z)</a></li><li><a href="#11">Find which k choice differ across iterations?</a></li><li><a href="#12">Solve First Stage Problem w*(z) given k*(w,z)</a></li><li><a href="#13">Check Tolerance and Continuation</a></li><li><a href="#15">Process Optimal Choices</a></li></ul></div><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><pre class="codeinput"><span class="keyword">function</span> result_map = ff_wkz_vf_vecsv(varargin)
-</pre><h2 id="2">FF_WKZ_VF_VECSV solve infinite horizon exo shock + endo asset problem</h2><p>This program solves the infinite horizon dynamic savings and risky capital asset problem with some ar1 shock. This is the efficient vectorized version of <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf.html">ff_wkz_vf</a>. See that file for more descriptions.</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@param func_map container container with function handles for consumption cash-on-hand etc.</p><p>@return result_map container contains policy function matrix, value function matrix, iteration results, and policy function, value function and iteration results tables.</p><p>keys included in result_map:</p><div><ul><li>mt_val matrix states_n by shock_n matrix of converged value function grid</li><li>mt_pol_a matrix states_n by shock_n matrix of converged policy function grid</li><li>ar_val_diff_norm array if bl_post = true it_iter_last by 1 val function difference between iteration</li><li>ar_pol_diff_norm array if bl_post = true it_iter_last by 1 policy function difference between iterations</li><li>mt_pol_perc_change matrix if bl_post = true it_iter_last by shock_n the proportion of grid points at which policy function changed between current and last iteration for each element of shock</li></ul></div><p>@example</p><p>@include</p><div><ul><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ff_wkz_evf.m">ff_wkz_evf</a></li><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ffs_akz_set_default_param.m">ffs_akz_set_default_param</a></li><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ffs_akz_get_funcgrid.m">ffs_akz_get_funcgrid</a></li><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solvepost/ff_akz_vf_post.m">ff_akz_vf_post</a></li></ul></div><h2 id="3">Default</h2><div><ul><li>it_param_set = 1: quick test</li><li>it_param_set = 2: benchmark run</li><li>it_param_set = 3: benchmark profile</li><li>it_param_set = 4: press publish button</li></ul></div><pre class="codeinput">it_param_set = 4;
+  </style></head><body><div class="content"><h1>Risky + Safe Asset Dyna Prog Two-Step Solution (Optimized-Vectorized)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_WKZ_VF_VECSV solve infinite horizon exo shock + endo asset problem</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1</a></li><li><a href="#5">Parse Parameters 2</a></li><li><a href="#6">Initialize Output Matrixes</a></li><li><a href="#7">Initialize Convergence Conditions</a></li><li><a href="#8">Iterate Value Function</a></li><li><a href="#10">Solve Second Stage Problem k*(w,z)</a></li><li><a href="#11">Find which k choice differ across iterations?</a></li><li><a href="#12">Solve First Stage Problem w*(z) given k*(w,z)</a></li><li><a href="#14">Obtain Choice Index for Vectorized/Analytical Distribution Programs</a></li><li><a href="#16">Check Tolerance and Continuation</a></li><li><a href="#18">Process Optimal Choices</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> result_map = ff_wkz_vf_vecsv(varargin)
+</pre><h2 id="2">FF_WKZ_VF_VECSV solve infinite horizon exo shock + endo asset problem</h2><p>This program solves the infinite horizon dynamic savings and risky capital asset problem with some ar1 shock. This is the efficient vectorized version of <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf.html">ff_wkz_vf</a>. See that file for more descriptions.</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@param func_map container container with function handles for consumption cash-on-hand etc.</p><p>@return result_map container contains policy function matrix, value function matrix, iteration results, and policy function, value function and iteration results tables.</p><p>keys included in result_map:</p><div><ul><li>mt_val matrix states_n by shock_n matrix of converged value function grid</li><li>mt_pol_a matrix states_n by shock_n matrix of converged policy function grid</li><li>ar_val_diff_norm array if bl_post = true it_iter_last by 1 val function difference between iteration</li><li>ar_pol_diff_norm array if bl_post = true it_iter_last by 1 policy function difference between iterations</li><li>mt_pol_perc_change matrix if bl_post = true it_iter_last by shock_n the proportion of grid points at which policy function changed between current and last iteration for each element of shock</li></ul></div><p>@include</p><div><ul><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_evf.html">ff_wkz_evf</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html">ffs_akz_set_default_param</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html">ffs_akz_get_funcgrid</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_vf_post.html">ff_akz_vf_post</a></li></ul></div><p>@seealso</p><div><ul><li>concurrent (safe + risky) loop: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf.html">ff_akz_vf</a></li><li>concurrent (safe + risky) vectorized: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vec.html">ff_akz_vf_vec</a></li><li>concurrent (safe + risky) optimized-vectorized: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vecsv.html">ff_akz_vf_vecsv</a></li><li>two-stage (safe + risky) loop: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf.html">ff_wkz_vf</a></li><li>two-stage (safe + risky) vectorized: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf_vec.html">ff_wkz_vf_vec</a></li><li>two-stage (safe + risky) optimized-vectorized: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf_vecsv.html">ff_wkz_vf_vecsv</a></li><li>two-stage + interpolate (safe + risky) loop: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf.html">ff_iwkz_vf</a></li><li>two-stage + interpolate (safe + risky) vectorized: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf_vec.html">ff_iwkz_vf_vec</a></li><li>two-stage + interpolate (safe + risky) optimized-vectorized: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf_vecsv.html">ff_iwkz_vf_vecsv</a></li></ul></div><h2 id="3">Default</h2><div><ul><li>it_param_set = 1: quick test</li><li>it_param_set = 2: benchmark run</li><li>it_param_set = 3: benchmark profile</li><li>it_param_set = 4: press publish button</li></ul></div><pre class="codeinput">it_param_set = 4;
 bl_input_override = true;
 [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
 
@@ -105,8 +105,8 @@ params_group = values(armt_map, {<span class="string">'ar_w'</span>, <span class
 params_group = values(armt_map, {<span class="string">'ar_a_meshk'</span>, <span class="string">'ar_k_mesha'</span>, <span class="string">'mt_coh_wkb'</span>, <span class="string">'it_ameshk_n'</span>});
 [ar_a_meshk, ar_k_mesha, mt_coh_wkb, it_ameshk_n] = params_group{:};
 <span class="comment">% func_map</span>
-params_group = values(func_map, {<span class="string">'f_util_log'</span>, <span class="string">'f_util_crra'</span>, <span class="string">'f_cons'</span>});
-[f_util_log, f_util_crra, f_cons] = params_group{:};
+params_group = values(func_map, {<span class="string">'f_util_log'</span>, <span class="string">'f_util_crra'</span>, <span class="string">'f_cons'</span>, <span class="string">'f_coh'</span>});
+[f_util_log, f_util_crra, f_cons, f_coh] = params_group{:};
 <span class="comment">% param_map</span>
 params_group = values(param_map, {<span class="string">'fl_r_save'</span>, <span class="string">'fl_r_borr'</span>, <span class="string">'fl_w'</span>,<span class="keyword">...</span>
     <span class="string">'it_z_n'</span>, <span class="string">'fl_crra'</span>, <span class="string">'fl_beta'</span>, <span class="string">'fl_c_min'</span>});
@@ -162,8 +162,7 @@ mt_pol_perc_change = zeros([it_maxiter_val, it_z_n]);
 </pre><h2 id="11">Find which k choice differ across iterations?</h2><pre class="codeinput">    mt_w_kstar_diff_idx = (mt_ev_condi_z_max_kp_cur ~= mt_ev_condi_z_max_kp);
 </pre><h2 id="12">Solve First Stage Problem w*(z) given k*(w,z)</h2><pre class="codeinput">    <span class="comment">% loop 1: over exogenous states</span>
     <span class="keyword">for</span> it_z_i = 1:length(ar_z)
-
-        <span class="comment">% State Array fixed</span>
+</pre><pre class="codeinput">        <span class="comment">% State Array fixed</span>
         ar_coh_z = mt_coh_wkb(:,it_z_i);
 
         <span class="comment">% Get 2nd Stage Choice Arrays</span>
@@ -219,12 +218,33 @@ mt_pol_perc_change = zeros([it_maxiter_val, it_z_n]);
         mt_val(:,it_z_i) = ar_opti_val1_z;
         mt_pol_a(:,it_z_i) = mt_ev_condi_z_max_bp(ar_opti_idx_z, it_z_i);
         mt_pol_k(:,it_z_i) = mt_ev_condi_z_max_kp(ar_opti_idx_z, it_z_i);
-        <span class="keyword">if</span> (it_iter == (it_maxiter_val + 1))
-            mt_pol_idx(:,it_z_i) = ar_opti_idx_z;
-        <span class="keyword">end</span>
+</pre><h2 id="14">Obtain Choice Index for Vectorized/Analytical Distribution Programs</h2><p>For deriving distributions using vectorized and semi-analytical methods, at convergence, what index do optimal choices correspond to in terms of the rows of mt_val and mt_pol_a, and mt_pol_k.</p><pre class="codeinput">        <span class="keyword">if</span> (it_iter == (it_maxiter_val + 1))
 
-    <span class="keyword">end</span>
-</pre><h2 id="13">Check Tolerance and Continuation</h2><pre class="codeinput">    <span class="comment">% Difference across iterations</span>
+            ar_a_opti = mt_pol_a(:,it_z_i);
+            ar_k_opti = mt_pol_k(:,it_z_i);
+
+            <span class="comment">% For the LHS matrixes here, each column a different optimal</span>
+            <span class="comment">% choice, each row a different element of the a_meshk and</span>
+            <span class="comment">% k_mesha vectors.</span>
+            [mt_a_meshk_mesh_a_opti, mt_a_opti_mesh_a_meshk] = ndgrid(ar_a_meshk, ar_a_opti);
+            [mt_k_meshk_mesh_k_opti, mt_k_opti_mesh_k_meshk] = ndgrid(ar_k_mesha, ar_k_opti);
+
+            <span class="comment">% For each column (one optimal choice), which row has that</span>
+            <span class="comment">% optimal choice's k' and b' values.</span>
+            mt_a_opti_match = (mt_a_meshk_mesh_a_opti == mt_a_opti_mesh_a_meshk);
+            mt_k_opti_match = (mt_k_meshk_mesh_k_opti == mt_k_opti_mesh_k_meshk);
+            mt_ak_joint_match = mt_a_opti_match.*mt_k_opti_match;
+
+            <span class="comment">% Full index, meaning, not in terms of the w=k'+b' grid's</span>
+            <span class="comment">% length, but in terms of the full partial triangular matched</span>
+            <span class="comment">% up combination of k' and b'.</span>
+            [~, ar_opti_fullakvec_idx_z] = max(mt_ak_joint_match);
+
+            <span class="comment">% Save full index</span>
+            mt_pol_idx(:,it_z_i) = ar_opti_fullakvec_idx_z;
+        <span class="keyword">end</span>
+</pre><pre class="codeinput">    <span class="keyword">end</span>
+</pre><h2 id="16">Check Tolerance and Continuation</h2><pre class="codeinput">    <span class="comment">% Difference across iterations</span>
     ar_val_diff_norm(it_iter) = norm(mt_val - mt_val_cur);
     ar_pol_diff_norm(it_iter) = norm(mt_pol_a - mt_pol_a_cur) + norm(mt_pol_k - mt_pol_k_cur);
     ar_pol_a_perc_change = sum((mt_pol_a ~= mt_pol_a_cur))/(it_ameshk_n);
@@ -285,10 +305,16 @@ mt_pol_perc_change = zeros([it_maxiter_val, it_z_n]);
     st_file_name = [st_profile_prefix st_profile_name_main st_profile_suffix];
     profsave(profile(<span class="string">'info'</span>), strcat(st_profile_path, st_file_name));
 <span class="keyword">end</span>
-</pre><h2 id="15">Process Optimal Choices</h2><pre class="codeinput">result_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
+</pre><h2 id="18">Process Optimal Choices</h2><pre class="codeinput">result_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
 result_map(<span class="string">'mt_val'</span>) = mt_val;
-result_map(<span class="string">'mt_pol_a'</span>) = mt_pol_a;
-result_map(<span class="string">'mt_pol_k'</span>) = mt_pol_k;
+result_map(<span class="string">'mt_pol_idx'</span>) = mt_pol_idx;
+
+mt_coh = f_coh(ar_z, ar_a_meshk, ar_k_mesha);
+result_map(<span class="string">'cl_mt_pol_coh'</span>) = {mt_coh, zeros(1)};
+result_map(<span class="string">'cl_mt_pol_a'</span>) = {mt_pol_a, zeros(1)};
+result_map(<span class="string">'cl_mt_pol_k'</span>) = {mt_pol_k, zeros(1)};
+result_map(<span class="string">'cl_mt_pol_c'</span>) = {f_cons(mt_coh, mt_pol_a, mt_pol_k), zeros(1)};
+result_map(<span class="string">'ar_st_pol_names'</span>) = [<span class="string">"cl_mt_pol_coh"</span>, <span class="string">"cl_mt_pol_a"</span>, <span class="string">"cl_mt_pol_k"</span>, <span class="string">"cl_mt_pol_c"</span>];
 
 <span class="keyword">if</span> (bl_post)
     bl_input_override = true;
@@ -297,9 +323,9 @@ result_map(<span class="string">'mt_pol_k'</span>) = mt_pol_k;
     result_map(<span class="string">'mt_pol_perc_change'</span>) = mt_pol_perc_change(1:it_iter_last, :);
     result_map = ff_akz_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
 <span class="keyword">end</span>
-</pre><pre class="codeoutput">valgap = norm(mt_val - mt_val_cur)
-polgap = norm(mt_pol_a - mt_pol_a_cur)
-z1 = z1 perc change: sum((mt_pol_a ~= mt_pol_a_cur))/(it_ameshk_n)
+</pre><pre class="codeoutput">valgap = norm(mt_val - mt_val_cur): value function difference across iterations
+polgap = norm(mt_pol_a - mt_pol_a_cur): policy function difference across iterations
+z1 = z1 perc change: (sum((mt_pol_a ~= mt_pol_a_cur))+sum((mt_pol_k ~= mt_pol_k_cur)))/(2*it_ameshk_n):percentage of state space points conditional on shock where the policy function is changing across iterations
                 valgap     polgap        z1            z2            z3            z4            z5            z6            z7            z8            z9           z10           z11           z12           z13           z14           z15    
                 _______    ______    __________    __________    __________    __________    __________    __________    __________    __________    __________    __________    __________    __________    __________    __________    __________
 
@@ -404,7 +430,7 @@ z1 = z1 perc change: sum((mt_pol_a ~= mt_pol_a_cur))/(it_ameshk_n)
     iter=99      0.1204         0             0             0             0             0             0             0             0             0             0             0             0             0             0             0             0
     iter=100    0.11317         0             0             0             0             0             0             0             0             0             0             0             0             0             0             0             0
 
-tb_val
+tb_val: V(a,z) value at each state space point
                                    z1_0_34741    z2_0_40076    z3_0_4623    z4_0_5333    z5_0_61519    z6_0_70966    z10_1_2567    z11_1_4496    z12_1_6723    z13_1_9291    z14_2_2253    z15_2_567
                                    __________    __________    _________    _________    __________    __________    __________    __________    __________    __________    __________    _________
 
@@ -509,7 +535,7 @@ tb_val
     coh1274:k=1.02041,b=48.9796      14.576         14.65        14.734       14.825       14.924        15.036        15.591        15.765        15.955        16.158        16.373        16.581 
     coh1275:k=0,b=50                 14.566        14.639        14.724       14.817       14.916        15.027        15.584        15.761         15.95        16.155         16.37        16.579 
 
-tb_pol_a
+tb_pol_a: optimal safe savings choice for each state space point
                                    z1_0_34741    z2_0_40076    z3_0_4623    z4_0_5333    z5_0_61519    z6_0_70966    z10_1_2567    z11_1_4496    z12_1_6723    z13_1_9291    z14_2_2253    z15_2_567
                                    __________    __________    _________    _________    __________    __________    __________    __________    __________    __________    __________    _________
 
@@ -614,7 +640,7 @@ tb_pol_a
     coh1274:k=1.02041,b=48.9796      41.837        41.837       40.816       40.816        39.796        40.816        37.755        35.714        34.694        33.673        31.633       29.592  
     coh1275:k=0,b=50                 40.816        41.837       40.816       40.816        39.796        40.816        37.755        35.714        34.694        33.673        31.633       29.592  
 
-tb_pol_k
+tb_pol_k: optimal risky investment choice for each state space point
                                    z1_0_34741    z2_0_40076    z3_0_4623    z4_0_5333    z5_0_61519    z6_0_70966    z10_1_2567    z11_1_4496    z12_1_6723    z13_1_9291    z14_2_2253    z15_2_567
                                    __________    __________    _________    _________    __________    __________    __________    __________    __________    __________    __________    _________
 
@@ -719,7 +745,7 @@ tb_pol_k
     coh1274:k=1.02041,b=48.9796      2.0408        2.0408       3.0612       3.0612        4.0816        4.0816        9.1837        11.224        13.265        15.306        18.367       20.408  
     coh1275:k=0,b=50                 2.0408        2.0408       3.0612       3.0612        4.0816        4.0816        9.1837        11.224        13.265        15.306        18.367       20.408  
 
-tb_pol_w
+tb_pol_w: risky + safe investment choices (first stage choice, choose within risky vs safe)
                                    z1_0_34741    z2_0_40076    z3_0_4623    z4_0_5333    z5_0_61519    z6_0_70966    z10_1_2567    z11_1_4496    z12_1_6723    z13_1_9291    z14_2_2253    z15_2_567
                                    __________    __________    _________    _________    __________    __________    __________    __________    __________    __________    __________    _________
 
@@ -830,17 +856,18 @@ ans =
 
   Map with properties:
 
-        Count: 11
+        Count: 15
       KeyType: char
     ValueType: any
 
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
-%% 
+%% Risky + Safe Asset Dyna Prog Two-Step Solution (Optimized-Vectorized)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository> 
 % Table of Content.*
 
+%%
 function result_map = ff_wkz_vf_vecsv(varargin)
 %% FF_WKZ_VF_VECSV solve infinite horizon exo shock + endo asset problem
 % This program solves the infinite horizon dynamic savings and risky
@@ -875,16 +902,25 @@ function result_map = ff_wkz_vf_vecsv(varargin)
 % proportion of grid points at which policy function changed between
 % current and last iteration for each element of shock
 %
-% @example
-%
 % @include
 %
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ff_wkz_evf.m ff_wkz_evf>
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ffs_akz_set_default_param.m ffs_akz_set_default_param>
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ffs_akz_get_funcgrid.m ffs_akz_get_funcgrid>
-% * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solvepost/ff_akz_vf_post.m ff_akz_vf_post>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_evf.html ff_wkz_evf>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html ffs_akz_set_default_param>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html ffs_akz_get_funcgrid>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_vf_post.html ff_akz_vf_post>
 %
-
+% @seealso
+%
+% * concurrent (safe + risky) loop: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf.html ff_akz_vf>
+% * concurrent (safe + risky) vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vec.html ff_akz_vf_vec>
+% * concurrent (safe + risky) optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vecsv.html ff_akz_vf_vecsv>
+% * two-stage (safe + risky) loop: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf.html ff_wkz_vf>
+% * two-stage (safe + risky) vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf_vec.html ff_wkz_vf_vec>
+% * two-stage (safe + risky) optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf_vecsv.html ff_wkz_vf_vecsv>
+% * two-stage + interpolate (safe + risky) loop: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf.html ff_iwkz_vf>
+% * two-stage + interpolate (safe + risky) vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf_vec.html ff_iwkz_vf_vec>
+% * two-stage + interpolate (safe + risky) optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf_vecsv.html ff_iwkz_vf_vecsv>
+%
 
 %% Default
 % * it_param_set = 1: quick test
@@ -936,8 +972,8 @@ params_group = values(armt_map, {'ar_w', 'ar_z'});
 params_group = values(armt_map, {'ar_a_meshk', 'ar_k_mesha', 'mt_coh_wkb', 'it_ameshk_n'});
 [ar_a_meshk, ar_k_mesha, mt_coh_wkb, it_ameshk_n] = params_group{:};
 % func_map
-params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons'});
-[f_util_log, f_util_crra, f_cons] = params_group{:};
+params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons', 'f_coh'});
+[f_util_log, f_util_crra, f_cons, f_coh] = params_group{:};
 % param_map
 params_group = values(param_map, {'fl_r_save', 'fl_r_borr', 'fl_w',...
     'it_z_n', 'fl_crra', 'fl_beta', 'fl_c_min'});
@@ -1081,8 +1117,35 @@ while bl_vfi_continue
         mt_val(:,it_z_i) = ar_opti_val1_z;
         mt_pol_a(:,it_z_i) = mt_ev_condi_z_max_bp(ar_opti_idx_z, it_z_i);
         mt_pol_k(:,it_z_i) = mt_ev_condi_z_max_kp(ar_opti_idx_z, it_z_i);        
+        
+        %% Obtain Choice Index for Vectorized/Analytical Distribution Programs
+        % For deriving distributions using vectorized and semi-analytical
+        % methods, at convergence, what index do optimal choices correspond
+        % to in terms of the rows of mt_val and mt_pol_a, and mt_pol_k.
         if (it_iter == (it_maxiter_val + 1))
-            mt_pol_idx(:,it_z_i) = ar_opti_idx_z;
+            
+            ar_a_opti = mt_pol_a(:,it_z_i);
+            ar_k_opti = mt_pol_k(:,it_z_i);
+            
+            % For the LHS matrixes here, each column a different optimal
+            % choice, each row a different element of the a_meshk and
+            % k_mesha vectors. 
+            [mt_a_meshk_mesh_a_opti, mt_a_opti_mesh_a_meshk] = ndgrid(ar_a_meshk, ar_a_opti);
+            [mt_k_meshk_mesh_k_opti, mt_k_opti_mesh_k_meshk] = ndgrid(ar_k_mesha, ar_k_opti);
+            
+            % For each column (one optimal choice), which row has that
+            % optimal choice's k' and b' values. 
+            mt_a_opti_match = (mt_a_meshk_mesh_a_opti == mt_a_opti_mesh_a_meshk);
+            mt_k_opti_match = (mt_k_meshk_mesh_k_opti == mt_k_opti_mesh_k_meshk);            
+            mt_ak_joint_match = mt_a_opti_match.*mt_k_opti_match;
+            
+            % Full index, meaning, not in terms of the w=k'+b' grid's
+            % length, but in terms of the full partial triangular matched
+            % up combination of k' and b'.
+            [~, ar_opti_fullakvec_idx_z] = max(mt_ak_joint_match);
+            
+            % Save full index
+            mt_pol_idx(:,it_z_i) = ar_opti_fullakvec_idx_z;
         end
 
     end
@@ -1156,8 +1219,14 @@ end
 
 result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
-result_map('mt_pol_a') = mt_pol_a;
-result_map('mt_pol_k') = mt_pol_k;
+result_map('mt_pol_idx') = mt_pol_idx;
+
+mt_coh = f_coh(ar_z, ar_a_meshk, ar_k_mesha);
+result_map('cl_mt_pol_coh') = {mt_coh, zeros(1)};
+result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
+result_map('cl_mt_pol_k') = {mt_pol_k, zeros(1)};
+result_map('cl_mt_pol_c') = {f_cons(mt_coh, mt_pol_a, mt_pol_k), zeros(1)};
+result_map('ar_st_pol_names') = ["cl_mt_pol_coh", "cl_mt_pol_a", "cl_mt_pol_k", "cl_mt_pol_c"];
 
 if (bl_post)
     bl_input_override = true;

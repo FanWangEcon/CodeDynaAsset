@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>ff_wkz_evf</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-07"><meta name="DC.source" content="ff_wkz_evf.m"><style type="text/css">
+      --><title>2nd Stage Optimization for Risky + Safe Asset + 2 Stage Solution</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-02"><meta name="DC.source" content="ff_wkz_evf.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">FF_WKZ_EVF solves the k' vs b' problem given aggregate savings</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Integrate <b>E(V(coh(k',b'), z')|z, w)</b></a></li><li><a href="#6">Reshape <b>E(V(coh,z'|z,w))</b> to allow for maxing</a></li><li><a href="#7">Maximize <b>max_{k'}(E(V(coh(k',b'=w-k'),z'|z,w))</b> optimal value and index</a></li><li><a href="#8">Reindex K' and B' Choices for each State at the Optimal <b>w'=k'+b'</b> choice</a></li><li><a href="#9">Generate Optimal K' and B' on w(coh) percentage grid from w level grid</a></li><li><a href="#10">Graph</a></li><li><a href="#12">Graph 1, V and EV</a></li><li><a href="#13">Graph 2, max(EV)</a></li><li><a href="#14">Graph 3, max(EV), color regions, borrow save</a></li><li><a href="#15">Graph 4, Optimal K' and B' Levels</a></li></ul></div><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><pre class="codeinput"><span class="keyword">function</span> [mt_ev_condi_z_max, mt_ev_condi_z_max_idx, mt_ev_condi_z_max_kp, mt_ev_condi_z_max_bp] = ff_wkz_evf(varargin)
+  </style></head><body><div class="content"><h1>2nd Stage Optimization for Risky + Safe Asset + 2 Stage Solution</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_WKZ_EVF solves the k' vs b' problem given aggregate savings</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Integrate <b>E(V(coh(k',b'), z')|z, w)</b></a></li><li><a href="#6">Reshape <b>E(V(coh,z'|z,w))</b> to allow for maxing</a></li><li><a href="#7">Maximize <b>max_{k'}(E(V(coh(k',b'=w-k'),z'|z,w))</b> optimal value and index</a></li><li><a href="#8">Reindex K' and B' Choices for each State at the Optimal <b>w'=k'+b'</b> choice</a></li><li><a href="#9">Generate Optimal K' and B' on w(coh) percentage grid from w level grid</a></li><li><a href="#10">Graph</a></li><li><a href="#12">Graph 1, V and EV</a></li><li><a href="#13">Graph 2, max(EV)</a></li><li><a href="#14">Graph 3, max(EV), color regions, borrow save</a></li><li><a href="#15">Graph 4, Optimal K' and B' Levels</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [mt_ev_condi_z_max, mt_ev_condi_z_max_idx, mt_ev_condi_z_max_kp, mt_ev_condi_z_max_bp] = ff_wkz_evf(varargin)
 </pre><h2 id="2">FF_WKZ_EVF solves the k' vs b' problem given aggregate savings</h2><p>Rather than solving the two asset problem in one shot. We can separate the problem into two stages. This is the second stage of the problem. Here we find the optimal k' choice given w=k'+b'. max_{k'}(E(V(coh(k',b'=w-k'),z'|z,w)) is the maximization problem. Conditional on shock and w. Note that this problem is not conditional on cash-on-hand today, but conditional on w. We do not need to know the cash-on-hand in the current period to find the optimal k' choice conditional on w.</p><p>This means we can solve for the optimal relative allocation of risky and safe asset conditional on total savings. Note that we still need the value function <b>mt_val</b>, which is required to find EV.</p><p>@param mt_val matrix state_n ((I-1)*J/2+I) by shock_n. This is the value matrix each row is a feasible reachable state given the choice vectors/matrix and each column is a shock state.</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@return mt_ev_condi_z_max matrix choice_w_n by shock_n max_{k'}(E(V(coh(k',b'=w-k'),z'|z,w)) conditional on z and w, at the optimal k' choice (w=k'+b') what is the expected utility? This is the value result from the 2nd stage problem. Note the result integrates over z'.</p><p>@return mt_ev_condi_z_max_idx matrix choice_w_n by shock_n this is the argmax from max_{k'}(E(V(coh(k',b'=w-k'),z'|z,w)). Given the vector of k' choices, which index maximized conditional on z and w integrating over z'/</p><p>@return mt_ev_condi_z_max_kp matrix choice_w_n by shock_n the k' choice at max_{k'}(E(V(coh(k',b'=w-k'),z'|z,w))</p><p>@return mt_ev_condi_z_max_bp matrix choice_w_n by shock_n the b'=w-k' choice at max_{k'}(E(V(coh(k',b'=w-k'),z'|z,w))</p><p>@example</p><p>@include</p><div><ul><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ffs_akz_set_default_param.m">ffs_akz_set_default_param</a></li><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/paramfunc/ffs_akz_get_funcgrid.m">ffs_akz_get_funcgrid</a></li></ul></div><h2 id="3">Default</h2><pre class="codeinput">params_len = length(varargin);
 bl_input_override = 0;
 <span class="keyword">if</span> (params_len == 5)
@@ -109,7 +109,7 @@ params_group = values(support_map, {<span class="string">'bl_img_save'</span>, <
 st_func_name = <span class="string">'ff_wkz_evf'</span>;
 st_img_name_main = [st_func_name st_img_name_main];
 </pre><h2 id="5">Integrate <b>E(V(coh(k',b'), z')|z, w)</b></h2><p>Each column for a different state z, each value <b>E(V(coh,z')|z)</b> integrated already Here, each column is a current z, more to right higher EV dim(mt_ev_condi_z): <b>Q by M</b> Note that: mt_ev_condi_z = mt_val*mt_z_trans' is a mistake, that would be what we do in the <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html">ffs_akz_set_functions</a> code where we loop over current z, and for each current z, grab out a particular row from the mt_z_trans that corresponds to a current shock's transition into all future states.</p><p>here, each column of mt_val corresponds to a state z, think of that as future state z. The input mt_val is <b>V(coh, z)</b>, we need to integrate to get <b>E(V(coh,z')|z)</b>.</p><pre class="codeinput">mt_ev_condi_z = mt_val*mt_z_trans';
-<span class="keyword">if</span>(bl_display_evf)
+<span class="keyword">if</span> (bl_display_evf)
     disp(<span class="string">'mt_ev_condi_z: Q by M'</span>);
     disp(size(mt_ev_condi_z));
     summary(array2table(mt_ev_condi_z));
@@ -248,420 +248,339 @@ mt_ev_condi_z_full = reshape(mt_ev_condi_z_full, [it_mt_bp_rown, it_mt_bp_coln*i
 </pre><h2 id="7">Maximize <b>max_{k'}(E(V(coh(k',b'=w-k'),z'|z,w))</b> optimal value and index</h2><p>Maximization, find optimal k'/b' combination given z and w=k'+b'</p><pre class="codeinput">[ar_ev_condi_z_max, ar_ev_condi_z_max_idx] = max(mt_ev_condi_z_full);
 mt_ev_condi_z_max = reshape(ar_ev_condi_z_max, [it_mt_bp_coln, it_z_n]);
 mt_ev_condi_z_max_idx = reshape(ar_ev_condi_z_max_idx, [it_mt_bp_coln, it_z_n]);
-<span class="keyword">if</span>(bl_display_evf)
+<span class="keyword">if</span> (bl_display_evf)
+
+    disp(<span class="string">'----------------------------------------'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
     disp(<span class="string">'mt_ev_condi_z_full: J by IxM'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
     disp(size(mt_ev_condi_z_full));
-<span class="comment">%     disp(mt_ev_condi_z_full);</span>
+<span class="comment">%     disp(head(array2table(mt_ev_condi_z_full), 20));</span>
+<span class="comment">%     disp(tail(array2table(mt_ev_condi_z_full), 20));</span>
+
+    disp(<span class="string">'----------------------------------------'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
     disp(<span class="string">'mt_ev_condi_z_max: I by M'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
     disp(size(mt_ev_condi_z_max));
-    summary(array2table(mt_ev_condi_z_max));
+    disp(head(array2table(mt_ev_condi_z_max), 20));
+    disp(tail(array2table(mt_ev_condi_z_max), 20));
+
+
+    disp(<span class="string">'----------------------------------------'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
     disp(<span class="string">'mt_ev_condi_z_max_idx: I by M'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
     disp(size(mt_ev_condi_z_max_idx));
-<span class="comment">%     disp(mt_ev_condi_z_max_idx);</span>
+    disp(head(array2table(mt_ev_condi_z_max_idx), 20));
+    disp(tail(array2table(mt_ev_condi_z_max_idx), 20));
+
 <span class="keyword">end</span>
-</pre><pre class="codeoutput">mt_ev_condi_z_full: J by IxM
+</pre><pre class="codeoutput">----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+mt_ev_condi_z_full: J by IxM
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     50   750
 
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 mt_ev_condi_z_max: I by M
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     50    15
 
+    mt_ev_condi_z_max1    mt_ev_condi_z_max2    mt_ev_condi_z_max3    mt_ev_condi_z_max4    mt_ev_condi_z_max5    mt_ev_condi_z_max6    mt_ev_condi_z_max7    mt_ev_condi_z_max8    mt_ev_condi_z_max9    mt_ev_condi_z_max10    mt_ev_condi_z_max11    mt_ev_condi_z_max12    mt_ev_condi_z_max13    mt_ev_condi_z_max14    mt_ev_condi_z_max15
+    __________________    __________________    __________________    __________________    __________________    __________________    __________________    __________________    __________________    ___________________    ___________________    ___________________    ___________________    ___________________    ___________________
 
-Variables:
+         -0.81272              -0.81272              -0.81272              -0.81272              -0.81272              -0.81272              -0.81272              -0.81272              -0.81272              -0.81272               -0.81272               -0.81272               -0.81272               -0.81272               -0.81272      
+          0.59991               0.62626                0.6565               0.68987               0.72611               0.76523               0.80732               0.85245               0.90072               0.95216                 1.0068                 1.0646                 1.1251                 1.1871                  1.247      
+           1.0598                1.0812                 1.106                1.1334                1.1634                 1.196                1.2313                1.2694                1.3104                1.3545                 1.4016                 1.4519                 1.5049                 1.5595                 1.6126      
+           1.3692                 1.385                1.4041                1.4277                1.4536                1.4819                1.5127                1.5461                1.5823                1.6213                 1.6632                 1.7081                 1.7558                 1.8051                 1.8533      
+           1.6051                1.6177                1.6328                1.6517                1.6732                1.6985                 1.726                 1.756                1.7886                1.8239                  1.862                 1.9029                 1.9466                 1.9919                 2.0363      
+           1.7958                1.8062                1.8188                1.8346                1.8525                1.8737                1.8986                 1.926                1.9559                1.9883                 2.0234                 2.0612                 2.1017                 2.1438                 2.1851      
+           1.9559                1.9648                1.9756                1.9891                2.0045                2.0227                2.0443                2.0692                2.0969                 2.127                 2.1597                  2.195                 2.2328                 2.2724                 2.3112      
+           2.0939                2.1016                2.1111                2.1228                2.1364                2.1524                2.1714                2.1934                 2.219                2.2472                 2.2779                 2.3111                 2.3468                 2.3841                 2.4209      
+           2.2151                 2.222                2.2304                2.2408                2.2529                2.2672                2.2841                2.3038                2.3268                2.3534                 2.3824                 2.4138                 2.4477                 2.4831                 2.5181      
+           2.3232                2.3294                2.3369                2.3463                2.3572                2.3701                2.3854                2.4032                2.4241                2.4486                 2.4761                  2.506                 2.5382                  2.572                 2.6055      
+           2.4208                2.4264                2.4332                2.4418                2.4516                2.4634                2.4773                2.4936                2.5127                2.5352                 2.5611                 2.5897                 2.6205                 2.6529                 2.6849      
+           2.5096                2.5148                 2.521                2.5289                2.5379                2.5487                2.5615                2.5766                2.5942                2.6149                  2.639                 2.6664                 2.6959                  2.727                 2.7578      
+           2.5912                 2.596                2.6017                 2.609                2.6174                2.6273                2.6392                2.6531                2.6694                2.6887                 2.7111                 2.7371                 2.7655                 2.7955                 2.8251      
+           2.6667                2.6711                2.6764                2.6832                 2.691                2.7002                2.7112                2.7242                2.7394                2.7574                 2.7784                 2.8028                 2.8302                 2.8591                 2.8878      
+           2.7369                2.7409                2.7459                2.7522                2.7595                2.7681                2.7785                2.7906                2.8048                2.8217                 2.8414                 2.8644                 2.8906                 2.9186                 2.9464      
+           2.8024                2.8062                2.8109                2.8168                2.8236                2.8317                2.8414                2.8528                2.8662                2.8821                 2.9007                 2.9223                 2.9474                 2.9745                 3.0014      
+           2.8639                2.8675                2.8719                2.8775                2.8839                2.8915                2.9007                2.9114                2.9241                2.9391                 2.9566                 2.9771                 3.0008                 3.0271                 3.0532      
+           2.9219                2.9253                2.9294                2.9347                2.9407                 2.948                2.9566                2.9668                2.9788                 2.993                 3.0096                 3.0291                 3.0516                 3.0769                 3.1023      
+           2.9767                2.9799                2.9838                2.9888                2.9945                3.0014                3.0096                3.0192                3.0306                3.0441                 3.0599                 3.0785                 3.0999                 3.1241                 3.1489      
+           3.0286                3.0316                3.0354                3.0401                3.0456                3.0521                3.0599                 3.069                3.0799                3.0927                 3.1078                 3.1255                  3.146                 3.1691                 3.1932      
 
-    mt_ev_condi_z_max1: 50&times;1 double
+    mt_ev_condi_z_max1    mt_ev_condi_z_max2    mt_ev_condi_z_max3    mt_ev_condi_z_max4    mt_ev_condi_z_max5    mt_ev_condi_z_max6    mt_ev_condi_z_max7    mt_ev_condi_z_max8    mt_ev_condi_z_max9    mt_ev_condi_z_max10    mt_ev_condi_z_max11    mt_ev_condi_z_max12    mt_ev_condi_z_max13    mt_ev_condi_z_max14    mt_ev_condi_z_max15
+    __________________    __________________    __________________    __________________    __________________    __________________    __________________    __________________    __________________    ___________________    ___________________    ___________________    ___________________    ___________________    ___________________
 
-        Values:
+          3.4711                3.4731                3.4755                3.4785                3.4821                3.4863                3.4914                3.4973                3.5044                3.5129                 3.5228                 3.5346                 3.5483                 3.5639                 3.5804       
+          3.5031                 3.505                3.5074                3.5103                3.5137                3.5178                3.5227                3.5285                3.5354                3.5436                 3.5532                 3.5647                  3.578                 3.5931                 3.6092       
+          3.5341                 3.536                3.5382                3.5411                3.5444                3.5484                3.5531                3.5588                3.5654                3.5734                 3.5828                 3.5938                 3.6068                 3.6215                 3.6371       
+          3.5642                 3.566                3.5682                3.5709                3.5742                 3.578                3.5826                3.5881                3.5946                3.6023                 3.6114                 3.6222                 3.6348                 3.6491                 3.6643       
+          3.5934                3.5951                3.5973                3.5999                3.6031                3.6068                3.6113                3.6166                3.6229                3.6304                 3.6393                 3.6498                  3.662                 3.6759                 3.6907       
+          3.6217                3.6234                3.6255                3.6281                3.6312                3.6348                3.6392                3.6443                3.6505                3.6578                 3.6664                 3.6766                 3.6885                 3.7021                 3.7165       
+          3.6493                 3.651                 3.653                3.6555                3.6585                 3.662                3.6663                3.6713                3.6773                3.6844                 3.6928                 3.7027                 3.7143                 3.7276                 3.7416       
+          3.6762                3.6778                3.6797                3.6822                3.6851                3.6885                3.6927                3.6976                3.7034                3.7103                 3.7185                 3.7282                 3.7395                 3.7524                 3.7661       
+          3.7023                3.7039                3.7058                3.7082                 3.711                3.7144                3.7184                3.7232                3.7288                3.7356                 3.7436                  3.753                 3.7641                 3.7767                 3.7901       
+          3.7278                3.7293                3.7312                3.7335                3.7363                3.7395                3.7435                3.7481                3.7537                3.7602                  3.768                 3.7773                  3.788                 3.8003                 3.8134       
+          3.7526                3.7541                3.7559                3.7582                3.7609                3.7641                3.7679                3.7725                3.7779                3.7843                 3.7919                 3.8009                 3.8115                 3.8235                 3.8362       
+          3.7769                3.7783                3.7801                3.7823                3.7849                 3.788                3.7918                3.7962                3.8015                3.8078                 3.8152                  3.824                 3.8343                 3.8461                 3.8586       
+          3.8005                3.8019                3.8037                3.8059                3.8084                3.8114                3.8151                3.8194                3.8246                3.8307                  3.838                 3.8466                 3.8567                 3.8682                 3.8804       
+          3.8236                 3.825                3.8267                3.8289                3.8313                3.8343                3.8379                3.8421                3.8472                3.8532                 3.8603                 3.8687                 3.8786                 3.8898                 3.9018       
+          3.8462                3.8476                3.8492                3.8513                3.8538                3.8567                3.8602                3.8643                3.8693                3.8751                 3.8821                 3.8903                    3.9                  3.911                 3.9227       
+          3.8683                3.8696                3.8713                3.8733                3.8757                3.8785                 3.882                 3.886                3.8909                3.8966                 3.9034                 3.9115                 3.9209                 3.9317                 3.9432       
+          3.8899                3.8912                3.8928                3.8948                3.8972                3.8999                3.9033                3.9073                 3.912                3.9176                 3.9243                 3.9322                 3.9414                  3.952                 3.9633       
+          3.9111                3.9124                3.9139                3.9159                3.9182                3.9209                3.9242                3.9281                3.9327                3.9382                 3.9447                 3.9525                 3.9616                 3.9719                 3.9829       
+          3.9318                3.9331                3.9346                3.9365                3.9387                3.9414                3.9446                3.9484                 3.953                3.9584                 3.9648                 3.9724                 3.9813                 3.9914                 4.0022       
+          3.9521                3.9533                3.9548                3.9567                3.9589                3.9615                3.9647                3.9684                3.9729                3.9782                 3.9844                 3.9919                 4.0006                 4.0106                 4.0212       
 
-            Min             -0.81272      
-            Median            3.2739      
-            Max               3.9521      
-
-    mt_ev_condi_z_max2: 50&times;1 double
-
-        Values:
-
-            Min             -0.81272      
-            Median            3.2763      
-            Max               3.9533      
-
-    mt_ev_condi_z_max3: 50&times;1 double
-
-        Values:
-
-            Min             -0.81272      
-            Median            3.2793      
-            Max               3.9548      
-
-    mt_ev_condi_z_max4: 50&times;1 double
-
-        Values:
-
-            Min             -0.81272      
-            Median             3.283      
-            Max               3.9567      
-
-    mt_ev_condi_z_max5: 50&times;1 double
-
-        Values:
-
-            Min             -0.81272      
-            Median            3.2873      
-            Max               3.9589      
-
-    mt_ev_condi_z_max6: 50&times;1 double
-
-        Values:
-
-            Min             -0.81272      
-            Median            3.2924      
-            Max               3.9615      
-
-    mt_ev_condi_z_max7: 50&times;1 double
-
-        Values:
-
-            Min             -0.81272      
-            Median            3.2985      
-            Max               3.9647      
-
-    mt_ev_condi_z_max8: 50&times;1 double
-
-        Values:
-
-            Min             -0.81272      
-            Median            3.3058      
-            Max               3.9684      
-
-    mt_ev_condi_z_max9: 50&times;1 double
-
-        Values:
-
-            Min             -0.81272      
-            Median            3.3143      
-            Max               3.9729      
-
-    mt_ev_condi_z_max10: 50&times;1 double
-
-        Values:
-
-            Min             -0.81272       
-            Median            3.3245       
-            Max               3.9782       
-
-    mt_ev_condi_z_max11: 50&times;1 double
-
-        Values:
-
-            Min             -0.81272       
-            Median            3.3365       
-            Max               3.9844       
-
-    mt_ev_condi_z_max12: 50&times;1 double
-
-        Values:
-
-            Min             -0.81272       
-            Median            3.3507       
-            Max               3.9919       
-
-    mt_ev_condi_z_max13: 50&times;1 double
-
-        Values:
-
-            Min             -0.81272       
-            Median            3.3671       
-            Max               4.0006       
-
-    mt_ev_condi_z_max14: 50&times;1 double
-
-        Values:
-
-            Min             -0.81272       
-            Median            3.3857       
-            Max               4.0106       
-
-    mt_ev_condi_z_max15: 50&times;1 double
-
-        Values:
-
-            Min             -0.81272       
-            Median            3.4055       
-            Max               4.0212       
-
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 mt_ev_condi_z_max_idx: I by M
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     50    15
+
+    mt_ev_condi_z_max_idx1    mt_ev_condi_z_max_idx2    mt_ev_condi_z_max_idx3    mt_ev_condi_z_max_idx4    mt_ev_condi_z_max_idx5    mt_ev_condi_z_max_idx6    mt_ev_condi_z_max_idx7    mt_ev_condi_z_max_idx8    mt_ev_condi_z_max_idx9    mt_ev_condi_z_max_idx10    mt_ev_condi_z_max_idx11    mt_ev_condi_z_max_idx12    mt_ev_condi_z_max_idx13    mt_ev_condi_z_max_idx14    mt_ev_condi_z_max_idx15
+    ______________________    ______________________    ______________________    ______________________    ______________________    ______________________    ______________________    ______________________    ______________________    _______________________    _______________________    _______________________    _______________________    _______________________    _______________________
+
+              1                         1                         1                         1                         1                         1                         1                         1                         1                          1                          1                          1                          1                          1                          1           
+              2                         2                         2                         2                         2                         2                         2                         2                         2                          2                          2                          2                          2                          2                          2           
+              3                         3                         3                         3                         3                         3                         3                         3                         3                          3                          3                          3                          3                          3                          3           
+              3                         3                         4                         4                         4                         4                         4                         4                         4                          4                          4                          4                          4                          4                          4           
+              3                         3                         4                         4                         5                         5                         5                         5                         5                          5                          5                          5                          5                          5                          5           
+              3                         3                         4                         4                         5                         5                         6                         6                         6                          6                          6                          6                          6                          6                          6           
+              3                         3                         4                         4                         5                         5                         6                         7                         7                          7                          7                          7                          7                          7                          7           
+              3                         3                         4                         4                         5                         5                         6                         7                         8                          8                          8                          8                          8                          8                          8           
+              3                         3                         4                         4                         5                         5                         6                         7                         8                          9                          9                          9                          9                          9                          9           
+              3                         3                         4                         4                         5                         5                         6                         7                         9                         10                         10                         10                         10                         10                         10           
+              3                         3                         4                         4                         5                         5                         6                         7                         9                         10                         11                         11                         11                         11                         11           
+              3                         3                         4                         4                         5                         5                         6                         7                         9                         10                         12                         12                         12                         12                         12           
+              3                         3                         4                         4                         5                         5                         6                         7                         9                         10                         12                         13                         13                         13                         13           
+              3                         3                         4                         4                         5                         5                         6                         7                         9                         10                         12                         14                         14                         14                         14           
+              3                         3                         4                         4                         5                         5                         6                         7                         9                         10                         12                         14                         15                         15                         15           
+              3                         3                         4                         4                         5                         5                         6                         7                         9                         10                         12                         14                         16                         16                         16           
+              3                         3                         4                         4                         5                         5                         6                         7                         9                         10                         12                         14                         16                         17                         17           
+              3                         3                         4                         4                         5                         5                         6                         7                         9                         10                         12                         14                         16                         18                         18           
+              3                         3                         4                         4                         5                         5                         6                         7                         9                         10                         12                         14                         16                         19                         19           
+              3                         3                         4                         4                         5                         5                         6                         7                         9                         10                         12                         14                         16                         19                         20           
+
+    mt_ev_condi_z_max_idx1    mt_ev_condi_z_max_idx2    mt_ev_condi_z_max_idx3    mt_ev_condi_z_max_idx4    mt_ev_condi_z_max_idx5    mt_ev_condi_z_max_idx6    mt_ev_condi_z_max_idx7    mt_ev_condi_z_max_idx8    mt_ev_condi_z_max_idx9    mt_ev_condi_z_max_idx10    mt_ev_condi_z_max_idx11    mt_ev_condi_z_max_idx12    mt_ev_condi_z_max_idx13    mt_ev_condi_z_max_idx14    mt_ev_condi_z_max_idx15
+    ______________________    ______________________    ______________________    ______________________    ______________________    ______________________    ______________________    ______________________    ______________________    _______________________    _______________________    _______________________    _______________________    _______________________    _______________________
+
+              3                         3                         4                         4                         5                         5                         6                         7                         9                         10                         12                         14                         16                         19                         22           
+              3                         3                         4                         4                         5                         5                         6                         7                         9                         10                         12                         14                         16                         19                         22           
+              3                         3                         4                         4                         5                         5                         6                         7                         9                         10                         12                         14                         16                         19                         22           
+              3                         3                         4                         4                         5                         5                         6                         7                         9                         10                         12                         14                         16                         19                         22           
+              3                         3                         4                         4                         5                         5                         6                         7                         9                         10                         12                         14                         16                         19                         22           
+              3                         3                         4                         4                         5                         5                         6                         7                         9                         10                         12                         14                         16                         19                         22           
+              3                         3                         4                         4                         5                         5                         6                         7                         9                         10                         12                         14                         16                         19                         22           
+              3                         3                         4                         4                         5                         5                         6                         7                         9                         10                         12                         14                         16                         19                         22           
+              3                         3                         4                         4                         5                         5                         6                         7                         9                         10                         12                         14                         16                         19                         22           
+              3                         3                         4                         4                         5                         5                         6                         7                         9                         10                         12                         14                         16                         19                         22           
+              3                         3                         4                         4                         5                         5                         6                         7                         9                         10                         12                         14                         16                         19                         22           
+              3                         3                         4                         4                         5                         5                         6                         7                         9                         10                         12                         14                         16                         19                         22           
+              3                         3                         4                         4                         5                         5                         6                         7                         9                         10                         12                         14                         16                         19                         22           
+              3                         3                         4                         4                         5                         5                         6                         7                         9                         10                         12                         14                         16                         19                         22           
+              3                         3                         4                         4                         5                         5                         6                         7                         9                         10                         12                         14                         16                         19                         22           
+              3                         3                         4                         4                         5                         5                         6                         7                         9                         10                         12                         14                         16                         19                         22           
+              3                         3                         4                         4                         5                         5                         6                         7                         9                         10                         12                         14                         16                         19                         22           
+              3                         3                         4                         4                         5                         5                         6                         7                         9                         10                         12                         14                         16                         19                         22           
+              3                         3                         4                         4                         5                         5                         6                         7                         9                         10                         12                         14                         16                         19                         22           
+              3                         3                         4                         4                         5                         5                         6                         7                         9                         10                         12                         14                         16                         19                         22           
 
 </pre><h2 id="8">Reindex K' and B' Choices for each State at the Optimal <b>w'=k'+b'</b> choice</h2><p>The K' and B' Optimal Choices Associated with EV opti dim(mt_ev_condi_z_max_kp): <b>I by M</b></p><pre class="codeinput">ar_add_grid = linspace(0, it_mt_bp_rown*(it_mt_bp_coln-1), it_mt_bp_coln);
 mt_ev_condi_z_max_idx = mt_ev_condi_z_max_idx + ar_add_grid';
-<span class="keyword">if</span>(bl_display_evf)
+<span class="keyword">if</span> (bl_display_evf)
+    disp(<span class="string">'----------------------------------------'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
     disp(<span class="string">'mt_ev_condi_z_max_idx: I by M'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
     disp(size(mt_ev_condi_z_max_idx));
-<span class="comment">%     disp(mt_ev_condi_z_max_idx(1:it_mt_bp_coln,:));</span>
+    disp(head(array2table(mt_ev_condi_z_max_idx), 20));
+    disp(tail(array2table(mt_ev_condi_z_max_idx), 20));
 <span class="keyword">end</span>
 mt_ev_condi_z_max_kp = reshape(ar_k_mw_wth_na(mt_ev_condi_z_max_idx(:)), [it_mt_bp_coln, it_z_n]);
 mt_ev_condi_z_max_bp = reshape(ar_a_mw_wth_na(mt_ev_condi_z_max_idx(:)), [it_mt_bp_coln, it_z_n]);
-<span class="keyword">if</span>(bl_display_evf)
+<span class="keyword">if</span> (bl_display_evf)
+    disp(<span class="string">'----------------------------------------'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
     disp(<span class="string">'mt_ev_condi_z_max_kp: I by M'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
     disp(size(mt_ev_condi_z_max_kp));
-    summary(array2table(mt_ev_condi_z_max_kp));
+    disp(head(array2table(mt_ev_condi_z_max_kp), 20));
+    disp(tail(array2table(mt_ev_condi_z_max_kp), 20));
+
+    disp(<span class="string">'----------------------------------------'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
     disp(<span class="string">'mt_ev_condi_z_max_bp: I by M'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
     disp(size(mt_ev_condi_z_max_bp));
-    summary(array2table(mt_ev_condi_z_max_bp));
+    disp(head(array2table(mt_ev_condi_z_max_bp), 20));
+    disp(tail(array2table(mt_ev_condi_z_max_bp), 20));
 <span class="keyword">end</span>
-</pre><pre class="codeoutput">mt_ev_condi_z_max_idx: I by M
+</pre><pre class="codeoutput">----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+mt_ev_condi_z_max_idx: I by M
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     50    15
 
+    mt_ev_condi_z_max_idx1    mt_ev_condi_z_max_idx2    mt_ev_condi_z_max_idx3    mt_ev_condi_z_max_idx4    mt_ev_condi_z_max_idx5    mt_ev_condi_z_max_idx6    mt_ev_condi_z_max_idx7    mt_ev_condi_z_max_idx8    mt_ev_condi_z_max_idx9    mt_ev_condi_z_max_idx10    mt_ev_condi_z_max_idx11    mt_ev_condi_z_max_idx12    mt_ev_condi_z_max_idx13    mt_ev_condi_z_max_idx14    mt_ev_condi_z_max_idx15
+    ______________________    ______________________    ______________________    ______________________    ______________________    ______________________    ______________________    ______________________    ______________________    _______________________    _______________________    _______________________    _______________________    _______________________    _______________________
+
+               1                         1                         1                         1                         1                         1                         1                         1                         1                          1                          1                          1                          1                          1                          1          
+              52                        52                        52                        52                        52                        52                        52                        52                        52                         52                         52                         52                         52                         52                         52          
+             103                       103                       103                       103                       103                       103                       103                       103                       103                        103                        103                        103                        103                        103                        103          
+             153                       153                       154                       154                       154                       154                       154                       154                       154                        154                        154                        154                        154                        154                        154          
+             203                       203                       204                       204                       205                       205                       205                       205                       205                        205                        205                        205                        205                        205                        205          
+             253                       253                       254                       254                       255                       255                       256                       256                       256                        256                        256                        256                        256                        256                        256          
+             303                       303                       304                       304                       305                       305                       306                       307                       307                        307                        307                        307                        307                        307                        307          
+             353                       353                       354                       354                       355                       355                       356                       357                       358                        358                        358                        358                        358                        358                        358          
+             403                       403                       404                       404                       405                       405                       406                       407                       408                        409                        409                        409                        409                        409                        409          
+             453                       453                       454                       454                       455                       455                       456                       457                       459                        460                        460                        460                        460                        460                        460          
+             503                       503                       504                       504                       505                       505                       506                       507                       509                        510                        511                        511                        511                        511                        511          
+             553                       553                       554                       554                       555                       555                       556                       557                       559                        560                        562                        562                        562                        562                        562          
+             603                       603                       604                       604                       605                       605                       606                       607                       609                        610                        612                        613                        613                        613                        613          
+             653                       653                       654                       654                       655                       655                       656                       657                       659                        660                        662                        664                        664                        664                        664          
+             703                       703                       704                       704                       705                       705                       706                       707                       709                        710                        712                        714                        715                        715                        715          
+             753                       753                       754                       754                       755                       755                       756                       757                       759                        760                        762                        764                        766                        766                        766          
+             803                       803                       804                       804                       805                       805                       806                       807                       809                        810                        812                        814                        816                        817                        817          
+             853                       853                       854                       854                       855                       855                       856                       857                       859                        860                        862                        864                        866                        868                        868          
+             903                       903                       904                       904                       905                       905                       906                       907                       909                        910                        912                        914                        916                        919                        919          
+             953                       953                       954                       954                       955                       955                       956                       957                       959                        960                        962                        964                        966                        969                        970          
+
+    mt_ev_condi_z_max_idx1    mt_ev_condi_z_max_idx2    mt_ev_condi_z_max_idx3    mt_ev_condi_z_max_idx4    mt_ev_condi_z_max_idx5    mt_ev_condi_z_max_idx6    mt_ev_condi_z_max_idx7    mt_ev_condi_z_max_idx8    mt_ev_condi_z_max_idx9    mt_ev_condi_z_max_idx10    mt_ev_condi_z_max_idx11    mt_ev_condi_z_max_idx12    mt_ev_condi_z_max_idx13    mt_ev_condi_z_max_idx14    mt_ev_condi_z_max_idx15
+    ______________________    ______________________    ______________________    ______________________    ______________________    ______________________    ______________________    ______________________    ______________________    _______________________    _______________________    _______________________    _______________________    _______________________    _______________________
+
+             1503                      1503                      1504                      1504                      1505                      1505                      1506                      1507                      1509                      1510                       1512                       1514                       1516                       1519                       1522          
+             1553                      1553                      1554                      1554                      1555                      1555                      1556                      1557                      1559                      1560                       1562                       1564                       1566                       1569                       1572          
+             1603                      1603                      1604                      1604                      1605                      1605                      1606                      1607                      1609                      1610                       1612                       1614                       1616                       1619                       1622          
+             1653                      1653                      1654                      1654                      1655                      1655                      1656                      1657                      1659                      1660                       1662                       1664                       1666                       1669                       1672          
+             1703                      1703                      1704                      1704                      1705                      1705                      1706                      1707                      1709                      1710                       1712                       1714                       1716                       1719                       1722          
+             1753                      1753                      1754                      1754                      1755                      1755                      1756                      1757                      1759                      1760                       1762                       1764                       1766                       1769                       1772          
+             1803                      1803                      1804                      1804                      1805                      1805                      1806                      1807                      1809                      1810                       1812                       1814                       1816                       1819                       1822          
+             1853                      1853                      1854                      1854                      1855                      1855                      1856                      1857                      1859                      1860                       1862                       1864                       1866                       1869                       1872          
+             1903                      1903                      1904                      1904                      1905                      1905                      1906                      1907                      1909                      1910                       1912                       1914                       1916                       1919                       1922          
+             1953                      1953                      1954                      1954                      1955                      1955                      1956                      1957                      1959                      1960                       1962                       1964                       1966                       1969                       1972          
+             2003                      2003                      2004                      2004                      2005                      2005                      2006                      2007                      2009                      2010                       2012                       2014                       2016                       2019                       2022          
+             2053                      2053                      2054                      2054                      2055                      2055                      2056                      2057                      2059                      2060                       2062                       2064                       2066                       2069                       2072          
+             2103                      2103                      2104                      2104                      2105                      2105                      2106                      2107                      2109                      2110                       2112                       2114                       2116                       2119                       2122          
+             2153                      2153                      2154                      2154                      2155                      2155                      2156                      2157                      2159                      2160                       2162                       2164                       2166                       2169                       2172          
+             2203                      2203                      2204                      2204                      2205                      2205                      2206                      2207                      2209                      2210                       2212                       2214                       2216                       2219                       2222          
+             2253                      2253                      2254                      2254                      2255                      2255                      2256                      2257                      2259                      2260                       2262                       2264                       2266                       2269                       2272          
+             2303                      2303                      2304                      2304                      2305                      2305                      2306                      2307                      2309                      2310                       2312                       2314                       2316                       2319                       2322          
+             2353                      2353                      2354                      2354                      2355                      2355                      2356                      2357                      2359                      2360                       2362                       2364                       2366                       2369                       2372          
+             2403                      2403                      2404                      2404                      2405                      2405                      2406                      2407                      2409                      2410                       2412                       2414                       2416                       2419                       2422          
+             2453                      2453                      2454                      2454                      2455                      2455                      2456                      2457                      2459                      2460                       2462                       2464                       2466                       2469                       2472          
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 mt_ev_condi_z_max_kp: I by M
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     50    15
 
+    mt_ev_condi_z_max_kp1    mt_ev_condi_z_max_kp2    mt_ev_condi_z_max_kp3    mt_ev_condi_z_max_kp4    mt_ev_condi_z_max_kp5    mt_ev_condi_z_max_kp6    mt_ev_condi_z_max_kp7    mt_ev_condi_z_max_kp8    mt_ev_condi_z_max_kp9    mt_ev_condi_z_max_kp10    mt_ev_condi_z_max_kp11    mt_ev_condi_z_max_kp12    mt_ev_condi_z_max_kp13    mt_ev_condi_z_max_kp14    mt_ev_condi_z_max_kp15
+    _____________________    _____________________    _____________________    _____________________    _____________________    _____________________    _____________________    _____________________    _____________________    ______________________    ______________________    ______________________    ______________________    ______________________    ______________________
 
-Variables:
+                0                        0                        0                        0                        0                        0                        0                        0                        0                         0                         0                         0                         0                         0                         0        
+           1.0204                   1.0204                   1.0204                   1.0204                   1.0204                   1.0204                   1.0204                   1.0204                   1.0204                    1.0204                    1.0204                    1.0204                    1.0204                    1.0204                    1.0204        
+           2.0408                   2.0408                   2.0408                   2.0408                   2.0408                   2.0408                   2.0408                   2.0408                   2.0408                    2.0408                    2.0408                    2.0408                    2.0408                    2.0408                    2.0408        
+           2.0408                   2.0408                   3.0612                   3.0612                   3.0612                   3.0612                   3.0612                   3.0612                   3.0612                    3.0612                    3.0612                    3.0612                    3.0612                    3.0612                    3.0612        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                   4.0816                   4.0816                   4.0816                    4.0816                    4.0816                    4.0816                    4.0816                    4.0816                    4.0816        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                    5.102                    5.102                     5.102                     5.102                     5.102                     5.102                     5.102                     5.102        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   6.1224                    6.1224                    6.1224                    6.1224                    6.1224                    6.1224                    6.1224        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   7.1429                    7.1429                    7.1429                    7.1429                    7.1429                    7.1429                    7.1429        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   7.1429                    8.1633                    8.1633                    8.1633                    8.1633                    8.1633                    8.1633        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   8.1633                    9.1837                    9.1837                    9.1837                    9.1837                    9.1837                    9.1837        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   8.1633                    9.1837                    10.204                    10.204                    10.204                    10.204                    10.204        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   8.1633                    9.1837                    11.224                    11.224                    11.224                    11.224                    11.224        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   8.1633                    9.1837                    11.224                    12.245                    12.245                    12.245                    12.245        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   8.1633                    9.1837                    11.224                    13.265                    13.265                    13.265                    13.265        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   8.1633                    9.1837                    11.224                    13.265                    14.286                    14.286                    14.286        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   8.1633                    9.1837                    11.224                    13.265                    15.306                    15.306                    15.306        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   8.1633                    9.1837                    11.224                    13.265                    15.306                    16.327                    16.327        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   8.1633                    9.1837                    11.224                    13.265                    15.306                    17.347                    17.347        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   8.1633                    9.1837                    11.224                    13.265                    15.306                    18.367                    18.367        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   8.1633                    9.1837                    11.224                    13.265                    15.306                    18.367                    19.388        
 
-    mt_ev_condi_z_max_kp1: 50&times;1 double
+    mt_ev_condi_z_max_kp1    mt_ev_condi_z_max_kp2    mt_ev_condi_z_max_kp3    mt_ev_condi_z_max_kp4    mt_ev_condi_z_max_kp5    mt_ev_condi_z_max_kp6    mt_ev_condi_z_max_kp7    mt_ev_condi_z_max_kp8    mt_ev_condi_z_max_kp9    mt_ev_condi_z_max_kp10    mt_ev_condi_z_max_kp11    mt_ev_condi_z_max_kp12    mt_ev_condi_z_max_kp13    mt_ev_condi_z_max_kp14    mt_ev_condi_z_max_kp15
+    _____________________    _____________________    _____________________    _____________________    _____________________    _____________________    _____________________    _____________________    _____________________    ______________________    ______________________    ______________________    ______________________    ______________________    ______________________
 
-        Values:
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   8.1633                    9.1837                    11.224                    13.265                    15.306                    18.367                    21.429        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   8.1633                    9.1837                    11.224                    13.265                    15.306                    18.367                    21.429        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   8.1633                    9.1837                    11.224                    13.265                    15.306                    18.367                    21.429        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   8.1633                    9.1837                    11.224                    13.265                    15.306                    18.367                    21.429        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   8.1633                    9.1837                    11.224                    13.265                    15.306                    18.367                    21.429        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   8.1633                    9.1837                    11.224                    13.265                    15.306                    18.367                    21.429        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   8.1633                    9.1837                    11.224                    13.265                    15.306                    18.367                    21.429        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   8.1633                    9.1837                    11.224                    13.265                    15.306                    18.367                    21.429        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   8.1633                    9.1837                    11.224                    13.265                    15.306                    18.367                    21.429        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   8.1633                    9.1837                    11.224                    13.265                    15.306                    18.367                    21.429        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   8.1633                    9.1837                    11.224                    13.265                    15.306                    18.367                    21.429        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   8.1633                    9.1837                    11.224                    13.265                    15.306                    18.367                    21.429        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   8.1633                    9.1837                    11.224                    13.265                    15.306                    18.367                    21.429        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   8.1633                    9.1837                    11.224                    13.265                    15.306                    18.367                    21.429        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   8.1633                    9.1837                    11.224                    13.265                    15.306                    18.367                    21.429        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   8.1633                    9.1837                    11.224                    13.265                    15.306                    18.367                    21.429        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   8.1633                    9.1837                    11.224                    13.265                    15.306                    18.367                    21.429        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   8.1633                    9.1837                    11.224                    13.265                    15.306                    18.367                    21.429        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   8.1633                    9.1837                    11.224                    13.265                    15.306                    18.367                    21.429        
+           2.0408                   2.0408                   3.0612                   3.0612                   4.0816                   4.0816                    5.102                   6.1224                   8.1633                    9.1837                    11.224                    13.265                    15.306                    18.367                    21.429        
 
-            Min                    0         
-            Median            2.0408         
-            Max               2.0408         
-
-    mt_ev_condi_z_max_kp2: 50&times;1 double
-
-        Values:
-
-            Min                    0         
-            Median            2.0408         
-            Max               2.0408         
-
-    mt_ev_condi_z_max_kp3: 50&times;1 double
-
-        Values:
-
-            Min                    0         
-            Median            3.0612         
-            Max               3.0612         
-
-    mt_ev_condi_z_max_kp4: 50&times;1 double
-
-        Values:
-
-            Min                    0         
-            Median            3.0612         
-            Max               3.0612         
-
-    mt_ev_condi_z_max_kp5: 50&times;1 double
-
-        Values:
-
-            Min                    0         
-            Median            4.0816         
-            Max               4.0816         
-
-    mt_ev_condi_z_max_kp6: 50&times;1 double
-
-        Values:
-
-            Min                    0         
-            Median            4.0816         
-            Max               4.0816         
-
-    mt_ev_condi_z_max_kp7: 50&times;1 double
-
-        Values:
-
-            Min                    0         
-            Median             5.102         
-            Max                5.102         
-
-    mt_ev_condi_z_max_kp8: 50&times;1 double
-
-        Values:
-
-            Min                    0         
-            Median            6.1224         
-            Max               6.1224         
-
-    mt_ev_condi_z_max_kp9: 50&times;1 double
-
-        Values:
-
-            Min                    0         
-            Median            8.1633         
-            Max               8.1633         
-
-    mt_ev_condi_z_max_kp10: 50&times;1 double
-
-        Values:
-
-            Min                     0         
-            Median             9.1837         
-            Max                9.1837         
-
-    mt_ev_condi_z_max_kp11: 50&times;1 double
-
-        Values:
-
-            Min                     0         
-            Median             11.224         
-            Max                11.224         
-
-    mt_ev_condi_z_max_kp12: 50&times;1 double
-
-        Values:
-
-            Min                     0         
-            Median             13.265         
-            Max                13.265         
-
-    mt_ev_condi_z_max_kp13: 50&times;1 double
-
-        Values:
-
-            Min                     0         
-            Median             15.306         
-            Max                15.306         
-
-    mt_ev_condi_z_max_kp14: 50&times;1 double
-
-        Values:
-
-            Min                     0         
-            Median             18.367         
-            Max                18.367         
-
-    mt_ev_condi_z_max_kp15: 50&times;1 double
-
-        Values:
-
-            Min                     0         
-            Median             21.429         
-            Max                21.429         
-
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 mt_ev_condi_z_max_bp: I by M
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     50    15
 
+    mt_ev_condi_z_max_bp1    mt_ev_condi_z_max_bp2    mt_ev_condi_z_max_bp3    mt_ev_condi_z_max_bp4    mt_ev_condi_z_max_bp5    mt_ev_condi_z_max_bp6    mt_ev_condi_z_max_bp7    mt_ev_condi_z_max_bp8    mt_ev_condi_z_max_bp9    mt_ev_condi_z_max_bp10    mt_ev_condi_z_max_bp11    mt_ev_condi_z_max_bp12    mt_ev_condi_z_max_bp13    mt_ev_condi_z_max_bp14    mt_ev_condi_z_max_bp15
+    _____________________    _____________________    _____________________    _____________________    _____________________    _____________________    _____________________    _____________________    _____________________    ______________________    ______________________    ______________________    ______________________    ______________________    ______________________
 
-Variables:
+                0                        0                        0                        0                        0                        0                        0                        0                        0                         0                         0                         0                         0                         0                      0           
+                0                        0                        0                        0                        0                        0                        0                        0                        0                         0                         0                         0                         0                         0                      0           
+                0                        0                        0                        0                        0                        0                        0                        0                        0                         0                         0                         0                         0                         0                      0           
+           1.0204                   1.0204                        0                        0                        0                        0                        0                        0                        0                         0                         0                         0                         0                         0                      0           
+           2.0408                   2.0408                   1.0204                   1.0204                        0                        0                        0                        0                        0                         0                         0                         0                         0                         0                      0           
+           3.0612                   3.0612                   2.0408                   2.0408                   1.0204                   1.0204                        0                        0                        0                         0                         0                         0                         0                         0                      0           
+           4.0816                   4.0816                   3.0612                   3.0612                   2.0408                   2.0408                   1.0204                        0                        0                         0                         0                         0                         0                         0                      0           
+            5.102                    5.102                   4.0816                   4.0816                   3.0612                   3.0612                   2.0408                   1.0204                        0                         0                         0                         0                         0                         0                      0           
+           6.1224                   6.1224                    5.102                    5.102                   4.0816                   4.0816                   3.0612                   2.0408                   1.0204                         0                         0                         0                         0                         0                      0           
+           7.1429                   7.1429                   6.1224                   6.1224                    5.102                    5.102                   4.0816                   3.0612                   1.0204                         0                         0                         0                         0                         0                      0           
+           8.1633                   8.1633                   7.1429                   7.1429                   6.1224                   6.1224                    5.102                   4.0816                   2.0408                    1.0204                         0                         0                         0                         0                      0           
+           9.1837                   9.1837                   8.1633                   8.1633                   7.1429                   7.1429                   6.1224                    5.102                   3.0612                    2.0408                         0                         0                         0                         0                      0           
+           10.204                   10.204                   9.1837                   9.1837                   8.1633                   8.1633                   7.1429                   6.1224                   4.0816                    3.0612                    1.0204                         0                         0                         0                      0           
+           11.224                   11.224                   10.204                   10.204                   9.1837                   9.1837                   8.1633                   7.1429                    5.102                    4.0816                    2.0408                         0                         0                         0                      0           
+           12.245                   12.245                   11.224                   11.224                   10.204                   10.204                   9.1837                   8.1633                   6.1224                     5.102                    3.0612                    1.0204                         0                         0                      0           
+           13.265                   13.265                   12.245                   12.245                   11.224                   11.224                   10.204                   9.1837                   7.1429                    6.1224                    4.0816                    2.0408                         0                         0                      0           
+           14.286                   14.286                   13.265                   13.265                   12.245                   12.245                   11.224                   10.204                   8.1633                    7.1429                     5.102                    3.0612                    1.0204                         0                      0           
+           15.306                   15.306                   14.286                   14.286                   13.265                   13.265                   12.245                   11.224                   9.1837                    8.1633                    6.1224                    4.0816                    2.0408                         0                      0           
+           16.327                   16.327                   15.306                   15.306                   14.286                   14.286                   13.265                   12.245                   10.204                    9.1837                    7.1429                     5.102                    3.0612                         0                      0           
+           17.347                   17.347                   16.327                   16.327                   15.306                   15.306                   14.286                   13.265                   11.224                    10.204                    8.1633                    6.1224                    4.0816                    1.0204                      0           
 
-    mt_ev_condi_z_max_bp1: 50&times;1 double
+    mt_ev_condi_z_max_bp1    mt_ev_condi_z_max_bp2    mt_ev_condi_z_max_bp3    mt_ev_condi_z_max_bp4    mt_ev_condi_z_max_bp5    mt_ev_condi_z_max_bp6    mt_ev_condi_z_max_bp7    mt_ev_condi_z_max_bp8    mt_ev_condi_z_max_bp9    mt_ev_condi_z_max_bp10    mt_ev_condi_z_max_bp11    mt_ev_condi_z_max_bp12    mt_ev_condi_z_max_bp13    mt_ev_condi_z_max_bp14    mt_ev_condi_z_max_bp15
+    _____________________    _____________________    _____________________    _____________________    _____________________    _____________________    _____________________    _____________________    _____________________    ______________________    ______________________    ______________________    ______________________    ______________________    ______________________
 
-        Values:
-
-            Min                    0         
-            Median            22.959         
-            Max               47.959         
-
-    mt_ev_condi_z_max_bp2: 50&times;1 double
-
-        Values:
-
-            Min                    0         
-            Median            22.959         
-            Max               47.959         
-
-    mt_ev_condi_z_max_bp3: 50&times;1 double
-
-        Values:
-
-            Min                    0         
-            Median            21.939         
-            Max               46.939         
-
-    mt_ev_condi_z_max_bp4: 50&times;1 double
-
-        Values:
-
-            Min                    0         
-            Median            21.939         
-            Max               46.939         
-
-    mt_ev_condi_z_max_bp5: 50&times;1 double
-
-        Values:
-
-            Min                    0         
-            Median            20.918         
-            Max               45.918         
-
-    mt_ev_condi_z_max_bp6: 50&times;1 double
-
-        Values:
-
-            Min                    0         
-            Median            20.918         
-            Max               45.918         
-
-    mt_ev_condi_z_max_bp7: 50&times;1 double
-
-        Values:
-
-            Min                    0         
-            Median            19.898         
-            Max               44.898         
-
-    mt_ev_condi_z_max_bp8: 50&times;1 double
-
-        Values:
-
-            Min                    0         
-            Median            18.878         
-            Max               43.878         
-
-    mt_ev_condi_z_max_bp9: 50&times;1 double
-
-        Values:
-
-            Min                    0         
-            Median            16.837         
-            Max               41.837         
-
-    mt_ev_condi_z_max_bp10: 50&times;1 double
-
-        Values:
-
-            Min                     0         
-            Median             15.816         
-            Max                40.816         
-
-    mt_ev_condi_z_max_bp11: 50&times;1 double
-
-        Values:
-
-            Min                     0         
-            Median             13.776         
-            Max                38.776         
-
-    mt_ev_condi_z_max_bp12: 50&times;1 double
-
-        Values:
-
-            Min                     0         
-            Median             11.735         
-            Max                36.735         
-
-    mt_ev_condi_z_max_bp13: 50&times;1 double
-
-        Values:
-
-            Min                     0         
-            Median             9.6939         
-            Max                34.694         
-
-    mt_ev_condi_z_max_bp14: 50&times;1 double
-
-        Values:
-
-            Min                     0         
-            Median             6.6327         
-            Max                31.633         
-
-    mt_ev_condi_z_max_bp15: 50&times;1 double
-
-        Values:
-
-            Min                     0         
-            Median             3.5714         
-            Max                28.571         
+           28.571                   28.571                   27.551                   27.551                   26.531                   26.531                    25.51                    24.49                   22.449                    21.429                    19.388                    17.347                    15.306                    12.245                    9.1837        
+           29.592                   29.592                   28.571                   28.571                   27.551                   27.551                   26.531                    25.51                   23.469                    22.449                    20.408                    18.367                    16.327                    13.265                    10.204        
+           30.612                   30.612                   29.592                   29.592                   28.571                   28.571                   27.551                   26.531                    24.49                    23.469                    21.429                    19.388                    17.347                    14.286                    11.224        
+           31.633                   31.633                   30.612                   30.612                   29.592                   29.592                   28.571                   27.551                    25.51                     24.49                    22.449                    20.408                    18.367                    15.306                    12.245        
+           32.653                   32.653                   31.633                   31.633                   30.612                   30.612                   29.592                   28.571                   26.531                     25.51                    23.469                    21.429                    19.388                    16.327                    13.265        
+           33.673                   33.673                   32.653                   32.653                   31.633                   31.633                   30.612                   29.592                   27.551                    26.531                     24.49                    22.449                    20.408                    17.347                    14.286        
+           34.694                   34.694                   33.673                   33.673                   32.653                   32.653                   31.633                   30.612                   28.571                    27.551                     25.51                    23.469                    21.429                    18.367                    15.306        
+           35.714                   35.714                   34.694                   34.694                   33.673                   33.673                   32.653                   31.633                   29.592                    28.571                    26.531                     24.49                    22.449                    19.388                    16.327        
+           36.735                   36.735                   35.714                   35.714                   34.694                   34.694                   33.673                   32.653                   30.612                    29.592                    27.551                     25.51                    23.469                    20.408                    17.347        
+           37.755                   37.755                   36.735                   36.735                   35.714                   35.714                   34.694                   33.673                   31.633                    30.612                    28.571                    26.531                     24.49                    21.429                    18.367        
+           38.776                   38.776                   37.755                   37.755                   36.735                   36.735                   35.714                   34.694                   32.653                    31.633                    29.592                    27.551                     25.51                    22.449                    19.388        
+           39.796                   39.796                   38.776                   38.776                   37.755                   37.755                   36.735                   35.714                   33.673                    32.653                    30.612                    28.571                    26.531                    23.469                    20.408        
+           40.816                   40.816                   39.796                   39.796                   38.776                   38.776                   37.755                   36.735                   34.694                    33.673                    31.633                    29.592                    27.551                     24.49                    21.429        
+           41.837                   41.837                   40.816                   40.816                   39.796                   39.796                   38.776                   37.755                   35.714                    34.694                    32.653                    30.612                    28.571                     25.51                    22.449        
+           42.857                   42.857                   41.837                   41.837                   40.816                   40.816                   39.796                   38.776                   36.735                    35.714                    33.673                    31.633                    29.592                    26.531                    23.469        
+           43.878                   43.878                   42.857                   42.857                   41.837                   41.837                   40.816                   39.796                   37.755                    36.735                    34.694                    32.653                    30.612                    27.551                     24.49        
+           44.898                   44.898                   43.878                   43.878                   42.857                   42.857                   41.837                   40.816                   38.776                    37.755                    35.714                    33.673                    31.633                    28.571                     25.51        
+           45.918                   45.918                   44.898                   44.898                   43.878                   43.878                   42.857                   41.837                   39.796                    38.776                    36.735                    34.694                    32.653                    29.592                    26.531        
+           46.939                   46.939                   45.918                   45.918                   44.898                   44.898                   43.878                   42.857                   40.816                    39.796                    37.755                    35.714                    33.673                    30.612                    27.551        
+           47.959                   47.959                   46.939                   46.939                   45.918                   45.918                   44.898                   43.878                   41.837                    40.816                    38.776                    36.735                    34.694                    31.633                    28.571        
 
 </pre><h2 id="9">Generate Optimal K' and B' on w(coh) percentage grid from w level grid</h2><h2 id="10">Graph</h2><pre class="codeinput"><span class="keyword">if</span> (bl_graph_evf)
 </pre><h2 id="12">Graph 1, V and EV</h2><pre class="codeinput">    <span class="keyword">if</span> (~bl_graph_onebyones)
@@ -720,18 +639,18 @@ Variables:
         st_file_name = [st_img_prefix st_img_name_main <span class="string">'_vev'</span> st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     <span class="keyword">end</span>
-</pre><img vspace="5" hspace="5" src="ff_wkz_evf_01.png" alt=""> <img vspace="5" hspace="5" src="ff_wkz_evf_02.png" alt=""> <h2 id="13">Graph 2, max(EV)</h2><pre class="codeinput">    <span class="keyword">if</span>(~bl_graph_onebyones)
+</pre><img vspace="5" hspace="5" src="ff_wkz_evf_01.png" alt=""> <img vspace="5" hspace="5" src="ff_wkz_evf_02.png" alt=""> <h2 id="13">Graph 2, max(EV)</h2><pre class="codeinput">    <span class="keyword">if</span> (~bl_graph_onebyones)
         figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
     <span class="keyword">end</span>
 
     <span class="keyword">for</span> sub_j=1:1:1
 
-        <span class="keyword">if</span>(sub_j==1)
+        <span class="keyword">if</span> (sub_j==1)
             mt_outcome = mt_ev_condi_z_max;
             st_y_label = <span class="string">'max_{k''}(E(V(coh(k'',b''=w-k''),z''|z,w))'</span>;
         <span class="keyword">end</span>
 
-        <span class="keyword">if</span>(~bl_graph_onebyones)
+        <span class="keyword">if</span> (~bl_graph_onebyones)
             subplot(1,1,sub_j)
         <span class="keyword">else</span>
             figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
@@ -822,21 +741,21 @@ Variables:
         <span class="keyword">end</span>
 
         <span class="keyword">if</span> (sub_j==1)
-            <span class="keyword">if</span>(~bl_graph_onebyones)
+            <span class="keyword">if</span> (~bl_graph_onebyones)
                 figure(<span class="string">'PaperPosition'</span>, [0 0 14 4]);
                 subplot(1,2,sub_j);
             <span class="keyword">end</span>
             mt_y = mt_ev_condi_z_max_bp;
         <span class="keyword">end</span>
         <span class="keyword">if</span> (sub_j==2)
-            <span class="keyword">if</span>(~bl_graph_onebyones)
+            <span class="keyword">if</span> (~bl_graph_onebyones)
                 subplot(1,2,sub_j);
             <span class="keyword">end</span>
 
             mt_y = mt_ev_condi_z_max_kp;
         <span class="keyword">end</span>
         <span class="keyword">if</span> (sub_j==3)
-            <span class="keyword">if</span>(~bl_graph_onebyones)
+            <span class="keyword">if</span> (~bl_graph_onebyones)
                 figure(<span class="string">'PaperPosition'</span>, [0 0 14 4]);
                 subplot(1,2,sub_j-2);
             <span class="keyword">end</span>
@@ -846,7 +765,7 @@ Variables:
             mt_y(~mt_it_borr_idx) = mt_ev_condi_z_max_bp(~mt_it_borr_idx)./ar_w_mz(~mt_it_borr_idx);
         <span class="keyword">end</span>
         <span class="keyword">if</span> (sub_j==4)
-            <span class="keyword">if</span>(~bl_graph_onebyones)
+            <span class="keyword">if</span> (~bl_graph_onebyones)
                 subplot(1,2,sub_j-2);
             <span class="keyword">end</span>
             mt_y = mt_ev_condi_z_max_kp./(ar_w'-fl_b_bd);
@@ -1082,11 +1001,12 @@ ans =
 
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
-%%
+%% 2nd Stage Optimization for Risky + Safe Asset + 2 Stage Solution 
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
+%%
 function [mt_ev_condi_z_max, mt_ev_condi_z_max_idx, mt_ev_condi_z_max_kp, mt_ev_condi_z_max_bp] = ff_wkz_evf(varargin)
 %% FF_WKZ_EVF solves the k' vs b' problem given aggregate savings
 % Rather than solving the two asset problem in one shot. We can separate
@@ -1100,7 +1020,7 @@ function [mt_ev_condi_z_max, mt_ev_condi_z_max_idx, mt_ev_condi_z_max_kp, mt_ev_
 %
 % This means we can solve for the optimal relative allocation of risky and
 % safe asset conditional on total savings. Note that we still need the
-% value function *mt_val*, which is required to find EV. 
+% value function *mt_val*, which is required to find EV.
 %
 % @param mt_val matrix state_n ((I-1)*J/2+I) by shock_n. This is the value
 % matrix each row is a feasible reachable state given the choice
@@ -1151,22 +1071,22 @@ if (bl_input_override)
 else
     clear all;
     close all;
-    
+
     % Not default parameters, but parameters that generate defaults
     it_param_set = 4;
     bl_input_override = true;
     [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
     support_map('bl_graph_evf') = true;
     support_map('bl_display_evf') = true;
-        
+
     [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
-    
+
     % Generating Defaults
     params_group = values(armt_map, {'ar_a_meshk', 'ar_k_mesha', 'ar_z'});
     [ar_a_meshk, ar_k_mesha, ar_z] = params_group{:};
     params_group = values(func_map, {'f_util_standin'});
     [f_util_standin] = params_group{:};
-    mt_val = f_util_standin(ar_z, ar_a_meshk, ar_k_mesha);    
+    mt_val = f_util_standin(ar_z, ar_a_meshk, ar_k_mesha);
 end
 
 %% Parse Parameters
@@ -1194,7 +1114,7 @@ st_img_name_main = [st_func_name st_img_name_main];
 % <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html
 % ffs_akz_set_functions> code where we loop over current z, and for each
 % current z, grab out a particular row from the mt_z_trans that corresponds
-% to a current shock's transition into all future states. 
+% to a current shock's transition into all future states.
 %
 % here, each column of mt_val corresponds to a state z, think of that as
 % future state z. The input mt_val is *V(coh, z)*, we need to integrate to
@@ -1202,7 +1122,7 @@ st_img_name_main = [st_func_name st_img_name_main];
 %
 
 mt_ev_condi_z = mt_val*mt_z_trans';
-if(bl_display_evf)
+if (bl_display_evf)
     disp('mt_ev_condi_z: Q by M');
     disp(size(mt_ev_condi_z));
     summary(array2table(mt_ev_condi_z));
@@ -1223,16 +1143,33 @@ mt_ev_condi_z_full = reshape(mt_ev_condi_z_full, [it_mt_bp_rown, it_mt_bp_coln*i
 [ar_ev_condi_z_max, ar_ev_condi_z_max_idx] = max(mt_ev_condi_z_full);
 mt_ev_condi_z_max = reshape(ar_ev_condi_z_max, [it_mt_bp_coln, it_z_n]);
 mt_ev_condi_z_max_idx = reshape(ar_ev_condi_z_max_idx, [it_mt_bp_coln, it_z_n]);
-if(bl_display_evf)
+if (bl_display_evf)
+
+    disp('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_ev_condi_z_full: J by IxM');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(mt_ev_condi_z_full));
-%     disp(mt_ev_condi_z_full);
+%     disp(head(array2table(mt_ev_condi_z_full), 20));
+%     disp(tail(array2table(mt_ev_condi_z_full), 20));
+        
+    disp('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_ev_condi_z_max: I by M');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(mt_ev_condi_z_max));
-    summary(array2table(mt_ev_condi_z_max));
+    disp(head(array2table(mt_ev_condi_z_max), 20));
+    disp(tail(array2table(mt_ev_condi_z_max), 20));
+    
+
+    disp('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_ev_condi_z_max_idx: I by M');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(mt_ev_condi_z_max_idx));
-%     disp(mt_ev_condi_z_max_idx);
+    disp(head(array2table(mt_ev_condi_z_max_idx), 20));
+    disp(tail(array2table(mt_ev_condi_z_max_idx), 20));
+    
 end
 
 %% Reindex K' and B' Choices for each State at the Optimal *w'=k'+b'* choice
@@ -1241,20 +1178,33 @@ end
 
 ar_add_grid = linspace(0, it_mt_bp_rown*(it_mt_bp_coln-1), it_mt_bp_coln);
 mt_ev_condi_z_max_idx = mt_ev_condi_z_max_idx + ar_add_grid';
-if(bl_display_evf)
+if (bl_display_evf)
+    disp('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_ev_condi_z_max_idx: I by M');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(mt_ev_condi_z_max_idx));
-%     disp(mt_ev_condi_z_max_idx(1:it_mt_bp_coln,:));
+    disp(head(array2table(mt_ev_condi_z_max_idx), 20));
+    disp(tail(array2table(mt_ev_condi_z_max_idx), 20));    
 end
 mt_ev_condi_z_max_kp = reshape(ar_k_mw_wth_na(mt_ev_condi_z_max_idx(:)), [it_mt_bp_coln, it_z_n]);
 mt_ev_condi_z_max_bp = reshape(ar_a_mw_wth_na(mt_ev_condi_z_max_idx(:)), [it_mt_bp_coln, it_z_n]);
-if(bl_display_evf)
+if (bl_display_evf)
+    disp('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_ev_condi_z_max_kp: I by M');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(mt_ev_condi_z_max_kp));
-    summary(array2table(mt_ev_condi_z_max_kp));
+    disp(head(array2table(mt_ev_condi_z_max_kp), 20));
+    disp(tail(array2table(mt_ev_condi_z_max_kp), 20));        
+    
+    disp('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_ev_condi_z_max_bp: I by M');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(mt_ev_condi_z_max_bp));
-    summary(array2table(mt_ev_condi_z_max_bp));
+    disp(head(array2table(mt_ev_condi_z_max_bp), 20));
+    disp(tail(array2table(mt_ev_condi_z_max_bp), 20));    
 end
 
 %% Generate Optimal K' and B' on w(coh) percentage grid from w level grid
@@ -1262,45 +1212,45 @@ end
 %% Graph
 
 if (bl_graph_evf)
-    
+
     %% Graph 1, V and EV
     if (~bl_graph_onebyones)
         figure('PaperPosition', [0 0 14 4]);
         hold on;
     end
-    
-    
+
+
     for subplot_j=1:1:2
-        
+
         if (~bl_graph_onebyones)
             hAxis(subplot_j) = subplot(1,2,subplot_j);
         else
             figure('PaperPosition', [0 0 7 4]);
         end
-        
+
         if (subplot_j==1)
             chart = plot(mt_val);
         end
         if (subplot_j==2)
             chart = plot(mt_ev_condi_z);
         end
-        
+
         clr = jet(numel(chart));
         for m = 1:numel(chart)
             set(chart(m),'Color',clr(m,:))
         end
-        
+
         legend2plot = fliplr([1 round(numel(chart)/3) round((2*numel(chart))/3)  numel(chart)]);
         legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
         legend(chart(legend2plot), legendCell(legend2plot), 'Location','southeast');
-        
+
         if (subplot_j==1)
             title('V(coh,zp); w(k+b),k,z');
         end
         if (subplot_j==2)
             title('E_z(V(coh,zp|z))');
         end
-        
+
         ylabel('Next Period Value');
         xlabel({'Index of Cash-on-Hand Discrete Point'...
                 'Each Segment is a w=k+b; within segment increasing k'...
@@ -1308,39 +1258,39 @@ if (bl_graph_evf)
         grid on;
         grid minor;
     end
-    
+
     % Share y axis
     if (~bl_graph_onebyones)
         linkaxes(hAxis,'y');
     end
-    
+
     % save file
     if (bl_img_save)
         mkdir(support_map('st_img_path'));
         st_file_name = [st_img_prefix st_img_name_main '_vev' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
-    
+
     %% Graph 2, max(EV)
-    
-    if(~bl_graph_onebyones)
+
+    if (~bl_graph_onebyones)
         figure('PaperPosition', [0 0 7 4]);
     end
-    
+
     for sub_j=1:1:1
-        
-        if(sub_j==1)
+
+        if (sub_j==1)
             mt_outcome = mt_ev_condi_z_max;
             st_y_label = 'max_{k''}(E(V(coh(k'',b''=w-k''),z''|z,w))';
         end
-        
-        if(~bl_graph_onebyones)
+
+        if (~bl_graph_onebyones)
             subplot(1,1,sub_j)
         else
             figure('PaperPosition', [0 0 7 4]);
         end
         hold on;
-        
+
         ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)) (it_z_n)]);
         clr = jet(length(ar_it_z_graph));
         i_ctr = 0;
@@ -1352,40 +1302,40 @@ if (bl_graph_evf)
                 'MarkerEdgeColor', clr(i_ctr,:), ...
                 'MarkerFaceColor', clr(i_ctr,:));
         end
-        
+
         grid on;
         grid minor;
         title(['2nd Stage Exp Value at Optimal K given W=K''+B'''])
         ylabel(st_y_label)
         xlabel({'Aggregate Savings'})
-        
+
         legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
         legendCell{length(legendCell) + 1} = 'max-agg-save';
         legend(legendCell([ar_it_z_graph length(legendCell)]), 'Location','southeast');
-        
+
         xline0 = xline(0);
         xline0.HandleVisibility = 'off';
         yline0 = yline(0);
         yline0.HandleVisibility = 'off';
-        
+
     end
-    
+
     % save file
     if (bl_img_save)
         mkdir(support_map('st_img_path'));
         st_file_name = [st_img_prefix st_img_name_main '_maxev' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
-    
+
     %% Graph 3, max(EV), color regions, borrow save
-    
+
     % Borrow Vs Save
     [ar_z_mw, ar_w_mz] = meshgrid(ar_z, ar_w);
     mt_it_borr_idx = (mt_ev_condi_z_max_bp < 0);
     mt_it_riskyhalf_idx = ((mt_ev_condi_z_max_kp./mt_ev_condi_z_max_bp) > 0.5);
     mt_it_kzero_idx = (mt_ev_condi_z_max_kp == 0);
     mt_it_isnan_idx = (isnan(mt_ev_condi_z_max_kp));
-    
+
     figure('PaperPosition', [0 0 7 4]);
     % States: ar_w, ar_z
     % Choices: mt_ev_condi_z_max_kp, mt_ev_condi_z_max_bp
@@ -1412,39 +1362,39 @@ if (bl_graph_evf)
     ylabel('Shocks')
     xlabel({'Total Savings w=k+b'})
     grid on;
-    
+
     % save file
     if (bl_img_save)
         mkdir(support_map('st_img_path'));
         st_file_name = [st_img_prefix st_img_name_main '_maxbrsv' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
-    
+
     %% Graph 4, Optimal K' and B' Levels
-    
+
     [~, ar_w_mz] = meshgrid(ar_z, ar_w);
     for sub_j=1:1:4
-        
+
         if (bl_graph_onebyones)
             figure('PaperPosition', [0 0 7 4]);
         end
-        
+
         if (sub_j==1)
-            if(~bl_graph_onebyones)
+            if (~bl_graph_onebyones)
                 figure('PaperPosition', [0 0 14 4]);
                 subplot(1,2,sub_j);
             end
             mt_y = mt_ev_condi_z_max_bp;
         end
         if (sub_j==2)
-            if(~bl_graph_onebyones)
+            if (~bl_graph_onebyones)
                 subplot(1,2,sub_j);
             end
-            
+
             mt_y = mt_ev_condi_z_max_kp;
         end
         if (sub_j==3)
-            if(~bl_graph_onebyones)
+            if (~bl_graph_onebyones)
                 figure('PaperPosition', [0 0 14 4]);
                 subplot(1,2,sub_j-2);
             end
@@ -1454,26 +1404,26 @@ if (bl_graph_evf)
             mt_y(~mt_it_borr_idx) = mt_ev_condi_z_max_bp(~mt_it_borr_idx)./ar_w_mz(~mt_it_borr_idx);
         end
         if (sub_j==4)
-            if(~bl_graph_onebyones)
+            if (~bl_graph_onebyones)
                 subplot(1,2,sub_j-2);
             end
             mt_y = mt_ev_condi_z_max_kp./(ar_w'-fl_b_bd);
         end
-        
+
         hold on;
         chart = plot(ar_w, mt_y);
         clr = jet(numel(chart));
-        
+
         if (length(ar_w) <= 50)
             scatter(ar_w_mz(:), mt_y(:), 5, 'filled');
         end
-        
+
         for m = 1:numel(chart)
             set(chart(m),'Color',clr(m,:))
         end
         legend2plot = fliplr([1 round(numel(chart)/3) round((2*numel(chart))/3)  numel(chart)]);
         legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
-        
+
         xline0 = xline(0);
         xline0.HandleVisibility = 'off';
         yline0 = yline(0);
@@ -1485,7 +1435,7 @@ if (bl_graph_evf)
             hline.LineStyle = ':';
             hline.HandleVisibility = 'off';
         end
-        
+
         if (sub_j==1)
             title('B Choices of W');
             ylabel('B Choices');
@@ -1498,7 +1448,7 @@ if (bl_graph_evf)
             xlabel({'Total Savings w=k+b'});
             legend(chart(legend2plot), legendCell(legend2plot), 'Location','northwest');
         end
-        
+
         if (sub_j==3)
             title('B Fraction of Borrow Max and Save');
             ylabel('B/bar(B) if br or B/W if sv');
@@ -1515,16 +1465,16 @@ if (bl_graph_evf)
             ylim([0 1.1]);
             legend(chart(legend2plot), legendCell(legend2plot), 'Location','northeast');
         end
-        
+
     end
-    
+
     % save file
     if (bl_img_save)
         mkdir(support_map('st_img_path'));
         st_file_name = [st_img_prefix st_img_name_main '_wkbopti' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
-    
+
 end
 
 end

@@ -1,4 +1,4 @@
-%% Solve Risky + Safe Asset Dynamic Programming Problem (Loop)
+%% Risky + Safe Asset Dyna Prog Concurrent Solution (Loop)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository> 
 % Table of Content.*

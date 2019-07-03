@@ -17,6 +17,22 @@ function [result_map] = ff_az_ds_vec(varargin)
 % idea here is that in addition to vectornizing the dynamic programming
 % funcion, we can also vectorize the distribution code here. 
 %
+% This function finds the distributio based on the outputs of several
+% dynamic programming problems, both single and multiple assets:
+%
+% # One Asset DP Savings <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html ff_az_vf_vecsv>
+% # One Asset DP Savings and Borrowing <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv>
+% # Risky + Safe Asset Concurrent DP <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vecsv.html ff_akz_vf_vecsv>
+% # Risky + Safe Asset Two-Stage DP <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf_vecsv.html ff_wkz_vf_vecsv>
+%
+% Similar to
+% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html
+% ff_az_ds>. The code here works when we are looking for the distribution
+% of f(a,z), where a'(a,z), meaning that the a next period is determined by
+% a last period and some shock. Given this, the a' is fixed for all z'. If
+% however, the outcome of interest is such that: y'(y,z,z'), meaning that
+% y' is different depending on realized z', the code below does not work.
+%
 % Distributions of Interest:
 %
 % * $p(a,z)$
@@ -103,7 +119,7 @@ end
 
 if (bl_input_override)
     % if invoked from outside override fully
-    [param_map, support_map, armt_map, func_map, result_map, ~] = varargin{:};
+    [param_map, support_map, armt_map, ~, result_map, ~] = varargin{:};
 
 else
     % default invoke
@@ -139,27 +155,24 @@ support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')]
 % result_map
 % ar_st_pol_names is from section _Process Optimal Choices_ in the value
 % function code.
-params_group = values(result_map, {'cl_mt_pol_a', 'mt_pol_idx'});
-[cl_mt_pol_a, mt_pol_idx] = params_group{:};
-mt_pol_a = deal(cl_mt_pol_a{1});
+params_group = values(result_map, {'mt_pol_idx'});
+[mt_pol_idx] = params_group{:};
 
 % armt_map
-params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z'});
-[ar_a, mt_z_trans, ar_z] = params_group{:};
+params_group = values(armt_map, {'mt_z_trans'});
+[mt_z_trans] = params_group{:};
 
 % param_map
-params_group = values(param_map, {'it_a_n', 'it_z_n'});
-[it_a_n, it_z_n] = params_group{:};
 params_group = values(param_map, {'it_maxiter_dist', 'fl_tol_dist'});
 [it_maxiter_dist, fl_tol_dist] = params_group{:};
 
 % support_map
 params_group = values(support_map, {'bl_profile_dist', 'st_profile_path', ...
     'st_profile_prefix', 'st_profile_name_main', 'st_profile_suffix',...
-    'bl_time', 'bl_display_dist', 'it_display_every', 'bl_display_final_dist', 'bl_post'});
+    'bl_time', 'bl_display_dist', 'it_display_every'});
 [bl_profile_dist, st_profile_path, ...
     st_profile_prefix, st_profile_name_main, st_profile_suffix, ...
-    bl_time, bl_display_dist, it_display_every, bl_display_final_dist, bl_post] = params_group{:};
+    bl_time, bl_display_dist, it_display_every] = params_group{:};
 
 %% Start Profiler and Timer
 
@@ -175,19 +188,25 @@ if (bl_time)
     tic;
 end
 
+%% Get Size of Endogenous and Exogenous State
+% The key idea is that all information for policy function is captured by
+% _mt_pol_idx_ matrix, its rows are the number of endogenous states, and
+% its columns are the exogenous shocks.
+
+[it_endostates_rows_n, it_exostates_cols_n] = size(mt_pol_idx);
+
 %% *f(a,z)*: Initialize Output Matrixes
 % Initialize the distribution to be uniform
-
-mt_dist_az_init = ones(length(ar_a),length(ar_z))/length(ar_a)/length(ar_z);
+mt_dist_az_init = ones(it_endostates_rows_n,it_exostates_cols_n)/it_endostates_rows_n/it_exostates_cols_n;
 mt_dist_az_cur = mt_dist_az_init;
-mt_dist_az_zeros = zeros(length(ar_a),length(ar_z));
+mt_dist_az_zeros = zeros(it_endostates_rows_n,it_exostates_cols_n);
 
 %% *f(a,z)*: Initialize Convergence Conditions
 
 bl_histiter_continue = true;
 it_iter = 0;
 ar_dist_diff_norm = zeros([it_maxiter_dist, 1]);
-mt_dist_perc_change = zeros([it_maxiter_dist, it_z_n]);
+mt_dist_perc_change = zeros([it_maxiter_dist, it_exostates_cols_n]);
 
 %% *f(a,z)*: Derive Stationary Distribution
 % Iterate over the discrete joint random variable variables (a,z)
@@ -204,7 +223,7 @@ while (bl_histiter_continue)
     mt_dist_az = mt_dist_az_zeros;
 
     % 2. One loop remains
-    for i = 1:it_z_n
+    for i = 1:it_exostates_cols_n
 
         % 3. Get Unique Index (future states receive from multiple current states)
         [ar_idx_full, ~, ar_idx_of_unique] = unique(mt_pol_idx(:,i));
@@ -223,7 +242,7 @@ while (bl_histiter_continue)
 
     % Difference across iterations
     ar_dist_diff_norm(it_iter) = norm(mt_dist_az - mt_dist_az_cur);
-    mt_dist_perc_change(it_iter, :) = sum((mt_dist_az ~= mt_dist_az))/(it_a_n);
+    mt_dist_perc_change(it_iter, :) = sum((mt_dist_az ~= mt_dist_az))/(it_endostates_rows_n);
 
     % Update
     mt_dist_az_cur = mt_dist_az;
@@ -232,7 +251,7 @@ while (bl_histiter_continue)
     if (bl_display_dist && (rem(it_iter, it_display_every)==0))
         fprintf('Dist it_iter:%d, fl_dist_diff:%d\n', it_iter, ar_dist_diff_norm(it_iter));
         tb_hist_iter = array2table([sum(mt_dist_az_cur,1); std(mt_dist_az_cur,1); ...
-                                    mt_dist_az_cur(1,:); mt_dist_az_cur(it_a_n,:)]);
+                                    mt_dist_az_cur(1,:); mt_dist_az_cur(it_endostates_rows_n,:)]);
         tb_hist_iter.Properties.VariableNames = strcat('z', string((1:size(mt_dist_az,2))));
         tb_hist_iter.Properties.RowNames = {'mdist','sddist', 'Ldist', 'Hdist'};
         disp('mdist = sum(mt_dist_az_cur,1) = sum_{a}(p(a)|z)')

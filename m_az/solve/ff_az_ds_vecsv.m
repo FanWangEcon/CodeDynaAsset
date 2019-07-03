@@ -174,12 +174,10 @@ params_group = values(result_map, {'cl_mt_pol_a', 'mt_pol_idx', 'ar_st_pol_names
 mt_pol_a = deal(cl_mt_pol_a{1});
 
 % armt_map
-params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z'});
-[ar_a, mt_z_trans, ar_z] = params_group{:};
+params_group = values(armt_map, {'mt_z_trans'});
+[mt_z_trans] = params_group{:};
 
 % param_map
-params_group = values(param_map, {'it_a_n', 'it_z_n'});
-[it_a_n, it_z_n] = params_group{:};
 params_group = values(param_map, { 'it_trans_power_dist', 'st_analytical_stationary_type'});
 [it_trans_power_dist, st_analytical_stationary_type] = params_group{:};
 
@@ -205,6 +203,13 @@ end
 if (bl_time)
     tic;
 end
+
+%% Get Size of Endogenous and Exogenous State
+% The key idea is that all information for policy function is captured by
+% _mt_pol_idx_ matrix, its rows are the number of endogenous states, and
+% its columns are the exogenous shocks.
+
+[it_endostates_rows_n, it_exostates_cols_n] = size(mt_pol_idx);
 
 %% 1. Generate Max Index in (NxM) from (N) array.
 % Suppose we have: 
@@ -239,7 +244,7 @@ end
 %
 
 % mt_pol_idx_mesh_max is (NxM) by M, mt_pol_idx is N by M
-mt_pol_idx_mesh_max = mt_pol_idx(:) + (0:1:(it_z_n-1))*it_a_n;
+mt_pol_idx_mesh_max = mt_pol_idx(:) + (0:1:(it_exostates_cols_n-1))*it_endostates_rows_n;
 
 %% 2. Transition Probabilities from (M by M) to (NxM) by M
 %
@@ -262,7 +267,7 @@ mt_pol_idx_mesh_max = mt_pol_idx(:) + (0:1:(it_z_n-1))*it_a_n;
 %     0.0000    0.0668    0.9332
 %
 
-mt_trans_prob = reshape(repmat(mt_z_trans(:)', [it_a_n, 1]), [it_a_n*it_z_n, it_z_n]);
+mt_trans_prob = reshape(repmat(mt_z_trans(:)', [it_endostates_rows_n, 1]), [it_endostates_rows_n*it_exostates_cols_n, it_exostates_cols_n]);
 
 %% 3. Fill mt_pol_idx_mesh_idx to mt_full_trans_mat
 % Try to always use sparse matrix, unless grid sizes very small, keeping
@@ -272,14 +277,14 @@ mt_trans_prob = reshape(repmat(mt_z_trans(:)', [it_a_n, 1]), [it_a_n*it_z_n, it_
 
 it_sparse_threshold = 100*7;
 
-if (it_a_n*it_z_n > it_sparse_threshold)
+if (it_endostates_rows_n*it_exostates_cols_n > it_sparse_threshold)
     
     %% 3.1 Sparse Matrix Approach
     i = mt_pol_idx_mesh_max(:);
-    j = repmat((1:1:it_a_n*it_z_n),[1,it_z_n])';
+    j = repmat((1:1:it_endostates_rows_n*it_exostates_cols_n),[1,it_exostates_cols_n])';
     v = mt_trans_prob(:);
-    m = it_a_n*it_z_n;
-    n = it_a_n*it_z_n;
+    m = it_endostates_rows_n*it_exostates_cols_n;
+    n = it_endostates_rows_n*it_exostates_cols_n;
     mt_full_trans_mat = sparse(i, j, v, m, n);
     
 else
@@ -310,14 +315,14 @@ else
     %
 
     % Each row's linear index starting point
-    ar_lin_idx_start_point = ((it_a_n*it_z_n)*(0:1:(it_a_n*it_z_n-1)));
+    ar_lin_idx_start_point = ((it_endostates_rows_n*it_exostates_cols_n)*(0:1:(it_endostates_rows_n*it_exostates_cols_n-1)));
 
     % mt_pol_idx_mesh_idx_meshfull is (NxM) by M
     % Full index in (NxM) to (NxM) transition Matrix
     mt_pol_idx_mesh_idx_meshfull = mt_pol_idx_mesh_max + ar_lin_idx_start_point';
 
     % Fill mt_pol_idx_mesh_idx to mt_full_trans_mat
-    mt_full_trans_mat = zeros([it_a_n*it_z_n, it_a_n*it_z_n]);    
+    mt_full_trans_mat = zeros([it_endostates_rows_n*it_exostates_cols_n, it_endostates_rows_n*it_exostates_cols_n]);    
     mt_full_trans_mat(mt_pol_idx_mesh_idx_meshfull(:)) = mt_trans_prob(:);
     
 end
@@ -344,8 +349,8 @@ if (strcmp(st_analytical_stationary_type, 'projection'))
     % 0 = P*(T-1)                
     % Q = trans_prob - np.identity(state_count);
 
-    mt_diag = eye(it_a_n*it_z_n);
-    if (it_a_n*it_z_n > it_sparse_threshold)
+    mt_diag = eye(it_endostates_rows_n*it_exostates_cols_n);
+    if (it_endostates_rows_n*it_exostates_cols_n > it_sparse_threshold)
         % if larger, use sparse matrix
         mt_diag = sparse(mt_diag);
     end
@@ -355,7 +360,7 @@ if (strcmp(st_analytical_stationary_type, 'projection'))
     % one_col = np.ones((state_count,1))
     % Q = np.column_stack((Q, one_col))
 
-    ar_one = ones([it_a_n*it_z_n,1]);
+    ar_one = ones([it_endostates_rows_n*it_exostates_cols_n,1]);
     mt_Q = [mt_Q, ar_one];
 
     % c. b is the LHS 
@@ -363,12 +368,12 @@ if (strcmp(st_analytical_stationary_type, 'projection'))
     % b = np.zeros((1, (state_count+1)))
     % b[0, state_count] = 1
 
-    ar_b = zeros([1, it_a_n*it_z_n+1]);
-    if (it_a_n*it_z_n > it_sparse_threshold)
+    ar_b = zeros([1, it_endostates_rows_n*it_exostates_cols_n+1]);
+    if (it_endostates_rows_n*it_exostates_cols_n > it_sparse_threshold)
         % if larger, use sparse matrix
         ar_b = sparse(ar_b);
     end    
-    ar_b(it_a_n*it_z_n+1) = 1;
+    ar_b(it_endostates_rows_n*it_exostates_cols_n+1) = 1;
 
     % d. solve
     % b = P*Q

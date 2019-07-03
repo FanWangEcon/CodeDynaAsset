@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Derive Asset and Choices/Outcomes Distribution (Loop)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-21"><meta name="DC.source" content="ff_az_ds.m"><style type="text/css">
+      --><title>Derive Asset and Choices/Outcomes Distribution (Loop)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-03"><meta name="DC.source" content="ff_az_ds.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -67,7 +67,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
   </style></head><body><div class="content"><h1>Derive Asset and Choices/Outcomes Distribution (Loop)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_AZ_DS finds the stationary asset distributions</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Start Profiler and Timer</a></li><li><a href="#6"><b>f(a,z)</b>: Initialize Output Matrixes</a></li><li><a href="#7"><b>f(a,z)</b>: Initialize Convergence Conditions</a></li><li><a href="#8"><b>f(a,z)</b>: Derive Stationary Distribution</a></li><li><a href="#10"><b>f(a,z)</b>: Iterate over Probability mass for Discrete Random Variable</a></li><li><a href="#11"><b>f(a,z)</b>: Check Tolerance and Continuation</a></li><li><a href="#13">End Time and Profiler</a></li><li><a href="#14"><b>f(y), f(c), f(a)</b>: Generate Key Distributional Statistics for Each outcome</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [result_map] = ff_az_ds(varargin)
-</pre><h2 id="2">FF_AZ_DS finds the stationary asset distributions</h2><p>Building on the Asset Dynamic Programming Problem <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a>, here we solve for the asset distribution.</p><p>This is the iterative looped solution to derive the asset distribution determined by the policy functions. Note that the asset distribution is a joint discrete random variable. We derive f(a,z), where f is the joint discrete random variables probability mass. Then we can derive f(a'(a,z)), f(c(a,z)) directly. The procedure here does not involve simulation. Simulation could also be used to derive these distributions, but given the discrete grid based solution algorithm, there is no need to introduce simulation and associated errors once we have fixed the shock process that generates randomness.</p><p>The function here accomplishes two tasks: (1) deriving the asset distribution as a discrete random variable over the states (2) calculating various statistics based on the discrete joint random variable's probability mass function for various outcomes of the model</p><p>Distributions of Interest:</p><div><ul><li><img src="ff_az_ds_eq08795144712269443427.png" alt="$p(a,z)$" style="width:39px;height:15px;"></li><li><img src="ff_az_ds_eq04843764051820646606.png" alt="$p(Y=y, z) = \sum_{a} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$" style="width:273px;height:15px;"></li><li><img src="ff_az_ds_eq00564633710101136588.png" alt="$p(Y=y, a) = \sum_{z} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$" style="width:274px;height:15px;"></li><li><img src="ff_az_ds_eq11786329523256587778.png" alt="$p(Y=y) = \sum_{a,z} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$" style="width:268px;height:17px;"></li></ul></div><p>Statistics include:</p><div><ul><li><img src="ff_az_ds_eq03016783485460700593.png" alt="$\mu_y = \sum_{y} p(Y=y) \cdot y$" style="width:134px;height:17px;"></li><li><img src="ff_az_ds_eq13414381062043947873.png" alt="$\sigma_y = \sqrt{ \sum_{y} p(Y=y) \cdot \left( y - \mu_y \right)^2}$" style="width:199px;height:27px;"></li><li><img src="ff_az_ds_eq05433369603455155594.png" alt="$p(y=0)$" style="width:53px;height:15px;"></li><li><img src="ff_az_ds_eq09585247606302904929.png" alt="$p(y=\max(y))$" style="width:91px;height:15px;"></li><li>percentiles: <img src="ff_az_ds_eq09488738859326996168.png" alt="$min_{y} \left\{ P(Y \le y) - percentile \mid P(Y \le y) \ge percentile \right\}$" style="width:352px;height:15px;"></li><li>fraction of outcome held by up to percentiles: <img src="ff_az_ds_eq11722476300337688867.png" alt="$E(Y<y)/E(Y)$" style="width:103px;height:15px;"></li></ul></div><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@param func_map container container with function handles for consumption cash-on-hand etc.</p><p>@return result_map container contains policy function matrix, value function matrix, iteration results, and policy function, value function and iteration results tables.</p><p>new keys included in result_map in addition to the output from <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a> are various distribution statistics for each model outcome, keys include <b>cl_mt_pol_a</b>, <b>cl_mt_pol_c</b>, <b>cl_mt_pol_coh</b>, etc, these include:</p><div><ul><li>the first element of each of these cell array is y(a,z), the outcome/choice at the state space points</li><li>the second element of the cell is another container, which contains statistics computed for f(y) based on y(a,z) and f(a,z), f(y) is the probability mass function for outcome y given the stationary distribution f(a,z). The second element container also includes f(y) itself as well as f(y,z).</li><li>additionally, result_map also stores some of the statistics for different variables jointly together. (a) <b>tb_outcomes_meansdperc</b>: where each row is a different outcome of the model, and each table column stores a different statistics of interest. (b) <b>tb_outcomes_fracheld</b>: which measures the fraction of asset held by different people.</li></ul></div><p>@example</p><pre>  % Get Default Parameters
+</pre><h2 id="2">FF_AZ_DS finds the stationary asset distributions</h2><p>Building on the Asset Dynamic Programming Problem <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a>, here we solve for the asset distribution.</p><p>This is the iterative looped solution to derive the asset distribution determined by the policy functions. Note that the asset distribution is a joint discrete random variable. We derive f(a,z), where f is the joint discrete random variables probability mass. Then we can derive f(a'(a,z)), f(c(a,z)) directly. The procedure here does not involve simulation. Simulation could also be used to derive these distributions, but given the discrete grid based solution algorithm, there is no need to introduce simulation and associated errors once we have fixed the shock process that generates randomness.</p><p>The code here works when we are looking for the distribution of f(a,z), where a'(a,z), meaning that the a next period is determined by a last period and some shock. Given this, the a' is fixed for all z'. If however, the outcome of interest is such that: y'(y,z,z'), meaning that y' is different depending on realized z', the code below does not work.</p><p>The function here accomplishes two tasks: (1) deriving the asset distribution as a discrete random variable over the states (2) calculating various statistics based on the discrete joint random variable's probability mass function for various outcomes of the model</p><p>Distributions of Interest:</p><div><ul><li><img src="ff_az_ds_eq08795144712269443427.png" alt="$p(a,z)$" style="width:39px;height:15px;"></li><li><img src="ff_az_ds_eq04843764051820646606.png" alt="$p(Y=y, z) = \sum_{a} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$" style="width:273px;height:15px;"></li><li><img src="ff_az_ds_eq00564633710101136588.png" alt="$p(Y=y, a) = \sum_{z} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$" style="width:274px;height:15px;"></li><li><img src="ff_az_ds_eq11786329523256587778.png" alt="$p(Y=y) = \sum_{a,z} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$" style="width:268px;height:17px;"></li></ul></div><p>Statistics include:</p><div><ul><li><img src="ff_az_ds_eq03016783485460700593.png" alt="$\mu_y = \sum_{y} p(Y=y) \cdot y$" style="width:134px;height:17px;"></li><li><img src="ff_az_ds_eq13414381062043947873.png" alt="$\sigma_y = \sqrt{ \sum_{y} p(Y=y) \cdot \left( y - \mu_y \right)^2}$" style="width:199px;height:27px;"></li><li><img src="ff_az_ds_eq05433369603455155594.png" alt="$p(y=0)$" style="width:53px;height:15px;"></li><li><img src="ff_az_ds_eq09585247606302904929.png" alt="$p(y=\max(y))$" style="width:91px;height:15px;"></li><li>percentiles: <img src="ff_az_ds_eq09488738859326996168.png" alt="$min_{y} \left\{ P(Y \le y) - percentile \mid P(Y \le y) \ge percentile \right\}$" style="width:352px;height:15px;"></li><li>fraction of outcome held by up to percentiles: <img src="ff_az_ds_eq11722476300337688867.png" alt="$E(Y<y)/E(Y)$" style="width:103px;height:15px;"></li></ul></div><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@param func_map container container with function handles for consumption cash-on-hand etc.</p><p>@return result_map container contains policy function matrix, value function matrix, iteration results, and policy function, value function and iteration results tables.</p><p>new keys included in result_map in addition to the output from <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a> are various distribution statistics for each model outcome, keys include <b>cl_mt_pol_a</b>, <b>cl_mt_pol_c</b>, <b>cl_mt_pol_coh</b>, etc, these include:</p><div><ul><li>the first element of each of these cell array is y(a,z), the outcome/choice at the state space points</li><li>the second element of the cell is another container, which contains statistics computed for f(y) based on y(a,z) and f(a,z), f(y) is the probability mass function for outcome y given the stationary distribution f(a,z). The second element container also includes f(y) itself as well as f(y,z).</li><li>additionally, result_map also stores some of the statistics for different variables jointly together. (a) <b>tb_outcomes_meansdperc</b>: where each row is a different outcome of the model, and each table column stores a different statistics of interest. (b) <b>tb_outcomes_fracheld</b>: which measures the fraction of asset held by different people.</li></ul></div><p>@example</p><pre>  % Get Default Parameters
   it_param_set = 6;
   [param_map, support_map] = ffs_az_set_default_param(it_param_set);
   % Change Keys in param_map
@@ -121,8 +121,8 @@ support_map(<span class="string">'st_img_name_main'</span>) = [st_func_name supp
 <span class="comment">% result_map</span>
 <span class="comment">% ar_st_pol_names is from section _Process Optimal Choices_ in the value</span>
 <span class="comment">% function code.</span>
-params_group = values(result_map, {<span class="string">'cl_mt_pol_a'</span>, <span class="string">'ar_st_pol_names'</span>});
-[cl_mt_pol_a, ar_st_pol_names] = params_group{:};
+params_group = values(result_map, {<span class="string">'cl_mt_pol_a'</span>});
+[cl_mt_pol_a] = params_group{:};
 mt_pol_a = deal(cl_mt_pol_a{1});
 
 <span class="comment">% armt_map</span>
@@ -138,10 +138,10 @@ params_group = values(param_map, {<span class="string">'it_maxiter_dist'</span>,
 <span class="comment">% support_map</span>
 params_group = values(support_map, {<span class="string">'bl_profile_dist'</span>, <span class="string">'st_profile_path'</span>, <span class="keyword">...</span>
     <span class="string">'st_profile_prefix'</span>, <span class="string">'st_profile_name_main'</span>, <span class="string">'st_profile_suffix'</span>,<span class="keyword">...</span>
-    <span class="string">'bl_time'</span>, <span class="string">'bl_display_dist'</span>, <span class="string">'it_display_every'</span>, <span class="string">'bl_display_final_dist'</span>, <span class="string">'bl_post'</span>});
+    <span class="string">'bl_time'</span>, <span class="string">'bl_display_dist'</span>, <span class="string">'it_display_every'</span>});
 [bl_profile_dist, st_profile_path, <span class="keyword">...</span>
     st_profile_prefix, st_profile_name_main, st_profile_suffix, <span class="keyword">...</span>
-    bl_time, bl_display_dist, it_display_every, bl_display_final_dist, bl_post] = params_group{:};
+    bl_time, bl_display_dist, it_display_every] = params_group{:};
 </pre><h2 id="5">Start Profiler and Timer</h2><pre class="codeinput"><span class="comment">% Start Profile</span>
 <span class="keyword">if</span> (bl_profile_dist)
     close <span class="string">all</span>;
@@ -160,7 +160,7 @@ mt_dist_az_zeros = zeros(length(ar_a),length(ar_z));
 it_iter = 0;
 ar_dist_diff_norm = zeros([it_maxiter_dist, 1]);
 mt_dist_perc_change = zeros([it_maxiter_dist, it_z_n]);
-</pre><h2 id="8"><b>f(a,z)</b>: Derive Stationary Distribution</h2><p>Iterate over the discrete joint random variable variables (a,z)</p><pre class="codeinput"><span class="keyword">while</span> (bl_histiter_continue)
+</pre><h2 id="8"><b>f(a,z)</b>: Derive Stationary Distribution</h2><p>Iterate over the discrete joint random variable variables (a,z)</p><p>We are looking for the distribution of: <img src="ff_az_ds_eq08795144712269443427.png" alt="$p(a,z)$" style="width:39px;height:15px;"> where <img src="ff_az_ds_eq00898647392984908260.png" alt="$a'(a,z)$" style="width:43px;height:15px;">, meaning that the a next period is determined by a last period and some shock. Given this, the <img src="ff_az_ds_eq17452403353718736463.png" alt="$a'$" style="width:11px;height:12px;"> is fixed for all <img src="ff_az_ds_eq02181288228541889949.png" alt="$z'$" style="width:11px;height:12px;"></p><p>To make the code work for life-cycle model: # <i>mt_dist_az_init</i>: Initialize with potentially exogenous initial asset distribution # <i>mt_dist_az</i>: change mt_dist_az to tensor with a third dimension for age # at the beginning of the third loop over ar_z, get mass at current age, meaning: fl_cur_za_prob = ts_dist_az(it_a_prime_idx, it_zp_q, age) # at the end of the third loop over ar_z, add accumulated mass to next period, meaning: ts_dist_az(it_a_prime_idx, it_zp_q, age+1) =+ fl_zfromza</p><pre class="codeinput"><span class="keyword">while</span> (bl_histiter_continue)
 </pre><pre class="codeinput">    it_iter = it_iter + 1;
 </pre><h2 id="10"><b>f(a,z)</b>: Iterate over Probability mass for Discrete Random Variable</h2><p>compared to <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf.html">ff_az_vf</a>, we basically have the same set of loops. There, there were four loops, here there are three loops. We eliminated the loop over next period choices, because here we already know optimal choices</p><pre class="codeinput">    <span class="comment">% initialize empty</span>
     mt_dist_az = mt_dist_az_zeros;
@@ -241,8 +241,33 @@ mt_dist_perc_change = zeros([it_maxiter_dist, it_z_n]);
 <span class="keyword">end</span>
 </pre><h2 id="14"><b>f(y), f(c), f(a)</b>: Generate Key Distributional Statistics for Each outcome</h2><p>Having derived f(a,z) the probability mass function of the joint discrete random variables, we now obtain distributional statistics. Note that we know f(a,z), and we also know relevant policy functions a'(a,z), c(a,z), or other policy functions. We can simulate any choices that are a function of the random variables (a,z), using f(a,z). We call function <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_ds_post_stats.html">ff_az_ds_post_stats</a> which uses <a href="https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html">fft_disc_rand_var_stats</a> and <a href="https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html">fft_disc_rand_var_mass2outcomes</a> to compute various statistics of interest.</p><pre class="codeinput">bl_input_override = true;
 result_map = ff_az_ds_post_stats(support_map, result_map, mt_dist_az, bl_input_override);
-</pre><pre class="codeoutput">    "tb_prob_drv, Percentiles of Y, &#8230;"    "cl_mt_pol_a"
+</pre><pre class="codeoutput">----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Summary Statistics for: cl_mt_pol_a
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+fl_choice_mean
+    0.8308
 
+fl_choice_sd
+    1.1783
+
+fl_choice_coefofvar
+    1.4183
+
+fl_choice_prob_zero
+    0.2815
+
+fl_choice_prob_below_zero
+     0
+
+fl_choice_prob_above_zero
+    0.7185
+
+fl_choice_prob_max
+     0
+
+tb_prob_drv
     percentiles    cl_mt_pol_aPercentileValues    fracOfSumHeldBelowThisPercentile
     ___________    ___________________________    ________________________________
 
@@ -264,8 +289,33 @@ result_map = ff_az_ds_post_stats(support_map, result_map, mt_dist_az, bl_input_o
          99                   5.3405                          0.92153             
        99.9                   8.0774                          0.98949             
 
-    "tb_prob_drv, Percentiles of Y, &#8230;"    "cl_mt_pol_coh"
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Summary Statistics for: cl_mt_pol_coh
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+fl_choice_mean
+    2.1316
 
+fl_choice_sd
+    1.4662
+
+fl_choice_coefofvar
+    0.6878
+
+fl_choice_prob_zero
+     0
+
+fl_choice_prob_below_zero
+     0
+
+fl_choice_prob_above_zero
+    1.0000
+
+fl_choice_prob_max
+     0
+
+tb_prob_drv
     percentiles    cl_mt_pol_cohPercentileValues    fracOfSumHeldBelowThisPercentile
     ___________    _____________________________    ________________________________
 
@@ -287,8 +337,33 @@ result_map = ff_az_ds_post_stats(support_map, result_map, mt_dist_az, bl_input_o
          99                    7.4642                             0.95916           
        99.9                    10.402                             0.99463           
 
-    "tb_prob_drv, Percentiles of Y, &#8230;"    "cl_mt_pol_c"
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Summary Statistics for: cl_mt_pol_c
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+fl_choice_mean
+    1.3008
 
+fl_choice_sd
+    0.3450
+
+fl_choice_coefofvar
+    0.2652
+
+fl_choice_prob_zero
+     0
+
+fl_choice_prob_below_zero
+     0
+
+fl_choice_prob_above_zero
+    1.0000
+
+fl_choice_prob_max
+     0
+
+tb_prob_drv
     percentiles    cl_mt_pol_cPercentileValues    fracOfSumHeldBelowThisPercentile
     ___________    ___________________________    ________________________________
 
@@ -310,14 +385,16 @@ result_map = ff_az_ds_post_stats(support_map, result_map, mt_dist_az, bl_input_o
          99                   2.1241                            0.98296           
        99.9                   2.3562                            0.99811           
 
+xxx All Variables PERCENTILES AND STATS xxx
 tb_outcomes_meansdperc: mean, sd, percentiles
-                      mean        sd       coefofvar      min       max       pYis0     pYisMINY     pYisMAXY     p0_1        p1         p5         p10        p15       p20       p25        p35        p50        p65       p75       p80       p85       p90       p95       p99      p99_9 
-                     _______    _______    _________    _______    ______    _______    _________    ________    _______    _______    _______    _______    _______    ______    ______    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______
+                      mean        sd       coefofvar      min       max       pYis0     pYls0     pYgr0     pYisMINY     pYisMAXY     p0_1        p1         p5         p10        p15       p20       p25        p35        p50        p65       p75       p80       p85       p90       p95       p99      p99_9 
+                     _______    _______    _________    _______    ______    _______    _____    _______    _________    ________    _______    _______    _______    _______    _______    ______    ______    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______
 
-    cl_mt_pol_a      0.83075     1.1783      1.4183           0    49.599    0.28147      0.28147       0              0          0          0          0          0         0         0    0.13351    0.33378    0.73431    1.1348    1.4686    1.8024    2.3364     3.271    5.3405    8.0774
-    cl_mt_pol_coh     2.1316     1.4662     0.68783     0.44468    54.536          0    0.0022497       0        0.44468    0.59175    0.68262    0.85587    0.90837    1.0479    1.1136     1.2772     1.6681     2.1977    2.6879    3.0188    3.4471    4.0585     5.109    7.4642    10.402
-    cl_mt_pol_c       1.3008    0.34504     0.26524     0.44468    4.9363          0    0.0022497       0        0.44468    0.59175    0.68262    0.81947    0.90837    1.0364    1.0479     1.1964     1.3276     1.4161    1.5268    1.5952    1.6619    1.7521    1.8668    2.1241    2.3562
+    cl_mt_pol_a      0.83075     1.1783      1.4183           0    49.599    0.28147      0      0.71853      0.28147       0              0          0          0          0          0         0         0    0.13351    0.33378    0.73431    1.1348    1.4686    1.8024    2.3364     3.271    5.3405    8.0774
+    cl_mt_pol_coh     2.1316     1.4662     0.68783     0.44468    54.536          0      0            1    0.0022497       0        0.44468    0.59175    0.68262    0.85587    0.90837    1.0479    1.1136     1.2772     1.6681     2.1977    2.6879    3.0188    3.4471    4.0585     5.109    7.4642    10.402
+    cl_mt_pol_c       1.3008    0.34504     0.26524     0.44468    4.9363          0      0            1    0.0022497       0        0.44468    0.59175    0.68262    0.81947    0.90837    1.0364    1.0479     1.1964     1.3276     1.4161    1.5268    1.5952    1.6619    1.7521    1.8668    2.1241    2.3562
 
+xxx All Variables Fraction of Y Held up to Percentile xxx
 tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
                      fracByP0_1    fracByP1     fracByP5    fracByP10    fracByP15    fracByP20    fracByP25    fracByP35    fracByP50    fracByP65    fracByP75    fracByP80    fracByP85    fracByP90    fracByP95    fracByP99    fracByP99_9
                      __________    _________    ________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    ___________
@@ -332,7 +409,7 @@ ans =
 
   Map with properties:
 
-        Count: 13
+        Count: 12
       KeyType: char
     ValueType: any
 
@@ -359,6 +436,12 @@ function [result_map] = ff_az_ds(varargin)
 % the discrete grid based solution algorithm, there is no need to
 % introduce simulation and associated errors once we have fixed the shock
 % process that generates randomness. 
+%
+% The code here works when we are looking for the distribution of f(a,z),
+% where a'(a,z), meaning that the a next period is determined by a last
+% period and some shock. Given this, the a' is fixed for all z'. If
+% however, the outcome of interest is such that: y'(y,z,z'), meaning that
+% y' is different depending on realized z', the code below does not work.
 %
 % The function here accomplishes two tasks: (1) deriving the asset
 % distribution as a discrete random variable over the states (2)
@@ -500,8 +583,8 @@ support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')]
 % result_map
 % ar_st_pol_names is from section _Process Optimal Choices_ in the value
 % function code.
-params_group = values(result_map, {'cl_mt_pol_a', 'ar_st_pol_names'});
-[cl_mt_pol_a, ar_st_pol_names] = params_group{:};
+params_group = values(result_map, {'cl_mt_pol_a'});
+[cl_mt_pol_a] = params_group{:};
 mt_pol_a = deal(cl_mt_pol_a{1});
 
 % armt_map
@@ -517,10 +600,10 @@ params_group = values(param_map, {'it_maxiter_dist', 'fl_tol_dist'});
 % support_map
 params_group = values(support_map, {'bl_profile_dist', 'st_profile_path', ...
     'st_profile_prefix', 'st_profile_name_main', 'st_profile_suffix',...
-    'bl_time', 'bl_display_dist', 'it_display_every', 'bl_display_final_dist', 'bl_post'});
+    'bl_time', 'bl_display_dist', 'it_display_every'});
 [bl_profile_dist, st_profile_path, ...
     st_profile_prefix, st_profile_name_main, st_profile_suffix, ...
-    bl_time, bl_display_dist, it_display_every, bl_display_final_dist, bl_post] = params_group{:};
+    bl_time, bl_display_dist, it_display_every] = params_group{:};
 
 %% Start Profiler and Timer
 
@@ -552,6 +635,22 @@ mt_dist_perc_change = zeros([it_maxiter_dist, it_z_n]);
 
 %% *f(a,z)*: Derive Stationary Distribution
 % Iterate over the discrete joint random variable variables (a,z)
+%
+% We are looking for the distribution of: $p(a,z)$ where $a'(a,z)$, meaning
+% that the a next period is determined by a last period and some shock.
+% Given this, the $a'$ is fixed for all $z'$
+%
+% To make the code work for life-cycle model:
+% # _mt_dist_az_init_: Initialize with potentially exogenous initial asset
+% distribution
+% # _mt_dist_az_: change mt_dist_az to tensor with a third dimension for
+% age
+% # at the beginning of the third loop over ar_z, get mass at current age,
+% meaning: fl_cur_za_prob = ts_dist_az(it_a_prime_idx, it_zp_q, age)
+% # at the end of the third loop over ar_z, add accumulated mass to next
+% period, meaning: ts_dist_az(it_a_prime_idx, it_zp_q, age+1) =+ fl_zfromza
+%
+
 while (bl_histiter_continue)
     
     it_iter = it_iter + 1;
