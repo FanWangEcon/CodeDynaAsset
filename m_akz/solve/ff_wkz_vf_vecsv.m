@@ -257,30 +257,16 @@ while bl_vfi_continue
         %% Obtain Choice Index for Vectorized/Analytical Distribution Programs
         % For deriving distributions using vectorized and semi-analytical
         % methods, at convergence, what index do optimal choices correspond
-        % to in terms of the rows of mt_val and mt_pol_a, and mt_pol_k.
-        if (it_iter == (it_maxiter_val + 1))
-            
-            ar_a_opti = mt_pol_a(:,it_z_i);
-            ar_k_opti = mt_pol_k(:,it_z_i);
-            
-            % For the LHS matrixes here, each column a different optimal
-            % choice, each row a different element of the a_meshk and
-            % k_mesha vectors. 
-            [mt_a_meshk_mesh_a_opti, mt_a_opti_mesh_a_meshk] = ndgrid(ar_a_meshk, ar_a_opti);
-            [mt_k_meshk_mesh_k_opti, mt_k_opti_mesh_k_meshk] = ndgrid(ar_k_mesha, ar_k_opti);
-            
-            % For each column (one optimal choice), which row has that
-            % optimal choice's k' and b' values. 
-            mt_a_opti_match = (mt_a_meshk_mesh_a_opti == mt_a_opti_mesh_a_meshk);
-            mt_k_opti_match = (mt_k_meshk_mesh_k_opti == mt_k_opti_mesh_k_meshk);            
-            mt_ak_joint_match = mt_a_opti_match.*mt_k_opti_match;
-            
-            % Full index, meaning, not in terms of the w=k'+b' grid's
-            % length, but in terms of the full partial triangular matched
-            % up combination of k' and b'.
-            [~, ar_opti_fullakvec_idx_z] = max(mt_ak_joint_match);
-            
-            % Save full index
+        % to in terms of the rows of mt_val and mt_pol_a, and mt_pol_k. For
+        % the LHS matrixes here, each column a different optimal choice,
+        % each row a different element of the a_meshk and k_mesha vectors.
+        % For each column (one optimal choice), which row has that optimal
+        % choice's k' and b' values. Note the code is shorter than code in
+        % <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf_vec.html
+        % ff_wkz_vf_vec>.
+        
+        if (it_iter == (it_maxiter_val + 1))           
+            [~, ar_opti_fullakvec_idx_z] = max((ar_a_meshk == mt_pol_a(:,it_z_i)').*(ar_k_mesha == mt_pol_k(:,it_z_i)'));
             mt_pol_idx(:,it_z_i) = ar_opti_fullakvec_idx_z;
         end
 
@@ -357,11 +343,10 @@ result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
 result_map('mt_pol_idx') = mt_pol_idx;
 
-mt_coh = f_coh(ar_z, ar_a_meshk, ar_k_mesha);
-result_map('cl_mt_pol_coh') = {mt_coh, zeros(1)};
+result_map('cl_mt_pol_coh') = {mt_coh_wkb, zeros(1)};
 result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
 result_map('cl_mt_pol_k') = {mt_pol_k, zeros(1)};
-result_map('cl_mt_pol_c') = {f_cons(mt_coh, mt_pol_a, mt_pol_k), zeros(1)};
+result_map('cl_mt_pol_c') = {f_cons(mt_coh_wkb, mt_pol_a, mt_pol_k), zeros(1)};
 result_map('ar_st_pol_names') = ["cl_mt_pol_coh", "cl_mt_pol_a", "cl_mt_pol_k", "cl_mt_pol_c"];
 
 if (bl_post)

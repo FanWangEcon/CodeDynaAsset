@@ -68,15 +68,12 @@ function result_map = ff_akz_vf_vec(varargin)
 % * concurrent (safe + risky) loop: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf.html ff_akz_vf>
 % * concurrent (safe + risky) vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vec.html ff_akz_vf_vec>
 % * concurrent (safe + risky) optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vecsv.html ff_akz_vf_vecsv>
-% * concurrent (safe + risky + borr/default) optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_akbz/solve/html/ff_akbz_vf_vecsv.html ff_akbz_vf_vecsv>
 % * two-stage (safe + risky) loop: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf.html ff_wkz_vf>
 % * two-stage (safe + risky) vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf_vec.html ff_wkz_vf_vec>
 % * two-stage (safe + risky) optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf_vecsv.html ff_wkz_vf_vecsv>
-% * two-stage (safe + risky + borr/default) optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_akbz/solve/html/ff_wkbz_vf_vecsv.html ff_wkbz_vf_vecsv>
 % * two-stage + interpolate (safe + risky) loop: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf.html ff_iwkz_vf>
 % * two-stage + interpolate (safe + risky) vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf_vec.html ff_iwkz_vf_vec>
 % * two-stage + interpolate (safe + risky) optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf_vecsv.html ff_iwkz_vf_vecsv>
-% * two-stage + interpolate (safe + risky + borr/default) optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_akbz/solve/html/ff_iwkbz_vf_vecsv.html ff_iwkbz_vf_vecsv>
 %
 
 %% Default

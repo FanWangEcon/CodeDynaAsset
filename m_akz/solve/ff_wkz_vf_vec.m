@@ -106,7 +106,7 @@ support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')]
 
 % armt_map
 params_group = values(armt_map, {'ar_w', 'ar_z'});
-[ ar_w, ar_z] = params_group{:};
+[ar_w, ar_z] = params_group{:};
 params_group = values(armt_map, {'ar_a_meshk', 'ar_k_mesha', 'mt_coh_wkb', 'it_ameshk_n'});
 [ar_a_meshk, ar_k_mesha, mt_coh_wkb, it_ameshk_n] = params_group{:};
 % func_map
@@ -323,11 +323,10 @@ result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
 result_map('mt_pol_idx') = mt_pol_idx;
 
-mt_coh = f_coh(ar_z, ar_a_meshk, ar_k_mesha);
-result_map('cl_mt_pol_coh') = {mt_coh, zeros(1)};
+result_map('cl_mt_pol_coh') = {mt_coh_wkb, zeros(1)};
 result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
 result_map('cl_mt_pol_k') = {mt_pol_k, zeros(1)};
-result_map('cl_mt_pol_c') = {f_cons(mt_coh, mt_pol_a, mt_pol_k), zeros(1)};
+result_map('cl_mt_pol_c') = {f_cons(mt_coh_wkb, mt_pol_a, mt_pol_k), zeros(1)};
 result_map('ar_st_pol_names') = ["cl_mt_pol_coh", "cl_mt_pol_a", "cl_mt_pol_k", "cl_mt_pol_c"];
 
 if (bl_post)

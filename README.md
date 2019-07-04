@@ -292,7 +292,9 @@ Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_
     * interpolate u(c), interpolate v(coh,z)
     * store u(c) in cells, update when k*(w,z) changes
 
-## 3.4 Asset Distributions (AKZ + WKZ)
+## 3.4 Asset Distributions
+
+### 3.4.a Distributions for AKZ and WKZ models
 
 Solve for the stationary probability mass function over states using *non-simulation* methods. The algorithms in this section works for situations where (1) state-space grid is identical to the choice-space grid, and (2) the endogenous element of the state-space are last period choices. The second point means that we are interested in f(y,z), where y'(y,z), but not y'(y,z,z').
 
@@ -307,7 +309,22 @@ Algorithms 1 and 2 approximate 3 (speed does not include 3.1 and 3.2 speed):
 3. *akz+wkz* asset distribution [semi-analytical](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_ds_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_akz_ds_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_ds_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/profile/ff_akz_ds_vecsv_default_p7/file0.html)
     * speed: **0.9** seconds **sparse eigenvector approach**
 
-## 3.5 Solution Support Files (Shared)
+### 3.4.b Distributions for iWKZ model
+
+Solve for the stationary probability mass function over states using *non-simulation* methods. The algorithms in this section works for *ikwz* from *3.3*. For this problem, we are interested in f(y,z), where y'(y,z,z'). Unlike for *3.4.a*, here, *z'* also matters.
+
+The programs here are significantly different from programs from *1.2* and *3.4.a* above. The codes compute, with [benchmark parameters](https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html) and after invoking the *optimized-vecotrized* dynamic programming code from above for *iwkz*, for each outcome y various distributional statistics of interest, including: *P(y,z)*, *P(y)*, etc.
+
+Algorithms 1 and 2 approximate 3 (speed does not include 3.3 speed):
+
+1. *iwkz* asset distribution [looped](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_ds.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_iwkz_ds.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_ds.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/profile/ff_iwkz_ds_default_p7/file0.html)
+    * speed: **104.4** seconds
+2. *iwkz* asset distribution [vectorized](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_ds_vec.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_iwkz_ds_vec.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_ds_vec.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/profile/ff_iwkz_ds_vec_default_p7/file0.html)
+    * speed: **0.8** seconds
+3. *iwkz* asset distribution [semi-analytical](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_ds_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_iwkz_ds_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_ds_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/profile/ff_iwkz_ds_vecsv_default_p7/file0.html)
+    * speed: **0.4** seconds **sparse eigenvector approach**    
+
+## 3.5 Solution Support Files
 
 All solution algorithms share the same support files.
 

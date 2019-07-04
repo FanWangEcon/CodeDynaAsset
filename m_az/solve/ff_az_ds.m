@@ -8,23 +8,26 @@ function [result_map] = ff_az_ds(varargin)
 %% FF_AZ_DS finds the stationary asset distributions
 % Building on the Asset Dynamic Programming Problem
 % <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html
-% ff_az_vf_vecsv>, here we solve for the asset distribution. 
+% ff_az_vf_vecsv>, here we solve for the asset distribution. This version
+% of the program uses loops.
 %
-% This is the iterative looped solution to derive the asset distribution
-% determined by the policy functions. Note that the asset distribution is a
-% joint discrete random variable. We derive f(a,z), where f is the joint
-% discrete random variables probability mass. Then we can derive f(a'(a,z)),
-% f(c(a,z)) directly. The procedure here does not involve simulation.
-% Simulation could also be used to derive these distributions, but given
-% the discrete grid based solution algorithm, there is no need to
-% introduce simulation and associated errors once we have fixed the shock
-% process that generates randomness. 
+% This finds the asset distribution induced by the policy functions. Note
+% that the asset distribution is a joint discrete random variable. We
+% derive f(a,z), where f is the joint discrete random variables probability
+% mass. Then we can derive f(a'(a,z)), f(c(a,z)) directly. The procedure
+% here does not involve simulation. Simulation could also be used to derive
+% these distributions, but given the discrete grid based solution
+% algorithm, there is no need to introduce simulation and associated errors
+% once we have fixed the shock process that generates randomness.
 %
 % The code here works when we are looking for the distribution of f(a,z),
-% where a'(a,z), meaning that the a next period is determined by a last
-% period and some shock. Given this, the a' is fixed for all z'. If
+% where a'(a,z), meaning that the a next period is determined by _a_ last
+% period and some shock. Given this, the _a'_ is fixed for all _z'_. If
 % however, the outcome of interest is such that: y'(y,z,z'), meaning that
-% y' is different depending on realized z', the code below does not work.
+% y' is different depending on realized z', the code below does not work,
+% rather, this code
+% <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_ds.html
+% ff_iwkz_ds> should be used.
 %
 % The function here accomplishes two tasks: (1) deriving the asset
 % distribution as a discrete random variable over the states (2)
@@ -106,9 +109,13 @@ function [result_map] = ff_az_ds(varargin)
 %
 % @seealso
 %
-% * derive distribution loop: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html ff_az_ds>
-% * derive distribution vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html ff_az_ds_vec>
-% * derive distribution semi-analytical: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html ff_az_ds_vecsv>
+% * derive distribution f(y'(y,z)) one asset *loop*: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html ff_az_ds>
+% * derive distribution f(y'({x,y},z)) two assets *loop*: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_ds.html ff_akz_ds>
+% * derive distribution f(y'({x,y},z, *z'*)) two assets *loop*: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_ds.html ff_iwkz_ds>
+% * derive distribution f(y'({y},z)) or f(y'({x,y},z)) *vectorized*: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html ff_az_ds_vec>
+% * derive distribution f(y'({y},z, *z'*)) or f(y'({x,y},z, *z'*)) *vectorized*: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_ds_vec.html ff_iwkz_ds_vec>
+% * derive distribution f(y'({y},z)) or f(y'({x,y},z)) *semi-analytical*: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html ff_az_ds_vecsv>
+% * derive distribution f(y'({y},z, *z'*)) or f(y'({x,y},z, *z'*)) *semi-analytical*: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_ds_vecsv.html ff_iwkz_ds_vecsv>
 %
 
 %% Default
@@ -261,7 +268,7 @@ while (bl_histiter_continue)
             it_a_prime_idx = find(ar_a == fl_aprime);
             
             % loop 3: loop over future shocks
-            % E_{z'}(f(a',z'|a,z)*f(a,z))
+            % E_{a,z}(f(a',z'|a,z)*f(a,z))
             for it_zp_q = 1:length(ar_z)
                 
                 % current probablity at (a,z)

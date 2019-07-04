@@ -7,10 +7,10 @@
 function [result_map] = ff_akz_ds(varargin)
 %% FF_AKZ_DS finds the stationary asset distributions
 % Building on the Asset Dynamic Programming Problem
-% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_akz_vf_vecsv.html
+% <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vecsv.html
 % ff_akz_vf_vecsv>, here we solve for the asset distribution. Also works
-% with <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_wkz_vf_vecsv.html
-% ff_wkz_vf_vecsv>.
+% with <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf_vecsv.html
+% ff_wkz_vf_vecsv>. This version of the program uses loops.
 %
 % This is the risky + safe asset version of
 % <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html
@@ -40,15 +40,19 @@ function [result_map] = ff_akz_ds(varargin)
 %
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_vf_vecsv.html ff_az_vf_vecsv>
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf_vecsv.html ff_wkz_vf_vecsv>
-% * <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_ds_post_stats.html ff_az_ds_post_stats>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_ds_post_stats.html ff_az_ds_post_stats>
 % * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html fft_disc_rand_var_stats>
 % * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html fft_disc_rand_var_mass2outcomes>
 %
 % @seealso
 %
-% * derive distribution loop: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_ds.html ff_akz_ds>
-% * derive distribution vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_ds_vec.html ff_akz_ds_vec>
-% * derive distribution semi-analytical: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_ds_vecsv.html ff_akz_ds_vecsv>
+% * derive distribution f(y'(y,z)) one asset *loop*: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html ff_az_ds>
+% * derive distribution f(y'({x,y},z)) two assets *loop*: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_ds.html ff_akz_ds>
+% * derive distribution f(y'({x,y},z, *z'*)) two assets *loop*: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_ds.html ff_iwkz_ds>
+% * derive distribution f(y'({y},z)) or f(y'({x,y},z)) *vectorized*: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html ff_az_ds_vec>
+% * derive distribution f(y'({y},z, *z'*)) or f(y'({x,y},z, *z'*)) *vectorized*: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_ds_vec.html ff_iwkz_ds_vec>
+% * derive distribution f(y'({y},z)) or f(y'({x,y},z)) *semi-analytical*: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html ff_az_ds_vecsv>
+% * derive distribution f(y'({y},z, *z'*)) or f(y'({x,y},z, *z'*)) *semi-analytical*: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_ds_vecsv.html ff_iwkz_ds_vecsv>
 %
 
 %% Default
@@ -171,6 +175,7 @@ mt_dist_perc_change = zeros([it_maxiter_dist, it_z_n]);
 % Given this, the $a'$ is fixed for all $z'$
 %
 % To make the code work for life-cycle model:
+%
 % # _mt_dist_akz_init_: Initialize with potentially exogenous initial asset
 % distribution
 % # _mt_dist_akz_: change mt_dist_az to tensor with a third dimension for
@@ -216,7 +221,7 @@ while (bl_histiter_continue)
             it_ak_prime_idx = find(ar_bl_aprime_idx.*ar_bl_kprime_idx);
 
             % loop 3: loop over future shocks
-            % E_{z'}(f(a',z'|a,z)*f({a,k},z))
+            % E_{{a,k},z}(f(a',z'|a,z)*f({a,k},z))
             for it_zp_q = 1:length(ar_z)
 
                 % current probablity at (a,z)
