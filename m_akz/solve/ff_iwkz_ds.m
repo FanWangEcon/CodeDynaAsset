@@ -13,7 +13,7 @@ function [result_map] = ff_iwkz_ds(varargin)
 % of the program uses loops.
 %
 % This is the two-stage with interpolation version of
-% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_akz_ds.html
+% <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_ds.html
 % ff_akz_ds>. See that file, as well as
 % <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html
 % ff_az_ds> for additional descriptions and comparisons. These two

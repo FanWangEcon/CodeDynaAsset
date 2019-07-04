@@ -24,7 +24,7 @@ For an introduction to savings and borrowing problems, see [Fan](https://fanwang
 
 This section solves the standard household-side problem of the [Bewley](https://en.wikipedia.org/wiki/Truman_Bewley)/[Aiyagari](https://en.wikipedia.org/wiki/S._Rao_Aiyagari) type [heterogeneous agent](https://en.wikipedia.org/wiki/Heterogeneity_in_economics) model. The supply of credit in [Aiygari (1994)](https://www.jstor.org/stable/2118417#metadata_info_tab_contents) can be derived by invoking *1.1* and *1.2* with different interest rates.
 
-## 1.1 Main Dynamic Programming Files (AZ)
+## 1.1 Dynamic Programming Files (AZ)
 
 Price (wage and interest rate) taking households arrive in a period with accumulated savings and a possibly persistent income shock. Households decide on optimal savings to carry forward to the next period in order to smooth consumption given rational expectation of the income process. Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_set_default_param.html), for the benchmark simulation:
 
@@ -81,7 +81,7 @@ Deriving asset distributions relies on two functions from the [/tools/](https://
     * This is a manager file for (1) and (2). Add statistics from (1) and (2) to results container for each model choice/outcome
 
 
-## 1.3 Solution Support Files (AZ)
+## 1.3 Solution Support (AZ)
 
 **Parameters and Function Definitions**:
 1. *az* model [set default parameters](https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_set_default_param.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/paramfunc/ffs_az_set_default_param.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_set_default_param.html)
@@ -105,7 +105,7 @@ Deriving asset distributions relies on two functions from the [/tools/](https://
     * graph: consumption and asset logged levels
     * graph: consumption and asset as percentages of coh and assets
 
-## 1.4 Savings Testing (AZ)
+## 1.4 Parameter Testing (AZ)
 
 We analyze model features by adjusting parameters.
 
@@ -126,7 +126,7 @@ We analyze model features by adjusting parameters.
 
 Codes from *1.1-1.3* are adjusted slightly to deal with both savings as well as borrowing for the household (not a firm's static borrowing problem given shock). The programs allow for default.
 
-## 2.1 Main Dynamic Programming Files (ABZ)
+## 2.1 Dynamic Programming Files (ABZ)
 
 Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_default_param.html), for the benchmark simulation:
 
@@ -152,7 +152,7 @@ The same files are used here as are used under *1.2*:
 2. *abz* model asset distribution [vectorized](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html)
 3. *abz* model asset distribution [semi-analytical](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html)
 
-## 2.3 Solution Support Files (ABZ)
+## 2.3 Solution Support (ABZ)
 
 Add parameters [*bl_default*](https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_default_param.html) and [*fl_default_aprime*](https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_default_param.html), which control if default is allowed and next period asset level for defaulters.
 
@@ -165,7 +165,7 @@ Add parameters [*bl_default*](https://fanwangecon.github.io/CodeDynaAsset/m_abz/
 
 **Output Analysis**: shared files with *az*.
 
-## 2.4 Borrow and Save Testing (ABZ)
+## 2.4 Parameter Testing (ABZ)
 
 We solved the exogenously incomplete borrowing and savings problem in *1.4*. Now we analyze model features by adjusting parameters.
 
@@ -324,7 +324,7 @@ Algorithms 1 and 2 approximate 3 (speed does not include 3.3 speed):
 3. *iwkz* asset distribution [semi-analytical](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_ds_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_iwkz_ds_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_ds_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/profile/ff_iwkz_ds_vecsv_default_p7/file0.html)
     * speed: **0.4** seconds **sparse eigenvector approach**    
 
-## 3.5 Solution Support Files
+## 3.5 Solution Support
 
 All solution algorithms share the same support files.
 
@@ -338,7 +338,7 @@ All solution algorithms share the same support files.
 2. *akz+wkz+iwkz* model [solution results graphing](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_vf_post_graph.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solvepost/ff_akz_vf_post_graph.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_vf_post_graph.html)
 
 
-## 3.6 The Risky + Safe Asset Problem Testing (iWKZ)
+## 3.6 Parameter Testing (iWKZ)
 
 We solve the joint asset choice problem using the *optimized-vectorized* method for *iwkz* algorithm from *3.3*. Now we analyze model features by adjusting parameters.
 
@@ -374,7 +374,7 @@ We have three sets of interpolations now:
 
 In section 3.4 below, I show how solution results change for *ipwkz* as we increase aggregate savings grid points, shock grid points, reduce the interpolation gaps, or change production function parameters from decreasing to constant return to scale.
 
-## 4.2 Risky + Safe Asset (Savings, ipWKZ)
+## 4.2 Percentage Interpolation with Savings DP
 
 Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/paramfunc/html/ffs_ipwkz_set_default_param.html), for the benchmark simulation, same as *3.3*, but we introduce several additional measures of precision:
 
@@ -395,7 +395,7 @@ Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_
     * interpolate u(c), interpolate v(coh,z), interpolate EV(w,z)
     * store u(c) in cells, update when k*(w,z) changes
 
-## 4.3 Risky + Safe Asset (Save + Borrow, ipWKBZ)
+## 4.2 Percentage Interpolation with Borrowing DP
 
 The code from *4.1* are modified to allow for default. Set up for default is the same as in the *abz* model discussed in section *2*. Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_set_default_param.html), for the benchmark simulation, same parameters as *4.1*.
 
@@ -413,7 +413,7 @@ The code from *4.1* are modified to allow for default. Set up for default is the
 
 Solving for the asset distribution.
 
-## 4.5 Solution Support Files (ipWKZ + ipWKBZ)
+## 4.5 Solution Support (ipWKZ + ipWKBZ)
 
 All solution algorithms share the same support files.
 
@@ -431,7 +431,7 @@ All solution algorithms share the same support files.
 1. *ipwkz+ipwkbz* shares with *akz+wkz+iwkz* models [solution results processing](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_vf_post.html) codes.
 2. *ipwkz+ipwkbz* shares with *akz+wkz+iwkz* models [solution results graphing](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_vf_post_graph.html) codes.
 
-## 4.6 Borrowing and Savings Testing (ipWKZ + ipWKBZ)
+## 4.6 Parameter Testing (ipWKZ + ipWKBZ)
 
 **Savings Testing (ipWKZ)**
 
@@ -529,7 +529,7 @@ The same files are used here as are used under *1.2*:
 2. *abz+fibs* model asset distribution [vectorized](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html)
 3. *abz+fibs* model asset distribution [semi-analytical](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html)
 
-## 5.4 Solution Support Files (ABZ+FIBS)
+## 5.4 Solution Support (ABZ+FIBS)
 
 **Parameters and Function Definitions**:
 
@@ -591,7 +591,7 @@ An application of the codes developed in sections (1) through (5) is the paper: 
 
 Solving for the asset distribution.
 
-## 6.3 Solution Support Files (ipWKBZ+FIBS)
+## 6.3 Solution Support (ipWKBZ+FIBS)
 
 All solution algorithms share the same support files.
 

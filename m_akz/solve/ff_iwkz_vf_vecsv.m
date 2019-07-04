@@ -1,4 +1,4 @@
-%% Risky + Safe Asset Dyna Prog Two-Step-Interpolated (IKWZ) Solution (Optimized-Vectorized)
+%% Risky + Safe Asset Dyna Prog Two-Step-Interpolated Solution (Optimized-Vectorized)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository> 
 % Table of Content.*

@@ -13,8 +13,8 @@ function [result_map] = ff_iwkz_ds_vec(varargin)
 % of the program is vectorized
 %
 % This is the two-stage with interpolation version of
-% <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_ds.html
-% ff_akz_ds>. See that file for additional descriptions and
+% <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_akz_ds_vec.html
+% ff_akz_ds_vec>. See that file for additional descriptions and
 % comparisons. These two functions are nearly identical
 %
 % The code here works when we are looking for the distribution of f(a,z),
