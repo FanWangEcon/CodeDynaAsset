@@ -86,6 +86,9 @@ else
     bl_input_override = true;
     [param_map, support_map] = ffs_ipwkbz_fibs_set_default_param(it_param_set);
     
+    % principle or p+r
+    param_map('bl_bridge') = true;
+    
     % Gather Inputs from armt_map
     params_group = values(param_map, ...
         {'fl_r_fbr', 'st_forbrblk_type', 'fl_forbrblk_brmost', 'fl_forbrblk_brleast', 'fl_forbrblk_gap'});
@@ -104,8 +107,9 @@ else
     [fl_Amean, fl_alpha, fl_delta] = params_group{:};
     params_group = values(param_map, {'fl_r_fsv', 'fl_w'});
     [fl_r_fsv, fl_w] = params_group{:};
-    [~, ~, ~, ~, ~, f_coh_fbis, f_coh_save, ~] = ...
-        ffs_ipwkbz_fibs_set_functions(fl_crra, fl_c_min, fl_b_bd, fl_Amean, fl_alpha, fl_delta, fl_w, fl_r_fbr, fl_r_fsv);
+    [~, ~, ~, ~, ~, ~, f_coh_fbis, f_coh_save, ~] = ...
+        ffs_ipwkbz_fibs_set_functions(...
+        fl_crra, fl_c_min, fl_b_bd, fl_Amean, fl_alpha, fl_delta, fl_w, fl_r_fbr, fl_r_fsv);
     
     func_map = containers.Map('KeyType','char', 'ValueType','any');
     func_map('f_coh_fbis') = f_coh_fbis;
@@ -115,9 +119,13 @@ else
     fl_ap = -10;
     fl_coh = 5;
 
-    % Example where aprime choice can not repay debt. 
-    fl_ap = -5;
-    fl_coh = -10;
+    % Testing COH and Aprime Vectors
+    fl_ap = -10;
+    fl_coh = -7;
+    
+%     % Example where aprime choice can not repay debt. 
+%     fl_ap = -5;
+%     fl_coh = -10;
 
     % Set Display Control
     support_map('bl_display_infbridge') = true;
@@ -208,7 +216,7 @@ if (fl_ap < 0)
 else
     
     % consumption with savings
-    if (bl_b_is_principle)    
+    if (bl_b_is_principle)
         fl_max_c_or_coh_raw = f_coh_save(fl_ap);
     else
         fl_max_c_or_coh_raw = f_cons_coh_save(fl_coh, fl_ap);
@@ -224,7 +232,8 @@ end
 %% Compute Utility With Default
 % assign u(c)
 
-if (fl_max_c_or_coh_raw <= fl_c_min || ( ~bl_rollover && ~bl_bridge && fl_coh < fl_c_min))
+if (~bl_b_is_principle) && ...
+        ((fl_max_c_or_coh_raw <= fl_c_min || ( ~bl_rollover && ~bl_bridge && fl_coh < fl_c_min)))
     
     if (bl_default)
         % Replace Consumption if default cmin

@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Generate States, Choices and Shocks Grids and Get Functions (Interpolated + Percentage + Risky + Safe Asset + FIBS)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-02"><meta name="DC.source" content="ffs_ipwkbz_fibs_get_funcgrid.m"><style type="text/css">
+      --><title>Generate States, Choices and Shocks Grids and Get Functions (Interpolated + Percentage + Risky + Safe Asset + FIBS)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-04"><meta name="DC.source" content="ffs_ipwkbz_fibs_get_funcgrid.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Generate States, Choices and Shocks Grids and Get Functions (Interpolated + Percentage + Risky + Safe Asset + FIBS)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FFS_IPWKBZ_FIBS_GET_FUNCGRID get funcs, params, states choices shocks grids</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">G1: Generate Asset and Choice Grid for 2nd stage Problem</a></li><li><a href="#6">G2: Expand A and K Arrays further if bridge is allowed</a></li><li><a href="#7">G3: Flatten Choices to Arrays to be Combined with Shocks as Columns.</a></li><li><a href="#8">F1: Get Shock Grids</a></li><li><a href="#9">FIBS1: Get Equations</a></li><li><a href="#10">FIBS2: Get Formal Borrowing Blocks</a></li><li><a href="#11">Find Formal and Informal Choices for Borrowing points</a></li><li><a href="#12">FIBS3: Generate C cost Matrix when aggregate savings = k'+b' is negative</a></li><li><a href="#13">FIBS3: Generate C cost Cash-on-Hand/State Matrix when aggregate savings is positive</a></li><li><a href="#14">COH1: Combine overall Reachable Cash-on-Hand Levels</a></li><li><a href="#15">COH2: Check if COH is within Borrowing Bounds</a></li><li><a href="#16">COH3: Update Valid 2nd stage choice matrix</a></li><li><a href="#17">COH4: Select only Valid (k(w), a) choices</a></li><li><a href="#18">Generate 1st Stage States: Interpolation Cash-on-hand Interpolation Grid</a></li><li><a href="#19">Generate 1st Stage Choices: Interpolation Cash-on-hand Interpolation Grid</a></li><li><a href="#20">Generate 1st Stage Choices: Percent of W for Covering Bridge Loans</a></li><li><a href="#21">Generate Interpolation Consumption Grid</a></li><li><a href="#22">Initialize armt_map to store, state, choice, shock matrixes</a></li><li><a href="#23">Store armt_map (1): 2nd Stage Problem Arrays and Matrixes</a></li><li><a href="#24">Store armt_map (2): First Stage Aggregate Savings</a></li><li><a href="#25">Store armt_map (3): First Stage Consumption and Cash-on-Hand Grids</a></li><li><a href="#26">Store armt_map (4): Shock Grids</a></li><li><a href="#27">Store Function Map</a></li><li><a href="#28">Graph</a></li><li><a href="#30">Graph 1: a and k choice grid graphs</a></li><li><a href="#31">Graph 2: coh by shock</a></li><li><a href="#32">Graph 3: 1st State Aggregate Savings Choices by COH interpolation grids</a></li><li><a href="#34">Graph Details, Generally do Not Run</a></li><li><a href="#36">Graph 1: 2nd stage coh reached by k' b' choices by index</a></li><li><a href="#37">Graph 2: 2nd stage coh reached by k' b' choices  by coh</a></li><li><a href="#39">Display</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(varargin)
+  </style></head><body><div class="content"><h1>Generate States, Choices and Shocks Grids and Get Functions (Interpolated + Percentage + Risky + Safe Asset + FIBS)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FFS_IPWKBZ_FIBS_GET_FUNCGRID get funcs, params, states choices shocks grids</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">G1: Generate Asset and Choice Grid for 2nd stage Problem</a></li><li><a href="#6">G2: Expand A and K Arrays further if bridge is allowed</a></li><li><a href="#7">G3: Flatten Choices to Arrays to be Combined with Shocks as Columns.</a></li><li><a href="#8">F1: Get Shock Grids</a></li><li><a href="#9">FIBS1: Get Equations</a></li><li><a href="#10">FIBS2: Get Formal Borrowing Blocks</a></li><li><a href="#11">Find Formal and Informal Choices for Borrowing points</a></li><li><a href="#12">FIBS3: Generate C cost Matrix when aggregate savings = k'+b' is negative</a></li><li><a href="#13">FIBS3: Generate C cost Cash-on-Hand/State Matrix when aggregate savings is positive</a></li><li><a href="#14">COH1: Combine overall Reachable Cash-on-Hand Levels</a></li><li><a href="#15">COH2: Check if COH is within Borrowing Bounds</a></li><li><a href="#16">COH3: Update Valid 2nd stage choice matrix</a></li><li><a href="#17">COH4: Select only Valid (k(w), a) choices</a></li><li><a href="#18">Generate 1st Stage States: Interpolation Cash-on-hand Interpolation Grid</a></li><li><a href="#19">Generate 1st Stage Choices: Interpolation Cash-on-hand Interpolation Grid</a></li><li><a href="#20">Generate 1st Stage Choices: Percent of W for Covering Bridge Loans</a></li><li><a href="#21">Generate Interpolation Consumption Grid</a></li><li><a href="#22">Initialize armt_map to store, state, choice, shock matrixes</a></li><li><a href="#23">Store armt_map (1): 2nd Stage Problem Arrays and Matrixes</a></li><li><a href="#24">Store armt_map (2): First Stage Aggregate Savings</a></li><li><a href="#25">Store armt_map (3): First Stage Consumption and Cash-on-Hand Grids</a></li><li><a href="#26">Store armt_map (4): Shock Grids</a></li><li><a href="#27">Store armt_map (5): Formal grid</a></li><li><a href="#28">Store Function Map</a></li><li><a href="#29">Graph</a></li><li><a href="#31">Graph 1: a and k choice grid graphs</a></li><li><a href="#32">Graph 2: coh by shock</a></li><li><a href="#33">Graph 3: 1st State Aggregate Savings Choices by COH interpolation grids</a></li><li><a href="#35">Graph Details, Generally do Not Run</a></li><li><a href="#37">Graph 1: 2nd stage coh reached by k' b' choices by index</a></li><li><a href="#38">Graph 2: 2nd stage coh reached by k' b' choices  by coh</a></li><li><a href="#40">Display</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(varargin)
 </pre><h2 id="2">FFS_IPWKBZ_FIBS_GET_FUNCGRID get funcs, params, states choices shocks grids</h2><p>This file is based on <a href="https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_get_funcgrid.html">ffs_ipwkbz_get_funcgrid</a>, see that file for more comments and compare differences in graphs and tables to see how the inclusion of formal and informal choices that consider bridge loans impact choice sets.</p><p>Also compare against <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_paramfunc/html/ffs_abz_fibs_get_funcgrid.html">ffs_abz_fibs_get_funcgrid</a> where the results are also considering formal and informal choices etc in the context of <b>abz fibs</b>.</p><p>In contrast to ff_ipwkbz_evf.m, here, we need to deal with borrowing and savings formal and informal. These will change how the testing matrix is constructed. When bridge loan is allowed, we also need to construct the output matrixes differently. In ff_ipwkbz_evf.m, the assumption is that coh today does not matter, so to find optimal k* choice, we only need to know the aggregate savings level. But now, we need to know the coh level as well.</p><p>Below two reachable coh matrixes are constructed, one for when aggregate savings choice w &gt;= 0, and another for when aggregate savings &lt;= 0. Then they are stacked together. And we still have the same outputs as ff_ipwkbz_evf.m. The difference is that while for savings where w &gt;=0, each row are w levels for the output matrixes, but for w &lt;=0, each row is for w level + coh percentage combinations.</p><div><ul><li><i>ar_w_level</i>: What are the feasible grid of w = k'+b', these are to be interpolated later, these are level grid, not percentage grid</li><li><i>ar_w_level</i>: What are the percentage based choices points for k' and b' given each w. These are <i>ar_a_meshk</i>, <i>ar_k_mesha</i>. Note here these are principles, k + b' is the total aggregate savings in period t. b is be a combination of formal and informal choices, but our percentage point for b is the overall principle of all formal and informal choices</li><li><i>mt_coh_wkb_full</i> : These are the cash-on-hand levels reacheable given the choice percentages of k and b'. The problem here is more complicated than <a href="https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_get_funcgrid.html">ffs_ipwkbz_get_funcgrid</a> because here we can not get to coh tomorrow by multiplying principle by savings or borrowing interest rates, if borrowing, we have to optimize among formal and informal choices. That is computationally trivial because it's a static choice unrelated to the dynamic problem. The slightly more complicated thing is that we also have to consider percentages of b' that has to go to bridge loans due to negative cash-on-hand in period t. That makes the reachable cash-on-hand grid significantly larger than the grid in <a href="https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_get_funcgrid.html">ffs_ipwkbz_get_funcgrid</a>, we have to expand the grid by another percentage dimension--percentages of b' going to bridge--for negative levels of w=k'+b' overall choice.</li></ul></div><h2 id="3">Default</h2><p>Results identical to <a href="https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_get_funcgrid.html">ffs_ipwkbz_get_funcgrid</a> is obtained by running default with: st_param_which = 'ffs_ipwkbz_get_funcgrid';</p><pre class="codeinput">bl_input_override = 0;
 <span class="keyword">if</span> (length(varargin) == 3)
     bl_input_override = varargin{3};
@@ -789,16 +789,20 @@ armt_map(<span class="string">'mt_z_mesh_coh_interp_grid'</span>) = mt_z_mesh_co
 </pre><h2 id="26">Store armt_map (4): Shock Grids</h2><pre class="codeinput">armt_map(<span class="string">'mt_z_trans'</span>) = mt_z_trans;
 armt_map(<span class="string">'ar_stationary'</span>) = ar_stationary;
 armt_map(<span class="string">'ar_z'</span>) = ar_z;
-</pre><h2 id="27">Store Function Map</h2><pre class="codeinput">func_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
+</pre><h2 id="27">Store armt_map (5): Formal grid</h2><pre class="codeinput">armt_map(<span class="string">'ar_forbrblk'</span>) = ar_forbrblk;
+armt_map(<span class="string">'ar_forbrblk_r'</span>) = ar_forbrblk_r;
+</pre><h2 id="28">Store Function Map</h2><pre class="codeinput">func_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
 func_map(<span class="string">'f_util_log'</span>) = f_util_log;
 func_map(<span class="string">'f_util_crra'</span>) = f_util_crra;
 func_map(<span class="string">'f_util_standin'</span>) = f_util_standin;
 func_map(<span class="string">'f_prod'</span>) = f_prod;
 func_map(<span class="string">'f_inc'</span>) = f_inc;
 func_map(<span class="string">'f_coh'</span>) = f_coh;
+func_map(<span class="string">'f_coh_fbis'</span>) = f_coh_fbis;
+func_map(<span class="string">'f_coh_save'</span>) = f_coh_save;
 func_map(<span class="string">'f_cons'</span>) = f_cons;
-</pre><h2 id="28">Graph</h2><pre class="codeinput"><span class="keyword">if</span> (bl_graph_funcgrids)
-</pre><h2 id="30">Graph 1: a and k choice grid graphs</h2><p>compare the figure here to the same figure in <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html">ffs_akz_get_funcgrid</a>. there the grid points are on an even grid, half of the grid points have NA. for the grid here, the grid points get denser as we get closer to low w = k'+b' levels. This is what is different visually about percentage points based choice grid for the 2nd stage problem.</p><p>Plot end because earlier parts have repeating w and a levels due to potentially bridge which are coh percentage dependent. This will only plot out the grid basically when coh percentage for bridge loan = 0</p><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
+</pre><h2 id="29">Graph</h2><pre class="codeinput"><span class="keyword">if</span> (bl_graph_funcgrids)
+</pre><h2 id="31">Graph 1: a and k choice grid graphs</h2><p>compare the figure here to the same figure in <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html">ffs_akz_get_funcgrid</a>. there the grid points are on an even grid, half of the grid points have NA. for the grid here, the grid points get denser as we get closer to low w = k'+b' levels. This is what is different visually about percentage points based choice grid for the 2nd stage problem.</p><p>Plot end because earlier parts have repeating w and a levels due to potentially bridge which are coh percentage dependent. This will only plot out the grid basically when coh percentage for bridge loan = 0</p><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
     hold <span class="string">on</span>;
 
     it_col_end = size(mt_a, 2);
@@ -849,7 +853,7 @@ func_map(<span class="string">'f_cons'</span>) = f_cons;
     <span class="keyword">end</span>
 
     grid <span class="string">on</span>;
-</pre><img vspace="5" hspace="5" src="ffs_ipwkbz_fibs_get_funcgrid_01.png" alt=""> <h2 id="31">Graph 2: coh by shock</h2><p>compare the figure here to the same figure in <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html">ffs_akz_get_funcgrid</a>. there the grid points are on an even grid. Visually, one could see that the blue/red line segments here are always the same length, but in the ffs_akz_get_funcgrid figure, they are increasingly longer as we move towards the right. They are even because the number of percentage points available is constant regardless of w = k' + b' levels. But previously, the number of grid points available is increasing as w increases since choice grid is based on levels.</p><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
+</pre><img vspace="5" hspace="5" src="ffs_ipwkbz_fibs_get_funcgrid_01.png" alt=""> <h2 id="32">Graph 2: coh by shock</h2><p>compare the figure here to the same figure in <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html">ffs_akz_get_funcgrid</a>. there the grid points are on an even grid. Visually, one could see that the blue/red line segments here are always the same length, but in the ffs_akz_get_funcgrid figure, they are increasingly longer as we move towards the right. They are even because the number of percentage points available is constant regardless of w = k' + b' levels. But previously, the number of grid points available is increasing as w increases since choice grid is based on levels.</p><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
     chart = plot(0:1:(size(mt_coh_wkb_full,1)-1), mt_coh_wkb_full);
     clr = jet(numel(chart));
     <span class="keyword">for</span> m = 1:numel(chart)
@@ -881,7 +885,7 @@ func_map(<span class="string">'f_cons'</span>) = f_cons;
     legend(chart([legend2plot length(legendCell)]), legendCell([legend2plot length(legendCell)]), <span class="string">'Location'</span>, <span class="string">'northwest'</span>);
 
     grid <span class="string">on</span>;
-</pre><img vspace="5" hspace="5" src="ffs_ipwkbz_fibs_get_funcgrid_02.png" alt=""> <h2 id="32">Graph 3: 1st State Aggregate Savings Choices by COH interpolation grids</h2><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
+</pre><img vspace="5" hspace="5" src="ffs_ipwkbz_fibs_get_funcgrid_02.png" alt=""> <h2 id="33">Graph 3: 1st State Aggregate Savings Choices by COH interpolation grids</h2><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
     hold <span class="string">on</span>;
 
     chart = plot(ar_interp_coh_grid, mt_w_by_interp_coh_interp_grid');
@@ -922,8 +926,8 @@ func_map(<span class="string">'f_cons'</span>) = f_cons;
 
     grid <span class="string">on</span>;
 </pre><img vspace="5" hspace="5" src="ffs_ipwkbz_fibs_get_funcgrid_03.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
-</pre><h2 id="34">Graph Details, Generally do Not Run</h2><pre class="codeinput"><span class="keyword">if</span> (bl_graph_funcgrids_detail)
-</pre><h2 id="36">Graph 1: 2nd stage coh reached by k' b' choices by index</h2><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
+</pre><h2 id="35">Graph Details, Generally do Not Run</h2><pre class="codeinput"><span class="keyword">if</span> (bl_graph_funcgrids_detail)
+</pre><h2 id="37">Graph 1: 2nd stage coh reached by k' b' choices by index</h2><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
     ar_coh_kpzgrid_unique = unique(sort(mt_coh_wkb_full(:)));
     scatter(1:length(ar_coh_kpzgrid_unique), ar_coh_kpzgrid_unique);
     xline(0);
@@ -932,7 +936,7 @@ func_map(<span class="string">'f_cons'</span>) = f_cons;
     ylabel(<span class="string">'Cash-on-Hand (y=ar\_coh\_kpzgrid\_unique)'</span>);
     xlabel({<span class="string">'Index of Cash-on-Hand Discrete Point'</span> <span class="string">'x = 1:length(ar\_coh\_kpzgrid\_unique)'</span>});
     grid <span class="string">on</span>;
-</pre><img vspace="5" hspace="5" src="ffs_ipwkbz_fibs_get_funcgrid_04.png" alt=""> <h2 id="37">Graph 2: 2nd stage coh reached by k' b' choices  by coh</h2><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
+</pre><img vspace="5" hspace="5" src="ffs_ipwkbz_fibs_get_funcgrid_04.png" alt=""> <h2 id="38">Graph 2: 2nd stage coh reached by k' b' choices  by coh</h2><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
     ar_coh_kpzgrid_unique = unique(sort(mt_coh_wkb_full(:)));
     scatter(ar_coh_kpzgrid_unique, ar_coh_kpzgrid_unique, <span class="string">'.'</span>);
     xline(0);
@@ -942,7 +946,7 @@ func_map(<span class="string">'f_cons'</span>) = f_cons;
     xlabel({<span class="string">'Cash-on-Hand'</span> <span class="string">'x = ar\_coh\_kpzgrid\_unique'</span>});
     grid <span class="string">on</span>;
 </pre><img vspace="5" hspace="5" src="ffs_ipwkbz_fibs_get_funcgrid_05.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
-</pre><h2 id="39">Display</h2><pre class="codeinput"><span class="keyword">if</span> (bl_display_funcgrids)
+</pre><h2 id="40">Display</h2><pre class="codeinput"><span class="keyword">if</span> (bl_display_funcgrids)
 
     disp(<span class="string">'----------------------------------------'</span>);
     disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
@@ -1299,19 +1303,21 @@ Variables:
             Max           69.93   
 
 pos = 1 ; key = f_coh ; val = @(z,b_with_r,k)(f_prod(z,k)+k*(1-fl_delta)+fl_w+b_with_r)
-pos = 2 ; key = f_cons ; val = @(coh,bprime,kprime)(coh-kprime-bprime)
-pos = 3 ; key = f_inc ; val = @(z,k,fl_r_inf,ar_for_borr,ar_inf_borr,ar_for_save)(f_prod(z,k)-(fl_delta)*k+fl_w+(ar_for_borr.*(fl_r_fbr)+ar_inf_borr.*(fl_r_inf)+ar_for_save.*(fl_r_fsv)))
-pos = 4 ; key = f_prod ; val = @(z,k)((fl_Amean.*(z)).*(k.^(fl_alpha)))
-pos = 5 ; key = f_util_crra ; val = @(c)(((c).^(1-fl_crra)-1)./(1-fl_crra))
-pos = 6 ; key = f_util_log ; val = @(c)log(c)
-pos = 7 ; key = f_util_standin ; val = @(z,b,k)f_util_log((f_coh(z,b,k)-fl_b_bd).*((f_coh(z,b,k)-fl_b_bd)&gt;fl_c_min)+fl_c_min.*((f_coh(z,b,k)-fl_b_bd)&lt;=fl_c_min))
+pos = 2 ; key = f_coh_fbis ; val = @(fl_r_inf,ar_for_borr,ar_inf_borr,ar_for_save)(ar_for_borr.*(1+fl_r_fbr)+ar_inf_borr.*(1+fl_r_inf)+ar_for_save.*(1+fl_r_fsv))
+pos = 3 ; key = f_coh_save ; val = @(b)(b.*(1+fl_r_fsv))
+pos = 4 ; key = f_cons ; val = @(coh,bprime,kprime)(coh-kprime-bprime)
+pos = 5 ; key = f_inc ; val = @(z,k,fl_r_inf,ar_for_borr,ar_inf_borr,ar_for_save)(f_prod(z,k)-(fl_delta)*k+fl_w+(ar_for_borr.*(fl_r_fbr)+ar_inf_borr.*(fl_r_inf)+ar_for_save.*(fl_r_fsv)))
+pos = 6 ; key = f_prod ; val = @(z,k)((fl_Amean.*(z)).*(k.^(fl_alpha)))
+pos = 7 ; key = f_util_crra ; val = @(c)(((c).^(1-fl_crra)-1)./(1-fl_crra))
+pos = 8 ; key = f_util_log ; val = @(c)log(c)
+pos = 9 ; key = f_util_standin ; val = @(z,b,k)f_util_log((f_coh(z,b,k)-fl_b_bd).*((f_coh(z,b,k)-fl_b_bd)&gt;fl_c_min)+fl_c_min.*((f_coh(z,b,k)-fl_b_bd)&lt;=fl_c_min))
 </pre><pre class="codeinput"><span class="keyword">end</span>
 </pre><pre class="codeoutput">
 ans = 
 
   Map with properties:
 
-        Count: 27
+        Count: 29
       KeyType: char
     ValueType: any
 
@@ -1971,11 +1977,17 @@ armt_map('mt_interp_coh_grid_mesh_z') = mt_interp_coh_grid_mesh_z;
 armt_map('mt_z_mesh_coh_interp_grid') = mt_z_mesh_coh_interp_grid;
 
 %% Store armt_map (4): Shock Grids
+
 armt_map('mt_z_trans') = mt_z_trans;
 armt_map('ar_stationary') = ar_stationary;
 armt_map('ar_z') = ar_z;
 
+%% Store armt_map (5): Formal grid
+armt_map('ar_forbrblk') = ar_forbrblk;
+armt_map('ar_forbrblk_r') = ar_forbrblk_r;
+
 %% Store Function Map
+
 func_map = containers.Map('KeyType','char', 'ValueType','any');
 func_map('f_util_log') = f_util_log;
 func_map('f_util_crra') = f_util_crra;
@@ -1983,6 +1995,8 @@ func_map('f_util_standin') = f_util_standin;
 func_map('f_prod') = f_prod;
 func_map('f_inc') = f_inc;
 func_map('f_coh') = f_coh;
+func_map('f_coh_fbis') = f_coh_fbis;
+func_map('f_coh_save') = f_coh_save;
 func_map('f_cons') = f_cons;
 
 %% Graph

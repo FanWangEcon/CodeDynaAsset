@@ -652,11 +652,17 @@ armt_map('mt_interp_coh_grid_mesh_z') = mt_interp_coh_grid_mesh_z;
 armt_map('mt_z_mesh_coh_interp_grid') = mt_z_mesh_coh_interp_grid;
 
 %% Store armt_map (4): Shock Grids
+
 armt_map('mt_z_trans') = mt_z_trans;
 armt_map('ar_stationary') = ar_stationary;
 armt_map('ar_z') = ar_z;
 
+%% Store armt_map (5): Formal grid
+armt_map('ar_forbrblk') = ar_forbrblk;
+armt_map('ar_forbrblk_r') = ar_forbrblk_r;
+
 %% Store Function Map
+
 func_map = containers.Map('KeyType','char', 'ValueType','any');
 func_map('f_util_log') = f_util_log;
 func_map('f_util_crra') = f_util_crra;
@@ -664,6 +670,8 @@ func_map('f_util_standin') = f_util_standin;
 func_map('f_prod') = f_prod;
 func_map('f_inc') = f_inc;
 func_map('f_coh') = f_coh;
+func_map('f_coh_fbis') = f_coh_fbis;
+func_map('f_coh_save') = f_coh_save;
 func_map('f_cons') = f_cons;
 
 %% Graph

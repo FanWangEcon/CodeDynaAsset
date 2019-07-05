@@ -163,6 +163,49 @@ ar_k_mesha = mt_k(:);
 mt_coh_wkb = f_coh(ar_z, ar_a_meshk, ar_k_mesha);
 mt_z_mesh_coh_wkb = repmat(ar_z, [size(mt_coh_wkb,1),1]);
 
+if (bl_display_funcgrids)
+    
+    % Generate Aggregate Variables
+    ar_aplusk_mesh = ar_a_meshk + ar_k_mesha;
+    
+    % Genereate Table
+    tab_ak_choices = array2table([ar_aplusk_mesh, ar_k_mesha, ar_a_meshk]);
+    cl_col_names = {'ar_aplusk_mesh', 'ar_k_mesha', 'ar_a_meshk'};
+    tab_ak_choices.Properties.VariableNames = cl_col_names;
+    
+    % Label Table Variables
+    tab_ak_choices.Properties.VariableDescriptions{'ar_aplusk_mesh'} = ...
+        '*ar_aplusk_mesh*: ar_aplusk_mesh = ar_a_meshk + ar_k_mesha;';
+    tab_ak_choices.Properties.VariableDescriptions{'ar_k_mesha'} = ...
+        '*ar_k_mesha*:';
+    tab_ak_choices.Properties.VariableDescriptions{'ar_a_meshk'} = ...
+        '*ar_a_meshk*:';
+
+    cl_var_desc = tab_ak_choices.Properties.VariableDescriptions;
+    for it_var_name = 1:length(cl_var_desc)
+        disp(cl_var_desc{it_var_name});
+    end
+    
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('tab_ak_choices');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    it_rows_toshow = length(ar_w_level)*2;
+    disp(size(tab_ak_choices));
+    disp(head(array2table(tab_ak_choices), it_rows_toshow));
+    disp(tail(array2table(tab_ak_choices), it_rows_toshow));
+
+
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('mt_coh_wkb');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp(size(mt_coh_wkb));
+    disp(head(array2table(mt_coh_wkb), it_rows_toshow));
+    disp(tail(array2table(mt_coh_wkb), it_rows_toshow));
+    
+end
+
 %% Generate 1st Stage States: Interpolation Cash-on-hand Interpolation Grid
 % For the iwkz problems, we solve the problem along a grid of cash-on-hand
 % values, the interpolate to find v(k',b',z) at (k',b') choices. Crucially,
@@ -395,57 +438,83 @@ end
 
 if (bl_display_funcgrids)
 
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('ar_z');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(ar_z));
     disp(ar_z);
 
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('ar_w_level');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(ar_w_level));
-    disp(ar_w_level');
+    disp(ar_w_level);
 
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_w_by_interp_coh_interp_grid');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(mt_w_by_interp_coh_interp_grid));
+    disp(head(array2table(mt_w_by_interp_coh_interp_grid), 10));
+    disp(tail(array2table(mt_w_by_interp_coh_interp_grid), 10));
 
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_z_trans');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(mt_z_trans));
-    disp(mt_z_trans');
+    disp(head(array2table(mt_z_trans), 10));
+    disp(tail(array2table(mt_z_trans), 10));
 
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('ar_interp_coh_grid');
-    disp(size(ar_interp_coh_grid));
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     summary(array2table(ar_interp_coh_grid'));
 
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('ar_interp_c_grid');
-    disp(size(ar_interp_c_grid));
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     summary(array2table(ar_interp_c_grid'));
 
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_interp_coh_grid_mesh_z');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(mt_interp_coh_grid_mesh_z));
-    summary(array2table(mt_interp_coh_grid_mesh_z));
+    disp(head(array2table(mt_interp_coh_grid_mesh_z), 10));
+    disp(tail(array2table(mt_interp_coh_grid_mesh_z), 10));
 
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_a');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(mt_a));
-%     summary(array2table(mt_a));
-%     disp(mt_a);
+    disp(head(array2table(mt_a), 10));
+    disp(tail(array2table(mt_a), 10));
 
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('ar_a_meshk');
-    disp(size(ar_a_meshk));
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     summary(array2table(ar_a_meshk));
-%     disp(ar_a_meshk');
 
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_k');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(mt_k));
-%     summary(array2table(mt_k));
-%     disp(mt_k);
+    disp(head(array2table(mt_k), 10));
+    disp(tail(array2table(mt_k), 10));
 
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('ar_k_mesha');
-    disp(size(ar_k_mesha));
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     summary(array2table(ar_k_mesha));
-%     disp(ar_k_mesha');
-
-    disp('mt_coh');
-    disp(size(mt_coh_wkb));
-    summary(array2table(mt_coh_wkb));
-%     disp(mt_coh_wkb);
 
     param_map_keys = keys(func_map);
     param_map_vals = values(func_map);

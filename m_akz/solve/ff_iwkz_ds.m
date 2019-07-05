@@ -219,7 +219,7 @@ while (bl_histiter_continue)
                 % current shock
                 fl_zprime = ar_z(it_zp_q);                
                 % cash-on-hand next period which is a function also of z'
-                fl_coh_prime = f_coh(fl_zprime, fl_aprime, fl_kprime);                
+                fl_coh_prime = f_coh(fl_zprime, fl_aprime, fl_kprime);
                 % next period index
                 [~, it_coh_prime_on_grid_idx] = min(abs(fl_coh_prime - ar_interp_coh_grid));
                 

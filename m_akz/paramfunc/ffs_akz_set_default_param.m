@@ -131,11 +131,10 @@ param_map('it_c_interp_grid_gap') = 10^-4;
 % Solution Accuracy
 param_map('it_maxiter_val') = 250;
 param_map('it_maxiter_dist') = 1000;
-param_map('st_analytical_stationary_type') = 'eigenvector'; % could be eigenvector, projection, power
+param_map('st_analytical_stationary_type') = 'eigenvector';
 param_map('fl_tol_val') = 10^-5;
 param_map('fl_tol_pol') = 10^-5;
 param_map('fl_tol_dist') = 10^-5;
-param_map('it_trans_power_dist') = 1000;
 param_map('it_tol_pol_nochange') = 25; % number of iterations where policy does not change
 
 %% Setting support_map container
@@ -318,7 +317,6 @@ if (ismember(it_subset, [5,6,7,8,9]))
         support_map('bl_time') = true;
     end
 end
-
 
 %% Display
 

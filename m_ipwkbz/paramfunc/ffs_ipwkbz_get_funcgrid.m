@@ -186,19 +186,18 @@ ar_k_mesha = ar_k_mesha_full;
 
 mt_coh_wkb_full = f_coh(ar_z, ar_a_meshk_full, ar_k_mesha_full);
 
-
 if (bl_display_funcgrids)
     
     % Generate Aggregate Variables
-    ar_aplusk_mesha = ar_a_meshk_full + ar_k_mesha_full;
+    ar_aplusk_mesh = ar_a_meshk_full + ar_k_mesha_full;
     
     % Genereate Table
-    tab_ak_choices = array2table([ar_aplusk_mesha, ar_k_mesha_full, ar_a_meshk_full]);
-    cl_col_names = {'ar_aplusk_mesha', 'ar_k_mesha_full', 'ar_a_meshk_full'};
+    tab_ak_choices = array2table([ar_aplusk_mesh, ar_k_mesha_full, ar_a_meshk_full]);
+    cl_col_names = {'ar_aplusk_mesh', 'ar_k_mesha_full', 'ar_a_meshk_full'};
     tab_ak_choices.Properties.VariableNames = cl_col_names;
     
     % Label Table Variables
-    tab_ak_choices.Properties.VariableDescriptions{'ar_aplusk_mesha'} = ...
+    tab_ak_choices.Properties.VariableDescriptions{'ar_aplusk_mesh'} = ...
         '*ar_aplusk_mesha*: ar_aplusk_mesha = ar_a_meshk_full + ar_k_mesha_full;';
     tab_ak_choices.Properties.VariableDescriptions{'ar_a_meshk_full'} = ...
         '*ar_a_meshk_full*:';
@@ -212,7 +211,7 @@ if (bl_display_funcgrids)
     
     disp('----------------------------------------');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp('mt_w_by_interp_coh_interp_grid');
+    disp('tab_ak_choices');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     it_rows_toshow = length(ar_w_level)*2;
     disp(size(tab_ak_choices));
@@ -229,7 +228,6 @@ if (bl_display_funcgrids)
     disp(tail(array2table(mt_coh_wkb_full), it_rows_toshow));
     
 end
-
 
 %% Check if COH is within Borrowing Bounds
 % some coh levels are below borrowing bound, can not borrow enough to pay

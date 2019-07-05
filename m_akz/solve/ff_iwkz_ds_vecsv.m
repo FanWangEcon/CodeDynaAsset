@@ -134,18 +134,16 @@ params_group = values(armt_map, {'ar_interp_coh_grid'});
 [ar_interp_coh_grid] = params_group{:};
 
 % param_map
-params_group = values(param_map, {'it_z_n', 'it_maxiter_dist', 'fl_tol_dist'});
-[it_z_n, it_maxiter_dist, fl_tol_dist] = params_group{:};
-params_group = values(param_map, { 'it_trans_power_dist', 'st_analytical_stationary_type'});
-[it_trans_power_dist, st_analytical_stationary_type] = params_group{:};
+params_group = values(param_map, {'st_analytical_stationary_type'});
+[st_analytical_stationary_type] = params_group{:};
 
 % support_map
 params_group = values(support_map, {'bl_profile_dist', 'st_profile_path', ...
     'st_profile_prefix', 'st_profile_name_main', 'st_profile_suffix',...
-    'bl_time', 'bl_display_dist', 'it_display_every'});
+    'bl_time'});
 [bl_profile_dist, st_profile_path, ...
     st_profile_prefix, st_profile_name_main, st_profile_suffix, ...
-    bl_time, bl_display_dist, it_display_every] = params_group{:};
+    bl_time] = params_group{:};
 
 %% Start Profiler and Timer
 

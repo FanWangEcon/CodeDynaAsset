@@ -7,16 +7,14 @@
 function [ar_aprime_nobridge, ar_b_bridge, ar_c_bridge] = ffs_fibs_inf_bridge(varargin)
 %% FFS_FIBS_INF_BRIDGE Amount of Informal Borrowing Needed as Bridge Loans
 % Bridge loan needed to pay for debt that is still unpaid due to
-% insufficient cash on hand. Potentially, only informal lender or some
-% other lender willing to extend this loan offers. So some existing debts
-% are paid back with revenue, parts that revenue can not cover is paid back
-% potentially with informal borrowing. This works with single and multiple
-% assets.
+% insufficient cash on hand. Potentially, only informal lender is willing
+% to extend this loan offers. So some existing debts are paid back with
+% revenue, parts that revenue can not cover is paid back potentially with
+% informal borrowing. This works with single and multiple assets.
 %
-% @param bl_b_is_principle boolean solving with aggregate savings as
-% savings + debt principles + interests, or just principles no interests.
-% if true, principels only, no interests. These refer to the _ar_aprime_
-% vector.
+% @param bl_b_is_principle boolean solving with aggregate save/borr as
+% principles + interests, or just principles no interests. If true,
+% principels only, no interests. These refer to the _ar_aprime_ vector.
 %
 % @param fl_r_bridge float interest rate for bridge loan
 %
@@ -24,9 +22,9 @@ function [ar_aprime_nobridge, ar_b_bridge, ar_c_bridge] = ffs_fibs_inf_bridge(va
 %
 % @param fl_r_fbr float borrowing interest rate
 %
-% @param ar_aprime array N by 1 level of aggregate borrowing excluding
-% bridge loan. Note that bridge loan is needed if coh is negative and
-% households can not pay back principle and interests.
+% @param ar_aprime array N by 1 level of aggregate borrowing including
+% potentially bridge loan. Note that bridge loan is needed if coh is
+% negative and households can not pay back principle and interests.
 %
 % @param ar_coh_today array N by 1 the level of cash-on-hand today, when the
 % borrowing and savings decisions are made. If this is positive, then
@@ -34,13 +32,16 @@ function [ar_aprime_nobridge, ar_b_bridge, ar_c_bridge] = ffs_fibs_inf_bridge(va
 % households need to first borrow to meet bridge loan needs.
 %
 % @return ar_aprime_nobridge array next period asset choice without debt
-% incurred for bridge loans.
+% incurred for bridge loans. This is the difference between _ar_coh_today_
+% and _ar_b_bridge_.
 %
 % @return ar_b_bridge array bridge loan debt to pay for unpaid uncovered
-% cash-on-hand
+% cash-on-hand. Includes interests and principle if _bl_b_is_principle_ is
+% false. If _bl_b_is_principle_ is true, only includes principle.
 %
-% @return ar_c_bridge array consumption gain from bridge loan, or
-% consumption costs of bridge loans
+% @return ar_c_bridge array consumption gain (for today) from bridge loan,
+% or consumption costs (for next period) of bridge loans. Both consider the
+% impact of principles as well as interest rates on bridge loans.
 %
 % @example
 %
@@ -81,6 +82,7 @@ else
     % Gather Inputs from param_map
     params_group = values(param_map, {'bl_b_is_principle', 'fl_r_inf'});
     [bl_b_is_principle, fl_r_inf] = params_group{:};
+    % bl_b_is_principle = true;
     
     % For benchmark, assume that the informal lender
     fl_r_bridge = fl_r_inf;

@@ -44,13 +44,13 @@ function [ar_max_c_nobridge, ar_inf_borr_nobridge, ar_for_borr, ar_for_save] = f
 % @return ar_max_c_nobridge array N by 1 next period consumption cost
 % (_bl_b_is_principle_ == true), or this period consumption gain
 % (_bl_b_is_principle_ == false) based on choosing optimally between formal
-% and informal, borrowing and savings joint categories, given either total
-% borrowing in principles or principles + interest rate from ar_aprime.
+% and informal, borrowing and savings joint categories. This considers both
+% interests as well as principles.
 %
 % @return ar_inf_borr_nobridge array N by 1 informal borrowing choices
 % (Excluding Informal Bridge loans, calculated elsewhere) which could come
 % from informal borrowing only if that minimizes consumption cost, or joint
-% formal and informal borrowing if that is the cost minimizing choice. if
+% formal and informal borrowing if that is the cost minimizing choice. ZIf
 % _bl_b_is_principle_ == true, then this includes just the principles,  no
 % intrest rates. if _bl_b_is_principle_ == false, that means this includes
 % interest rates costs as well as principles costs.
@@ -59,11 +59,17 @@ function [ar_max_c_nobridge, ar_inf_borr_nobridge, ar_for_borr, ar_for_save] = f
 % consumption costs given fixed _ar_aprime_. Could come from formal
 % borrowing alone (which shows up as joint formal and something else where
 % the other choice is 0), or formal + informal joint borrow, or formal
-% borrowing and formal savings.
+% borrowing and formal savings. If _bl_b_is_principle_ == true, then this
+% includes just the principles,  no intrest rates. if _bl_b_is_principle_
+% == false, that means this includes interest rates costs as well as
+% principles costs.
 %
 % @return ar_for_save array N by 1 this is the formal savings choice when
 % households are borrowing. Households coulds save just for savings, no
-% borrowing as well, that is not captured here.
+% borrowing as well, that is not captured here. If _bl_b_is_principle_ ==
+% true, then this includes just the principles,  no intrest rates. if
+% _bl_b_is_principle_ == false, that means this includes interest rates
+% costs as well as principles costs.
 %
 % @example
 %

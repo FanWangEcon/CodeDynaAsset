@@ -104,6 +104,7 @@ support_map('bl_post') = false;
 % Final Print
 support_map('bl_display_final') = false; % print finalized results
 support_map('bl_display_final_dist') = false; % print finalized results
+support_map('bl_display_final_dist_detail') = false; % print finalized results
 support_map('it_display_final_rowmax') = 100; % max row to print (states/iters)
 support_map('it_display_final_colmax') = 12; % max col to print (shocks)
 % Mat File Controls
@@ -223,10 +224,12 @@ if (ismember(it_subset, [5,6,7,8,9]))
         if (ismember(it_subset, [8, 9]))
             support_map('bl_display') = false;
             support_map('bl_display_dist') = false;
+            support_map('bl_display_final_dist_detail') = true;
             support_map('bl_graph_onebyones') = true;
             support_map('bl_img_save') = false;
             if (ismember(it_subset, [9]))
                 % quietly turn off all graphs, only tables
+                support_map('bl_display_final_dist_detail') = false;
                 support_map('bl_graph_coh_t_coh') = false;
             end
         end

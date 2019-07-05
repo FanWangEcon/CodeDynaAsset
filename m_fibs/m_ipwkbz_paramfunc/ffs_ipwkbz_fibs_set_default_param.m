@@ -115,10 +115,9 @@ param_map('fl_w_interp_grid_gap') = 0.1;
 
 % Solution Accuracy
 param_map('it_maxiter_val') = 250;
-param_map('it_maxiter_dist') = 250;
+param_map('it_maxiter_dist') = 1000;
 param_map('it_trans_power_dist') = 250;
 param_map('st_analytical_stationary_type') = 'eigenvector'; % could be eigenvector, projection, power
-
 param_map('fl_tol_val') = 10^-5;
 param_map('fl_tol_pol') = 10^-5;
 param_map('fl_tol_dist') = 10^-5;
@@ -144,6 +143,7 @@ support_map('it_display_every') = 5; % how often to print results
 % Profile Controls
 support_map('bl_profile') = false;
 support_map('bl_profile_dist') = false; % distribution profile
+support_map('bl_display_final_dist_detail') = false; % print finalized results
 support_map('st_profile_path') = [st_matimg_path_root '/m_ipwkbz_solve/profile/'];
 support_map('st_profile_prefix') = [''];
 support_map('st_profile_name_main') = ['_default'];
@@ -262,10 +262,9 @@ end
 if (ismember(it_subset, [5,6,7,8,9]))
     if (ismember(it_subset, [5]))
         % TEST quick (need to enough to have distribution)
-
-        param_map('it_w_perc_n') = 100;
+        param_map('it_w_perc_n') = 40;
         param_map('it_ak_perc_n') = param_map('it_w_perc_n');
-        param_map('it_z_n') = 7;
+        param_map('it_z_n') = 5;
 
         param_map('fl_coh_interp_grid_gap') = 0.25;
         param_map('it_c_interp_grid_gap') = 0.001;
@@ -283,7 +282,7 @@ if (ismember(it_subset, [5,6,7,8,9]))
         close all;
         % Main Run
         support_map('bl_time') = true;
-        support_map('bl_display') = false;
+        support_map('bl_display') = true;
         support_map('bl_display_dist') = true;
         support_map('it_display_every') = 20;
 
@@ -307,9 +306,11 @@ if (ismember(it_subset, [5,6,7,8,9]))
             support_map('bl_time') = false;
             support_map('bl_display') = false;
             support_map('bl_display_dist') = false;
+            support_map('bl_display_final_dist_detail') = true;
             support_map('bl_graph_onebyones') = true;
             support_map('bl_img_save') = false;
             if (ismember(it_subset, [9]))
+                support_map('bl_display_final_dist_detail') = false;
                 support_map('bl_graph_coh_t_coh') = false;
                 support_map('bl_graph_forinf_pol_pct') = false;
             end

@@ -55,7 +55,7 @@ function result_map = ff_ipwkbz_vf_vecsv(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 4;
+it_param_set = 2;
 bl_input_override = true;
 [param_map, support_map] = ffs_ipwkbz_set_default_param(it_param_set);
 
@@ -72,7 +72,7 @@ bl_input_override = true;
 % param_map('fl_coh_interp_grid_gap') = 0.1;
 % param_map('it_c_interp_grid_gap') = 10^-4;
 % param_map('fl_w_interp_grid_gap') = 0.1;
-%
+
 % get armt and func map
 [armt_map, func_map] = ffs_ipwkbz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 default_params = {param_map support_map armt_map func_map};

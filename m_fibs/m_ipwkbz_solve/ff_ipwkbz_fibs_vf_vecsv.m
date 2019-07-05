@@ -56,7 +56,7 @@ function result_map = ff_ipwkbz_fibs_vf_vecsv(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 4;
+it_param_set = 2;
 bl_input_override = true;
 [param_map, support_map] = ffs_ipwkbz_fibs_set_default_param(it_param_set);
 
@@ -67,7 +67,9 @@ if (strcmp(st_param_which, 'default'))
     param_map('fl_r_inf_bridge') = 0.045;
     param_map('fl_r_fbr') = 0.035;
     param_map('fl_r_fsv') = 0.025;
-
+    
+    % This is required to fully test whether bridge structure works, coh
+    % impacting second period.
     param_map('bl_bridge') = true;
 
 elseif (strcmp(st_param_which, 'small'))
@@ -139,20 +141,19 @@ support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')]
 %% Parse Parameters 2
 
 % armt_map
-params_group = values(armt_map, {'ar_w_perc', 'ar_w_level', 'ar_w_level_full', 'ar_z'});
-[ar_w_perc, ar_w_level, ar_w_level_full, ar_z] = params_group{:};
+params_group = values(armt_map, ...
+    {'ar_w_perc', 'ar_w_level_full', 'ar_coh_bridge_perc', 'ar_z'});
+[ar_w_perc, ar_w_level_full, ar_coh_bridge_perc, ar_z] = params_group{:};
 params_group = values(armt_map, {'ar_interp_c_grid', 'ar_interp_coh_grid', ...
     'ar_a_meshk', 'ar_k_mesha', ...
     'mt_interp_coh_grid_mesh_z', 'mt_z_mesh_coh_interp_grid',...
     'mt_interp_coh_grid_mesh_w_perc',...
-    'mt_w_by_interp_coh_interp_grid',...
     'mt_w_level_neg_mesh_coh_bridge_perc', 'mt_coh_bridge_perc_mesh_w_level_neg',...
     'mt_bl_w_by_interp_coh_interp_grid_wneg', ...
     'mt_w_by_interp_coh_interp_grid_wneg', 'mt_w_by_interp_coh_interp_grid_wpos', 'mt_coh_w_perc_ratio_wneg'});
 [ar_interp_c_grid, ar_interp_coh_grid, ar_a_meshk, ar_k_mesha, ...
     mt_interp_coh_grid_mesh_z, mt_z_mesh_coh_interp_grid, ...
     mt_interp_coh_grid_mesh_w_perc,...
-    mt_w_by_interp_coh_interp_grid,...
     mt_w_level_neg_mesh_coh_bridge_perc, mt_coh_bridge_perc_mesh_w_level_neg, ...
     mt_bl_w_by_interp_coh_interp_grid_wneg, ...
     mt_w_by_interp_coh_interp_grid_wneg, mt_w_by_interp_coh_interp_grid_wpos, mt_coh_w_perc_ratio_wneg] ...
@@ -161,13 +162,16 @@ params_group = values(armt_map, {'ar_interp_c_grid', 'ar_interp_coh_grid', ...
 params_group = values(armt_map, {'mt_coh_wkb', 'mt_z_mesh_coh_wkb'});
 [mt_coh_wkb, mt_z_mesh_coh_wkb] = params_group{:};
 
+% armt_map
+% Formal choice Menu/Grid and Interest Rate Menu/Grid
+params_group = values(armt_map, {'ar_forbrblk_r', 'ar_forbrblk'});
+[ar_forbrblk_r, ar_forbrblk] = params_group{:};
+
 % func_map
 params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons'});
 [f_util_log, f_util_crra, f_cons] = params_group{:};
 
 % param_map
-params_group = values(param_map, {'it_coh_bridge_perc_n'});
-[it_coh_bridge_perc_n] = params_group{:};
 params_group = values(param_map, {'it_z_n', 'fl_crra', 'fl_beta', ...
     'fl_nan_replace', 'fl_c_min', 'bl_bridge', 'bl_default', 'fl_default_wprime'});
 [it_z_n, fl_crra, fl_beta, fl_nan_replace, fl_c_min, bl_bridge, bl_default, fl_default_wprime] = params_group{:};
@@ -191,6 +195,14 @@ mt_pol_a_cur = mt_pol_a - 1;
 mt_pol_k = zeros(length(ar_interp_coh_grid),length(ar_z));
 mt_pol_k_cur = mt_pol_k - 1;
 mt_pol_idx = zeros(length(ar_interp_coh_grid),length(ar_z));
+
+% collect optimal borrowing formal and informal choices
+% mt_pol_b_with_r: cost to t+1 consumption from borrowing in t
+mt_pol_b_with_r = zeros(length(ar_interp_coh_grid),length(ar_z));
+mt_pol_b_bridge = zeros(length(ar_interp_coh_grid),length(ar_z));
+mt_pol_inf_borr_nobridge = zeros(length(ar_interp_coh_grid),length(ar_z));
+mt_pol_for_borr = zeros(length(ar_interp_coh_grid),length(ar_z));
+mt_pol_for_save = zeros(length(ar_interp_coh_grid),length(ar_z));
 
 % We did not need these in ff_oz_vf or ff_oz_vf_vec
 % see
@@ -321,15 +333,15 @@ while bl_vfi_continue
         ar_bl_w_level_full_neg = (ar_w_level_full < 0);
         
         % 2. Current Positve w and negative w optimal k choices
-        it_wneg_mt_row = sum(ar_bl_w_level_full_neg)/it_coh_bridge_perc_n;
+        it_wneg_mt_row = sum(ar_bl_w_level_full_neg)/length(ar_coh_bridge_perc);
         % for mt_ev_condi_z_max_kp
         ar_ev_condi_z_max_kp_wpos = mt_ev_condi_z_max_kp(~ar_bl_w_level_full_neg, it_z_i)';
         ar_ev_condi_z_max_kp_wneg = mt_ev_condi_z_max_kp(ar_bl_w_level_full_neg, it_z_i)';
-        mt_ev_condi_z_max_kp_wneg = reshape(ar_ev_condi_z_max_kp_wneg, [it_wneg_mt_row, it_coh_bridge_perc_n]);
+        mt_ev_condi_z_max_kp_wneg = reshape(ar_ev_condi_z_max_kp_wneg, [it_wneg_mt_row, length(ar_coh_bridge_perc)]);
         % for mt_ev_condi_z_max
         ar_ev_condi_z_max_wpos = mt_ev_condi_z_max(~ar_bl_w_level_full_neg, it_z_i)';
         ar_ev_condi_z_max_wneg = mt_ev_condi_z_max(ar_bl_w_level_full_neg, it_z_i)';
-        mt_ev_condi_z_max_wneg = reshape(ar_ev_condi_z_max_wneg, [it_wneg_mt_row, it_coh_bridge_perc_n]);
+        mt_ev_condi_z_max_wneg = reshape(ar_ev_condi_z_max_wneg, [it_wneg_mt_row, length(ar_coh_bridge_perc)]);
         
         % 2. Interp STG1A for w > 0        
         ar_w_level_full_pos = ar_w_level_full(~ar_bl_w_level_full_neg);
@@ -526,33 +538,96 @@ if (bl_profile)
     profsave(profile('info'), strcat(st_profile_path, st_file_name));
 end
 
-%% Process Optimal Choices
+%% Process Optimal Choices 1: Formal and Informal Choices 
 
 result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
 result_map('mt_pol_idx') = mt_pol_idx;
 
+% Find optimal Formal Informal Choices. Could have saved earlier, but was
+% wasteful of resources
+for it_z_i = 1:length(ar_z)
+    for it_coh_interp_j = 1:length(ar_interp_coh_grid)
+        
+        fl_coh = mt_interp_coh_grid_mesh_z(it_coh_interp_j, it_z_i);
+        fl_a_opti = mt_pol_a(it_coh_interp_j, it_z_i);
+        
+        % call formal and informal function.
+        [fl_max_c, fl_opti_b_bridge, fl_opti_inf_borr_nobridge, fl_opti_for_borr, fl_opti_for_save] = ...
+            ffs_fibs_min_c_cost_bridge(fl_a_opti, fl_coh, ...
+            param_map, support_map, armt_map, func_map, bl_input_override);
+        
+        % store savings and borrowing formal and inf optimal choices
+        mt_pol_b_with_r(it_coh_interp_j,it_z_i) = fl_max_c;
+        mt_pol_b_bridge(it_coh_interp_j,it_z_i) = fl_opti_b_bridge;
+        mt_pol_inf_borr_nobridge(it_coh_interp_j,it_z_i) = fl_opti_inf_borr_nobridge;
+        mt_pol_for_borr(it_coh_interp_j,it_z_i) = fl_opti_for_borr;
+        mt_pol_for_save(it_coh_interp_j,it_z_i) = fl_opti_for_save;
+        
+    end
+end
+
+%% Process Optimal Choices 2: Store a, k, c, coh Results
+%
+% # *mt_interp_coh_grid_mesh_z*: Cash-on-hand period _t_.
+% # *mt_pol_a*: Safe asset choice, principles only for ipwkbz_fibs
+% # *cl_mt_pol_a_principleonly*: mt_pol_a is stored in
+% cl_mt_pol_a_principle only. This is a shortcut because we need to keep
+% cl_mt_pol_a for mt_pol_b_with_r for the _ds_ code.
+% # *cl_mt_pol_a*: stores _mt_pol_b_with_r_ which has principles and
+% interest rates, to be used with _ds_ code. 
+% # *mt_pol_a*: Safe asset choice, principles only for ipwkbz_fibs
+% # *cl_mt_pol_k*: Risky asset choice, principles only for ipwkbz_fibs
+% # *cl_mt_pol_c*: Consumption in _t_ given choices.
+% # *cl_pol_b_with_r*: Consumption cost of _mt_pol_a_ in _t+1_, given the
+% formal and informal choices that are optimal to minimize this consumption
+% cost. 
+%
+
 result_map('cl_mt_pol_coh') = {mt_interp_coh_grid_mesh_z, zeros(1)};
-result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
 result_map('cl_mt_pol_k') = {mt_pol_k, zeros(1)};
 result_map('cl_mt_pol_c') = {f_cons(mt_interp_coh_grid_mesh_z, mt_pol_a, mt_pol_k), zeros(1)};
-result_map('ar_st_pol_names') = ["cl_mt_pol_coh", "cl_mt_pol_a", "cl_mt_pol_k", "cl_mt_pol_c"];
 
+result_map('cl_mt_pol_a') = {mt_pol_b_with_r, zeros(1)};
+result_map('cl_mt_pol_a_principleonly') = {mt_pol_a, zeros(1)};
+
+%% Process Optimal Choices 3: Store Formal and Informal Choices
+result_map('cl_mt_pol_b_bridge') = {mt_pol_b_bridge, zeros(1)};
+result_map('cl_mt_pol_inf_borr_nobridge') = {mt_pol_inf_borr_nobridge, zeros(1)};
+result_map('cl_mt_pol_for_borr') = {mt_pol_for_borr, zeros(1)};
+result_map('cl_mt_pol_for_save') = {mt_pol_for_save, zeros(1)};
+
+%% Process Optimal Choices 4: List of Variable Names to be processed by distributional codes
+% this list is needed for the ds codes to generate distribution,
+% distributional statistcs will be computed for elements in the list here. 
+
+result_map('ar_st_pol_names') = ...
+    ["cl_mt_pol_coh", "cl_mt_pol_a", "cl_mt_pol_k", "cl_mt_pol_c", "cl_mt_pol_a_principleonly", ...
+    "cl_mt_pol_b_bridge", "cl_mt_pol_inf_borr_nobridge", "cl_mt_pol_for_borr", "cl_mt_pol_for_save"];
+
+% Get Discrete Choice Outcomes
+result_map = ffs_fibs_identify_discrete(result_map, bl_input_override);
+
+%% Post Solution Graph and Table Generation
 
 if (bl_post)
     bl_input_override = true;
     result_map('ar_val_diff_norm') = ar_val_diff_norm(1:it_iter_last);
     result_map('ar_pol_diff_norm') = ar_pol_diff_norm(1:it_iter_last);
     result_map('mt_pol_perc_change') = mt_pol_perc_change(1:it_iter_last, :);
-
-    % graphing based on coh_wkb, but that does not match optimal choice
-    % matrixes for graphs.
+    
     armt_map('mt_coh_wkb') = mt_interp_coh_grid_mesh_z;
     armt_map('it_ameshk_n') = length(ar_interp_coh_grid);
     armt_map('ar_a_meshk') = mt_interp_coh_grid_mesh_z(:,1);
     armt_map('ar_k_mesha') = zeros(size(mt_interp_coh_grid_mesh_z(:,1)) + 0);
+    
+    % Standard AZ graphs
+    result_map = ff_akz_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);    
+    
+    % Graphs for results_map with FIBS contents
+%     result_map = ff_az_fibs_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
 
-    result_map = ff_akz_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
 end
+
 
 end

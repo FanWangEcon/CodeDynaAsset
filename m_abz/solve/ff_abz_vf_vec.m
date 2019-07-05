@@ -127,6 +127,8 @@ bl_input_override = true;
 % Note: param_map and support_map can be adjusted here or outside to override defaults
 % param_map('it_a_n') = 750;
 % param_map('it_z_n') = 15;
+% param_map('fl_r_save') = 0.025;
+% param_map('fl_r_borr') = 0.035;
 
 [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 default_params = {param_map support_map armt_map func_map};
