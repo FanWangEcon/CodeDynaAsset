@@ -146,11 +146,10 @@ Using three algorithm that provide identical solutions:
 
 ## 2.2 Asset Distributions (ABZ)
 
-The same files are used here as are used under *1.2*:
+This is the wrapper file for *abz* that invokes the [looped](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html), [vectorized](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html), and [semi-analytical](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html) distributional programs from *1.2*:
 
-1. *abz* model asset distribution [looped](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html)
-2. *abz* model asset distribution [vectorized](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html)
-3. *abz* model asset distribution [semi-analytical](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html)
+* *abz* distributional [wrapper](https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_ds_wrapper.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/solve/ff_abz_ds_wrapper.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_ds_wrapper.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/profile/ff_abz_ds_wrapper_default_p7/file0.html)   
+    * speed (dynamic programming + distribution): **2.2** seconds
 
 ## 2.3 Solution Support (ABZ)
 
@@ -242,11 +241,9 @@ Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_
     * solving for k(w,z) = argmax_{k'}(E(V(coh(k',b'=w-k'),z')) given z and w.
 2. *wkz* model [looped solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_wkz_vf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/profile/ff_wkz_vf_default_p3/file0.html)    
     * speed: **581.0** seconds
-    * Step One solve k(w,z); Step Two solve w(z,coh(b,k,z)) given k(w,z)
     * loops: 1 for VFI, 1 for shocks, 1 for coh(b,k,z), 1 for w(z)=k'+b'
 3. *wkz* model [vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf_vec.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_wkz_vf_vec.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf_vec.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/profile/ff_wkz_vf_vec_default_p3/file0.html)    
     * speed: **5.6** seconds
-    * Step One solve k(w,z); Step Two solve w(z,coh(b,k,z)) given k(w,z)
     * loops: 1 for VFI, 1 for shocks, vectorize remaining
 4. *wkz* model [optimized vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_wkz_vf_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_vf_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/profile/ff_wkz_vf_vecsv_default_p3/file0.html)    
     * speed: **0.9** seconds
@@ -277,14 +274,10 @@ Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_
 1. Use same *wkz* [2nd stage solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_evf.html) as in *3.2*
 2. *iwkz* model [looped solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_iwkz_vf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/profile/ff_iwkz_vf_default_p3/file0.html)    
     * speed: **577.8** seconds
-    * Step One solve k(w,z); Step Two solve w(z,coh(b,k,z)) given k(w,z)
     * loops: 1 for VFI, 1 for shocks, 1 for coh(b,k,z), 1 for w(z)=k'+b'    
-    * interpolate u(c), interpolate v(coh,z)
 3. *iwkz* model [vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf_vec.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_iwkz_vf_vec.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf_vec.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/profile/ff_iwkz_vf_vec_default_p3/file0.html)    
     * speed: **2.3** seconds
-    * Step One solve k(w,z); Step Two solve w(z,coh(b,k,z)) given k(w,z)
     * loops: 1 for VFI, 1 for shocks, vectorize remaining
-    * interpolate u(c), interpolate v(coh,z)
 4. *iwkz* model [optimized vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solve/ff_iwkz_vf_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/profile/ff_iwkz_vf_vecsv_default_p3/file0.html)    
     * speed: **0.8** seconds
     * Step One solve k(w,z); Step Two solve w(z,coh(b,k,z)) given k(w,z)
@@ -388,7 +381,11 @@ Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_
 
 1. Use again *ipwkz* [2nd stage solution](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/html/ff_ipwkz_evf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/solve/ff_ipwkz_evf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/html/ff_ipwkz_evf.html)
     * solving for kperc(w,z) = argmax_{kperc'}(E(V(coh(kperc',b'=w-w*kperc'),z')) given z and w.
-2. *ipwkz* model [optimized vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/html/ff_ipwkz_vf_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/solve/ff_ipwkz_vf_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/html/ff_ipwkz_vf_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/profile/ff_ipwkz_vf_vecsv_default_p3/file0.html)    
+2. *ipwkz* model [loop](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/html/ff_ipwkz_vf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/solve/ff_ipwkz_vf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/html/ff_ipwkz_vf.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/profile/ff_ipwkz_vf_default_p3/file0.html)    
+    * very small grid demonstration
+3. *ipwkz* model [vectorized](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/html/ff_ipwkz_vf_vec.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/solve/ff_ipwkz_vf_vec.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/html/ff_ipwkz_vf_vec.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/profile/ff_ipwkz_vf_vec_default_p3/file0.html)    
+    * speed: **4.2** seconds
+4. *ipwkz* model [optimized vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/html/ff_ipwkz_vf_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/solve/ff_ipwkz_vf_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/html/ff_ipwkz_vf_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/profile/ff_ipwkz_vf_vecsv_default_p3/file0.html)    
     * speed: **1.6** seconds
     * Step One solve kperc(w,z); Step Two solve wperc(z,coh(b,k,z)) given kperc(w,z)
     * loops: 1 for VFI, 1 for shocks, vectorize remaining
@@ -400,18 +397,18 @@ Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_
 The code from *4.1* are modified to allow for default. Set up for default is the same as in the *abz* model discussed in section *2*. Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_set_default_param.html), for the benchmark simulation, same parameters as *4.1*.
 
 1. Second Stage with borrowing *ipwkbz* [2nd stage solution](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_evf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/solve/ff_ipwkbz_evf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_evf.html)
-    * solving for kperc(w,z) = argmax_{kperc'}(E(V(coh(kperc',b'=w-w*kperc'),z')) given z and w.
 2. *ipwkbz* model [optimized vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_vf_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/solve/ff_ipwkbz_vf_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_vf_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/profile/ff_ipwkbz_vf_vecsv_default_p3/file0.html)    
     * speed: **2.5** seconds
-    * Step One solve kperc(w,z); Step Two solve wperc(z,coh(b,k,z)) given kperc(w,z)
-    * loops: 1 for VFI, 1 for shocks, vectorize remaining
-    * interpolate u(c), interpolate v(coh,z), interpolate EV(w,z)
-    * store u(c) in cells, update when k*(w,z) changes
 
 
-## 4.4 Asset Distributions (ipWKZ + ipWKBZ)
+## 4.4 Asset Distributions
 
-Solving for the asset distribution.
+This is the wrapper file for *abz* that invokes the [looped](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_ds.html), [vectorized](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_ds_vec.html), and [semi-analytical](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_ds_vecsv.html) distributional programs from *3.4.b*:
+
+1. *ipWKZ* distributional [wrapper](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/html/ff_ipwkz_ds_wrapper.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/solve/ff_ipwkz_ds_wrapper.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/html/ff_ipwkz_ds_wrapper.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/profile/ff_ipwkz_ds_wrapper_default_p7/file0.html)   
+    * speed (dynamic programming + distribution): **2.5** seconds
+2. *ipWKBZ* distributional [wrapper](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_ds_wrapper.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/solve/ff_ipwkbz_ds_wrapper.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_ds_wrapper.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/profile/ff_ipwkbz_ds_wrapper_default_p7/file0.html)   
+    * speed (dynamic programming + distribution): **4.2** seconds  
 
 ## 4.5 Solution Support (ipWKZ + ipWKBZ)
 

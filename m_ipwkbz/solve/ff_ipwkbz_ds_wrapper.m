@@ -36,6 +36,11 @@ bl_input_override = true;
 % param_map('fl_r_save') = 0.025;
 % param_map('fl_r_borr') = 0.025;
 
+% These parameters below for comparison with abz_fibs model
+param_map('fl_r_save') = 0.025;
+param_map('fl_r_borr') = 0.095;
+param_map('fl_c_min') = 0.02;
+
 % param_map('st_analytical_stationary_type') = 'loop';
 % param_map('st_analytical_stationary_type') = 'vector';
 param_map('st_analytical_stationary_type') = 'eigenvector';
@@ -66,7 +71,7 @@ end
 support_map('bl_profile_dist') = false;
 
 % append function name
-st_func_name = 'ff_ipwkz_ds_wrapper';
+st_func_name = 'ff_ipwkbz_ds_wrapper';
 support_map('st_profile_name_main') = [st_func_name support_map('st_profile_name_main')];
 support_map('st_mat_name_main') = [st_func_name support_map('st_mat_name_main')];
 support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')];

@@ -7,6 +7,16 @@
 function [result_map] = ff_abz_ds_wrapper(varargin)
 %% FF_ABZ_DS_WRAPPER finds the stationary asset distributions
 % This is a warpper function.
+%
+% @include
+%
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
+% * save + borr optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv>
+% * derive distribution f(y'(y,z)) one asset *loop*: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html ff_az_ds>
+% * derive distribution f(y'({y},z)) or f(y'({x,y},z)) *vectorized*: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html ff_az_ds_vec>
+% * derive distribution f(y'({y},z)) or f(y'({x,y},z)) *semi-analytical*: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html ff_az_ds_vecsv>
+%
 
 %% Default
 % # it_subset = 5 is basic invoke quick test
@@ -15,15 +25,18 @@ function [result_map] = ff_abz_ds_wrapper(varargin)
 % # it_subset = 8 is matlab publish
 % # it_subset = 9 is invoke operational (only final stats) and coh graph
 
-it_param_set = 9;
+it_param_set = 8;
 bl_input_override = true;
 [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
 
 % Note: param_map and support_map can be adjusted here or outside to override defaults
 % param_map('it_a_n') = 750;
 % param_map('it_z_n') = 15;
-% param_map('fl_r_save') = 0.025;
-% param_map('fl_r_borr') = 0.025;
+
+% These parameters below for comparison with abz_fibs model
+param_map('fl_r_save') = 0.025;
+param_map('fl_r_borr') = 0.095;
+param_map('fl_c_min') = 0.02;
 
 % param_map('st_analytical_stationary_type') = 'loop';
 % param_map('st_analytical_stationary_type') = 'vector';
@@ -90,6 +103,9 @@ bl_input_override = true;
 result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
 
 %% Derive Distribution
+% Note that the *pYisMINY* statistics show the
+% proportion of households at the minimum borrowing bound, where default
+% takes place, and shows therefore the fraction of households defaulting. 
 
 if (strcmp(st_analytical_stationary_type, 'loop'))
     

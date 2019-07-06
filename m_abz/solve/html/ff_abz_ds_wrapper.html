@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Derive Distributions for Save + Borrow One Asset (Wrapper)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-05"><meta name="DC.source" content="ff_abz_ds_wrapper.m"><style type="text/css">
+      --><title>Derive Distributions for Save + Borrow One Asset (Wrapper)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-06"><meta name="DC.source" content="ff_abz_ds_wrapper.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -67,15 +67,18 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
   </style></head><body><div class="content"><h1>Derive Distributions for Save + Borrow One Asset (Wrapper)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_ABZ_DS_WRAPPER finds the stationary asset distributions</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1</a></li><li><a href="#5">Parse Parameters</a></li><li><a href="#6">Start Profiler and Timer</a></li><li><a href="#7">Solve DP</a></li><li><a href="#8">Derive Distribution</a></li><li><a href="#9">End Profiler and Timer</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [result_map] = ff_abz_ds_wrapper(varargin)
-</pre><h2 id="2">FF_ABZ_DS_WRAPPER finds the stationary asset distributions</h2><p>This is a warpper function.</p><h2 id="3">Default</h2><div><ol><li>it_subset = 5 is basic invoke quick test</li><li>it_subset = 6 is invoke full test</li><li>it_subset = 7 is profiling invoke</li><li>it_subset = 8 is matlab publish</li><li>it_subset = 9 is invoke operational (only final stats) and coh graph</li></ol></div><pre class="codeinput">it_param_set = 8;
+</pre><h2 id="2">FF_ABZ_DS_WRAPPER finds the stationary asset distributions</h2><p>This is a warpper function.</p><p>@include</p><div><ul><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_default_param.html">ffs_abz_set_default_param</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_get_funcgrid.html">ffs_abz_get_funcgrid</a></li><li>save + borr optimized-vectorized: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vecsv.html">ff_abz_vf_vecsv</a></li><li>derive distribution f(y'(y,z)) one asset <b>loop</b>: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html">ff_az_ds</a></li><li>derive distribution f(y'({y},z)) or f(y'({x,y},z)) <b>vectorized</b>: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html">ff_az_ds_vec</a></li><li>derive distribution f(y'({y},z)) or f(y'({x,y},z)) <b>semi-analytical</b>: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html">ff_az_ds_vecsv</a></li></ul></div><h2 id="3">Default</h2><div><ol><li>it_subset = 5 is basic invoke quick test</li><li>it_subset = 6 is invoke full test</li><li>it_subset = 7 is profiling invoke</li><li>it_subset = 8 is matlab publish</li><li>it_subset = 9 is invoke operational (only final stats) and coh graph</li></ol></div><pre class="codeinput">it_param_set = 8;
 bl_input_override = true;
 [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
 
 <span class="comment">% Note: param_map and support_map can be adjusted here or outside to override defaults</span>
 <span class="comment">% param_map('it_a_n') = 750;</span>
 <span class="comment">% param_map('it_z_n') = 15;</span>
-<span class="comment">% param_map('fl_r_save') = 0.025;</span>
-<span class="comment">% param_map('fl_r_borr') = 0.025;</span>
+
+<span class="comment">% These parameters below for comparison with abz_fibs model</span>
+param_map(<span class="string">'fl_r_save'</span>) = 0.025;
+param_map(<span class="string">'fl_r_borr'</span>) = 0.095;
+param_map(<span class="string">'fl_c_min'</span>) = 0.02;
 
 <span class="comment">% param_map('st_analytical_stationary_type') = 'loop';</span>
 <span class="comment">% param_map('st_analytical_stationary_type') = 'vector';</span>
@@ -128,7 +131,7 @@ params_group = values(support_map, <span class="keyword">...</span>
 <span class="keyword">end</span>
 </pre><h2 id="7">Solve DP</h2><pre class="codeinput">bl_input_override = true;
 result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
-</pre><pre class="codeoutput">Elapsed time is 1.829957 seconds.
+</pre><pre class="codeoutput">Elapsed time is 1.565223 seconds.
 Warning: Using only the real component of complex data. 
 Warning: Using only the real component of complex data. 
 Warning: Using only the real component of complex data. 
@@ -144,7 +147,7 @@ Warning: Using only the real component of complex data.
 Warning: Using only the real component of complex data. 
 Warning: Using only the real component of complex data. 
 Warning: Using only the real component of complex data. 
-</pre><img vspace="5" hspace="5" src="ff_abz_ds_wrapper_01.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_ds_wrapper_02.png" alt=""> <h2 id="8">Derive Distribution</h2><pre class="codeinput"><span class="keyword">if</span> (strcmp(st_analytical_stationary_type, <span class="string">'loop'</span>))
+</pre><img vspace="5" hspace="5" src="ff_abz_ds_wrapper_01.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_ds_wrapper_02.png" alt=""> <h2 id="8">Derive Distribution</h2><p>Note that the <b>pYisMINY</b> statistics show the proportion of households at the minimum borrowing bound, where default takes place, and shows therefore the fraction of households defaulting.</p><pre class="codeinput"><span class="keyword">if</span> (strcmp(st_analytical_stationary_type, <span class="string">'loop'</span>))
 
     result_map = ff_az_ds(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
 
@@ -157,7 +160,7 @@ Warning: Using only the real component of complex data.
     result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
 
 <span class="keyword">end</span>
-</pre><pre class="codeoutput">Elapsed time is 0.283559 seconds.
+</pre><pre class="codeoutput">Elapsed time is 0.321895 seconds.
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Summary Statistics for: cl_mt_pol_a
@@ -331,7 +334,7 @@ tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percent
     st_file_name = [st_profile_prefix st_profile_name_main st_profile_suffix];
     profsave(profile(<span class="string">'info'</span>), strcat(st_profile_path, st_file_name));
 <span class="keyword">end</span>
-</pre><pre class="codeoutput">Elapsed time is 0.604778 seconds.
+</pre><pre class="codeoutput">Elapsed time is 0.674465 seconds.
 </pre><pre class="codeinput"><span class="keyword">end</span>
 </pre><pre class="codeoutput">
 ans = 
@@ -353,6 +356,16 @@ ans =
 function [result_map] = ff_abz_ds_wrapper(varargin)
 %% FF_ABZ_DS_WRAPPER finds the stationary asset distributions
 % This is a warpper function.
+%
+% @include
+%
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
+% * save + borr optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv>
+% * derive distribution f(y'(y,z)) one asset *loop*: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html ff_az_ds>
+% * derive distribution f(y'({y},z)) or f(y'({x,y},z)) *vectorized*: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html ff_az_ds_vec>
+% * derive distribution f(y'({y},z)) or f(y'({x,y},z)) *semi-analytical*: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html ff_az_ds_vecsv>
+%
 
 %% Default
 % # it_subset = 5 is basic invoke quick test
@@ -368,8 +381,11 @@ bl_input_override = true;
 % Note: param_map and support_map can be adjusted here or outside to override defaults
 % param_map('it_a_n') = 750;
 % param_map('it_z_n') = 15;
-% param_map('fl_r_save') = 0.025;
-% param_map('fl_r_borr') = 0.025;
+
+% These parameters below for comparison with abz_fibs model
+param_map('fl_r_save') = 0.025;
+param_map('fl_r_borr') = 0.095;
+param_map('fl_c_min') = 0.02;
 
 % param_map('st_analytical_stationary_type') = 'loop';
 % param_map('st_analytical_stationary_type') = 'vector';
@@ -436,6 +452,9 @@ bl_input_override = true;
 result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
 
 %% Derive Distribution
+% Note that the *pYisMINY* statistics show the
+% proportion of households at the minimum borrowing bound, where default
+% takes place, and shows therefore the fraction of households defaulting. 
 
 if (strcmp(st_analytical_stationary_type, 'loop'))
     
