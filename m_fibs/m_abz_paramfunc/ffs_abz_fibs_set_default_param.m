@@ -55,7 +55,7 @@ param_map('fl_default_aprime') = 0;
 % Borrowing Setting 1: Default Allowed, Bridge True, bl_rollover does not matter
 % Borrowing Setting 2: Default Allowed, Bridge False, bl_rollover matter
 param_map('bl_default') = true; % if borrowing is default allowed
-param_map('bl_bridge') = false;
+param_map('bl_bridge') = true;
 param_map('bl_rollover') = true;
 
 % Savings
@@ -71,9 +71,9 @@ param_map('fl_w') = 1.28;
 % formal informal parameters
 % fl_for_br_block are the formal borrowing grid block sizes.
 param_map('fl_r_fsv') = 0.025;
-param_map('fl_r_inf') = 0.045;
-param_map('fl_r_inf_bridge') = 0.045;
-param_map('fl_r_fbr') = 0.035;
+param_map('fl_r_inf') = 0.095;
+param_map('fl_r_inf_bridge') = 0.095;
+param_map('fl_r_fbr') = 0.065;
 param_map('bl_b_is_principle') = false;
 % see: ffs_for_br_block.m
 param_map('st_forbrblk_type') = 'seg3';
@@ -83,7 +83,7 @@ param_map('fl_forbrblk_gap') = -1.5;
 
 % Minimum Consumption, c_min is for default, when c < 0, replace utility
 % with fl_nan_replace.
-param_map('fl_c_min') = 0.001;
+param_map('fl_c_min') = 0.02;
 param_map('fl_nan_replace') = -99999;
 
 % Solution Accuracy

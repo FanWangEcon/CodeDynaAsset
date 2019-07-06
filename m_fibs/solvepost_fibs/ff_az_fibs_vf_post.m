@@ -54,18 +54,6 @@ if (bl_input_override)
     % if invoked from outside overrid fully
     [param_map, support_map, armt_map, func_map, result_map, ~] = varargin{:};
     
-    params_group = values(result_map, {'mt_val', 'cl_mt_pol_a'});
-    [mt_val, cl_mt_pol_a] = params_group{:};
-    mt_pol_a = deal(cl_mt_pol_a{1});
-    
-    params_group = values(result_map, {'ar_val_diff_norm', 'ar_pol_diff_norm', 'mt_pol_perc_change'});
-    [ar_val_diff_norm, ar_pol_diff_norm, mt_pol_perc_change] = params_group{:};
-    
-    % Get Parameters
-    params_group = values(param_map, {'it_z_n', 'it_a_n'});
-    [it_z_n, it_a_n] = params_group{:};
-    params_group = values(armt_map, {'ar_a', 'ar_z'});
-    [ar_a, ar_z] = params_group{:};
     
 else
     
@@ -158,9 +146,9 @@ end
 
 %% Parse Parameter
 
-% param_map
-params_group = values(param_map, {'it_z_n', 'it_a_n'});
-[it_z_n, it_a_n] = params_group{:};
+% armt_map standards
+params_group = values(armt_map, {'ar_z'});
+[ar_z] = params_group{:};    
 
 % result_map standards
 params_group = values(result_map, {'cl_mt_pol_a'});
@@ -182,17 +170,30 @@ params_group = values(support_map, {'bl_graph', 'bl_graph_onebyones'});
 params_group = values(support_map, {'bl_mat', 'st_mat_path', 'st_mat_prefix', 'st_mat_name_main', 'st_mat_suffix'});
 [bl_mat, st_mat_path, st_mat_prefix, st_mat_name_main, st_mat_suffix] = params_group{:};
 
+%% Get Size of Endogenous and Exogenous State
+
+it_endostates_n = size(mt_pol_a, 1);
+it_exostates_n = size(mt_pol_a, 2);
+
 %% Generate Consumption and Income Matrix
 
 if (~isKey(result_map, 'cl_mt_pol_c'))
+    params_group = values(armt_map, {'ar_a', 'ar_z'});
+    [ar_a, ar_z] = params_group{:};    
     f_cons = func_map('f_cons');
     mt_cons = f_cons(ar_z, ar_a', mt_pol_a);
     result_map('cl_mt_pol_c') = {mt_cons, zeros(1)};
 end
 if (~isKey(result_map, 'cl_mt_coh'))
+    params_group = values(armt_map, {'ar_a', 'ar_z'});
+    [ar_a, ar_z] = params_group{:};    
     f_coh = func_map('f_coh');
     mt_coh = f_coh(ar_z, ar_a');
     result_map('cl_mt_coh') = {mt_coh, zeros(1)};
+else
+    params_group = values(result_map, {'cl_mt_coh'});
+    [cl_mt_coh] = params_group{:};
+    [mt_coh] = deal(cl_mt_coh{1});
 end
 
 %% Save Mat
@@ -218,17 +219,17 @@ if (bl_display_final)
     % at most display 11 columns of shocks
     % at most display 50 rows for states
     % display first and last
-    if (it_a_n >= it_display_final_rowmax)
+    if (it_endostates_n >= it_display_final_rowmax)
         ar_it_rows = (1:1:round(it_display_final_rowmax/2));
-        ar_it_rows = [ar_it_rows ((it_a_n)-round(it_display_final_rowmax/2)+1):1:(it_a_n)];
+        ar_it_rows = [ar_it_rows ((it_endostates_n)-round(it_display_final_rowmax/2)+1):1:(it_endostates_n)];
     else
-        ar_it_rows = 1:1:it_a_n;
+        ar_it_rows = 1:1:it_endostates_n;
     end
-    if (it_z_n >= it_display_final_colmax)
+    if (it_exostates_n >= it_display_final_colmax)
         ar_it_cols = (1:1:round(it_display_final_colmax/2));
-        ar_it_cols = [ar_it_cols ((it_z_n)-round(it_display_final_colmax/2)+1):1:(it_z_n)];
+        ar_it_cols = [ar_it_cols ((it_exostates_n)-round(it_display_final_colmax/2)+1):1:(it_exostates_n)];
     else
-        ar_it_cols = 1:1:it_z_n;
+        ar_it_cols = 1:1:it_exostates_n;
     end
     mt_pol_b_bridge_print = mt_pol_b_bridge(ar_it_rows, ar_it_cols);
     mt_pol_inf_borr_nobridge_print = mt_pol_inf_borr_nobridge(ar_it_rows, ar_it_cols);
@@ -237,28 +238,28 @@ if (bl_display_final)
     
     % Display Optimal Values
     tb_mt_pol_b_bridge_print = array2table(mt_pol_b_bridge_print);
-    tb_mt_pol_b_bridge_print.Properties.RowNames = strcat('a', string(ar_it_rows), '=', string(ar_a(ar_it_rows)));
+    tb_mt_pol_b_bridge_print.Properties.RowNames = strcat('coh', string(ar_it_rows), '=', string(mt_coh(ar_it_rows)));
     tb_mt_pol_b_bridge_print.Properties.VariableNames = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));
     disp('mt_pol_b_bridge_print: bridge loans');
     disp(tb_mt_pol_b_bridge_print);
     
     % Display Optimal Values
     tb_mt_pol_inf_borr_nobridge_print = array2table(mt_pol_inf_borr_nobridge_print);
-    tb_mt_pol_inf_borr_nobridge_print.Properties.RowNames = strcat('a', string(ar_it_rows), '=', string(ar_a(ar_it_rows)));
+    tb_mt_pol_inf_borr_nobridge_print.Properties.RowNames = strcat('coh', string(ar_it_rows), '=', string(mt_coh(ar_it_rows)));
     tb_mt_pol_inf_borr_nobridge_print.Properties.VariableNames = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));
     disp('mt_pol_inf_borr_nobridge_print: bridge loans');
     disp(tb_mt_pol_inf_borr_nobridge_print);
     
     % Display Optimal Values
     tb_mt_pol_for_borr_print = array2table(mt_pol_for_borr_print);
-    tb_mt_pol_for_borr_print.Properties.RowNames = strcat('a', string(ar_it_rows), '=', string(ar_a(ar_it_rows)));
+    tb_mt_pol_for_borr_print.Properties.RowNames = strcat('coh', string(ar_it_rows), '=', string(mt_coh(ar_it_rows)));
     tb_mt_pol_for_borr_print.Properties.VariableNames = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));
     disp('mt_pol_for_borr_print: formal borrowing');
     disp(tb_mt_pol_for_borr_print);
     
     % Display Optimal Values
     tb_mt_pol_for_save_print = array2table(mt_pol_for_save_print);
-    tb_mt_pol_for_save_print.Properties.RowNames = strcat('a', string(ar_it_rows), '=', string(ar_a(ar_it_rows)));
+    tb_mt_pol_for_save_print.Properties.RowNames = strcat('coh', string(ar_it_rows), '=', string(mt_coh(ar_it_rows)));
     tb_mt_pol_for_save_print.Properties.VariableNames = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));
     disp('mt_pol_for_save_print: formal savings');
     disp(tb_mt_pol_for_save_print);    

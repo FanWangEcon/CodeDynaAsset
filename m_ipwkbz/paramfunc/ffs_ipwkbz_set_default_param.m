@@ -60,14 +60,14 @@ param_map('fl_delta') = 0.08;
 % shock is on k, not on labor, fl_w is fixed wage income
 param_map('fl_w') = 1.28*0.3466; % min(z*w) from benchmark az model
 param_map('fl_r_save') = 0.025;
-param_map('fl_r_borr') = 0.025;
+param_map('fl_r_borr') = 0.095;
 
 % Minimum Consumption, utility lower bound. The cmin parameter and
 % fl_nan_replace parameter have no effects on value function, just for
 % resetting invalid choice grid values. fl_nan_replace reset invalid k
 % choice given w. fl_c_min resets invalid consumption levels due to w
 % choices that are invalid. But this is the case when fl_w > 0.
-param_map('fl_c_min') = 0.001;
+param_map('fl_c_min') = 0.02;
 param_map('fl_nan_replace') = -9999;
 
 % Borrowing Parameters

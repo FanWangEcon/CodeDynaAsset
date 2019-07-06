@@ -100,14 +100,7 @@ else
     if (strcmp(st_param_which, 'default'))
 
         param_map('it_ak_perc_n') = 250;
-
-        param_map('fl_r_inf') = 0.030;
-        param_map('fl_r_inf_bridge') = 0.030;
-        param_map('fl_r_fbr') = 0.0275;
-        param_map('fl_r_fsv') = 0.025;
-
         param_map('bl_bridge') = true;
-%         param_map('it_coh_bridge_perc_n') = 3;
 
     elseif (strcmp(st_param_which, 'small'))
 

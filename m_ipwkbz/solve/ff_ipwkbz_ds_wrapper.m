@@ -40,7 +40,7 @@ bl_input_override = true;
 % param_map('st_analytical_stationary_type') = 'vector';
 param_map('st_analytical_stationary_type') = 'eigenvector';
 
-% get armt and func map
+% get armt and func map 
 [armt_map, func_map] = ffs_ipwkbz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 default_params = {param_map support_map armt_map func_map};
 

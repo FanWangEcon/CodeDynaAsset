@@ -168,9 +168,9 @@ params_group = values(armt_map, {'ar_a', 'ar_z'});
 [ar_a, ar_z] = params_group{:};
 
 % result_map standards
-params_group = values(result_map, {'mt_val', 'cl_mt_pol_c', 'cl_mt_coh', 'cl_mt_pol_a'});
-[mt_val, cl_mt_pol_c, cl_mt_coh, cl_mt_pol_a] = params_group{:};
-[mt_cons, mt_coh, mt_pol_a] = deal(cl_mt_pol_c{1}, cl_mt_coh{1}, cl_mt_pol_a{1});
+params_group = values(result_map, {'cl_mt_pol_a'});
+[cl_mt_pol_a] = params_group{:};
+[mt_pol_a] = deal(cl_mt_pol_a{1});
 
 % result_map continuous formal informal choices
 params_group = values(result_map, {'cl_mt_pol_b_bridge', 'cl_mt_pol_inf_borr_nobridge', ...
@@ -290,10 +290,10 @@ if (bl_graph_forinf_discrete)
     title('Borrow and Save Regions')
     ylabel('Shocks')
     if (ismember(sub_j, [1]))
-        st_x_label = {'Asset (a) State'};
+        st_x_label = {'Asset State'};
     end
     if (ismember(sub_j, [2]))
-        st_x_label = {'log(Asset State - min(a) + 1)'};
+        st_x_label = {'log(Asset State - min(asset) + 1)'};
     end
     
     % Turn on X and Y lines or Not        
@@ -389,11 +389,11 @@ if (bl_graph_forinf_pol_lvl)
         
         % X Label
         if (ismember(sub_j, [1,2,3,4]))
-            st_x_label = {'Asset (a) State'};
+            st_x_label = {'Asset State'};
             st_graph_loc = 'northwest';
         end
         if (ismember(sub_j, [5,6,7,8]))
-            st_x_label = {'log(Asset State - min(a) + 1)'};
+            st_x_label = {'log(Asset State - min(asset) + 1)'};
             st_graph_loc = 'southeast';
         end
         
@@ -543,10 +543,10 @@ if (bl_graph_forinf_pol_pct)
         
         % X Label
         if (ismember(sub_j, [1,2,3,4]))
-            st_x_label = {'Asset (a) State'};
+            st_x_label = {'Asset State'};
         end
         if (ismember(sub_j, [5,6,7,8]))
-            st_x_label = {'log(Asset State - min(a) + 1)'};
+            st_x_label = {'log(Asset State - min(asset) + 1)'};
         end
         
         % Y Label

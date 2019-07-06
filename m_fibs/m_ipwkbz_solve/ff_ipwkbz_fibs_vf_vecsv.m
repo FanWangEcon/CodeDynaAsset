@@ -56,45 +56,9 @@ function result_map = ff_ipwkbz_fibs_vf_vecsv(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 2;
+it_param_set = 4;
 bl_input_override = true;
 [param_map, support_map] = ffs_ipwkbz_fibs_set_default_param(it_param_set);
-
-st_param_which = 'default';
-if (strcmp(st_param_which, 'default'))
-    
-    param_map('fl_r_inf') = 0.045;
-    param_map('fl_r_inf_bridge') = 0.045;
-    param_map('fl_r_fbr') = 0.035;
-    param_map('fl_r_fsv') = 0.025;
-    
-    % This is required to fully test whether bridge structure works, coh
-    % impacting second period.
-    param_map('bl_bridge') = true;
-
-elseif (strcmp(st_param_which, 'small'))
-
-    param_map('it_w_perc_n') = 7;
-    param_map('it_ak_perc_n') = 7;
-    param_map('it_coh_bridge_perc_n') = 3;
-    
-    param_map('fl_w_interp_grid_gap') = 2;
-    param_map('fl_coh_interp_grid_gap') = 2;
-
-    param_map('bl_bridge') = true;
-    param_map('it_coh_bridge_perc_n') = 3;
-
-elseif (strcmp(st_param_which, 'ff_ipwkbz_vf_vecsv'))
-
-    param_map('fl_r_fsv') = 0.025;
-    param_map('fl_r_inf') = 0.025;
-    param_map('fl_r_inf_bridge') = 0.025;
-    param_map('fl_r_fbr') = 0.025;
-
-    param_map('bl_bridge') = false;
-    param_map('it_coh_bridge_perc_n') = 1;
-
-end
 
 % parameters can be set inside ffs_ipwkbz_set_default_param or updated here
 % param_map('it_w_perc_n') = 50;
@@ -584,7 +548,7 @@ end
 % cost. 
 %
 
-result_map('cl_mt_pol_coh') = {mt_interp_coh_grid_mesh_z, zeros(1)};
+result_map('cl_mt_coh') = {mt_interp_coh_grid_mesh_z, zeros(1)};
 result_map('cl_mt_pol_k') = {mt_pol_k, zeros(1)};
 result_map('cl_mt_pol_c') = {f_cons(mt_interp_coh_grid_mesh_z, mt_pol_a, mt_pol_k), zeros(1)};
 
@@ -602,7 +566,7 @@ result_map('cl_mt_pol_for_save') = {mt_pol_for_save, zeros(1)};
 % distributional statistcs will be computed for elements in the list here. 
 
 result_map('ar_st_pol_names') = ...
-    ["cl_mt_pol_coh", "cl_mt_pol_a", "cl_mt_pol_k", "cl_mt_pol_c", "cl_mt_pol_a_principleonly", ...
+    ["cl_mt_coh", "cl_mt_pol_a", "cl_mt_pol_k", "cl_mt_pol_c", "cl_mt_pol_a_principleonly", ...
     "cl_mt_pol_b_bridge", "cl_mt_pol_inf_borr_nobridge", "cl_mt_pol_for_borr", "cl_mt_pol_for_save"];
 
 % Get Discrete Choice Outcomes
@@ -625,7 +589,8 @@ if (bl_post)
     result_map = ff_akz_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);    
     
     % Graphs for results_map with FIBS contents
-%     result_map = ff_az_fibs_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    armt_map('ar_a') = ar_interp_coh_grid;    
+    result_map = ff_az_fibs_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
 
 end
 

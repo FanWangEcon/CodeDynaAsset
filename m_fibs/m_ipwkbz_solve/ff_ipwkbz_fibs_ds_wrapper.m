@@ -25,9 +25,9 @@ bl_input_override = true;
 
 % Note: below to for identical results as benchmark ff_ipwkbz_ds_wrapper.m
 % param_map('fl_r_fsv') = 0.025;
-% param_map('fl_r_inf') = 0.025;
-% param_map('fl_r_inf_bridge') = 0.025;
-% param_map('fl_r_fbr') = 0.025;
+% param_map('fl_r_inf') = 0.085;
+% param_map('fl_r_inf_bridge') = 0.085;
+% param_map('fl_r_fbr') = 0.085;
 % param_map('bl_bridge') = true;
 
 % param_map('st_analytical_stationary_type') = 'loop';

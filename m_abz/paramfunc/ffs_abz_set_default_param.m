@@ -58,7 +58,7 @@ param_map('it_a_n') = 750;
 % Prices
 param_map('fl_w') = 1.28;
 param_map('fl_r_save') = 0.025;
-param_map('fl_r_borr') = 0.035;
+param_map('fl_r_borr') = 0.095;
 % is save/borr choice principle or principle + interest, matters for
 % borrowing grid generation program. the *abz* problem is written with
 % asset choice as principle only, the _abz_fibs_ problems are written as
@@ -66,7 +66,7 @@ param_map('fl_r_borr') = 0.035;
 param_map('bl_b_is_principle') = true;
 % Minimum Consumption, c_min is for default, when c < 0, replace utility
 % with fl_nan_replace.
-param_map('fl_c_min') = 0.001;
+param_map('fl_c_min') = 0.02;
 param_map('fl_nan_replace') = -99999;
 
 % Solution Accuracy

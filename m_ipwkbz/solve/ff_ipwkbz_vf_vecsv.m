@@ -55,7 +55,7 @@ function result_map = ff_ipwkbz_vf_vecsv(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 2;
+it_param_set = 4;
 bl_input_override = true;
 [param_map, support_map] = ffs_ipwkbz_set_default_param(it_param_set);
 
@@ -420,11 +420,11 @@ result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
 result_map('mt_pol_idx') = mt_pol_idx;
 
-result_map('cl_mt_pol_coh') = {mt_interp_coh_grid_mesh_z, zeros(1)};
+result_map('cl_mt_coh') = {mt_interp_coh_grid_mesh_z, zeros(1)};
 result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
 result_map('cl_mt_pol_k') = {mt_pol_k, zeros(1)};
 result_map('cl_mt_pol_c') = {f_cons(mt_interp_coh_grid_mesh_z, mt_pol_a, mt_pol_k), zeros(1)};
-result_map('ar_st_pol_names') = ["cl_mt_pol_coh", "cl_mt_pol_a", "cl_mt_pol_k", "cl_mt_pol_c"];
+result_map('ar_st_pol_names') = ["cl_mt_coh", "cl_mt_pol_a", "cl_mt_pol_k", "cl_mt_pol_c"];
 
 
 if (bl_post)

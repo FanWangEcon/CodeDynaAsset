@@ -123,9 +123,9 @@ else
     fl_ap = -10;
     fl_coh = -7;
     
-%     % Example where aprime choice can not repay debt. 
-%     fl_ap = -5;
-%     fl_coh = -10;
+    % Example where aprime choice can not repay debt. 
+    fl_ap = -5;
+    fl_coh = -10;
 
     % Set Display Control
     support_map('bl_display_infbridge') = true;

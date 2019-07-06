@@ -31,9 +31,9 @@ bl_input_override = true;
 % param_map('fl_r_inf_bridge') = 0.045;
 % param_map('fl_r_fbr') = 0.035;
 
-param_map('st_analytical_stationary_type') = 'loop';
+% param_map('st_analytical_stationary_type') = 'loop';
 % param_map('st_analytical_stationary_type') = 'vector';
-% param_map('st_analytical_stationary_type') = 'eigenvector';
+param_map('st_analytical_stationary_type') = 'eigenvector';
 
 % get armt and func map
 [armt_map, func_map] = ffs_abz_fibs_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
