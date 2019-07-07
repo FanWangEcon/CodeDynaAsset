@@ -6,7 +6,8 @@
 %%
 function [result_map] = ff_abz_ds_wrapper(varargin)
 %% FF_ABZ_DS_WRAPPER finds the stationary asset distributions
-% This is a warpper function.
+% This is a warpper function. Note that when invoked by *abz*, there are
+% two shocks, one for wage, another for the borrowing interest rate.
 %
 % @include
 %
@@ -31,11 +32,15 @@ bl_input_override = true;
 
 % Note: param_map and support_map can be adjusted here or outside to override defaults
 % param_map('it_a_n') = 750;
-% param_map('it_z_n') = 15;
+% param_map('fl_z_r_borr_n') = 5;
+% param_map('it_z_wage_n') = 15;
+% param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+% param_map('fl_r_save') = 0.025;
 
 % These parameters below for comparison with abz_fibs model
-param_map('fl_r_save') = 0.025;
-param_map('fl_r_borr') = 0.095;
+% param_map('fl_r_save') = 0.025;
+% param_map('fl_r_borr') = 0.095;
+param_map('fl_z_r_borr_poiss_mean') = 20;
 param_map('fl_c_min') = 0.02;
 
 % param_map('st_analytical_stationary_type') = 'loop';

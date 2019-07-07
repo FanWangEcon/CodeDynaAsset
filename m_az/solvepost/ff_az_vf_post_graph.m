@@ -56,9 +56,9 @@ else
     bl_input_override = true;
 
     % Get Parameters
-    [param_map, support_map] = ffs_az_set_default_param(it_param_set);
+    [param_map, support_map] = ffs_az_set_default_param(it_param_set);        
     [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
-
+    
     % Generate Default val and policy matrixes
     params_group = values(armt_map, {'ar_a', 'ar_z'});
     [ar_a, ar_z] = params_group{:};
@@ -82,8 +82,8 @@ end
 %% Parse Parameters
 
 % param_map
-params_group = values(param_map, {'it_z_n'});
-[it_z_n] = params_group{:};
+params_group = values(param_map, {'st_model', 'it_z_n'});
+[st_model, it_z_n] = params_group{:};
 
 % support_map
 params_group = values(support_map, {'bl_graph_onebyones', 'bl_graph_val', 'bl_graph_pol_lvl', 'bl_graph_pol_pct', 'bl_graph_coh_t_coh'});
@@ -94,9 +94,17 @@ params_group = values(support_map, {'st_title_prefix'});
 [st_title_prefix] = params_group{:};
 
 % armt_map
-params_group = values(armt_map, {'ar_a', 'ar_z'});
-[ar_a, ar_z] = params_group{:};
-
+params_group = values(armt_map, {'ar_a'});
+[ar_a] = params_group{:};
+if (strcmp(st_model, 'az'))
+    params_group = values(armt_map, {'ar_z'});
+    [ar_z] = params_group{:};
+elseif (strcmp(st_model, 'abz'))        
+    params_group = values(armt_map, {'ar_z_r_borr_mesh_wage', 'ar_z_wage_mesh_r_borr'});
+    [ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
+    params_group = values(param_map, {'it_z_wage_n', 'fl_z_r_borr_n'});
+    [it_z_wage_n, fl_z_r_borr_n] = params_group{:};    
+end  
 % func_map
 params_group = values(func_map, {'f_coh'});
 [f_coh] = params_group{:};
@@ -107,7 +115,31 @@ params_group = values(result_map, {'mt_val', 'cl_mt_pol_c', 'cl_mt_coh', 'cl_mt_
 [mt_cons, mt_coh, mt_pol_a] = deal(cl_mt_pol_c{1}, cl_mt_coh{1}, cl_mt_pol_a{1});
 
 % How many zs to Graph
-ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)) (it_z_n)]);
+
+%% Generate Limited Legends
+if (strcmp(st_model, 'az'))
+    
+    ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)) (it_z_n)]);
+    ar_it_legend2plot = fliplr(ar_it_z_graph);
+    ar_it_legend2plot_lth = ar_it_z_graph;
+    cl_st_legendCell = cellstr(num2str(ar_z', 'shock next=%3.2f'));
+    
+elseif (strcmp(st_model, 'abz'))
+    
+    % 8 graph points, 2 levels of borrow rates, and 4 levels of rbr rates
+    ar_it_z_r_borr = ([1 round((fl_z_r_borr_n)/2) (fl_z_r_borr_n)]);
+    ar_it_z_wage = ([1 round((it_z_wage_n)/2) (it_z_wage_n)]);
+    
+    % combine by index
+    mt_it_z_graph = ar_it_z_wage' + it_z_wage_n*(ar_it_z_r_borr-1);
+    ar_it_z_graph = mt_it_z_graph(:)';
+
+    % legends index final
+    ar_it_legend2plot = fliplr(ar_it_z_graph);
+    ar_it_legend2plot_lth = ar_it_z_graph;
+    cl_st_legendCell = cellstr([num2str(ar_z_r_borr_mesh_wage', 'zr=%3.2f;'), ...
+                          num2str(ar_z_wage_mesh_r_borr', 'zw=%3.2f')]);
+end
 
 %% Graphing COH today vs COH tomorrow
 % This plots the cash-on-hand today vs cash-on-hand tomorrow. This is an
@@ -148,7 +180,12 @@ if (bl_graph_coh_t_coh)
     ar_coh_full = mt_coh(:);
 
     % 2. COH Next Period
-    mt_coh_next = f_coh(ar_z, ar_pol_a_full);
+    if (strcmp(st_model, 'az'))
+        mt_coh_next = f_coh(ar_z, ar_pol_a_full);
+    elseif (strcmp(st_model, 'abz'))        
+        mt_coh_next = f_coh(ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr, ar_pol_a_full);
+    end
+    
 
     % 3. Start Figure
     if(~bl_graph_onebyones)
@@ -210,8 +247,8 @@ if (bl_graph_coh_t_coh)
         hold on;
 
         % 7. Color
-        clr = jet(length(ar_z));
-        for m = 1:length(ar_z)
+        clr = jet(it_z_n);
+        for m = 1:it_z_n
             % scatter
             fig_cur_z = scatter(ar_xvar, mt_outcome(:,m), 1, ...
                 'MarkerEdgeColor', clr(m,:), 'MarkerFaceAlpha', 0.3, ...
@@ -220,9 +257,7 @@ if (bl_graph_coh_t_coh)
         end
 
         % 8. Legends
-        legend2plot = fliplr([1 round(length(ar_z)/4) round((2*length(ar_z))/4) round((3*length(ar_z))/4)  length(ar_z)]);
-        legendCell = cellstr(num2str(ar_z', 'shock next=%3.2f'));
-        legend(chart(legend2plot), legendCell(legend2plot), 'Location', st_legend_loc);
+        legend(chart(ar_it_legend2plot), cl_st_legendCell(ar_it_legend2plot), 'Location', st_legend_loc);
 
         % 9. Titling etc
         grid on;
@@ -319,8 +354,8 @@ if (bl_graph_val)
             xlabel({'log(a - min(a) + 1)'})
         end
 
-        legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
-        legend(legendCell(ar_it_z_graph), 'Location','southeast');
+        % Legends
+        legend(cl_st_legendCell(ar_it_legend2plot_lth), 'Location', 'southeast');
 
         % mark y = 0
         yline0 = yline(0);
@@ -439,12 +474,11 @@ if (bl_graph_pol_lvl)
 
 
         grid on;
-        legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
         title([st_title_prefix st_y_label]);
         ylabel(st_y_label);
         xlabel(st_x_label);
 
-        legend(legendCell(ar_it_z_graph), 'Location','northwest');
+        legend(cl_st_legendCell(ar_it_legend2plot_lth), 'Location', 'northwest');
 
         hline = refline([1 0]);
         hline.Color = 'k';
@@ -557,11 +591,8 @@ if (bl_graph_pol_pct)
         title([st_title_prefix st_title st_title_suffix])
         ylabel(st_y_label)
 
-        legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
-
         xlabel({'Asset State'})
-        legend(legendCell(ar_it_z_graph), 'Location', st_legend_loc);
-        %         xlim([min(ar_coh_curz)+1.5 15]);
+        legend(cl_st_legendCell(ar_it_legend2plot_lth), 'Location', st_legend_loc);
 
         if (bl_log_coh == 0)
             xline0 = xline(0);

@@ -35,14 +35,11 @@ default_params = {it_subset bl_display_defparam};
 %% Setting param_map container
 
 param_map = containers.Map('KeyType','char', 'ValueType','any');
+% model name
+param_map('st_model') = 'abz';
 % Preferences
 param_map('fl_crra') = 1.5;
 param_map('fl_beta') = 0.94;
-% Shock Parameters
-param_map('it_z_n') = 15;
-param_map('fl_z_mu') = 0;
-param_map('fl_z_rho') = 0.8;
-param_map('fl_z_sig') = 0.2;
 % Borrowing
 % fl_default_aprime is the next period asset level
 % households face if they default.
@@ -58,7 +55,27 @@ param_map('it_a_n') = 750;
 % Prices
 param_map('fl_w') = 1.28;
 param_map('fl_r_save') = 0.025;
-param_map('fl_r_borr') = 0.035;
+
+% Shock 1: Borrowing Interest Rate is a Shock Parameters, see fft_gen_discrete_var.m
+param_map('st_z_r_borr_drv_ele_type') = 'unif';
+param_map('st_z_r_borr_drv_prb_type') = 'poiss';
+param_map('fl_z_r_borr_poiss_mean') = 1.75;
+param_map('fl_z_r_borr_max') = 0.095;
+param_map('fl_z_r_borr_min') = 0.025;
+param_map('fl_z_r_borr_n') = 5;
+% param_map('fl_z_r_borr_max') = 0.095;
+% param_map('fl_z_r_borr_min') = 0.095;
+% param_map('fl_z_r_borr_n') = 1;
+
+% Shock 2: Parameters
+param_map('it_z_wage_n') = 15;
+param_map('fl_z_wage_mu') = 0;
+param_map('fl_z_wage_rho') = 0.8;
+param_map('fl_z_wage_sig') = 0.2;
+
+% Shock 3
+param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+
 % is save/borr choice principle or principle + interest, matters for
 % borrowing grid generation program. the *abz* problem is written with
 % asset choice as principle only, the _abz_fibs_ problems are written as
@@ -106,7 +123,7 @@ support_map('bl_display_final') = false; % print finalized results
 support_map('bl_display_final_dist') = false; % print finalized results
 support_map('bl_display_final_dist_detail') = false; % print finalized results
 support_map('it_display_final_rowmax') = 100; % max row to print (states/iters)
-support_map('it_display_final_colmax') = 12; % max col to print (shocks)
+support_map('it_display_final_colmax') = 15; % max col to print (shocks)
 % Mat File Controls
 support_map('bl_mat') = false;
 support_map('st_mat_path') = [st_matimg_path_root '/solve/mat/'];
@@ -144,7 +161,9 @@ if (ismember(it_subset, [1,2,3,4]))
     if (ismember(it_subset, [1]))
         % TEST quick
         param_map('it_a_n') = 25;
-        param_map('it_z_n') = 3;
+        param_map('it_z_wage_n') = 3;
+        param_map('fl_z_r_borr_n') = 2;
+        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
         param_map('it_maxiter_val') = 50;
         param_map('it_tol_pol_nochange') = 1000;
         support_map('bl_display') = true;
@@ -193,7 +212,9 @@ if (ismember(it_subset, [5,6,7,8,9]))
     if (ismember(it_subset, [5]))
         % TEST quick (need to enough to have distribution)
         param_map('it_a_n') = 100;
-        param_map('it_z_n') = 7;
+        param_map('it_z_wage_n') = 5;
+        param_map('fl_z_r_borr_n') = 2;
+        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
         param_map('it_maxiter_val') = 50;
         param_map('it_maxiter_dist') = 50;
         param_map('it_tol_pol_nochange') = 1000;

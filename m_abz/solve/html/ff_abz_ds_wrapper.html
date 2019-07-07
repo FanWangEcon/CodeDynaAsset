@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Derive Distributions for Save + Borrow One Asset (Wrapper)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-06"><meta name="DC.source" content="ff_abz_ds_wrapper.m"><style type="text/css">
+      --><title>Derive Distributions for Save + Borrow One Asset (Wrapper)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-07"><meta name="DC.source" content="ff_abz_ds_wrapper.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -67,17 +67,21 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
   </style></head><body><div class="content"><h1>Derive Distributions for Save + Borrow One Asset (Wrapper)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_ABZ_DS_WRAPPER finds the stationary asset distributions</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1</a></li><li><a href="#5">Parse Parameters</a></li><li><a href="#6">Start Profiler and Timer</a></li><li><a href="#7">Solve DP</a></li><li><a href="#8">Derive Distribution</a></li><li><a href="#9">End Profiler and Timer</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [result_map] = ff_abz_ds_wrapper(varargin)
-</pre><h2 id="2">FF_ABZ_DS_WRAPPER finds the stationary asset distributions</h2><p>This is a warpper function.</p><p>@include</p><div><ul><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_default_param.html">ffs_abz_set_default_param</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_get_funcgrid.html">ffs_abz_get_funcgrid</a></li><li>save + borr optimized-vectorized: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vecsv.html">ff_abz_vf_vecsv</a></li><li>derive distribution f(y'(y,z)) one asset <b>loop</b>: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html">ff_az_ds</a></li><li>derive distribution f(y'({y},z)) or f(y'({x,y},z)) <b>vectorized</b>: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html">ff_az_ds_vec</a></li><li>derive distribution f(y'({y},z)) or f(y'({x,y},z)) <b>semi-analytical</b>: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html">ff_az_ds_vecsv</a></li></ul></div><h2 id="3">Default</h2><div><ol><li>it_subset = 5 is basic invoke quick test</li><li>it_subset = 6 is invoke full test</li><li>it_subset = 7 is profiling invoke</li><li>it_subset = 8 is matlab publish</li><li>it_subset = 9 is invoke operational (only final stats) and coh graph</li></ol></div><pre class="codeinput">it_param_set = 8;
+</pre><h2 id="2">FF_ABZ_DS_WRAPPER finds the stationary asset distributions</h2><p>This is a warpper function. Note that when invoked by <b>abz</b>, there are two shocks, one for wage, another for the borrowing interest rate.</p><p>@include</p><div><ul><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_default_param.html">ffs_abz_set_default_param</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_get_funcgrid.html">ffs_abz_get_funcgrid</a></li><li>save + borr optimized-vectorized: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vecsv.html">ff_abz_vf_vecsv</a></li><li>derive distribution f(y'(y,z)) one asset <b>loop</b>: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html">ff_az_ds</a></li><li>derive distribution f(y'({y},z)) or f(y'({x,y},z)) <b>vectorized</b>: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html">ff_az_ds_vec</a></li><li>derive distribution f(y'({y},z)) or f(y'({x,y},z)) <b>semi-analytical</b>: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html">ff_az_ds_vecsv</a></li></ul></div><h2 id="3">Default</h2><div><ol><li>it_subset = 5 is basic invoke quick test</li><li>it_subset = 6 is invoke full test</li><li>it_subset = 7 is profiling invoke</li><li>it_subset = 8 is matlab publish</li><li>it_subset = 9 is invoke operational (only final stats) and coh graph</li></ol></div><pre class="codeinput">it_param_set = 8;
 bl_input_override = true;
 [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
 
 <span class="comment">% Note: param_map and support_map can be adjusted here or outside to override defaults</span>
 <span class="comment">% param_map('it_a_n') = 750;</span>
-<span class="comment">% param_map('it_z_n') = 15;</span>
+<span class="comment">% param_map('fl_z_r_borr_n') = 5;</span>
+<span class="comment">% param_map('it_z_wage_n') = 15;</span>
+<span class="comment">% param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');</span>
+<span class="comment">% param_map('fl_r_save') = 0.025;</span>
 
 <span class="comment">% These parameters below for comparison with abz_fibs model</span>
-param_map(<span class="string">'fl_r_save'</span>) = 0.025;
-param_map(<span class="string">'fl_r_borr'</span>) = 0.095;
+<span class="comment">% param_map('fl_r_save') = 0.025;</span>
+<span class="comment">% param_map('fl_r_borr') = 0.095;</span>
+param_map(<span class="string">'fl_z_r_borr_poiss_mean'</span>) = 20;
 param_map(<span class="string">'fl_c_min'</span>) = 0.02;
 
 <span class="comment">% param_map('st_analytical_stationary_type') = 'loop';</span>
@@ -131,7 +135,67 @@ params_group = values(support_map, <span class="keyword">...</span>
 <span class="keyword">end</span>
 </pre><h2 id="7">Solve DP</h2><pre class="codeinput">bl_input_override = true;
 result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
-</pre><pre class="codeoutput">Elapsed time is 1.565223 seconds.
+</pre><pre class="codeoutput">Elapsed time is 9.525366 seconds.
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
+Warning: Using only the real component of complex data. 
 Warning: Using only the real component of complex data. 
 Warning: Using only the real component of complex data. 
 Warning: Using only the real component of complex data. 
@@ -160,102 +224,102 @@ Warning: Using only the real component of complex data.
     result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
 
 <span class="keyword">end</span>
-</pre><pre class="codeoutput">Elapsed time is 0.321895 seconds.
+</pre><pre class="codeoutput">Elapsed time is 7.042095 seconds.
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Summary Statistics for: cl_mt_pol_a
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ----------------------------------------
 fl_choice_mean
-   -2.3776
+   -2.8127
 
 fl_choice_sd
-    5.1302
+    5.3373
 
 fl_choice_coefofvar
-   -2.1578
+   -1.8976
 
 fl_choice_prob_zero
-    0.0799
+    0.0746
 
 fl_choice_prob_below_zero
-    0.5846
+    0.6244
 
 fl_choice_prob_above_zero
-    0.3355
+    0.3010
 
 fl_choice_prob_max
-  -1.8101e-35
+  -6.6354e-36
 
 tb_prob_drv
     percentiles    cl_mt_pol_aPercentileValues    fracOfSumHeldBelowThisPercentile
     ___________    ___________________________    ________________________________
 
-        0.1                      -20                          0.14303             
-          1                      -20                          0.14303             
-          5                  -15.047                          0.37784             
-         10                  -10.374                          0.64356             
-         15                  -7.1028                          0.82373             
-         20                  -4.7664                          0.94631             
-         25                  -3.1776                           1.0287             
-         35                  -1.4019                           1.1196             
-         50                 -0.28037                           1.1691             
-         65                        0                           1.1728             
-         75                  0.37383                           1.1632             
-         80                  0.56075                           1.1557             
-         85                  0.93458                           1.1373             
-         90                   1.4953                           1.1124             
-         95                   2.3364                           1.0757             
-         99                    4.486                           1.0228             
-       99.9                   7.1963                           1.0033             
+        0.1                      -20                          0.13394             
+          1                      -20                          0.13394             
+          5                  -15.514                          0.33013             
+         10                  -11.402                          0.56745             
+         15                  -8.2243                          0.74103             
+         20                  -5.8879                           0.8639             
+         25                  -4.1121                          0.95237             
+         35                  -1.9626                           1.0588             
+         50                 -0.56075                           1.1202             
+         65                        0                           1.1301             
+         75                  0.18692                           1.1275             
+         80                  0.46729                           1.1201             
+         85                  0.74766                           1.1104             
+         90                   1.3084                           1.0908             
+         95                   2.1495                            1.062             
+         99                   4.2991                            1.019             
+       99.9                   7.0093                           1.0028             
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-Summary Statistics for: cl_mt_pol_coh
+Summary Statistics for: cl_mt_coh
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ----------------------------------------
 fl_choice_mean
-   -1.3522
+   -1.8133
 
 fl_choice_sd
-    5.6982
+    5.9047
 
 fl_choice_coefofvar
-   -4.2140
+   -3.2563
 
 fl_choice_prob_zero
      0
 
 fl_choice_prob_below_zero
-    0.3941
+    0.4402
 
 fl_choice_prob_above_zero
-    0.6059
+    0.5598
 
 fl_choice_prob_max
-  -1.8101e-35
+  -6.6354e-36
 
 tb_prob_drv
-    percentiles    cl_mt_pol_cohPercentileValues    fracOfSumHeldBelowThisPercentile
-    ___________    _____________________________    ________________________________
+    percentiles    cl_mt_cohPercentileValues    fracOfSumHeldBelowThisPercentile
+    ___________    _________________________    ________________________________
 
-        0.1                   -21.217                           0.028073            
-          1                   -20.691                            0.18192            
-          5                   -15.326                            0.67939            
-         10                   -10.209                             1.1433            
-         15                   -6.6645                             1.4511            
-         20                   -4.1127                             1.6477            
-         25                   -2.3826                             1.7645            
-         35                  -0.44308                             1.8598            
-         50                   0.74085                             1.8329            
-         65                    1.3622                             1.7158            
-         75                    1.8001                              1.598            
-         80                    2.1405                              1.527            
-         85                    2.5261                             1.4425            
-         90                    3.1187                             1.3391            
-         95                    4.1546                             1.2057            
-         99                    6.4926                             1.0577            
-       99.9                    9.4637                             1.0078            
+        0.1                 -21.217                         0.01875             
+          1                 -20.691                         0.12893             
+          5                 -15.838                         0.51609             
+         10                 -11.295                         0.88619             
+         15                 -7.8668                           1.148             
+         20                 -5.2963                          1.3277             
+         25                  -3.406                          1.4464             
+         35                 -1.1012                          1.5636             
+         50                 0.48043                          1.5791             
+         65                  1.2088                          1.5016             
+         75                  1.6818                          1.4243             
+         80                  1.9692                          1.3766             
+         85                  2.3749                          1.3153             
+         90                  2.9497                          1.2432             
+         95                  3.9868                          1.1497             
+         99                  6.3512                          1.0421             
+       99.9                  9.3251                          1.0057             
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -263,13 +327,13 @@ Summary Statistics for: cl_mt_pol_c
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ----------------------------------------
 fl_choice_mean
-    1.3781
+    1.3866
 
 fl_choice_sd
-    0.3095
+    0.3046
 
 fl_choice_coefofvar
-    0.2246
+    0.2196
 
 fl_choice_prob_zero
      0
@@ -281,47 +345,47 @@ fl_choice_prob_above_zero
     1.0000
 
 fl_choice_prob_max
-  -1.8101e-35
+  -6.6354e-36
 
 tb_prob_drv
     percentiles    cl_mt_pol_cPercentileValues    fracOfSumHeldBelowThisPercentile
     ___________    ___________________________    ________________________________
 
-        0.1                    0.02                          0.00024661           
-          1                    0.02                          0.00024661           
-          5                  1.0927                            0.027078           
-         10                  1.1158                            0.066293           
-         15                  1.1371                             0.10715           
-         20                  1.1507                             0.14864           
-         25                  1.1748                             0.19161           
-         35                  1.2286                             0.27782           
-         50                  1.3605                             0.41833           
-         65                  1.4897                             0.57276           
-         75                  1.5404                              0.6826           
-         80                  1.6002                             0.73957           
-         85                  1.6554                             0.79932           
-         90                  1.7581                             0.86085           
-         95                  1.8889                             0.92594           
-         99                  2.1491                             0.98345           
-       99.9                  2.4716                             0.99827           
+        0.1                    0.02                          0.00026999           
+          1                    0.02                          0.00026999           
+          5                  1.1324                            0.026478           
+         10                  1.1524                            0.067636           
+         15                   1.171                             0.11052           
+         20                  1.1887                              0.1559           
+         25                  1.1999                             0.19552           
+         35                  1.2441                             0.28363           
+         50                  1.3724                             0.42329           
+         65                  1.4868                             0.57684           
+         75                  1.5312                             0.68604           
+         80                  1.5841                             0.74224           
+         85                  1.6466                             0.80083           
+         90                  1.7487                             0.86157           
+         95                  1.8832                             0.92644           
+         99                  2.1551                             0.98362           
+       99.9                  2.4784                             0.99812           
 
 xxx All Variables PERCENTILES AND STATS xxx
 tb_outcomes_meansdperc: mean, sd, percentiles
-                      mean        sd       coefofvar      min       max       pYis0      pYls0      pYgr0      pYisMINY      pYisMAXY       p0_1        p1         p5         p10        p15        p20        p25        p35         p50        p65        p75        p80        p85       p90       p95       p99      p99_9 
-                     _______    _______    _________    _______    ______    _______    _______    _______    __________    ___________    _______    _______    _______    _______    _______    _______    _______    ________    ________    ______    _______    _______    _______    ______    ______    ______    ______
+                    mean        sd       coefofvar      min       max       pYis0       pYls0      pYgr0      pYisMINY      pYisMAXY       p0_1        p1         p5         p10        p15        p20        p25        p35        p50        p65        p75        p80        p85       p90       p95       p99      p99_9 
+                   _______    _______    _________    _______    ______    ________    _______    _______    __________    ___________    _______    _______    _______    _______    _______    _______    _______    _______    ________    ______    _______    _______    _______    ______    ______    ______    ______
 
-    cl_mt_pol_a      -2.3776     5.1302     -2.1578         -20    49.533    0.07992    0.58459    0.33549      0.017003    -1.8101e-35        -20        -20    -15.047    -10.374    -7.1028    -4.7664    -3.1776     -1.4019    -0.28037         0    0.37383    0.56075    0.93458    1.4953    2.3364     4.486    7.1963
-    cl_mt_pol_coh    -1.3522     5.6982      -4.214     -21.455    54.536          0    0.39409    0.60591    8.2532e-05    -1.8101e-35    -21.217    -20.691    -15.326    -10.209    -6.6645    -4.1127    -2.3826    -0.44308     0.74085    1.3622     1.8001     2.1405     2.5261    3.1187    4.1546    6.4926    9.4637
-    cl_mt_pol_c       1.3781    0.30951     0.22458        0.02    5.0031          0          0          1      0.016994    -1.8101e-35       0.02       0.02     1.0927     1.1158     1.1371     1.1507     1.1748      1.2286      1.3605    1.4897     1.5404     1.6002     1.6554    1.7581    1.8889    2.1491    2.4716
+    cl_mt_pol_a    -2.8127     5.3373     -1.8976         -20    49.533    0.074599    0.62442    0.30098      0.018836    -6.6354e-36        -20        -20    -15.514    -11.402    -8.2243    -5.8879    -4.1121    -1.9626    -0.56075         0    0.18692    0.46729    0.74766    1.3084    2.1495    4.2991    7.0093
+    cl_mt_coh      -1.8133     5.9047     -3.2563     -21.455    54.536           0    0.44021    0.55979    7.3658e-05    -6.6354e-36    -21.217    -20.691    -15.838    -11.295    -7.8668    -5.2963     -3.406    -1.1012     0.48043    1.2088     1.6818     1.9692     2.3749    2.9497    3.9868    6.3512    9.3251
+    cl_mt_pol_c     1.3866    0.30456     0.21964        0.02    5.0031           0          0          1      0.018719    -6.6354e-36       0.02       0.02     1.1324     1.1524      1.171     1.1887     1.1999     1.2441      1.3724    1.4868     1.5312     1.5841     1.6466    1.7487    1.8832    2.1551    2.4784
 
 xxx All Variables Fraction of Y Held up to Percentile xxx
 tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
-                     fracByP0_1     fracByP1     fracByP5    fracByP10    fracByP15    fracByP20    fracByP25    fracByP35    fracByP50    fracByP65    fracByP75    fracByP80    fracByP85    fracByP90    fracByP95    fracByP99    fracByP99_9
-                     __________    __________    ________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    ___________
+                   fracByP0_1     fracByP1     fracByP5    fracByP10    fracByP15    fracByP20    fracByP25    fracByP35    fracByP50    fracByP65    fracByP75    fracByP80    fracByP85    fracByP90    fracByP95    fracByP99    fracByP99_9
+                   __________    __________    ________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    ___________
 
-    cl_mt_pol_a         0.14303       0.14303     0.37784     0.64356      0.82373      0.94631       1.0287       1.1196       1.1691       1.1728      1.1632        1.1557       1.1373       1.1124       1.0757       1.0228        1.0033  
-    cl_mt_pol_coh      0.028073       0.18192     0.67939      1.1433       1.4511       1.6477       1.7645       1.8598       1.8329       1.7158       1.598         1.527       1.4425       1.3391       1.2057       1.0577        1.0078  
-    cl_mt_pol_c      0.00024661    0.00024661    0.027078    0.066293      0.10715      0.14864      0.19161      0.27782      0.41833      0.57276      0.6826       0.73957      0.79932      0.86085      0.92594      0.98345       0.99827  
+    cl_mt_pol_a       0.13394       0.13394     0.33013     0.56745      0.74103      0.8639       0.95237       1.0588       1.1202       1.1301       1.1275       1.1201       1.1104       1.0908        1.062        1.019        1.0028  
+    cl_mt_coh         0.01875       0.12893     0.51609     0.88619        1.148      1.3277        1.4464       1.5636       1.5791       1.5016       1.4243       1.3766       1.3153       1.2432       1.1497       1.0421        1.0057  
+    cl_mt_pol_c    0.00026999    0.00026999    0.026478    0.067636      0.11052      0.1559       0.19552      0.28363      0.42329      0.57684      0.68604      0.74224      0.80083      0.86157      0.92644      0.98362       0.99812  
 
 </pre><h2 id="9">End Profiler and Timer</h2><p>End Timer</p><pre class="codeinput"><span class="keyword">if</span> (bl_time)
     toc;
@@ -334,14 +398,14 @@ tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percent
     st_file_name = [st_profile_prefix st_profile_name_main st_profile_suffix];
     profsave(profile(<span class="string">'info'</span>), strcat(st_profile_path, st_file_name));
 <span class="keyword">end</span>
-</pre><pre class="codeoutput">Elapsed time is 0.674465 seconds.
+</pre><pre class="codeoutput">Elapsed time is 7.568514 seconds.
 </pre><pre class="codeinput"><span class="keyword">end</span>
 </pre><pre class="codeoutput">
 ans = 
 
   Map with properties:
 
-        Count: 12
+        Count: 11
       KeyType: char
     ValueType: any
 
@@ -355,7 +419,8 @@ ans =
 %%
 function [result_map] = ff_abz_ds_wrapper(varargin)
 %% FF_ABZ_DS_WRAPPER finds the stationary asset distributions
-% This is a warpper function.
+% This is a warpper function. Note that when invoked by *abz*, there are
+% two shocks, one for wage, another for the borrowing interest rate.
 %
 % @include
 %
@@ -380,11 +445,15 @@ bl_input_override = true;
 
 % Note: param_map and support_map can be adjusted here or outside to override defaults
 % param_map('it_a_n') = 750;
-% param_map('it_z_n') = 15;
+% param_map('fl_z_r_borr_n') = 5;
+% param_map('it_z_wage_n') = 15;
+% param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+% param_map('fl_r_save') = 0.025;
 
 % These parameters below for comparison with abz_fibs model
-param_map('fl_r_save') = 0.025;
-param_map('fl_r_borr') = 0.095;
+% param_map('fl_r_save') = 0.025;
+% param_map('fl_r_borr') = 0.095;
+param_map('fl_z_r_borr_poiss_mean') = 20;
 param_map('fl_c_min') = 0.02;
 
 % param_map('st_analytical_stationary_type') = 'loop';

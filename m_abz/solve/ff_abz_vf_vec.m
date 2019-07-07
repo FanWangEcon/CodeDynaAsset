@@ -11,11 +11,11 @@ function result_map = ff_abz_vf_vec(varargin)
 % <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf.html
 % ff_abz_vf> shows looped codes. The solution is the same.
 %
-% The borrowing problem is very similar to the savings problem. The code
-% could be identical if one does not have to deal with default. The main
+% The borrowing problem is similar to the savings problem. The main
 % addition here in comparison to the savings only code
 % <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vec.html
-% ff_az_vf_vec> is the ability to deal with default. 
+% ff_az_vf_vec> is the ability to deal with default, as well as an
+% additional shock to the borrowing interest rate.
 %
 % The vectorization takes advantage of implicit parallization that modern
 % computers have when <https://en.wikipedia.org/wiki/SIMD same instructions
@@ -88,7 +88,9 @@ function result_map = ff_abz_vf_vec(varargin)
 %    param_map('fl_c_min') = 0.0001; % u(c_min) when default
 %    % Change Keys in param_map
 %    param_map('it_a_n') = 500;
-%    param_map('it_z_n') = 11;
+%    param_map('fl_z_r_borr_n') = 5;
+%    param_map('it_z_wage_n') = 15;
+%    param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
 %    param_map('fl_a_max') = 100;
 %    param_map('fl_w') = 1.3;
 %    % Change Keys support_map
@@ -120,15 +122,17 @@ function result_map = ff_abz_vf_vec(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 1;
+it_param_set = 4;
 bl_input_override = true;
 [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
 
 % Note: param_map and support_map can be adjusted here or outside to override defaults
 % param_map('it_a_n') = 750;
-% param_map('it_z_n') = 15;
+% param_map('fl_z_r_borr_n') = 5;
+% param_map('it_z_wage_n') = 15;
+% param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
 % param_map('fl_r_save') = 0.025;
-% param_map('fl_r_borr') = 0.035;
+% param_map('fl_z_r_borr_poiss_mean') = 1.75;
 
 [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 default_params = {param_map support_map armt_map func_map};
@@ -160,8 +164,8 @@ support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')]
 %% Parse Parameters 2
 
 % armt_map
-params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z'});
-[ar_a, mt_z_trans, ar_z] = params_group{:};
+params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z_r_borr_mesh_wage', 'ar_z_wage_mesh_r_borr'});
+[ar_a, mt_z_trans, ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
 
 % func_map
 params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons_checkcmin', 'f_coh', 'f_cons_coh'});
@@ -186,11 +190,11 @@ params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
 %% Initialize Output Matrixes
 % include mt_pol_idx which we did not have in looped code
 
-mt_val_cur = zeros(length(ar_a),length(ar_z));
+mt_val_cur = zeros(length(ar_a),it_z_n);
 mt_val = mt_val_cur - 1;
-mt_pol_a = zeros(length(ar_a),length(ar_z));
+mt_pol_a = zeros(length(ar_a),it_z_n);
 mt_pol_a_cur = mt_pol_a - 1;
-mt_pol_idx = zeros(length(ar_a),length(ar_z));
+mt_pol_idx = zeros(length(ar_a),it_z_n);
 
 %% Initialize Convergence Conditions
 
@@ -232,13 +236,14 @@ while bl_vfi_continue
     % incorporating these shocks into vectorization has high memory burden
     % but insignificant speed gains. Keeping this loop allows for large
     % number of shocks without overwhelming memory
-    for it_z_i = 1:length(ar_z)
+    for it_z_i = 1:it_z_n
 
         % Current Shock
-        fl_z = ar_z(it_z_i);
+        fl_z_r_borr = ar_z_r_borr_mesh_wage(it_z_i);
+        fl_z_wage = ar_z_wage_mesh_r_borr(it_z_i);
 
         % cash-on-hand
-        ar_coh = f_coh(fl_z, ar_a);
+        ar_coh = f_coh(fl_z_r_borr, fl_z_wage, ar_a);
 
         % Consumption: fl_z = 1 by 1, ar_a = 1 by N, ar_a' = N by 1
         % mt_c is N by N: matrix broadcasting, expand to matrix from arrays
@@ -363,10 +368,10 @@ result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
 result_map('mt_pol_idx') = mt_pol_idx;
 
+result_map('cl_mt_coh') = {f_coh(ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr, ar_a'), zeros(1)};
 result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
-result_map('cl_mt_pol_coh') = {f_coh(ar_z, ar_a'), zeros(1)};
-result_map('cl_mt_pol_c') = {f_cons_checkcmin(ar_z, ar_a', mt_pol_a), zeros(1)};
-result_map('ar_st_pol_names') = ["cl_mt_pol_a", "cl_mt_pol_coh", "cl_mt_pol_c"];
+result_map('cl_mt_pol_c') = {f_cons_checkcmin(ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr, ar_a', mt_pol_a), zeros(1)};
+result_map('ar_st_pol_names') = ["cl_mt_pol_a", "cl_mt_coh", "cl_mt_pol_c"];
 
 if (bl_post)
     bl_input_override = true;

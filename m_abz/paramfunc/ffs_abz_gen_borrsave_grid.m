@@ -38,6 +38,9 @@ function [ar_a, fl_borr_yminbd, fl_borr_ymaxbd] = ffs_abz_gen_borrsave_grid(vara
 % @param ar_z array array of exogenous income shocks for the exogeous
 % shocks to inelastic labor supply
 %
+% @param fl_r_borr_max float the maximum borrowing interest rate, max
+% because there might be multiple borrowing interest rates.
+%
 % @return fl_w float wage
 %
 % @return fl_a_max float maximum savings level
@@ -60,13 +63,13 @@ bl_default = 1;
 ar_z = [0.3474 0.4008 0.4623 0.5333 0.6152 0.7097 0.8186 0.9444 1.0894 1.2567 1.4496 1.6723 1.9291 2.2253 2.5670];
 fl_w = 1;
 bl_b_is_principle = true; % if false, b = principle + interest rates
-fl_r_borr = 0.05;
+fl_r_borr_max = 0.05;
 fl_a_min = 0;
 fl_a_max = 50;
 it_a_n = 100;
 
 cl_params = {fl_b_bd bl_default ar_z fl_w ...
-             bl_b_is_principle fl_r_borr fl_a_min fl_a_max it_a_n};
+             bl_b_is_principle fl_r_borr_max fl_a_min fl_a_max it_a_n};
 
 
 %% Parse Parameters
@@ -78,7 +81,7 @@ ar_z = cl_params{3};
 fl_w = cl_params{4};
 
 bl_b_is_principle = cl_params{5};
-fl_r_borr = cl_params{6};
+fl_r_borr_max = cl_params{6};
 fl_a_min = cl_params{7};
 fl_a_max = cl_params{8};
 it_a_n = cl_params{9};
@@ -90,10 +93,10 @@ it_a_n = cl_params{9};
 if (bl_b_is_principle)
     % If principle, have to worry about if can repay interest rate
     fl_ar_z_min = min(ar_z);
-    fl_borr_yminbd = -(fl_ar_z_min*fl_w)/fl_r_borr;
+    fl_borr_yminbd = -(fl_ar_z_min*fl_w)/fl_r_borr_max;
 
     fl_ar_z_max = max(ar_z);
-    fl_borr_ymaxbd = -(fl_ar_z_max*fl_w)/fl_r_borr;
+    fl_borr_ymaxbd = -(fl_ar_z_max*fl_w)/fl_r_borr_max;
     
 else
     % B is principle + interest rate, next period repay, constraint is now
@@ -102,10 +105,10 @@ else
     % borrowing bound even though default is not allowed.
            
     fl_ar_z_min = min(ar_z);
-    fl_borr_yminbd = -(fl_ar_z_min*fl_w)*((1+fl_r_borr)/fl_r_borr);
+    fl_borr_yminbd = -(fl_ar_z_min*fl_w)*((1+fl_r_borr_max)/fl_r_borr_max);
 
     fl_ar_z_max = max(ar_z);
-    fl_borr_ymaxbd = -(fl_ar_z_max*fl_w)*((1+fl_r_borr)/fl_r_borr);
+    fl_borr_ymaxbd = -(fl_ar_z_max*fl_w)*((1+fl_r_borr_max)/fl_r_borr_max);
     
 end
 

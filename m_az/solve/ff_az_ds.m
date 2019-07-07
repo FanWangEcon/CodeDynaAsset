@@ -178,8 +178,8 @@ params_group = values(result_map, {'cl_mt_pol_a'});
 mt_pol_a = deal(cl_mt_pol_a{1});
 
 % armt_map
-params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z'});
-[ar_a, mt_z_trans, ar_z] = params_group{:};
+params_group = values(armt_map, {'ar_a', 'mt_z_trans'});
+[ar_a, mt_z_trans] = params_group{:};
 
 % param_map
 params_group = values(param_map, {'it_a_n', 'it_z_n'});
@@ -212,9 +212,9 @@ end
 %% *f(a,z)*: Initialize Output Matrixes
 % Initialize the distribution to be uniform
 
-mt_dist_az_init = ones(length(ar_a),length(ar_z))/length(ar_a)/length(ar_z);
+mt_dist_az_init = ones(length(ar_a),it_z_n)/length(ar_a)/it_z_n;
 mt_dist_az_cur = mt_dist_az_init;
-mt_dist_az_zeros = zeros(length(ar_a),length(ar_z));
+mt_dist_az_zeros = zeros(length(ar_a),it_z_n);
 
 %% *f(a,z)*: Initialize Convergence Conditions
 
@@ -256,7 +256,7 @@ while (bl_histiter_continue)
     mt_dist_az = mt_dist_az_zeros;
     
     % loop 1: over exogenous states
-    for it_z_i = 1:length(ar_z)
+    for it_z_i = 1:it_z_n
         
         % loop 2: over endogenous states
         for it_a_j = 1:length(ar_a)
@@ -269,7 +269,7 @@ while (bl_histiter_continue)
             
             % loop 3: loop over future shocks
             % E_{a,z}(f(a',z'|a,z)*f(a,z))
-            for it_zp_q = 1:length(ar_z)
+            for it_zp_q = 1:it_z_n
                 
                 % current probablity at (a,z)
                 fl_cur_za_prob = mt_dist_az_cur(it_a_j, it_z_i);

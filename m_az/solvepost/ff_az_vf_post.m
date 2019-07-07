@@ -66,8 +66,8 @@ if (bl_input_override)
     % Get Parameters
     params_group = values(param_map, {'it_z_n', 'it_a_n'});
     [it_z_n, it_a_n] = params_group{:};
-    params_group = values(armt_map, {'ar_a', 'ar_z'});
-    [ar_a, ar_z] = params_group{:};
+    params_group = values(armt_map, {'ar_a'});
+    [ar_a] = params_group{:};
 
 else
     clear all;
@@ -103,6 +103,21 @@ else
 end
 
 %% Parse Parameter
+
+% param_map
+params_group = values(param_map, {'st_model'});
+[st_model] = params_group{:};
+
+% armt_map
+if (strcmp(st_model, 'az'))
+    params_group = values(armt_map, {'ar_z'});
+    [ar_z] = params_group{:};
+elseif (strcmp(st_model, 'abz'))
+    params_group = values(armt_map, {'ar_z_r_borr_mesh_wage', 'ar_z_wage_mesh_r_borr'});
+    [ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
+    params_group = values(param_map, {'it_z_wage_n', 'fl_z_r_borr_n'});
+    [it_z_wage_n, fl_z_r_borr_n] = params_group{:};        
+end
 
 % support_map
 params_group = values(support_map, {'bl_display_final', 'it_display_final_rowmax', 'it_display_final_colmax'});
@@ -144,6 +159,7 @@ end
 
 if (bl_display_final)
 
+    
     % Display Value Function Iteration Step by Step REsults
     it_iter_max = length(ar_val_diff_norm);
     if (it_iter_max >= it_display_final_rowmax)
@@ -180,26 +196,42 @@ if (bl_display_final)
     else
         ar_it_rows = 1:1:it_a_n;
     end
+    ar_it_rows = unique(ar_it_rows);
+    
     if (it_z_n >= it_display_final_colmax)
         ar_it_cols = (1:1:round(it_display_final_colmax/2));
         ar_it_cols = [ar_it_cols ((it_z_n)-round(it_display_final_colmax/2)+1):1:(it_z_n)];
     else
         ar_it_cols = 1:1:it_z_n;
     end
+    ar_it_cols = unique(ar_it_cols);
+    
     mt_val_print = mt_val(ar_it_rows, ar_it_cols);
     mt_pol_a_print = mt_pol_a(ar_it_rows, ar_it_cols);
-
+    
+    if (strcmp(st_model, 'az'))
+        ar_st_col_zs = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));
+    elseif (strcmp(st_model, 'abz'))
+        if (fl_z_r_borr_n == 1)
+            ar_st_col_zs = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z_wage_mesh_r_borr(ar_it_cols))));
+        else
+            ar_st_col_zs = matlab.lang.makeValidName(strcat('zi', string(ar_it_cols), ...
+                                                            ':zr=', string(ar_z_r_borr_mesh_wage(ar_it_cols)), ...
+                                                            ';zw=', string(ar_z_wage_mesh_r_borr(ar_it_cols))));                          
+        end
+    end
+    
     % Display Optimal Values
     tb_val = array2table(mt_val_print);
     tb_val.Properties.RowNames = strcat('a', string(ar_it_rows), '=', string(ar_a(ar_it_rows)));
-    tb_val.Properties.VariableNames = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));
+    tb_val.Properties.VariableNames = ar_st_col_zs;
     disp('tb_val: V(a,z) value at each state space point');
     disp(tb_val);
 
     % Display Optimal Choices
     tb_pol_a = array2table(mt_pol_a_print);
     tb_pol_a.Properties.RowNames = strcat('a', string(ar_it_rows), '=', string(ar_a(ar_it_rows)));
-    tb_pol_a.Properties.VariableNames = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));
+    tb_pol_a.Properties.VariableNames = ar_st_col_zs;
     disp('tb_pol_a: optimal asset choice for each state space point');
     disp(tb_pol_a);
 

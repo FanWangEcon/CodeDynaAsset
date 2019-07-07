@@ -124,7 +124,7 @@ We analyze model features by adjusting parameters.
 
 > *Files for this section are in the [/m_abz/](https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_abz) folder in the [CodeDynaAsset](https://github.com/FanWangEcon/CodeDynaAsset) repository. links: (1) [savings problem](https://fanwangecon.github.io/CodeDynaAsset/#1-the-savings-problem-az) (2) [borrowing and savings problem](https://fanwangecon.github.io/CodeDynaAsset/#2-the-savings--borrowing-problem-abz) (3) [risky and safe asset problem (risky entrepreneur)](https://fanwangecon.github.io/CodeDynaAsset/#3-the-risky--safe-asset-problem-part-1) (4) [percentage choice grids and interpolation](https://fanwangecon.github.io/CodeDynaAsset/#4-the-risky--safe-asset-problem-part-2) (5) [Townsend and Wang 2019 Single Asset](https://fanwangecon.github.io/CodeDynaAsset/#5-one-asset-formal--informal) (6) [Townsend and Wang 2019 Safe + Risky Asset](https://fanwangecon.github.io/CodeDynaAsset/#6-two-assets-formal--informal).*
 
-Codes from *1.1-1.3* are adjusted slightly to deal with both savings as well as borrowing for the household (not a firm's static borrowing problem given shock). The programs allow for default.
+Codes from *1.1-1.3* are adjusted slightly to deal with both savings as well as borrowing with default. Additionally, there is an additional shock for interest rate.
 
 ## 2.1 Dynamic Programming Files (ABZ)
 
@@ -132,24 +132,24 @@ Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_
 
 - savings and borrowing (with default) with minimum income
 - **750** grid points for asset states/choices
-- **15** grid points for the AR1 shock
+- **75** grid points for shocks: **15** wage, **5** borrow interest
 - [other parameters](https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_default_param.html)
 
 Using three algorithm that provide identical solutions:
 
 1. *abz* model [looped solution](https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/solve/ff_abz_vf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/profile/ff_abz_vf_default_p3/file0.html)
-    * speed: **22153.2** seconds
+    * small grid demonstration
 2. *abz* model [vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vec.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/solve/ff_abz_vf_vec.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vec.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/profile/ff_abz_vf_vec_default_p3/file0.html)    
-    * speed: **48.3** seconds
+    * speed: **281.0** seconds
 3. *abz* model [optimized vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/solve/ff_abz_vf_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/profile/ff_abz_vf_vecsv_default_p3/file0.html)    
-    * speed: **1.9** seconds
+    * speed: **14.0** seconds
 
 ## 2.2 Asset Distributions (ABZ)
 
 This is the wrapper file for *abz* that invokes the [looped](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html), [vectorized](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html), and [semi-analytical](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html) distributional programs from *1.2*:
 
 * *abz* distributional [wrapper](https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_ds_wrapper.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/solve/ff_abz_ds_wrapper.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_ds_wrapper.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/profile/ff_abz_ds_wrapper_default_p7/file0.html)   
-    * speed (dynamic programming + distribution): **2.2** seconds
+    * speed (dynamic programming + distribution): **17.5** seconds
 
 ## 2.3 Solution Support (ABZ)
 
@@ -382,7 +382,7 @@ Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_
 1. Use again *ipwkz* [2nd stage solution](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/html/ff_ipwkz_evf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/solve/ff_ipwkz_evf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/html/ff_ipwkz_evf.html)
     * solving for kperc(w,z) = argmax_{kperc'}(E(V(coh(kperc',b'=w-w*kperc'),z')) given z and w.
 2. *ipwkz* model [loop](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/html/ff_ipwkz_vf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/solve/ff_ipwkz_vf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/html/ff_ipwkz_vf.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/profile/ff_ipwkz_vf_default_p3/file0.html)    
-    * very small grid demonstration
+    * small grid demonstration
 3. *ipwkz* model [vectorized](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/html/ff_ipwkz_vf_vec.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/solve/ff_ipwkz_vf_vec.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/html/ff_ipwkz_vf_vec.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/profile/ff_ipwkz_vf_vec_default_p3/file0.html)    
     * speed: **4.2** seconds
 4. *ipwkz* model [optimized vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/html/ff_ipwkz_vf_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/solve/ff_ipwkz_vf_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/html/ff_ipwkz_vf_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/solve/profile/ff_ipwkz_vf_vecsv_default_p3/file0.html)    

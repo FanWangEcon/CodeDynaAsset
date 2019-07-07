@@ -38,6 +38,8 @@ default_params = {it_subset bl_display_defparam};
 %% Setting param_map container
 
 param_map = containers.Map('KeyType','char', 'ValueType','any');
+% model name
+param_map('st_model') = 'az';
 % Preferences
 param_map('fl_crra') = 1.5;
 param_map('fl_beta') = 0.94;
@@ -139,7 +141,7 @@ if (ismember(it_subset, [1,2,3,4]))
     if (ismember(it_subset, [1]))
         % TEST quick
         param_map('it_a_n') = 25;
-        param_map('it_z_n') = 3;
+        param_map('it_z_n') = 5;
         param_map('it_maxiter_val') = 50;
         param_map('it_tol_pol_nochange') = 1000;
         support_map('bl_display') = true;

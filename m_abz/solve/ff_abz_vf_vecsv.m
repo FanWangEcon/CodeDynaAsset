@@ -6,19 +6,19 @@
 %%
 function result_map = ff_abz_vf_vecsv(varargin)
 %% FF_ABZ_VF_VECSV solve infinite horizon exo shock + endo asset problem
-% This program solves the infinite horizon dynamic single asset and single
-% shock problem with vectorized codes.
+% This program solves the infinite horizon dynamic single asset and two
+% shocks problem with vectorized codes.
 % <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf.html
 % ff_abz_vf> shows looped codes.
 % <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vec.html
 % ff_abz_vf_vec> shows vectorized codes. This file shows vectorized codes
 % that is faster but is more memory intensive.
 %
-% The borrowing problem is very similar to the savings problem. The code
-% could be identical if one does not have to deal with default. The main
+% The borrowing problem is similar to the savings problem. The main
 % addition here in comparison to the savings only code
 % <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html
-% ff_az_vf_vec> is the ability to deal with default. 
+% ff_az_vf_vec> is the ability to deal with default, as well as an
+% additional shock to the borrowing interest rate.
 %
 % See
 % <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vec.html
@@ -70,7 +70,9 @@ function result_map = ff_abz_vf_vecsv(varargin)
 %    param_map('fl_c_min') = 0.0001; % u(c_min) when default
 %    % Change Keys in param_map
 %    param_map('it_a_n') = 500;
-%    param_map('it_z_n') = 11;
+%    param_map('fl_z_r_borr_n') = 5;
+%    param_map('it_z_wage_n') = 15;
+%    param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
 %    param_map('fl_a_max') = 100;
 %    param_map('fl_w') = 1.3;
 %    % Change Keys support_map
@@ -110,9 +112,11 @@ bl_input_override = true;
 
 % Note: param_map and support_map can be adjusted here or outside to override defaults
 % param_map('it_a_n') = 750;
-% param_map('it_z_n') = 15;
+% param_map('fl_z_r_borr_n') = 5;
+% param_map('it_z_wage_n') = 15;
+% param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
 % param_map('fl_r_save') = 0.025;
-% param_map('fl_r_borr') = 0.035;
+% param_map('fl_z_r_borr_poiss_mean') = 1.75;
 
 [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 default_params = {param_map support_map armt_map func_map};
@@ -144,8 +148,8 @@ support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')]
 %% Parse Parameters 2
 
 % armt_map
-params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z'});
-[ar_a, mt_z_trans, ar_z] = params_group{:};
+params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z_r_borr_mesh_wage', 'ar_z_wage_mesh_r_borr'});
+[ar_a, mt_z_trans, ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
 
 % func_map
 params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons_checkcmin', 'f_coh', 'f_cons_coh'});
@@ -170,11 +174,11 @@ params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
 %% Initialize Output Matrixes
 % include mt_pol_idx which we did not have in looped code
 
-mt_val_cur = zeros(length(ar_a),length(ar_z));
+mt_val_cur = zeros(it_a_n, it_z_n);
 mt_val = mt_val_cur - 1;
-mt_pol_a = zeros(length(ar_a),length(ar_z));
+mt_pol_a = zeros(it_a_n, it_z_n);
 mt_pol_a_cur = mt_pol_a - 1;
-mt_pol_idx = zeros(length(ar_a),length(ar_z));
+mt_pol_idx = zeros(it_a_n, it_z_n);
 
 % We did not need these in ff_abz_vf or ff_abz_vf_vec
 % see
@@ -222,13 +226,14 @@ while bl_vfi_continue
     % than ff_abz_vf_vec.
 
     % loop 1: over exogenous states
-    for it_z_i = 1:length(ar_z)
+    for it_z_i = 1:it_z_n
 
         % Current Shock
-        fl_z = ar_z(it_z_i);
-
+        fl_z_r_borr = ar_z_r_borr_mesh_wage(it_z_i);
+        fl_z_wage = ar_z_wage_mesh_r_borr(it_z_i);
+        
         % cash-on-hand
-        ar_coh = f_coh(fl_z, ar_a);
+        ar_coh = f_coh(fl_z_r_borr, fl_z_wage, ar_a);
 
         % Consumption and u(c) only need to be evaluated once
         if (it_iter == 1)
@@ -376,10 +381,10 @@ result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
 result_map('mt_pol_idx') = mt_pol_idx;
 
+result_map('cl_mt_coh') = {f_coh(ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr, ar_a'), zeros(1)};
 result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
-result_map('cl_mt_pol_coh') = {f_coh(ar_z, ar_a'), zeros(1)};
-result_map('cl_mt_pol_c') = {f_cons_checkcmin(ar_z, ar_a', mt_pol_a), zeros(1)};
-result_map('ar_st_pol_names') = ["cl_mt_pol_a", "cl_mt_pol_coh", "cl_mt_pol_c"];
+result_map('cl_mt_pol_c') = {f_cons_checkcmin(ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr, ar_a', mt_pol_a), zeros(1)};
+result_map('ar_st_pol_names') = ["cl_mt_pol_a", "cl_mt_coh", "cl_mt_pol_c"];
 
 if (bl_post)
     bl_input_override = true;

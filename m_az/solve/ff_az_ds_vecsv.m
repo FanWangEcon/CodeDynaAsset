@@ -173,9 +173,8 @@ support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')]
 % result_map
 % ar_st_pol_names is from section _Process Optimal Choices_ in the value
 % function code.
-params_group = values(result_map, {'cl_mt_pol_a', 'mt_pol_idx', 'ar_st_pol_names'});
-[cl_mt_pol_a, mt_pol_idx, ar_st_pol_names] = params_group{:};
-mt_pol_a = deal(cl_mt_pol_a{1});
+params_group = values(result_map, {'mt_pol_idx'});
+[mt_pol_idx] = params_group{:};
 
 % armt_map
 params_group = values(armt_map, {'mt_z_trans'});
@@ -189,10 +188,10 @@ params_group = values(param_map, { 'it_trans_power_dist', 'st_analytical_station
 % support_map
 params_group = values(support_map, {'bl_profile_dist', 'st_profile_path', ...
     'st_profile_prefix', 'st_profile_name_main', 'st_profile_suffix',...
-    'bl_time', 'bl_display_final_dist', 'bl_post'});
+    'bl_time'});
 [bl_profile_dist, st_profile_path, ...
     st_profile_prefix, st_profile_name_main, st_profile_suffix, ...
-    bl_time, bl_display_final_dist, bl_post] = params_group{:};
+    bl_time] = params_group{:};
 
 %% Start Profiler and Timer
 

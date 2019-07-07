@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Set Parameters One Asset Borrowing and Savings</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-21"><meta name="DC.source" content="ffs_abz_set_default_param.m"><style type="text/css">
+      --><title>Set Parameters One Asset Borrowing and Savings</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-06"><meta name="DC.source" content="ffs_abz_set_default_param.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -78,11 +78,6 @@ default_params = {it_subset bl_display_defparam};
 <span class="comment">% Preferences</span>
 param_map(<span class="string">'fl_crra'</span>) = 1.5;
 param_map(<span class="string">'fl_beta'</span>) = 0.94;
-<span class="comment">% Shock Parameters</span>
-param_map(<span class="string">'it_z_n'</span>) = 15;
-param_map(<span class="string">'fl_z_mu'</span>) = 0;
-param_map(<span class="string">'fl_z_rho'</span>) = 0.8;
-param_map(<span class="string">'fl_z_sig'</span>) = 0.2;
 <span class="comment">% Borrowing</span>
 <span class="comment">% fl_default_aprime is the next period asset level</span>
 <span class="comment">% households face if they default.</span>
@@ -98,7 +93,32 @@ param_map(<span class="string">'it_a_n'</span>) = 750;
 <span class="comment">% Prices</span>
 param_map(<span class="string">'fl_w'</span>) = 1.28;
 param_map(<span class="string">'fl_r_save'</span>) = 0.025;
-param_map(<span class="string">'fl_r_borr'</span>) = 0.035;
+
+<span class="comment">% Shock 1: Borrowing Interest Rate is a Shock Parameters, see fft_gen_discrete_var.m</span>
+param_map(<span class="string">'st_z_r_borr_drv_ele_type'</span>) = <span class="string">'unif'</span>;
+param_map(<span class="string">'st_z_r_borr_drv_prb_type'</span>) = <span class="string">'poiss'</span>;
+param_map(<span class="string">'fl_z_r_borr_poiss_mean'</span>) = 1.75;
+param_map(<span class="string">'fl_z_r_borr_max'</span>) = 0.15;
+param_map(<span class="string">'fl_z_r_borr_min'</span>) = 0;
+param_map(<span class="string">'fl_z_r_borr_n'</span>) = 3;
+<span class="comment">% param_map('fl_max') = 0.035;</span>
+<span class="comment">% param_map('fl_min') = 0.035;</span>
+<span class="comment">% param_map('fl_n') = 1;</span>
+
+<span class="comment">% Shock 2: Parameters</span>
+param_map(<span class="string">'it_z_wage_n'</span>) = 15;
+param_map(<span class="string">'fl_z_wage_mu'</span>) = 0;
+param_map(<span class="string">'fl_z_wage_rho'</span>) = 0.8;
+param_map(<span class="string">'fl_z_wage_sig'</span>) = 0.2;
+
+<span class="comment">% Shock 3</span>
+param_map(<span class="string">'it_z_n'</span>) = param_map(<span class="string">'it_z_wage_n'</span>) * param_map(<span class="string">'fl_z_r_borr_n'</span>);
+
+<span class="comment">% is save/borr choice principle or principle + interest, matters for</span>
+<span class="comment">% borrowing grid generation program. the *abz* problem is written with</span>
+<span class="comment">% asset choice as principle only, the _abz_fibs_ problems are written as</span>
+<span class="comment">% priniple + interest as the state, so there this should be false.</span>
+param_map(<span class="string">'bl_b_is_principle'</span>) = true;
 <span class="comment">% Minimum Consumption, c_min is for default, when c &lt; 0, replace utility</span>
 <span class="comment">% with fl_nan_replace.</span>
 param_map(<span class="string">'fl_c_min'</span>) = 0.001;
@@ -136,6 +156,7 @@ support_map(<span class="string">'bl_post'</span>) = false;
 <span class="comment">% Final Print</span>
 support_map(<span class="string">'bl_display_final'</span>) = false; <span class="comment">% print finalized results</span>
 support_map(<span class="string">'bl_display_final_dist'</span>) = false; <span class="comment">% print finalized results</span>
+support_map(<span class="string">'bl_display_final_dist_detail'</span>) = false; <span class="comment">% print finalized results</span>
 support_map(<span class="string">'it_display_final_rowmax'</span>) = 100; <span class="comment">% max row to print (states/iters)</span>
 support_map(<span class="string">'it_display_final_colmax'</span>) = 12; <span class="comment">% max col to print (shocks)</span>
 <span class="comment">% Mat File Controls</span>
@@ -216,7 +237,7 @@ support_map(<span class="string">'bl_display_funcgrids'</span>) = false;
         <span class="comment">% Main Run</span>
         support_map(<span class="string">'bl_time'</span>) = true;
         support_map(<span class="string">'bl_display'</span>) = false;
-        support_map(<span class="string">'bl_display_dist'</span>) = true;
+        support_map(<span class="string">'bl_display_dist'</span>) = false;
         support_map(<span class="string">'it_display_every'</span>) = 20;
 
         support_map(<span class="string">'bl_post'</span>) = true;
@@ -235,10 +256,12 @@ support_map(<span class="string">'bl_display_funcgrids'</span>) = false;
         <span class="keyword">if</span> (ismember(it_subset, [8, 9]))
             support_map(<span class="string">'bl_display'</span>) = false;
             support_map(<span class="string">'bl_display_dist'</span>) = false;
+            support_map(<span class="string">'bl_display_final_dist_detail'</span>) = true;
             support_map(<span class="string">'bl_graph_onebyones'</span>) = true;
             support_map(<span class="string">'bl_img_save'</span>) = false;
             <span class="keyword">if</span> (ismember(it_subset, [9]))
                 <span class="comment">% quietly turn off all graphs, only tables</span>
+                support_map(<span class="string">'bl_display_final_dist_detail'</span>) = false;
                 support_map(<span class="string">'bl_graph_coh_t_coh'</span>) = false;
             <span class="keyword">end</span>
         <span class="keyword">end</span>
@@ -247,6 +270,7 @@ support_map(<span class="string">'bl_display_funcgrids'</span>) = false;
     <span class="keyword">if</span> (ismember(it_subset, [7]))
         <span class="comment">% Profile run</span>
         support_map(<span class="string">'bl_profile_dist'</span>) = true;
+        support_map(<span class="string">'bl_display'</span>) = false; <span class="comment">% don't print</span>
         support_map(<span class="string">'bl_display_dist'</span>) = false; <span class="comment">% don't print</span>
         support_map(<span class="string">'bl_time'</span>) = true;
     <span class="keyword">end</span>
@@ -273,41 +297,48 @@ support_map(<span class="string">'bl_display_funcgrids'</span>) = false;
 </pre><pre class="codeoutput">param_map
   Map with properties:
 
-        Count: 27
+        Count: 34
       KeyType: char
     ValueType: any
 
-pos = 1 ; key = bl_default ; val = true
-pos = 2 ; key = bl_loglin ; val = false
-pos = 3 ; key = fl_a_max ; val = 50
-pos = 4 ; key = fl_a_min ; val = 0
-pos = 5 ; key = fl_b_bd ; val = -20
-pos = 6 ; key = fl_beta ; val = 0.94
-pos = 7 ; key = fl_c_min ; val = 0.001
-pos = 8 ; key = fl_crra ; val = 1.5
-pos = 9 ; key = fl_default_aprime ; val = 0
-pos = 10 ; key = fl_loglin_threshold ; val = 1
-pos = 11 ; key = fl_nan_replace ; val = -99999
-pos = 12 ; key = fl_r_borr ; val = 0.035
+pos = 1 ; key = bl_b_is_principle ; val = true
+pos = 2 ; key = bl_default ; val = true
+pos = 3 ; key = bl_loglin ; val = false
+pos = 4 ; key = fl_a_max ; val = 50
+pos = 5 ; key = fl_a_min ; val = 0
+pos = 6 ; key = fl_b_bd ; val = -20
+pos = 7 ; key = fl_beta ; val = 0.94
+pos = 8 ; key = fl_c_min ; val = 0.001
+pos = 9 ; key = fl_crra ; val = 1.5
+pos = 10 ; key = fl_default_aprime ; val = 0
+pos = 11 ; key = fl_loglin_threshold ; val = 1
+pos = 12 ; key = fl_nan_replace ; val = -99999
 pos = 13 ; key = fl_r_save ; val = 0.025
 pos = 14 ; key = fl_tol_dist ; val = 1e-05
 pos = 15 ; key = fl_tol_pol ; val = 1e-05
 pos = 16 ; key = fl_tol_val ; val = 1e-05
 pos = 17 ; key = fl_w ; val = 1.28
-pos = 18 ; key = fl_z_mu ; val = 0
-pos = 19 ; key = fl_z_rho ; val = 0.8
-pos = 20 ; key = fl_z_sig ; val = 0.2
-pos = 21 ; key = it_a_n ; val = 750
-pos = 22 ; key = it_maxiter_dist ; val = 1000
-pos = 23 ; key = it_maxiter_val ; val = 1000
-pos = 24 ; key = it_tol_pol_nochange ; val = 25
-pos = 25 ; key = it_trans_power_dist ; val = 1000
-pos = 26 ; key = it_z_n ; val = 15
-pos = 27 ; key = st_analytical_stationary_type ; val = eigenvector
+pos = 18 ; key = fl_z_r_borr_max ; val = 0.15
+pos = 19 ; key = fl_z_r_borr_min ; val = 0
+pos = 20 ; key = fl_z_r_borr_n ; val = 3
+pos = 21 ; key = fl_z_r_borr_poiss_mean ; val = 1.75
+pos = 22 ; key = fl_z_wage_mu ; val = 0
+pos = 23 ; key = fl_z_wage_rho ; val = 0.8
+pos = 24 ; key = fl_z_wage_sig ; val = 0.2
+pos = 25 ; key = it_a_n ; val = 750
+pos = 26 ; key = it_maxiter_dist ; val = 1000
+pos = 27 ; key = it_maxiter_val ; val = 1000
+pos = 28 ; key = it_tol_pol_nochange ; val = 25
+pos = 29 ; key = it_trans_power_dist ; val = 1000
+pos = 30 ; key = it_z_n ; val = 45
+pos = 31 ; key = it_z_wage_n ; val = 15
+pos = 32 ; key = st_analytical_stationary_type ; val = eigenvector
+pos = 33 ; key = st_z_r_borr_drv_ele_type ; val = unif
+pos = 34 ; key = st_z_r_borr_drv_prb_type ; val = poiss
 support_map
   Map with properties:
 
-        Count: 35
+        Count: 36
       KeyType: char
     ValueType: any
 
@@ -315,44 +346,45 @@ pos = 1 ; key = bl_display ; val = true
 pos = 2 ; key = bl_display_dist ; val = false
 pos = 3 ; key = bl_display_final ; val = false
 pos = 4 ; key = bl_display_final_dist ; val = false
-pos = 5 ; key = bl_display_funcgrids ; val = false
-pos = 6 ; key = bl_graph ; val = false
-pos = 7 ; key = bl_graph_coh_t_coh ; val = true
-pos = 8 ; key = bl_graph_funcgrids ; val = false
-pos = 9 ; key = bl_graph_onebyones ; val = true
-pos = 10 ; key = bl_graph_pol_lvl ; val = true
-pos = 11 ; key = bl_graph_pol_pct ; val = true
-pos = 12 ; key = bl_graph_val ; val = true
-pos = 13 ; key = bl_img_save ; val = false
-pos = 14 ; key = bl_mat ; val = false
-pos = 15 ; key = bl_post ; val = false
-pos = 16 ; key = bl_profile ; val = false
-pos = 17 ; key = bl_profile_dist ; val = false
-pos = 18 ; key = bl_time ; val = true
-pos = 19 ; key = it_display_every ; val = 5
-pos = 20 ; key = it_display_final_colmax ; val = 12
-pos = 21 ; key = it_display_final_rowmax ; val = 100
-pos = 22 ; key = st_img_name_main ; val = _default
-pos = 23 ; key = st_img_path ; val = C:/Users/fan/CodeDynaAsset//m_abz//solve/img/
-pos = 24 ; key = st_img_prefix ; val = 
-pos = 25 ; key = st_img_suffix ; val = _p0.png
-pos = 26 ; key = st_mat_name_main ; val = _default
-pos = 27 ; key = st_mat_path ; val = C:/Users/fan/CodeDynaAsset//m_abz//solve/mat/
-pos = 28 ; key = st_mat_prefix ; val = 
-pos = 29 ; key = st_mat_suffix ; val = _p0
-pos = 30 ; key = st_matimg_path_root ; val = C:/Users/fan/CodeDynaAsset//m_abz/
-pos = 31 ; key = st_profile_name_main ; val = _default
-pos = 32 ; key = st_profile_path ; val = C:/Users/fan/CodeDynaAsset//m_abz//solve/profile/
-pos = 33 ; key = st_profile_prefix ; val = 
-pos = 34 ; key = st_profile_suffix ; val = _p0
-pos = 35 ; key = st_title_prefix ; val = 
+pos = 5 ; key = bl_display_final_dist_detail ; val = false
+pos = 6 ; key = bl_display_funcgrids ; val = false
+pos = 7 ; key = bl_graph ; val = false
+pos = 8 ; key = bl_graph_coh_t_coh ; val = true
+pos = 9 ; key = bl_graph_funcgrids ; val = false
+pos = 10 ; key = bl_graph_onebyones ; val = true
+pos = 11 ; key = bl_graph_pol_lvl ; val = true
+pos = 12 ; key = bl_graph_pol_pct ; val = true
+pos = 13 ; key = bl_graph_val ; val = true
+pos = 14 ; key = bl_img_save ; val = false
+pos = 15 ; key = bl_mat ; val = false
+pos = 16 ; key = bl_post ; val = false
+pos = 17 ; key = bl_profile ; val = false
+pos = 18 ; key = bl_profile_dist ; val = false
+pos = 19 ; key = bl_time ; val = true
+pos = 20 ; key = it_display_every ; val = 5
+pos = 21 ; key = it_display_final_colmax ; val = 12
+pos = 22 ; key = it_display_final_rowmax ; val = 100
+pos = 23 ; key = st_img_name_main ; val = _default
+pos = 24 ; key = st_img_path ; val = C:/Users/fan/CodeDynaAsset//m_abz//solve/img/
+pos = 25 ; key = st_img_prefix ; val = 
+pos = 26 ; key = st_img_suffix ; val = _p0.png
+pos = 27 ; key = st_mat_name_main ; val = _default
+pos = 28 ; key = st_mat_path ; val = C:/Users/fan/CodeDynaAsset//m_abz//solve/mat/
+pos = 29 ; key = st_mat_prefix ; val = 
+pos = 30 ; key = st_mat_suffix ; val = _p0
+pos = 31 ; key = st_matimg_path_root ; val = C:/Users/fan/CodeDynaAsset//m_abz/
+pos = 32 ; key = st_profile_name_main ; val = _default
+pos = 33 ; key = st_profile_path ; val = C:/Users/fan/CodeDynaAsset//m_abz//solve/profile/
+pos = 34 ; key = st_profile_prefix ; val = 
+pos = 35 ; key = st_profile_suffix ; val = _p0
+pos = 36 ; key = st_title_prefix ; val = 
 </pre><pre class="codeinput"><span class="keyword">end</span>
 </pre><pre class="codeoutput">
 ans = 
 
   Map with properties:
 
-        Count: 27
+        Count: 34
       KeyType: char
     ValueType: any
 
@@ -398,11 +430,6 @@ param_map = containers.Map('KeyType','char', 'ValueType','any');
 % Preferences
 param_map('fl_crra') = 1.5;
 param_map('fl_beta') = 0.94;
-% Shock Parameters
-param_map('it_z_n') = 15;
-param_map('fl_z_mu') = 0;
-param_map('fl_z_rho') = 0.8;
-param_map('fl_z_sig') = 0.2;
 % Borrowing
 % fl_default_aprime is the next period asset level
 % households face if they default.
@@ -418,7 +445,32 @@ param_map('it_a_n') = 750;
 % Prices
 param_map('fl_w') = 1.28;
 param_map('fl_r_save') = 0.025;
-param_map('fl_r_borr') = 0.035;
+
+% Shock 1: Borrowing Interest Rate is a Shock Parameters, see fft_gen_discrete_var.m
+param_map('st_z_r_borr_drv_ele_type') = 'unif';
+param_map('st_z_r_borr_drv_prb_type') = 'poiss';
+param_map('fl_z_r_borr_poiss_mean') = 1.75;
+param_map('fl_z_r_borr_max') = 0.15;
+param_map('fl_z_r_borr_min') = 0;
+param_map('fl_z_r_borr_n') = 3;
+% param_map('fl_max') = 0.035;
+% param_map('fl_min') = 0.035;
+% param_map('fl_n') = 1;
+
+% Shock 2: Parameters
+param_map('it_z_wage_n') = 15;
+param_map('fl_z_wage_mu') = 0;
+param_map('fl_z_wage_rho') = 0.8;
+param_map('fl_z_wage_sig') = 0.2;
+
+% Shock 3
+param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+
+% is save/borr choice principle or principle + interest, matters for
+% borrowing grid generation program. the *abz* problem is written with
+% asset choice as principle only, the _abz_fibs_ problems are written as
+% priniple + interest as the state, so there this should be false.
+param_map('bl_b_is_principle') = true;
 % Minimum Consumption, c_min is for default, when c < 0, replace utility
 % with fl_nan_replace.
 param_map('fl_c_min') = 0.001;
@@ -459,6 +511,7 @@ support_map('bl_post') = false;
 % Final Print
 support_map('bl_display_final') = false; % print finalized results
 support_map('bl_display_final_dist') = false; % print finalized results
+support_map('bl_display_final_dist_detail') = false; % print finalized results
 support_map('it_display_final_rowmax') = 100; % max row to print (states/iters)
 support_map('it_display_final_colmax') = 12; % max col to print (shocks)
 % Mat File Controls
@@ -559,7 +612,7 @@ if (ismember(it_subset, [5,6,7,8,9]))
         % Main Run
         support_map('bl_time') = true;
         support_map('bl_display') = false;
-        support_map('bl_display_dist') = true;
+        support_map('bl_display_dist') = false;
         support_map('it_display_every') = 20;
 
         support_map('bl_post') = true;
@@ -578,10 +631,12 @@ if (ismember(it_subset, [5,6,7,8,9]))
         if (ismember(it_subset, [8, 9]))
             support_map('bl_display') = false;
             support_map('bl_display_dist') = false;
+            support_map('bl_display_final_dist_detail') = true;
             support_map('bl_graph_onebyones') = true;
             support_map('bl_img_save') = false;
             if (ismember(it_subset, [9]))
                 % quietly turn off all graphs, only tables
+                support_map('bl_display_final_dist_detail') = false;
                 support_map('bl_graph_coh_t_coh') = false;
             end
         end
@@ -590,6 +645,7 @@ if (ismember(it_subset, [5,6,7,8,9]))
     if (ismember(it_subset, [7]))
         % Profile run
         support_map('bl_profile_dist') = true;
+        support_map('bl_display') = false; % don't print
         support_map('bl_display_dist') = false; % don't print
         support_map('bl_time') = true;
     end

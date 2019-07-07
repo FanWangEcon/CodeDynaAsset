@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Derive Asset and Choices/Outcomes Distribution (Loop)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-03"><meta name="DC.source" content="ff_az_ds.m"><style type="text/css">
+      --><title>Derive Asset and Choices/Outcomes Distribution (Loop)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-07"><meta name="DC.source" content="ff_az_ds.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -126,8 +126,8 @@ params_group = values(result_map, {<span class="string">'cl_mt_pol_a'</span>});
 mt_pol_a = deal(cl_mt_pol_a{1});
 
 <span class="comment">% armt_map</span>
-params_group = values(armt_map, {<span class="string">'ar_a'</span>, <span class="string">'mt_z_trans'</span>, <span class="string">'ar_z'</span>});
-[ar_a, mt_z_trans, ar_z] = params_group{:};
+params_group = values(armt_map, {<span class="string">'ar_a'</span>, <span class="string">'mt_z_trans'</span>});
+[ar_a, mt_z_trans] = params_group{:};
 
 <span class="comment">% param_map</span>
 params_group = values(param_map, {<span class="string">'it_a_n'</span>, <span class="string">'it_z_n'</span>});
@@ -153,9 +153,9 @@ params_group = values(support_map, {<span class="string">'bl_profile_dist'</span
 <span class="keyword">if</span> (bl_time)
     tic;
 <span class="keyword">end</span>
-</pre><h2 id="6"><b>f(a,z)</b>: Initialize Output Matrixes</h2><p>Initialize the distribution to be uniform</p><pre class="codeinput">mt_dist_az_init = ones(length(ar_a),length(ar_z))/length(ar_a)/length(ar_z);
+</pre><h2 id="6"><b>f(a,z)</b>: Initialize Output Matrixes</h2><p>Initialize the distribution to be uniform</p><pre class="codeinput">mt_dist_az_init = ones(length(ar_a),it_z_n)/length(ar_a)/it_z_n;
 mt_dist_az_cur = mt_dist_az_init;
-mt_dist_az_zeros = zeros(length(ar_a),length(ar_z));
+mt_dist_az_zeros = zeros(length(ar_a),it_z_n);
 </pre><h2 id="7"><b>f(a,z)</b>: Initialize Convergence Conditions</h2><pre class="codeinput">bl_histiter_continue = true;
 it_iter = 0;
 ar_dist_diff_norm = zeros([it_maxiter_dist, 1]);
@@ -166,7 +166,7 @@ mt_dist_perc_change = zeros([it_maxiter_dist, it_z_n]);
     mt_dist_az = mt_dist_az_zeros;
 
     <span class="comment">% loop 1: over exogenous states</span>
-    <span class="keyword">for</span> it_z_i = 1:length(ar_z)
+    <span class="keyword">for</span> it_z_i = 1:it_z_n
 
         <span class="comment">% loop 2: over endogenous states</span>
         <span class="keyword">for</span> it_a_j = 1:length(ar_a)
@@ -179,7 +179,7 @@ mt_dist_perc_change = zeros([it_maxiter_dist, it_z_n]);
 
             <span class="comment">% loop 3: loop over future shocks</span>
             <span class="comment">% E_{a,z}(f(a',z'|a,z)*f(a,z))</span>
-            <span class="keyword">for</span> it_zp_q = 1:length(ar_z)
+            <span class="keyword">for</span> it_zp_q = 1:it_z_n
 
                 <span class="comment">% current probablity at (a,z)</span>
                 fl_cur_za_prob = mt_dist_az_cur(it_a_j, it_z_i);
@@ -595,8 +595,8 @@ params_group = values(result_map, {'cl_mt_pol_a'});
 mt_pol_a = deal(cl_mt_pol_a{1});
 
 % armt_map
-params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z'});
-[ar_a, mt_z_trans, ar_z] = params_group{:};
+params_group = values(armt_map, {'ar_a', 'mt_z_trans'});
+[ar_a, mt_z_trans] = params_group{:};
 
 % param_map
 params_group = values(param_map, {'it_a_n', 'it_z_n'});
@@ -629,9 +629,9 @@ end
 %% *f(a,z)*: Initialize Output Matrixes
 % Initialize the distribution to be uniform
 
-mt_dist_az_init = ones(length(ar_a),length(ar_z))/length(ar_a)/length(ar_z);
+mt_dist_az_init = ones(length(ar_a),it_z_n)/length(ar_a)/it_z_n;
 mt_dist_az_cur = mt_dist_az_init;
-mt_dist_az_zeros = zeros(length(ar_a),length(ar_z));
+mt_dist_az_zeros = zeros(length(ar_a),it_z_n);
 
 %% *f(a,z)*: Initialize Convergence Conditions
 
@@ -673,7 +673,7 @@ while (bl_histiter_continue)
     mt_dist_az = mt_dist_az_zeros;
     
     % loop 1: over exogenous states
-    for it_z_i = 1:length(ar_z)
+    for it_z_i = 1:it_z_n
         
         % loop 2: over endogenous states
         for it_a_j = 1:length(ar_a)
@@ -686,7 +686,7 @@ while (bl_histiter_continue)
             
             % loop 3: loop over future shocks
             % E_{a,z}(f(a',z'|a,z)*f(a,z))
-            for it_zp_q = 1:length(ar_z)
+            for it_zp_q = 1:it_z_n
                 
                 % current probablity at (a,z)
                 fl_cur_za_prob = mt_dist_az_cur(it_a_j, it_z_i);
