@@ -146,33 +146,45 @@ else
     support_map = [support_map; default_maps{2}];
 end
 
-%% Parse Parameters
+%% Parse Parameters 1a
 
-params_group = values(param_map, {'it_z_n', 'fl_z_mu', 'fl_z_rho', 'fl_z_sig'});
-[it_z_n, fl_z_mu, fl_z_rho, fl_z_sig] = params_group{:};
+params_group = values(param_map, {'bl_bridge', 'fl_b_bd', 'fl_w_min', 'fl_w_max'});
+[bl_bridge, fl_b_bd, fl_w_min, fl_w_max] = params_group{:};
 
-params_group = values(param_map, {'fl_nan_replace', 'fl_b_bd', 'fl_w_min', 'fl_w_max', ...
-    'it_w_perc_n', 'fl_w_interp_grid_gap', 'fl_coh_interp_grid_gap'});
-[fl_nan_replace, fl_b_bd, fl_w_min, fl_w_max, ...
-    it_w_perc_n, fl_w_interp_grid_gap, fl_coh_interp_grid_gap] = params_group{:};
-
-params_group = values(param_map, {'fl_k_min', 'fl_k_max', 'it_ak_perc_n'});
-[fl_k_min, fl_k_max, it_ak_perc_n] = params_group{:};
-
-params_group = values(param_map, {'fl_crra', 'fl_c_min', 'it_c_interp_grid_gap'});
-[fl_crra, fl_c_min, it_c_interp_grid_gap] = params_group{:};
+params_group = values(param_map, {'fl_crra', 'fl_c_min'});
+[fl_crra, fl_c_min] = params_group{:};
 
 params_group = values(param_map, {'fl_Amean', 'fl_alpha', 'fl_delta'});
 [fl_Amean, fl_alpha, fl_delta] = params_group{:};
 
-params_group = values(param_map, {'bl_bridge', 'it_coh_bridge_perc_n'});
-[bl_bridge, it_coh_bridge_perc_n] = params_group{:};
+params_group = values(param_map, {'bl_b_is_principle', 'fl_r_fbr', 'fl_r_fsv', 'fl_w'});
+[bl_b_is_principle, fl_r_fbr, fl_r_fsv, fl_w] = params_group{:};
 
-params_group = values(param_map, {'bl_b_is_principle', 'fl_r_fbr', 'fl_r_fsv', 'fl_r_inf', 'fl_w'});
-[bl_b_is_principle, fl_r_fbr, fl_r_fsv, fl_r_inf, fl_w] = params_group{:};
+%% Parse Parameters 1b
 
+params_group = values(param_map, {...
+    'it_w_perc_n', 'it_ak_perc_n', 'it_coh_bridge_perc_n', ...    
+    'it_c_interp_grid_gap', 'fl_w_interp_grid_gap', 'fl_coh_interp_grid_gap'});
+[it_w_perc_n, it_ak_perc_n, it_coh_bridge_perc_n, ...
+    it_c_interp_grid_gap, fl_w_interp_grid_gap, fl_coh_interp_grid_gap] = params_group{:};
+
+%% Parse Parameters 2
+
+% param_map shock income
+params_group = values(param_map, {'it_z_wage_n', 'fl_z_wage_mu', 'fl_z_wage_rho', 'fl_z_wage_sig'});
+[it_z_wage_n, fl_z_wage_mu, fl_z_wage_rho, fl_z_wage_sig] = params_group{:};
+
+% param_map shock borrowing interest
+params_group = values(param_map, {'st_z_r_borr_drv_ele_type', 'st_z_r_borr_drv_prb_type', 'fl_z_r_borr_poiss_mean', ...
+    'fl_z_r_borr_max', 'fl_z_r_borr_min', 'fl_z_r_borr_n'});
+[st_z_r_borr_drv_ele_type, st_z_r_borr_drv_prb_type, fl_z_r_borr_poiss_mean, ...
+    fl_z_r_borr_max, fl_z_r_borr_min, fl_z_r_borr_n] = params_group{:};
+
+% param_map formal menu
 params_group = values(param_map, {'st_forbrblk_type', 'fl_forbrblk_brmost', 'fl_forbrblk_brleast', 'fl_forbrblk_gap'});
 [st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap] = params_group{:};
+
+%% Parse Parameters 3
 
 params_group = values(support_map, {'bl_display_minccost', 'bl_graph_funcgrids', 'bl_graph_funcgrids_detail', 'bl_display_funcgrids'});
 [bl_display_minccost, bl_graph_funcgrids, bl_graph_funcgrids_detail, bl_display_funcgrids] = params_group{:};
@@ -341,9 +353,34 @@ ar_a_nobridge_meshk = ar_a_nobridge_meshk_full;
 ar_k_mesha = ar_k_mesha_full;
 ar_bridge_a = ar_bridge_a_full;
 
-%% F1: Get Shock Grids
+%% F1: Get Shock: Income Shock (ar1)
 
-[~, mt_z_trans, ar_stationary, ar_z] = ffto_gen_tauchen_jhl(fl_z_mu,fl_z_rho,fl_z_sig,it_z_n);
+[~, mt_z_wage_trans, ~, ar_z_wage] = ffto_gen_tauchen_jhl(fl_z_wage_mu,fl_z_wage_rho,fl_z_wage_sig,it_z_wage_n);
+
+%% F2: Get Shock: Interest Rate Shock (iid)
+
+% get borrowing grid and probabilities
+param_dsv_map = containers.Map('KeyType','char', 'ValueType','any');
+param_dsv_map('st_drv_ele_type') = st_z_r_borr_drv_ele_type;
+param_dsv_map('st_drv_prb_type') = st_z_r_borr_drv_prb_type;
+param_dsv_map('fl_poiss_mean') = fl_z_r_borr_poiss_mean;
+param_dsv_map('fl_max') = fl_z_r_borr_max;
+param_dsv_map('fl_min') = fl_z_r_borr_min;
+param_dsv_map('fl_n') = fl_z_r_borr_n;
+[ar_z_r_borr, ar_z_r_borr_prob] = fft_gen_discrete_var(param_dsv_map, true);
+
+% iid transition matrix
+mt_z_r_borr_prob_trans = repmat(ar_z_r_borr_prob, [length(ar_z_r_borr_prob), 1]);
+
+%% F3: Get Shock: Mesh Shocks Together
+
+% Kronecker product to get full transition matrix for the two shocks
+mt_z_trans = kron(mt_z_r_borr_prob_trans, mt_z_wage_trans);
+
+% mesh the shock vectors
+[mt_z_wage_mesh_r_borr, mt_z_r_borr_mesh_wage] = ndgrid(ar_z_wage, ar_z_r_borr);
+ar_z_r_borr_mesh_wage = mt_z_r_borr_mesh_wage(:)';
+ar_z_wage_mesh_r_borr = mt_z_wage_mesh_r_borr(:)';
 
 %% FIBS1: Get Equations
 
@@ -355,6 +392,8 @@ ar_bridge_a = ar_bridge_a_full;
 [ar_forbrblk, ar_forbrblk_r] = ...
         ffs_for_br_block_gen(fl_r_fbr, st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap);
 
+%% Generate Matrix of Optimal Formal Informal Choices given a', r'
+% a' is total savings/borrowing, r' is informal interest rate currently 
 %% Find Formal and Informal Choices for Borrowing points
 % Here we solve for the optimal formal and informal choices given b. Note
 % that kind of like the static firm's maximization problem. Here the
@@ -407,7 +446,7 @@ ar_coh_fbis_aneg = f_coh_fbis(fl_r_inf, ...
 
 ar_a_meshk_apos = ar_a_meshk(~ar_bl_ameshk_neg_idx);
 ar_coh_save_apos = f_coh_save(ar_a_meshk_apos);
-
+ 
 %% COH1: Combine overall Reachable Cash-on-Hand Levels
 % N_neg*N^2 + N_pos*N rows total row count, and N_z shock column count.
 % These are the cash-on-hand points reachable given percentage grid choice

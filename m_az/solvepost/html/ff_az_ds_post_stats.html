@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Generate Statistics from Prob Mass Function over States</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-25"><meta name="DC.source" content="ff_az_ds_post_stats.m"><style type="text/css">
+      --><title>Generate Statistics from Prob Mass Function over States</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-07"><meta name="DC.source" content="ff_az_ds_post_stats.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -119,11 +119,17 @@ bl_input_override = 0;
     <span class="comment">% support_map</span>
     support_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
     support_map(<span class="string">'bl_display_final_dist'</span>) = true;
+    support_map(<span class="string">'bl_display_final_dist_detail'</span>) = true;
 
 <span class="keyword">end</span>
 </pre><h2 id="4">Parse</h2><pre class="codeinput"><span class="comment">% support_map</span>
-params_group = values(support_map, {<span class="string">'bl_display_final_dist'</span>});
-[bl_display_final_dist] = params_group{:};
+params_group = values(support_map, {<span class="string">'bl_display_final_dist'</span>, <span class="string">'bl_display_final_dist_detail'</span>});
+[bl_display_final_dist, bl_display_final_dist_detail] = params_group{:};
+<span class="keyword">if</span> (bl_display_final_dist_detail)
+    bl_display_drvstats = true;
+<span class="keyword">else</span>
+    bl_display_drvstats = false;
+<span class="keyword">end</span>
 
 <span class="comment">% result_map</span>
 params_group = values(result_map, {<span class="string">'ar_st_pol_names'</span>});
@@ -140,7 +146,7 @@ params_group = values(result_map, {<span class="string">'ar_st_pol_names'</span>
         fft_disc_rand_var_mass2outcomes(st_cur_output_key, mt_choice_cur, mt_dist_az, bl_input_override);
 </pre><h2 id="8"><b>f(y), f(c), f(a)</b>: Compute Statistics for outcomes</h2><p>Using from tools: <a href="https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html">fft_disc_rand_var_stats</a>, compute these outcomes:</p><div><ul><li>$\mu_Y = E(Y) = \sum_{y} p(Y=y) \cdot y $</li><li><img src="ff_az_ds_post_stats_eq03728111283668325077.png" alt="$\sigma_Y = \sqrt{ \sum_{y} p(Y=y) \cdot \left( y - \mu_y \right)^2}$" style="width:202px;height:27px;"></li><li><img src="ff_az_ds_post_stats_eq05433369603455155594.png" alt="$p(y=0)$" style="width:53px;height:15px;"></li><li><img src="ff_az_ds_post_stats_eq09585247606302904929.png" alt="$p(y=\max(y))$" style="width:91px;height:15px;"></li><li>percentiles: <img src="ff_az_ds_post_stats_eq09488738859326996168.png" alt="$min_{y} \left\{ P(Y \le y) - percentile \mid P(Y \le y) \ge percentile \right\}$" style="width:352px;height:15px;"></li><li>fraction of outcome held by up to percentiles: <img src="ff_az_ds_post_stats_eq11722476300337688867.png" alt="$E(Y<y)/E(Y)$" style="width:103px;height:15px;"></li></ul></div><pre class="codeinput">    <span class="comment">% run function fft_disc_rand_var_stats.m from tools:</span>
     <span class="comment">% &lt;https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html&gt;</span>
-    [ds_stats_map] = fft_disc_rand_var_stats(st_cur_output_key, ar_choice_unique_sorted_byY', ar_choice_prob_byY');
+    [ds_stats_map] = fft_disc_rand_var_stats(st_cur_output_key, ar_choice_unique_sorted_byY', ar_choice_prob_byY', bl_display_drvstats);
 
     <span class="comment">% prcess results</span>
     <span class="comment">% retrieve scalar statistics:</span>
@@ -157,12 +163,102 @@ params_group = values(result_map, {<span class="string">'ar_st_pol_names'</span>
     <span class="comment">% retrieve distributional array stats</span>
     ar_choice_percentiles = ds_stats_map(<span class="string">'ar_choice_percentiles'</span>);
     ar_choice_perc_fracheld = ds_stats_map(<span class="string">'ar_choice_perc_fracheld'</span>);
+</pre><pre class="codeoutput">----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Summary Statistics for: cl_mt_pol_a
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+fl_choice_mean
+    5.8440
 
-    <span class="comment">% Display</span>
-<span class="comment">%     if (bl_display_final_dist)</span>
-<span class="comment">%         disp(['tb_prob_drv, Percentiles of Y, and Share of Y Held by Households up to this Percentile: ', st_cur_output_key])</span>
-<span class="comment">%         disp(tb_prob_drv);</span>
-<span class="comment">%     end</span>
+fl_choice_sd
+    2.5837
+
+fl_choice_coefofvar
+    0.4421
+
+fl_choice_prob_zero
+     0
+
+fl_choice_prob_below_zero
+     0
+
+fl_choice_prob_above_zero
+    1.0000
+
+fl_choice_prob_max
+    0.0269
+
+tb_prob_drv
+    percentiles    cl_mt_pol_aPercentileValues    fracOfSumHeldBelowThisPercentile
+    ___________    ___________________________    ________________________________
+
+        0.1                     2                             0.034901            
+          1                     2                             0.034901            
+          5                     2                             0.034901            
+         10                     2                             0.034901            
+         15                     3                             0.091255            
+         20                     3                             0.091255            
+         25                     4                               0.1724            
+         35                     5                              0.35286            
+         50                     5                              0.35286            
+         65                     7                              0.48598            
+         75                     8                              0.73522            
+         80                     8                              0.73522            
+         85                     9                              0.83601            
+         90                     9                              0.83601            
+         95                    10                              0.93375            
+         99                    12                                    1            
+       99.9                    12                                    1            
+
+</pre><pre class="codeoutput">----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Summary Statistics for: cl_mt_pol_c
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+fl_choice_mean
+    9.6213
+
+fl_choice_sd
+    4.2254
+
+fl_choice_coefofvar
+    0.4392
+
+fl_choice_prob_zero
+     0
+
+fl_choice_prob_below_zero
+     0
+
+fl_choice_prob_above_zero
+    1.0000
+
+fl_choice_prob_max
+    0.0170
+
+tb_prob_drv
+    percentiles    cl_mt_pol_cPercentileValues    fracOfSumHeldBelowThisPercentile
+    ___________    ___________________________    ________________________________
+
+        0.1                     1                            0.0030055            
+          1                     1                            0.0030055            
+          5                     2                             0.017417            
+         10                     3                             0.018582            
+         15                     6                             0.085462            
+         20                     6                             0.085462            
+         25                     7                              0.17063            
+         35                     8                              0.23074            
+         50                    10                              0.44858            
+         65                    11                              0.59432            
+         75                    13                              0.73521            
+         80                    13                              0.73521            
+         85                    15                                0.801            
+         90                    16                              0.89678            
+         95                    17                              0.93785            
+         99                    19                                    1            
+       99.9                    19                                    1            
+
 </pre><h2 id="9"><b>f(y), f(c), f(a)</b>: Store Statistics Specific to Each Outcome</h2><p>see intro section</p><pre class="codeinput">    <span class="comment">% Append prob mass functions to ds_stats_map</span>
     ds_stats_map(<span class="string">'mt_choice_prob_byYZ'</span>) = mt_choice_prob_byYZ;
     ds_stats_map(<span class="string">'mt_choice_prob_byYA'</span>) = mt_choice_prob_byYA;
@@ -193,6 +289,8 @@ result_map(<span class="string">'mt_outcomes_fracheld'</span>) = mt_outcomes_fra
 <span class="comment">% Display</span>
 <span class="keyword">if</span> (bl_display_final_dist)
 
+    disp(<span class="string">'xxx All Variables PERCENTILES AND STATS xxx'</span>)
+
     <span class="comment">% Process mean and and percentiles</span>
     tb_outcomes_meansdperc = array2table(mt_outcomes_meansdperc);
     ar_fl_percentiles = ds_stats_map(<span class="string">'ar_fl_percentiles'</span>);
@@ -203,6 +301,11 @@ result_map(<span class="string">'mt_outcomes_fracheld'</span>) = mt_outcomes_fra
 
     disp(<span class="string">'tb_outcomes_meansdperc: mean, sd, percentiles'</span>)
     disp(tb_outcomes_meansdperc);
+<span class="keyword">end</span>
+
+<span class="keyword">if</span> (bl_display_final_dist_detail)
+
+    disp(<span class="string">'xxx All Variables Fraction of Y Held up to Percentile xxx'</span>)
 
     <span class="comment">% Process Aset Held by up to percentiles</span>
     tb_outcomes_fracheld = array2table(mt_outcomes_fracheld);
@@ -210,16 +313,25 @@ result_map(<span class="string">'mt_outcomes_fracheld'</span>) = mt_outcomes_fra
     tb_outcomes_fracheld.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
     tb_outcomes_fracheld.Properties.RowNames = matlab.lang.makeValidName(cl_outcome_names);
 
-<span class="comment">%     disp('tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile')</span>
-<span class="comment">%     disp(tb_outcomes_fracheld);</span>
+    disp(<span class="string">'tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile'</span>)
+    disp(tb_outcomes_fracheld);
 
 <span class="keyword">end</span>
-</pre><pre class="codeoutput">tb_outcomes_meansdperc: mean, sd, percentiles
+</pre><pre class="codeoutput">xxx All Variables PERCENTILES AND STATS xxx
+tb_outcomes_meansdperc: mean, sd, percentiles
                     mean       sd      coefofvar    min    max    pYis0    pYls0    pYgr0    pYisMINY    pYisMAXY    p0_1    p1    p5    p10    p15    p20    p25    p35    p50    p65    p75    p80    p85    p90    p95    p99    p99_9
                    ______    ______    _________    ___    ___    _____    _____    _____    ________    ________    ____    __    __    ___    ___    ___    ___    ___    ___    ___    ___    ___    ___    ___    ___    ___    _____
 
     cl_mt_pol_a     5.844    2.5837     0.44212      2     12       0        0        1       0.10198    0.026853     2      2     2      2      3      3      4      5      5      7      8      8      9      9     10     12      12  
     cl_mt_pol_c    9.6213    4.2254     0.43917      1     19       0        0        1      0.028917    0.017043     1      1     2      3      6      6      7      8     10     11     13     13     15     16     17     19      19  
+
+xxx All Variables Fraction of Y Held up to Percentile xxx
+tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
+                   fracByP0_1    fracByP1     fracByP5    fracByP10    fracByP15    fracByP20    fracByP25    fracByP35    fracByP50    fracByP65    fracByP75    fracByP80    fracByP85    fracByP90    fracByP95    fracByP99    fracByP99_9
+                   __________    _________    ________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    ___________
+
+    cl_mt_pol_a     0.034901      0.034901    0.034901    0.034901     0.091255     0.091255       0.1724      0.35286      0.35286      0.48598      0.73522      0.73522      0.83601      0.83601      0.93375         1             1     
+    cl_mt_pol_c    0.0030055     0.0030055    0.017417    0.018582     0.085462     0.085462      0.17063      0.23074      0.44858      0.59432      0.73521      0.73521        0.801      0.89678      0.93785         1             1     
 
 </pre><pre class="codeinput"><span class="keyword">end</span>
 </pre><pre class="codeoutput">
@@ -350,14 +462,20 @@ else
     % support_map
     support_map = containers.Map('KeyType','char', 'ValueType','any');    
     support_map('bl_display_final_dist') = true;
+    support_map('bl_display_final_dist_detail') = true;
     
 end
 
 %% Parse
 
 % support_map
-params_group = values(support_map, {'bl_display_final_dist'});
-[bl_display_final_dist] = params_group{:};
+params_group = values(support_map, {'bl_display_final_dist', 'bl_display_final_dist_detail'});
+[bl_display_final_dist, bl_display_final_dist_detail] = params_group{:};
+if (bl_display_final_dist_detail)
+    bl_display_drvstats = true;
+else
+    bl_display_drvstats = false;
+end
 
 % result_map
 params_group = values(result_map, {'ar_st_pol_names'});
@@ -417,7 +535,7 @@ for it_outcome_ctr=1:length(ar_st_pol_names)
 
     % run function fft_disc_rand_var_stats.m from tools:
     % <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html>
-    [ds_stats_map] = fft_disc_rand_var_stats(st_cur_output_key, ar_choice_unique_sorted_byY', ar_choice_prob_byY');
+    [ds_stats_map] = fft_disc_rand_var_stats(st_cur_output_key, ar_choice_unique_sorted_byY', ar_choice_prob_byY', bl_display_drvstats);
 
     % prcess results
     % retrieve scalar statistics:
@@ -434,12 +552,6 @@ for it_outcome_ctr=1:length(ar_st_pol_names)
     % retrieve distributional array stats
     ar_choice_percentiles = ds_stats_map('ar_choice_percentiles');
     ar_choice_perc_fracheld = ds_stats_map('ar_choice_perc_fracheld');
-
-    % Display
-%     if (bl_display_final_dist)
-%         disp(['tb_prob_drv, Percentiles of Y, and Share of Y Held by Households up to this Percentile: ', st_cur_output_key])
-%         disp(tb_prob_drv);
-%     end
 
     %% *f(y), f(c), f(a)*: Store Statistics Specific to Each Outcome
     % see intro section
@@ -478,6 +590,8 @@ result_map('mt_outcomes_fracheld') = mt_outcomes_fracheld;
 % Display
 if (bl_display_final_dist)
 
+    disp('xxx All Variables PERCENTILES AND STATS xxx')
+    
     % Process mean and and percentiles
     tb_outcomes_meansdperc = array2table(mt_outcomes_meansdperc);
     ar_fl_percentiles = ds_stats_map('ar_fl_percentiles');
@@ -488,6 +602,11 @@ if (bl_display_final_dist)
 
     disp('tb_outcomes_meansdperc: mean, sd, percentiles')
     disp(tb_outcomes_meansdperc);
+end
+
+if (bl_display_final_dist_detail)
+    
+    disp('xxx All Variables Fraction of Y Held up to Percentile xxx')
     
     % Process Aset Held by up to percentiles
     tb_outcomes_fracheld = array2table(mt_outcomes_fracheld);
@@ -495,8 +614,8 @@ if (bl_display_final_dist)
     tb_outcomes_fracheld.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
     tb_outcomes_fracheld.Properties.RowNames = matlab.lang.makeValidName(cl_outcome_names);
     
-%     disp('tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile')
-%     disp(tb_outcomes_fracheld);
+    disp('tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile')
+    disp(tb_outcomes_fracheld);
 
 end
 

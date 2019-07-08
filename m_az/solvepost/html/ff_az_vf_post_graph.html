@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Graph Cash-on-Hand Tomorrow, Value, Policy given (A,Z) States Today</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-06"><meta name="DC.source" content="ff_az_vf_post_graph.m"><style type="text/css">
+      --><title>Graph Cash-on-Hand Tomorrow, Value, Policy given (A,Z) States Today</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-07"><meta name="DC.source" content="ff_az_vf_post_graph.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -125,7 +125,7 @@ params_group = values(armt_map, {<span class="string">'ar_a'</span>});
 <span class="keyword">if</span> (strcmp(st_model, <span class="string">'az'</span>))
     params_group = values(armt_map, {<span class="string">'ar_z'</span>});
     [ar_z] = params_group{:};
-<span class="keyword">elseif</span> (strcmp(st_model, <span class="string">'abz'</span>))
+<span class="keyword">elseif</span> (ismember(st_model, [<span class="string">'abz'</span>, <span class="string">'abz_fibs'</span>]))
     params_group = values(armt_map, {<span class="string">'ar_z_r_borr_mesh_wage'</span>, <span class="string">'ar_z_wage_mesh_r_borr'</span>});
     [ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
     params_group = values(param_map, {<span class="string">'it_z_wage_n'</span>, <span class="string">'fl_z_r_borr_n'</span>});
@@ -148,15 +148,15 @@ params_group = values(result_map, {<span class="string">'mt_val'</span>, <span c
     ar_it_legend2plot_lth = ar_it_z_graph;
     cl_st_legendCell = cellstr(num2str(ar_z', <span class="string">'shock next=%3.2f'</span>));
 
-<span class="keyword">elseif</span> (strcmp(st_model, <span class="string">'abz'</span>))
+<span class="keyword">elseif</span> (ismember(st_model, [<span class="string">'abz'</span>, <span class="string">'abz_fibs'</span>]))
 
     <span class="comment">% 8 graph points, 2 levels of borrow rates, and 4 levels of rbr rates</span>
     ar_it_z_r_borr = ([1 round((fl_z_r_borr_n)/2) (fl_z_r_borr_n)]);
     ar_it_z_wage = ([1 round((it_z_wage_n)/2) (it_z_wage_n)]);
 
     <span class="comment">% combine by index</span>
-    mt_it_z_graph = ar_it_z_r_borr' + fl_z_r_borr_n*(ar_it_z_wage-1);
-    ar_it_z_graph = fliplr(mt_it_z_graph(:)');
+    mt_it_z_graph = ar_it_z_wage' + it_z_wage_n*(ar_it_z_r_borr-1);
+    ar_it_z_graph = mt_it_z_graph(:)';
 
     <span class="comment">% legends index final</span>
     ar_it_legend2plot = fliplr(ar_it_z_graph);
@@ -173,8 +173,10 @@ params_group = values(result_map, {<span class="string">'mt_val'</span>, <span c
     <span class="comment">% 2. COH Next Period</span>
     <span class="keyword">if</span> (strcmp(st_model, <span class="string">'az'</span>))
         mt_coh_next = f_coh(ar_z, ar_pol_a_full);
-    <span class="keyword">elseif</span> (strcmp(st_model, <span class="string">'abz'</span>))
+    <span class="keyword">elseif</span> (ismember(st_model, [<span class="string">'abz'</span>]))
         mt_coh_next = f_coh(ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr, ar_pol_a_full);
+    <span class="keyword">elseif</span> (ismember(st_model, [<span class="string">'abz_fibs'</span>]))
+        mt_coh_next = f_coh(ar_z_wage_mesh_r_borr, ar_pol_a_full);
     <span class="keyword">end</span>
 
 
@@ -704,7 +706,7 @@ params_group = values(armt_map, {'ar_a'});
 if (strcmp(st_model, 'az'))
     params_group = values(armt_map, {'ar_z'});
     [ar_z] = params_group{:};
-elseif (strcmp(st_model, 'abz'))        
+elseif (ismember(st_model, ['abz', 'abz_fibs']))
     params_group = values(armt_map, {'ar_z_r_borr_mesh_wage', 'ar_z_wage_mesh_r_borr'});
     [ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
     params_group = values(param_map, {'it_z_wage_n', 'fl_z_r_borr_n'});
@@ -729,15 +731,15 @@ if (strcmp(st_model, 'az'))
     ar_it_legend2plot_lth = ar_it_z_graph;
     cl_st_legendCell = cellstr(num2str(ar_z', 'shock next=%3.2f'));
     
-elseif (strcmp(st_model, 'abz'))
+elseif (ismember(st_model, ['abz', 'abz_fibs']))    
     
     % 8 graph points, 2 levels of borrow rates, and 4 levels of rbr rates
     ar_it_z_r_borr = ([1 round((fl_z_r_borr_n)/2) (fl_z_r_borr_n)]);
     ar_it_z_wage = ([1 round((it_z_wage_n)/2) (it_z_wage_n)]);
     
     % combine by index
-    mt_it_z_graph = ar_it_z_r_borr' + fl_z_r_borr_n*(ar_it_z_wage-1);
-    ar_it_z_graph = fliplr(mt_it_z_graph(:)');
+    mt_it_z_graph = ar_it_z_wage' + it_z_wage_n*(ar_it_z_r_borr-1);
+    ar_it_z_graph = mt_it_z_graph(:)';
 
     % legends index final
     ar_it_legend2plot = fliplr(ar_it_z_graph);
@@ -787,8 +789,10 @@ if (bl_graph_coh_t_coh)
     % 2. COH Next Period
     if (strcmp(st_model, 'az'))
         mt_coh_next = f_coh(ar_z, ar_pol_a_full);
-    elseif (strcmp(st_model, 'abz'))        
+    elseif (ismember(st_model, ['abz']))
         mt_coh_next = f_coh(ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr, ar_pol_a_full);
+    elseif (ismember(st_model, ['abz_fibs']))
+        mt_coh_next = f_coh(ar_z_wage_mesh_r_borr, ar_pol_a_full);
     end
     
 

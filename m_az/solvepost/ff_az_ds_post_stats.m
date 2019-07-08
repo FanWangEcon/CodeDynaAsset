@@ -115,6 +115,7 @@ else
     % support_map
     support_map = containers.Map('KeyType','char', 'ValueType','any');    
     support_map('bl_display_final_dist') = true;
+    support_map('bl_display_final_dist_detail') = true;
     
 end
 

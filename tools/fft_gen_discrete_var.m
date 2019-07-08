@@ -1,4 +1,4 @@
-%% Generate Formal Borrowing Menu
+%% Generate Discrete Random Variable
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
@@ -9,7 +9,19 @@ function [ar_drv_ele, ar_drv_prb] = fft_gen_discrete_var(varargin)
 % could be interest rates. Given parameters, generate discrete random
 % variable, translating to other level/units elsewhere potentially.
 %
-% @st_type string name of the type of distribution
+% @st_drv_ele_type string scalar values associated with element of the
+% sample space of the discrete random variable, possibilities are:
+% 
+% # unif: uniform between _fl_max_ and _fl_min_, equi-distance. 
+% # seg3: between _fl_max_ and _fl_min_, three gaps, increasing for each
+% segment, might not reach _fl_max_
+% # logspace: logspace function between _fl_max_ and _fl_min_
+%
+% @st_drv_prb_type string distributional functions, possibilities are:
+%
+% # poiss: top truncated poisson distribution (non-symmetric, approximates exponential)
+% # binom: binomial (can be symmetric, approximates normal) 
+% # unif: uniform distribution
 %
 % @params_map container an container of parameters if the parameter is not covered by the
 % explicitly named parameters
@@ -37,7 +49,7 @@ else
     param_dsv_map = containers.Map('KeyType','char', 'ValueType','any');
     
     param_dsv_map('fl_binom_p') = 0.25;
-    param_dsv_map('fl_poiss_mean') = 15;
+    param_dsv_map('fl_poiss_mean') = 20;
     param_dsv_map('fl_logspace_adj') = 0.075;
     
     param_dsv_map('st_drv_ele_type') = 'unif';

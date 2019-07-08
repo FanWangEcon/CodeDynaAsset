@@ -31,36 +31,40 @@ function [param_map, support_map] = ffs_ipwkbz_set_default_param(varargin)
 %% Default
 
 it_subset = 0;
-bl_display_defparam = false;
+if (isempty(varargin))
+    bl_display_defparam = true;
+else
+    bl_display_defparam = false;
+end
 default_params = {it_subset bl_display_defparam};
 [default_params{1:length(varargin)}] = varargin{:};
 [it_subset, bl_display_defparam] = default_params{:};
 
-%% Setting param_map container
+%% 1a. Initiate Param_map
 
 param_map = containers.Map('KeyType','char', 'ValueType','any');
+
+% model name
+param_map('st_model') = 'ipwkbz';
 
 % Preferences
 param_map('fl_crra') = 1.5;
 param_map('fl_beta') = 0.94;
+param_map('fl_nan_replace') = -9999;
 
-% Production Function
-% Productivity Shock Parameters
-param_map('it_z_n') = 15;
-param_map('fl_z_mu') = 0;
-param_map('fl_z_rho') = 0.8;
-param_map('fl_z_sig') = 0.2;
+%% 1b. Production Function Parameters
 
 % CD Production Function Parameters
 param_map('fl_Amean') = 1;
 param_map('fl_alpha') = 0.36;
 param_map('fl_delta') = 0.08;
 
-% Prices
-% shock is on k, not on labor, fl_w is fixed wage income
-param_map('fl_w') = 1.28*0.3466; % min(z*w) from benchmark az model
-param_map('fl_r_save') = 0.025;
-param_map('fl_r_borr') = 0.035;
+%% 2a. Set Borrowing Control Parameters
+
+% Borrowing Parameters
+param_map('fl_b_bd') = -20; % borrow bound, = 0 if save only
+param_map('fl_default_wprime') = 0; % wprime not a prime
+param_map('bl_default') = true; % if borrowing is default allowed
 
 % Minimum Consumption, utility lower bound. The cmin parameter and
 % fl_nan_replace parameter have no effects on value function, just for
@@ -68,12 +72,8 @@ param_map('fl_r_borr') = 0.035;
 % choice given w. fl_c_min resets invalid consumption levels due to w
 % choices that are invalid. But this is the case when fl_w > 0.
 param_map('fl_c_min') = 0.001;
-param_map('fl_nan_replace') = -9999;
 
-% Borrowing Parameters
-param_map('fl_b_bd') = -20; % borrow bound, = 0 if save only
-param_map('fl_default_wprime') = 0; % wprime not a prime
-param_map('bl_default') = true; % if borrowing is default allowed
+%% 2b. Set Asset Grid Parameters
 
 % Asset Grids
 % Toal savings aggregate grid (see discussion on top). 35 points picked for
@@ -95,6 +95,12 @@ param_map('fl_k_min') = 0;
 param_map('fl_k_max') = (param_map('fl_w_max') - param_map('fl_b_bd'));
 param_map('it_ak_perc_n') = param_map('it_w_perc_n'); % grid for a and k the same
 
+% Prices
+% shock is on k, not on labor, fl_w is fixed wage income
+param_map('fl_w') = 1.28*0.3466; % min(z*w) from benchmark az model
+
+%% 2c. Set Asset Interpolation Parameters
+
 % Interpolation
 % fl_coh_interp_grid_gap controls the number of coh points at which to solve the model
 % it_c_interp_grid_gap determines the gap between consumption terpolation
@@ -103,8 +109,10 @@ param_map('it_ak_perc_n') = param_map('it_w_perc_n'); % grid for a and k the sam
 % it_c_interp_grid_gap <= 0.001 compared to actual evaluation. Also include
 % now fl_w_interp_grid_gap above, which is for interpolation over w.
 param_map('fl_coh_interp_grid_gap') = 0.1;
+
 % param_map('it_coh_interp_n') = 500;
 param_map('it_c_interp_grid_gap') = 10^-4;
+
 % Interpolation gap second stage w
 % previously only it_w_n, now two grids control w it_w_perc_n for 2nd stage
 % fl_w_interp_grid_gap for first stage, make them the same length for
@@ -112,18 +120,50 @@ param_map('it_c_interp_grid_gap') = 10^-4;
 param_map('fl_w_interp_grid_gap') = 0.1;
 % param_map('fl_w_interp_grid_gap') = (param_map('fl_w_max') - param_map('fl_w_min'))/param_map('it_w_perc_n');
 
+%% 3. Set Interest Rates non-Shock Parameters
+
+param_map('fl_r_save') = 0.025;
+
+%% 4a. Set Shock 1 Borrowing Interest Rate Parameters
+% See
+% <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_gen_discrete_var.html
+% fft_gen_discrete_var> for how these parameters will be used to generate a
+% discrete random variable for the interest rate.
+
+param_map('st_z_r_borr_drv_ele_type') = 'unif';
+param_map('st_z_r_borr_drv_prb_type') = 'poiss';
+param_map('fl_z_r_borr_poiss_mean') = 1.75;
+param_map('fl_z_r_borr_max') = 0.095;
+param_map('fl_z_r_borr_min') = 0.025;
+param_map('fl_z_r_borr_n') = 5;
+% param_map('fl_z_r_borr_max') = 0.095;
+% param_map('fl_z_r_borr_min') = 0.095;
+% param_map('fl_z_r_borr_n') = 1;
+
+%% 4b. Set Shock 2 Productivity Shock Parameters
+
+% Production Function
+% Productivity Shock Parameters
+param_map('it_z_wage_n') = 15;
+param_map('fl_z_wage_mu') = 0;
+param_map('fl_z_wage_rho') = 0.8;
+param_map('fl_z_wage_sig') = 0.2;
+
+%% 4c. Set Overall Shock Grid Count
+
+param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+
+%% 5. Set Solution Control Parameters
 % Solution Accuracy
 param_map('it_maxiter_val') = 250;
 param_map('it_maxiter_dist') = 1000;
-% param_map('st_analytical_stationary_type') = 'loop';
-% param_map('st_analytical_stationary_type') = 'vector';
-param_map('st_analytical_stationary_type') = 'eigenvector';
+param_map('st_analytical_stationary_type') = 'eigenvector'; % could be loop or vector
 param_map('fl_tol_val') = 10^-5;
 param_map('fl_tol_pol') = 10^-5;
 param_map('fl_tol_dist') = 10^-5;
 param_map('it_tol_pol_nochange') = 25; % number of iterations where policy does not change
 
-%% Setting support_map container
+%% 6. Setting support_map container
 
 support_map = containers.Map('KeyType','char', 'ValueType','any');
 
@@ -136,6 +176,7 @@ support_map('st_matimg_path_root') = st_matimg_path_root;
 support_map('bl_time') = true;
 
 % Print Controls
+support_map('bl_display_defparam') = false;
 support_map('bl_display') = true;
 support_map('bl_display_dist') = false;
 support_map('it_display_every') = 5; % how often to print results
@@ -217,6 +258,7 @@ if (ismember(it_subset, [1,2,3,4]))
         close all;
         % Main Run
         support_map('bl_time') = true;
+        support_map('bl_display_defparam') = true;
         support_map('bl_display') = true;
         support_map('it_display_every') = 5;
 
@@ -273,6 +315,7 @@ if (ismember(it_subset, [5,6,7,8,9]))
         close all;
         % Main Run
         support_map('bl_time') = true;
+        support_map('bl_display_defparam') = true;
         support_map('bl_display') = true;
         support_map('bl_display_dist') = true;
         support_map('it_display_every') = 20;
@@ -299,6 +342,7 @@ if (ismember(it_subset, [5,6,7,8,9]))
             support_map('bl_img_save') = false;
             if (ismember(it_subset, [9]))
                 % quietly turn off all graphs, only tables
+                support_map('bl_display_defparam') = false;
                 support_map('bl_display_final_dist_detail') = false;
                 support_map('bl_graph_coh_t_coh') = false;
             end

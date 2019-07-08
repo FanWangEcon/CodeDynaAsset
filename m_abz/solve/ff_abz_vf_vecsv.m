@@ -31,7 +31,7 @@ function result_map = ff_abz_vf_vecsv(varargin)
 % life-cycle based where repeat calculations are taking place. If such
 % calculations can be identified, then potentially they could be stored and
 % retrieved during future iterations/periods rather than recomputed every
-% time. This saves time. 
+% time. This saves time.
 %
 % @param param_map container parameter container
 %
@@ -166,10 +166,17 @@ params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol', 
 % support_map
 params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
     'st_profile_prefix', 'st_profile_name_main', 'st_profile_suffix',...
-    'bl_time', 'bl_display', 'it_display_every', 'bl_post'});
+    'bl_time', 'bl_display_defparam', 'bl_display', 'it_display_every', 'bl_post'});
 [bl_profile, st_profile_path, ...
     st_profile_prefix, st_profile_name_main, st_profile_suffix, ...
-    bl_time, bl_display, it_display_every, bl_post] = params_group{:};
+    bl_time, bl_display_defparam, bl_display, it_display_every, bl_post] = params_group{:};
+
+%% Display Parameters
+
+if (bl_display_defparam)
+    fft_container_map_display(param_map);
+    fft_container_map_display(support_map);
+end
 
 %% Initialize Output Matrixes
 % include mt_pol_idx which we did not have in looped code
@@ -231,7 +238,7 @@ while bl_vfi_continue
         % Current Shock
         fl_z_r_borr = ar_z_r_borr_mesh_wage(it_z_i);
         fl_z_wage = ar_z_wage_mesh_r_borr(it_z_i);
-        
+
         % cash-on-hand
         ar_coh = f_coh(fl_z_r_borr, fl_z_wage, ar_a);
 
@@ -270,7 +277,7 @@ while bl_vfi_continue
 
         % EVAL EV((A',K'),Z'|Z) = V((A',K'),Z') x p(z'|z)', (N by Z) x (Z by 1) = N by 1
         % Note: transpose ar_z_trans_condi from 1 by Z to Z by 1
-        % Note: matrix multiply not dot multiply        
+        % Note: matrix multiply not dot multiply
         mt_evzp_condi_z = mt_val_cur * ar_z_trans_condi';
 
         % EVAL add on future utility, N by N + N by 1
@@ -293,7 +300,7 @@ while bl_vfi_continue
         % Optimization: remember matlab is column major, rows must be
         % choices, columns must be states
         % <https://en.wikipedia.org/wiki/Row-_and_column-major_order COLUMN-MAJOR>
-        % mt_utility is N by N, rows are choices, cols are states.                 
+        % mt_utility is N by N, rows are choices, cols are states.
         [ar_opti_val_z, ar_opti_idx_z] = max(mt_utility);
         ar_opti_aprime_z = ar_a(ar_opti_idx_z);
         ar_opti_c_z = f_cons_coh(ar_coh, ar_opti_aprime_z);

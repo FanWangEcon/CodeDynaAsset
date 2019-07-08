@@ -19,7 +19,7 @@ function [result_map] = ff_abz_fibs_ds_wrapper(varargin)
 % # it_subset = 8 is matlab publish
 % # it_subset = 9 is invoke operational (only final stats) and coh graph
 
-it_param_set = 7;
+it_param_set = 8;
 bl_input_override = true;
 [param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
 
@@ -27,9 +27,9 @@ bl_input_override = true;
 % param_map('it_a_n') = 750;
 % param_map('it_z_n') = 15;
 % param_map('fl_r_fsv') = 0.025;
-% param_map('fl_r_inf') = 0.045;
-% param_map('fl_r_inf_bridge') = 0.045;
-% param_map('fl_r_fbr') = 0.035;
+% param_map('fl_r_fbr') = 0.065;
+% param_map('fl_z_r_borr_poiss_mean') = 5;
+% param_map('fl_c_min') = 0.02;
 
 % param_map('st_analytical_stationary_type') = 'loop';
 % param_map('st_analytical_stationary_type') = 'vector';

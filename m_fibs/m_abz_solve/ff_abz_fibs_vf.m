@@ -70,9 +70,11 @@ bl_input_override = true;
 
 % Note: param_map and support_map can be adjusted here or outside to override defaults
 % To generate results as if formal informal do not matter
+param_map('it_a_n') = 75;
+param_map('fl_z_r_borr_n') = 3;
+param_map('it_z_wage_n') = 5;
+param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
 % param_map('fl_r_fsv') = 0.025;
-% param_map('fl_r_inf') = 0.035;
-% param_map('fl_r_inf_bridge') = 0.035;
 % param_map('fl_r_fbr') = 0.035;
 % param_map('bl_b_is_principle') = false;
 % param_map('st_forbrblk_type') = 'seg3';
@@ -80,8 +82,6 @@ bl_input_override = true;
 % param_map('fl_forbrblk_brleast') = -1;
 % param_map('fl_forbrblk_gap') = -1.5;
 % param_map('bl_b_is_principle') = false;
-% param_map('it_a_n') = 750;
-% param_map('it_z_n') = 15;
 
 [armt_map, func_map] = ffs_abz_fibs_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 default_params = {param_map support_map armt_map func_map};
@@ -113,8 +113,8 @@ support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')]
 %% Parse Parameters 2
 
 % armt_map
-params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z'});
-[ar_a, mt_z_trans, ar_z] = params_group{:};
+params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z_r_borr_mesh_wage', 'ar_z_wage_mesh_r_borr'});
+[ar_a, mt_z_trans, ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
 
 % Formal choice Menu/Grid and Interest Rate Menu/Grid
 params_group = values(armt_map, {'ar_forbrblk_r', 'ar_forbrblk'});
@@ -133,32 +133,39 @@ params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol', 
 [it_maxiter_val, fl_tol_val, fl_tol_pol, it_tol_pol_nochange] = params_group{:};
 
 % param_map, Formal informal
-params_group = values(param_map, {'fl_r_inf', 'fl_r_fsv', 'bl_b_is_principle'});
-[fl_r_inf, fl_r_fsv, bl_b_is_principle] = params_group{:};
+params_group = values(param_map, {'fl_r_fsv', 'bl_b_is_principle'});
+[fl_r_fsv, bl_b_is_principle] = params_group{:};
 
 % support_map
 params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
     'st_profile_prefix', 'st_profile_name_main', 'st_profile_suffix',...
     'bl_display_minccost', 'bl_display_infbridge', ...
-    'bl_time', 'bl_display', 'it_display_every', 'bl_post'});
+    'bl_time', 'bl_display_defparam', 'bl_display', 'it_display_every', 'bl_post'});
 [bl_profile, st_profile_path, ...
     st_profile_prefix, st_profile_name_main, st_profile_suffix, ...
     bl_display_minccost, bl_display_infbridge, ...
-    bl_time, bl_display, it_display_every, bl_post] = params_group{:};
+    bl_time, bl_display_defparam, bl_display, it_display_every, bl_post] = params_group{:};
+
+%% Display Parameters
+
+if (bl_display_defparam)
+    fft_container_map_display(param_map);
+    fft_container_map_display(support_map);
+end
 
 %% Initialize Output Matrixes
 
-mt_val_cur = zeros(length(ar_a),length(ar_z));
+mt_val_cur = zeros(it_a_n,it_z_n);
 mt_val = mt_val_cur - 1;
-mt_pol_a = zeros(length(ar_a),length(ar_z));
+mt_pol_a = zeros(it_a_n,it_z_n);
 mt_pol_a_cur = mt_pol_a - 1;
-mt_pol_cons = zeros(length(ar_a),length(ar_z));
+mt_pol_cons = zeros(it_a_n,it_z_n);
 
 % collect optimal borrowing formal and informal choices
-mt_pol_b_bridge = zeros(length(ar_a),length(ar_z));
-mt_pol_inf_borr_nobridge = zeros(length(ar_a),length(ar_z));
-mt_pol_for_borr = zeros(length(ar_a),length(ar_z));
-mt_pol_for_save = zeros(length(ar_a),length(ar_z));
+mt_pol_b_bridge = zeros(it_a_n,it_z_n);
+mt_pol_inf_borr_nobridge = zeros(it_a_n,it_z_n);
+mt_pol_for_borr = zeros(it_a_n,it_z_n);
+mt_pol_for_save = zeros(it_a_n,it_z_n);
 
 %% Initialize Convergence Conditions
 
@@ -200,20 +207,22 @@ end
 % Value Function Iteration
 while bl_vfi_continue
     it_iter = it_iter + 1;
-    
+
     %% Iterate over a and z states
     % handling borrowing and default possibility
-    
+
     % loop 1: over exogenous states
-    for it_z_i = 1:length(ar_z)
-        fl_z = ar_z(it_z_i);
+    for it_z_i = 1:it_z_n
         
+        fl_z_r_borr = ar_z_r_borr_mesh_wage(it_z_i);
+        fl_z_wage = ar_z_wage_mesh_r_borr(it_z_i);
+
         % loop 2: over endogenous states
-        for it_a_j = 1:length(ar_a)
-            
+        for it_a_j = 1:it_a_n
+
             % Get asset state
             fl_a = ar_a(it_a_j);
-            
+
             % Initialize storage
             ar_val_cur = zeros(size(ar_a));
             ar_c_cur = zeros(size(ar_a));
@@ -221,16 +230,16 @@ while bl_vfi_continue
             ar_inf_borr_nobridge = zeros(size(ar_a));
             ar_for_borr = zeros(size(ar_a));
             ar_for_save = zeros(size(ar_a));
-            
+
             % calculate cash on hand
-            fl_coh = f_coh(fl_z, fl_a);
-            
+            fl_coh = f_coh(fl_z_wage, fl_a);
+
             % loop 3: over choices
-            for it_ap_k = 1:length(ar_a)
-                
+            for it_ap_k = 1:it_a_n
+
                 % get next period asset choice
                 fl_ap = ar_a(it_ap_k);
-                
+
                 %% Compute Consumption given Borrowing and Savings
                 % find the today's consumption maximizing formal and informal
                 % choices given a' and coh. The formal and informal choices need to
@@ -249,51 +258,51 @@ while bl_vfi_continue
                 % optimize over for+inf save, for+save+borr, inf+borr only, for
                 % borrow only.
                 %
-                
+
                 if (fl_ap < 0)
-                    
+
                     % Calculate Bridge Loan Borrowing
                     if (bl_bridge && fl_coh < 0)
-                        
+
                         bl_input_override = true;
                         [fl_aprime_nobridge, fl_b_bridge, fl_c_bridge] = ffs_fibs_inf_bridge(...
-                            bl_b_is_principle, fl_r_inf, fl_ap, fl_coh, ...
+                            bl_b_is_principle, fl_z_r_borr, fl_ap, fl_coh, ...
                             bl_display_infbridge, bl_input_override);
-                        
+
                     else
-                        
+
                         fl_aprime_nobridge = fl_ap;
                         fl_b_bridge = 0;
                         fl_c_bridge = 0;
-                        
+
                     end
-                    
+
                     % Find Optimal Formal Informal Borrow Save Combo
                     % calculate consumption gain from formal + informal
                     % borrowing and savings choices.
                     bl_input_override = true;
                     [fl_max_c_nobridge, fl_inf_borr_nobridge, fl_for_borr, fl_for_save] = ...
                         ffs_fibs_min_c_cost(...
-                        bl_b_is_principle, fl_r_inf, fl_r_fsv, ...
+                        bl_b_is_principle, fl_z_r_borr, fl_r_fsv, ...
                         ar_forbrblk_r, ar_forbrblk, ...
                         fl_aprime_nobridge, bl_display_minccost, bl_input_override);
-                    
+
                     % Compute Consumption given Formal and Informal joint
                     % consumption with formal borrow menu + bridge loans.
                     fl_c = f_cons_coh_fbis(fl_coh, fl_max_c_nobridge + fl_c_bridge);
-                    
+
                 else
-                    
+
                     % consumption with savings
                     fl_c = f_cons_coh_save(fl_coh, fl_ap);
-                    
+
                     % assign values for formal and informal choices
                     % possible that fl_coh < 0, but if then fl_ap > 0 is
                     % not valid choice
                     [fl_b_bridge, fl_inf_borr_nobridge, fl_for_borr, fl_for_save] = deal(0, 0, 0, fl_ap);
-                    
+
                 end
-                                                
+
                 %% Compute Utility With Default
                 % if rollover is not allowed and bridge is not allowed,
                 % then as long as coh <= 0, also treat as not allowed
@@ -301,33 +310,33 @@ while bl_vfi_continue
                 % assign u(c)
                 if (fl_c <= fl_c_min || ...
                     ( ~bl_rollover && ~bl_bridge && fl_coh < fl_c_min))
-                    
+
                     if (bl_default)
                         % defaults
                         % current utility: only today u(cmin)
                         ar_val_cur(it_ap_k) = fl_u_cmin;
                         % transition out next period, debt wiped out
-                        for it_az_q = 1:length(ar_z)
+                        for it_az_q = 1:it_z_n
                             ar_val_cur(it_ap_k) = ar_val_cur(it_ap_k) + ...
                                 fl_beta*mt_z_trans(it_z_i, it_az_q)*mt_val_cur((ar_a == fl_default_aprime), it_az_q);
                         end
-                        
+
                         % Replace Consumption if default cmin
                         fl_c = fl_c_min;
                     else
                         % if default is not allowed: v = fl_nan_replace
                         ar_val_cur(it_ap_k) = fl_nan_replace;
-                        
+
                         % Replace Consumption if no default nan
                         fl_c = 0;
                     end
-                    
+
                     % no action, defaulting
                     fl_b_bridge = 0;
                     fl_inf_borr_nobridge = 0;
                     fl_for_borr = 0;
                     fl_for_save = 0;
-                    
+
                 else
                     % Solve Optimization Problem: max_{a'} u(c(a,a',z)) + beta*EV(a',z')
                     % borrowed enough to pay debt (and borrowing limit not exceeded)
@@ -339,44 +348,44 @@ while bl_vfi_continue
                         ar_val_cur(it_ap_k) = f_util_crra(fl_c);
                     end
                     % loop 4: add future utility, integration--loop over future shocks
-                    for it_az_q = 1:length(ar_z)
+                    for it_az_q = 1:it_z_n
                         ar_val_cur(it_ap_k) = ar_val_cur(it_ap_k) + ...
                             fl_beta*mt_z_trans(it_z_i, it_az_q)*mt_val_cur(it_ap_k, it_az_q);
                     end
                 end
-                
+
                 %% Store Values
-                
+
                 % Could get the formal and informal values from
                 % ffs_fibs_min_c_cost_bridge.m
 %                 bl_input_override = true;
 %                 [fl_c, fl_b_bridge, fl_inf_borr_nobridge, fl_for_borr, fl_for_save] = ...
 %                     ffs_fibs_min_c_cost_bridge(fl_ap, fl_coh, ...
 %                     param_map, support_map, armt_map, func_map, bl_input_override);
-                
+
                 % Store consumption
                 ar_c_cur(it_ap_k) = fl_c;
-                
+
                 % Save/Update Borrowing Information
                 ar_b_bridge(it_ap_k) = fl_b_bridge;
                 ar_inf_borr_nobridge(it_ap_k) = fl_inf_borr_nobridge;
                 ar_for_borr(it_ap_k) = fl_for_borr;
                 ar_for_save(it_ap_k) = fl_for_save;
-                
+
             end
-            
+
             %% Optimize over Next Period Asset Choices
             % optimal choice value
             [fl_opti_val_z, fl_opti_idx_z] = max(ar_val_cur);
             fl_opti_aprime_z = ar_a(fl_opti_idx_z);
             fl_opti_c_z = ar_c_cur(fl_opti_idx_z);
-            
+
             % corresponding optimal borrowing and savings choices
             fl_opti_b_bridge = ar_b_bridge(fl_opti_idx_z);
             fl_opti_inf_borr_nobridge = ar_inf_borr_nobridge(fl_opti_idx_z);
             fl_opti_for_borr = ar_for_borr(fl_opti_idx_z);
             fl_opti_for_save = ar_for_save(fl_opti_idx_z);
-            
+
             %% Find Optimal Choices for Defaults or Not
             % Handle Default is optimal or not
             if (fl_opti_c_z <= fl_c_min)
@@ -391,34 +400,34 @@ while bl_vfi_continue
                     fl_opti_aprime_z = min(ar_a);
                 end
             end
-            
+
             %% Store Optimal Choices and Value Given(a,z)
-            
+
             % store overal savings, value and consumption
             mt_val(it_a_j,it_z_i) = fl_opti_val_z;
             mt_pol_a(it_a_j,it_z_i) = fl_opti_aprime_z;
             mt_pol_cons(it_a_j,it_z_i) = fl_opti_c_z;
-            
+
             % store savings and borrowing formal and inf optimal choices
             mt_pol_b_bridge(it_a_j,it_z_i) = fl_opti_b_bridge;
             mt_pol_inf_borr_nobridge(it_a_j,it_z_i) = fl_opti_inf_borr_nobridge;
             mt_pol_for_borr(it_a_j,it_z_i) = fl_opti_for_borr;
             mt_pol_for_save(it_a_j,it_z_i) = fl_opti_for_save;
-            
+
         end
     end
-    
+
     %% Check Tolerance and Continuation
-    
+
     % Difference across iterations
     ar_val_diff_norm(it_iter) = norm(mt_val - mt_val_cur);
     ar_pol_diff_norm(it_iter) = norm(mt_pol_a - mt_pol_a_cur);
     mt_pol_perc_change(it_iter, :) = sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n);
-    
+
     % Update
     mt_val_cur = mt_val;
     mt_pol_a_cur = mt_pol_a;
-    
+
     % Print Iteration Results
     if (bl_display && (rem(it_iter, it_display_every)==0))
         fprintf('VAL it_iter:%d, fl_diff:%d, fl_diff_pol:%d\n', ...
@@ -433,7 +442,7 @@ while bl_vfi_continue
         disp('Hap = mt_pol_a_cur(it_a_n,:), highest a state choice')
         disp(tb_valpol_iter);
     end
-    
+
     % Continuation Conditions:
     % 1. if value function convergence criteria reached
     % 2. if policy function variation over iterations is less than
@@ -447,7 +456,7 @@ while bl_vfi_continue
         it_iter_last = it_iter;
         it_iter = it_maxiter_val;
     end
-    
+
 end
 
 % End Timer
@@ -469,7 +478,7 @@ result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
 
 result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
-result_map('cl_mt_pol_coh') = {f_coh(ar_z, ar_a'), zeros(1)};
+result_map('cl_mt_coh') = {f_coh(ar_z_r_borr_mesh_wage, ar_a'), zeros(1)};
 
 result_map('cl_mt_pol_c') = {mt_pol_cons, zeros(1)};
 result_map('cl_mt_pol_b_bridge') = {mt_pol_b_bridge, zeros(1)};
@@ -487,7 +496,7 @@ result_map = ffs_fibs_identify_discrete(result_map, bl_input_override);
 % Note in comparison with *abz*, results here, even when using identical
 % parameters would differ because in *abz* solved where choices are
 % principle. Here choices are principle + interests in order to facilitate
-% using the informal choice functions. 
+% using the informal choice functions.
 %
 % Note that this means two things are
 % different, on the one hand, the value of asset for to coh is different
@@ -517,10 +526,10 @@ if (bl_post)
     result_map('ar_val_diff_norm') = ar_val_diff_norm(1:it_iter_last);
     result_map('ar_pol_diff_norm') = ar_pol_diff_norm(1:it_iter_last);
     result_map('mt_pol_perc_change') = mt_pol_perc_change(1:it_iter_last, :);
-    
+
     % Standard AZ graphs
     result_map = ff_az_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
-    
+
     % Graphs for results_map with FIBS contents
     result_map = ff_az_fibs_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
 end

@@ -31,6 +31,13 @@ function [f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons] = ffs_a
 %   [f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons] = ...
 %        ffs_az_set_functions(fl_crra, fl_r_save, fl_w);
 %
+% @seealso
+%
+% * initialize parameters: <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_set_default_param.html ffs_az_set_default_param>
+% * initialize functions: <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_set_functions.html ffs_az_set_functions>
+% * set shock wage: <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/ffto_gen_tauchen_jhl.m ffto_gen_tauchen_jhl>
+% * gateway function processing grid, paramters, functions: <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_get_funcgrid.html ffs_az_get_funcgrid>
+%
 
 %% Default
 

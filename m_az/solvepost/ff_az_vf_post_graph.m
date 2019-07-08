@@ -99,7 +99,7 @@ params_group = values(armt_map, {'ar_a'});
 if (strcmp(st_model, 'az'))
     params_group = values(armt_map, {'ar_z'});
     [ar_z] = params_group{:};
-elseif (strcmp(st_model, 'abz'))        
+elseif (ismember(st_model, ['abz', 'abz_fibs']))
     params_group = values(armt_map, {'ar_z_r_borr_mesh_wage', 'ar_z_wage_mesh_r_borr'});
     [ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
     params_group = values(param_map, {'it_z_wage_n', 'fl_z_r_borr_n'});
@@ -117,6 +117,7 @@ params_group = values(result_map, {'mt_val', 'cl_mt_pol_c', 'cl_mt_coh', 'cl_mt_
 % How many zs to Graph
 
 %% Generate Limited Legends
+
 if (strcmp(st_model, 'az'))
     
     ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)) (it_z_n)]);
@@ -124,7 +125,7 @@ if (strcmp(st_model, 'az'))
     ar_it_legend2plot_lth = ar_it_z_graph;
     cl_st_legendCell = cellstr(num2str(ar_z', 'shock next=%3.2f'));
     
-elseif (strcmp(st_model, 'abz'))
+elseif (ismember(st_model, ['abz', 'abz_fibs']))    
     
     % 8 graph points, 2 levels of borrow rates, and 4 levels of rbr rates
     ar_it_z_r_borr = ([1 round((fl_z_r_borr_n)/2) (fl_z_r_borr_n)]);
@@ -182,8 +183,10 @@ if (bl_graph_coh_t_coh)
     % 2. COH Next Period
     if (strcmp(st_model, 'az'))
         mt_coh_next = f_coh(ar_z, ar_pol_a_full);
-    elseif (strcmp(st_model, 'abz'))        
+    elseif (ismember(st_model, ['abz']))
         mt_coh_next = f_coh(ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr, ar_pol_a_full);
+    elseif (ismember(st_model, ['abz_fibs']))
+        mt_coh_next = f_coh(ar_z_wage_mesh_r_borr, ar_pol_a_full);
     end
     
 

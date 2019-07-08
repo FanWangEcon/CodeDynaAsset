@@ -132,6 +132,7 @@ support_map('st_matimg_path_root') = st_matimg_path_root;
 support_map('bl_time') = true;
 
 % Print Controls
+support_map('bl_display_defparam') = false;
 support_map('bl_display') = true;
 support_map('bl_display_dist') = false;
 support_map('it_display_every') = 5; % how often to print results
@@ -211,6 +212,7 @@ if (ismember(it_subset, [1,2,3,4]))
         close all;
         % Main Run
         support_map('bl_time') = true;
+        support_map('bl_display_defparam') = true;
         support_map('bl_display') = true;
         support_map('it_display_every') = 5;
 
@@ -267,6 +269,7 @@ if (ismember(it_subset, [5,6,7,8,9]))
         close all;
         % Main Run
         support_map('bl_time') = true;
+        support_map('bl_display_defparam') = true;
         support_map('bl_display') = false;
         support_map('bl_display_dist') = true;
         support_map('it_display_every') = 20;
@@ -293,6 +296,7 @@ if (ismember(it_subset, [5,6,7,8,9]))
             support_map('bl_img_save') = false;
             if (ismember(it_subset, [9]))
                 % quietly turn off all graphs, only tables
+                support_map('bl_display_defparam') = false;
                 support_map('bl_display_final_dist_detail') = false;
                 support_map('bl_graph_coh_t_coh') = false;
             end

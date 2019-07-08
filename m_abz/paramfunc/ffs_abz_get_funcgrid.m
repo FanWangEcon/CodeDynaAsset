@@ -40,6 +40,16 @@ function [armt_map, func_map] = ffs_abz_get_funcgrid(varargin)
 % * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/ffto_gen_tauchen_jhl.m ffto_gen_tauchen_jhl>
 % * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/fft_gen_grid_loglin.m fft_gen_grid_loglin>
 %
+% @seealso
+%
+% * initialize parameters: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param>
+% * initialize functions: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_functions.html ffs_abz_set_functions>
+% * set asset grid: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_gen_borrsave_grid.html ffs_abz_gen_borrsave_grid>
+% * set shock borrow rate: <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_gen_discrete_var.html fft_gen_discrete_var>
+% * set shock wage: <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/ffto_gen_tauchen_jhl.m ffto_gen_tauchen_jhl>
+% * gateway function processing grid, paramters, functions: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
+%
+
 
 %% Default
 
@@ -53,7 +63,7 @@ if (bl_input_override)
 else
     close all
     % default internal run
-    it_param_set = 1;
+    it_param_set = 4;
     [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
     support_map('bl_graph_funcgrids') = true;
     support_map('bl_display_funcgrids') = true;
@@ -65,7 +75,7 @@ else
     support_map = [support_map; default_maps{2}];
 end
 
-%% Parse Parameters
+%% Parse Parameters 1
 
 % param_map asset grid
 params_group = values(param_map, {'fl_b_bd', 'bl_default', 'fl_a_min', 'fl_a_max', 'bl_loglin', 'fl_loglin_threshold', 'it_a_n'});
@@ -79,14 +89,19 @@ params_group = values(param_map, {'fl_crra', 'fl_c_min'});
 params_group = values(param_map, {'bl_b_is_principle', 'fl_r_save', 'fl_w'});
 [bl_b_is_principle, fl_r_save, fl_w] = params_group{:};
 
+%% Parse Parameters 2
+
 % param_map shock income
 params_group = values(param_map, {'it_z_wage_n', 'fl_z_wage_mu', 'fl_z_wage_rho', 'fl_z_wage_sig'});
 [it_z_wage_n, fl_z_wage_mu, fl_z_wage_rho, fl_z_wage_sig] = params_group{:};
+
 % param_map shock borrowing interest
 params_group = values(param_map, {'st_z_r_borr_drv_ele_type', 'st_z_r_borr_drv_prb_type', 'fl_z_r_borr_poiss_mean', ...
     'fl_z_r_borr_max', 'fl_z_r_borr_min', 'fl_z_r_borr_n'});
 [st_z_r_borr_drv_ele_type, st_z_r_borr_drv_prb_type, fl_z_r_borr_poiss_mean, ...
     fl_z_r_borr_max, fl_z_r_borr_min, fl_z_r_borr_n] = params_group{:};
+
+%% Parse Parameters 3
 
 % support_map controls
 params_group = values(support_map, {'bl_graph_funcgrids', 'bl_display_funcgrids'});
@@ -94,7 +109,7 @@ params_group = values(support_map, {'bl_graph_funcgrids', 'bl_display_funcgrids'
 
 %% Get Shock: Income Shock (ar1)
 
-[~, mt_z_wage_trans, ar_wage_stationary, ar_z_wage] = ffto_gen_tauchen_jhl(fl_z_wage_mu,fl_z_wage_rho,fl_z_wage_sig,it_z_wage_n);
+[~, mt_z_wage_trans, ~, ar_z_wage] = ffto_gen_tauchen_jhl(fl_z_wage_mu,fl_z_wage_rho,fl_z_wage_sig,it_z_wage_n);
 
 %% Get Shock: Interest Rate Shock (iid)
 

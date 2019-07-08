@@ -512,7 +512,7 @@ Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_
 Using three algorithm that provide identical solutions:
 
 1. *abz fibs* model [looped solution](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_abz_solve/ff_abz_fibs_vf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/profile/ff_abz_fibs_vf_default_p3/file0.html)
-    * small grid (*a:100+z:11*) simulation for testing
+    * small grid demonstration
 2. *abz fibs* model [vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf_vec.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_abz_solve/ff_abz_fibs_vf_vec.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf_vec.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/profile/ff_abz_fibs_vf_vec_default_p3/file0.html)    
     * speed: **56.2** seconds
 3. *abz fibs* model [optimized vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_abz_solve/ff_abz_fibs_vf_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/profile/ff_abz_fibs_vf_vecsv_default_p3/file0.html)    
@@ -520,11 +520,10 @@ Using three algorithm that provide identical solutions:
 
 ## 5.3 Asset Distributions (ABZ+FIBS)
 
-The same files are used here as are used under *1.2*:
+This is the wrapper file for *abz+fibs* that invokes the [looped](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html), [vectorized](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html), and [semi-analytical](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html) distributional programs from *1.2*:
 
-1. *abz+fibs* model asset distribution [looped](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds.html)
-2. *abz+fibs* model asset distribution [vectorized](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html)
-3. *abz+fibs* model asset distribution [semi-analytical](https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html)
+* *abz+fibs* distributional [wrapper](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_ds_wrapper.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_abz_solve/ff_abz_fibs_ds_wrapper.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_ds_wrapper.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/profile/ff_abz_fibs_ds_wrapper_default_p7/file0.html)   
+    * speed (dynamic programming + distribution): **17.5** seconds
 
 ## 5.4 Solution Support (ABZ+FIBS)
 

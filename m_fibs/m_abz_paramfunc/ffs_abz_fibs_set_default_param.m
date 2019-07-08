@@ -23,28 +23,37 @@ function [param_map, support_map] = ffs_abz_fibs_set_default_param(varargin)
 %   it_param_set = 1;
 %   [param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
 %
+% @seealso
+%
+% * initialize paramters *az*: <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_set_default_param.html ffs_az_set_default_param>
+% * initialize paramters *abz*: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param>
+%
 
 %% Default
 
 it_subset = 0;
-bl_display_defparam = false;
+if (isempty(varargin))
+    bl_display_defparam = true;
+else
+    bl_display_defparam = false;
+end
 default_params = {it_subset bl_display_defparam};
 [default_params{1:length(varargin)}] = varargin{:};
 [it_subset, bl_display_defparam] = default_params{:};
 
-%% Setting param_map container
+%% 1. Initiate Param_map
 
 param_map = containers.Map('KeyType','char', 'ValueType','any');
+
+% model name
+param_map('st_model') = 'abz_fibs';
 
 % Preferences
 param_map('fl_crra') = 1.5;
 param_map('fl_beta') = 0.94;
+param_map('fl_nan_replace') = -99999;
 
-% Shock Parameters
-param_map('it_z_n') = 15;
-param_map('fl_z_mu') = 0;
-param_map('fl_z_rho') = 0.8;
-param_map('fl_z_sig') = 0.2;
+%% 2a. Set Borrowing Control Parameters
 
 % Borrowing
 % fl_default_aprime is the next period asset level
@@ -58,6 +67,22 @@ param_map('bl_default') = true; % if borrowing is default allowed
 param_map('bl_bridge') = true;
 param_map('bl_rollover') = true;
 
+% is save/borr choice principle or principle + interest, matters for
+% borrowing grid generation program. the *abz* problem is written with
+% asset choice as principle only, the _abz_fibs_ problems are written as
+% priniple + interest as the state, so there this should be false.
+param_map('bl_b_is_principle') = false;
+
+% Minimum Consumption, c_min is for default, when c < 0, replace utility
+% with fl_nan_replace.
+param_map('fl_c_min') = 0.02;
+
+%% 2b. Set Asset Grid Parameters
+% see
+% <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_gen_borrsave_grid.html
+% ffs_abz_gen_borrsave_grid> for how these borrowing/saving grid parameters
+% will be used.
+
 % Savings
 param_map('fl_a_min') = 0; % if there is minimum savings requirement
 param_map('fl_a_max') = 50;
@@ -68,23 +93,55 @@ param_map('it_a_n') = 750;
 % Prices
 param_map('fl_w') = 1.28;
 
+%% 3. Set Interest Rates non-Shock Parameters
+
 % formal informal parameters
 % fl_for_br_block are the formal borrowing grid block sizes.
 param_map('fl_r_fsv') = 0.025;
-param_map('fl_r_inf') = 0.095;
-param_map('fl_r_inf_bridge') = 0.095;
+% param_map('fl_r_inf') = 0.095;
+% param_map('fl_r_inf_bridge') = 0.095;
 param_map('fl_r_fbr') = 0.065;
-param_map('bl_b_is_principle') = false;
 % see: ffs_for_br_block.m
 param_map('st_forbrblk_type') = 'seg3';
 param_map('fl_forbrblk_brmost') = -19;
 param_map('fl_forbrblk_brleast') = -1;
 param_map('fl_forbrblk_gap') = -1.5;
 
-% Minimum Consumption, c_min is for default, when c < 0, replace utility
-% with fl_nan_replace.
-param_map('fl_c_min') = 0.02;
-param_map('fl_nan_replace') = -99999;
+%% 4a. Set Shock 1 Borrowing Interest Rate Parameters
+% See
+% <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_gen_discrete_var.html
+% fft_gen_discrete_var> for how these parameters will be used to generate a
+% discrete random variable for the interest rate. And also various formal
+% and informal files.
+
+% Borrowing Interest rate
+param_map('st_z_r_borr_drv_ele_type') = 'unif';
+param_map('st_z_r_borr_drv_prb_type') = 'poiss';
+param_map('fl_z_r_borr_poiss_mean') = 20;
+param_map('fl_z_r_borr_max') = 0.095;
+param_map('fl_z_r_borr_min') = 0.025;
+param_map('fl_z_r_borr_n') = 5;
+% param_map('fl_z_r_borr_max') = 0.095;
+% param_map('fl_z_r_borr_min') = 0.095;
+% param_map('fl_z_r_borr_n') = 1;
+
+%% 4b. Set Shock 2 Wage Shock Parameters
+% See
+% <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/ffto_gen_tauchen_jhl.m
+% ffto_gen_tauchen_jhl> for standard implementation of ar1 shock process
+% using these parameters.
+
+% Shock Parameters
+param_map('it_z_wage_n') = 15;
+param_map('fl_z_wage_mu') = 0;
+param_map('fl_z_wage_rho') = 0.8;
+param_map('fl_z_wage_sig') = 0.2;
+
+%% 4c. Set Overall Shock Grid Count
+
+param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+
+%% 5. Set Solution Control Parameters
 
 % Solution Accuracy
 param_map('it_maxiter_val') = 1000;
@@ -96,7 +153,7 @@ param_map('fl_tol_pol') = 10^-5;
 param_map('fl_tol_dist') = 10^-5;
 param_map('it_tol_pol_nochange') = 25; % number of iterations where policy does not change
 
-%% Setting support_map container
+%% 6. Setting support_map container
 
 support_map = containers.Map('KeyType','char', 'ValueType','any');
 % root directory
@@ -106,6 +163,7 @@ support_map('st_matimg_path_root') = st_matimg_path_root;
 % timer
 support_map('bl_time') = true;
 % Print Controls
+support_map('bl_display_defparam') = false;
 support_map('bl_display') = true;
 support_map('bl_display_dist') = false;
 support_map('it_display_every') = 5; % how often to print results
@@ -123,7 +181,7 @@ support_map('bl_display_final') = false; % print finalized results
 support_map('bl_display_final_dist') = false; % print finalized results
 support_map('bl_display_final_dist_detail') = false; % print finalized results
 support_map('it_display_final_rowmax') = 100; % max row to print (states/iters)
-support_map('it_display_final_colmax') = 12; % max col to print (shocks)
+support_map('it_display_final_colmax') = 15; % max col to print (shocks)
 % Mat File Controls
 support_map('bl_mat') = false;
 support_map('st_mat_path') = [st_matimg_path_root '/m_abz_solve/mat/'];
@@ -170,7 +228,9 @@ if (ismember(it_subset, [1,2,3,4]))
     if (ismember(it_subset, [1]))
         % TEST quick
         param_map('it_a_n') = 25;
-        param_map('it_z_n') = 3;
+        param_map('it_z_wage_n') = 3;
+        param_map('fl_z_r_borr_n') = 2;
+        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
         param_map('it_maxiter_val') = 50;
         param_map('it_tol_pol_nochange') = 1000;
         support_map('bl_display') = true;
@@ -181,6 +241,7 @@ if (ismember(it_subset, [1,2,3,4]))
         close all;
         % Main Run
         support_map('bl_time') = true;
+        support_map('bl_display_defparam') = true;
         support_map('bl_display') = true;
         support_map('it_display_every') = 5;
 
@@ -218,7 +279,9 @@ if (ismember(it_subset, [5,6,7,8,9]))
     if (ismember(it_subset, [5]))
         % TEST quick (need to enough to have distribution)
         param_map('it_a_n') = 100;
-        param_map('it_z_n') = 7;
+        param_map('it_z_wage_n') = 5;
+        param_map('fl_z_r_borr_n') = 2;
+        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
         param_map('it_maxiter_val') = 50;
         param_map('it_maxiter_dist') = 50;
         param_map('it_tol_pol_nochange') = 1000;
@@ -229,6 +292,7 @@ if (ismember(it_subset, [5,6,7,8,9]))
         close all;
         % Main Run
         support_map('bl_time') = true;
+        support_map('bl_display_defparam') = true;
         support_map('bl_display') = false;
         support_map('bl_display_dist') = true;
         support_map('it_display_every') = 20;
@@ -258,6 +322,7 @@ if (ismember(it_subset, [5,6,7,8,9]))
             support_map('bl_img_save') = false;
             if (ismember(it_subset, [9]))
                 support_map('bl_display_final_dist_detail') = false;
+                support_map('bl_display_defparam') = false;
                 support_map('bl_graph_coh_t_coh') = false;
                 support_map('bl_graph_forinf_pol_pct') = false;
             end

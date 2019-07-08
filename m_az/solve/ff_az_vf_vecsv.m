@@ -25,7 +25,7 @@ function result_map = ff_az_vf_vecsv(varargin)
 % life-cycle based where repeat calculations are taking place. If such
 % calculations can be identified, then potentially they could be stored and
 % retrieved during future iterations/periods rather than recomputed every
-% time. This saves time. 
+% time. This saves time.
 %
 % @param param_map container parameter container
 %
@@ -108,7 +108,7 @@ bl_input_override = true;
 % Note: param_map and support_map can be adjusted here or outside to override defaults
 % param_map('it_a_n') = 750;
 % param_map('it_z_n') = 15;
-
+    
 [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 default_params = {param_map support_map armt_map func_map};
 
@@ -153,10 +153,17 @@ params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol', 
 % support_map
 params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
     'st_profile_prefix', 'st_profile_name_main', 'st_profile_suffix',...
-    'bl_time', 'bl_display', 'it_display_every', 'bl_post'});
+    'bl_time', 'bl_display_defparam', 'bl_display', 'it_display_every', 'bl_post'});
 [bl_profile, st_profile_path, ...
     st_profile_prefix, st_profile_name_main, st_profile_suffix, ...
-    bl_time, bl_display, it_display_every, bl_post] = params_group{:};
+    bl_time, bl_display_defparam, bl_display, it_display_every, bl_post] = params_group{:};
+
+%% Display Parameters
+
+if(bl_display_defparam)
+    fft_container_map_display(param_map);
+    fft_container_map_display(support_map);
+end
 
 %% Initialize Output Matrixes
 % include mt_pol_idx which we did not have in looped code

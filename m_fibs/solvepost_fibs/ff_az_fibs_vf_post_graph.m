@@ -76,55 +76,64 @@ else
     [armt_map, func_map] = ffs_abz_fibs_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 
     % 3. Get Arrays and Functions
-    params_group = values(armt_map, {'ar_a', 'ar_z'});
-    [ar_a, ar_z] = params_group{:};
+    params_group = values(param_map, {'it_a_n', 'it_z_n'});
+    [it_a_n, it_z_n] = params_group{:};    
+    params_group = values(armt_map, {'ar_a'});
+    [ar_a] = params_group{:};
+    params_group = values(armt_map, {'ar_z_r_borr_mesh_wage', 'ar_z_wage_mesh_r_borr'});
+    [ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};    
     params_group = values(func_map, {'f_util_standin', 'f_cons_coh_fbis', 'f_cons_coh_save', 'f_coh'});
     [f_util_standin, f_cons_coh_fbis, f_cons_coh_save, f_coh] = params_group{:};
     
     % 4. Value Default
-    mt_val = f_util_standin(ar_z, ar_a');
+    mt_val = f_util_standin(ar_z_r_borr_mesh_wage, ar_a');
     
     % 5. default optimal asset choices (overall, interesint + principle from
     % different formal and informal sources following how model is solved)
-    mt_pol_a = zeros(size(mt_val)) + ar_a'*(cumsum(sort(ar_z))/sum(ar_z)*0.4 + 0.4);
+    mt_pol_a = zeros(size(mt_val)) + ...
+        ar_a'*(cumsum(sort(ar_z_r_borr_mesh_wage))/sum(ar_z_r_borr_mesh_wage)*0.4 + 0.4);
     
     % 6. Default COH
-    mt_coh = f_coh(ar_z, ar_a');
+    mt_coh = f_coh(ar_z_r_borr_mesh_wage, ar_a');
     
     % 7. Set Default Consumption
-    mt_pol_a_pos_idx = (mt_pol_a > 0);    
+    mt_pol_a_pos_idx = (mt_pol_a > 0);
     mt_pol_cons = zeros(size(mt_pol_a));
     mt_pol_cons(mt_pol_a_pos_idx) = f_cons_coh_save(mt_coh(mt_pol_a_pos_idx), mt_pol_a(mt_pol_a_pos_idx));
-    mt_pol_cons(~mt_pol_a_pos_idx) = f_cons_coh_fbis(mt_coh(~mt_pol_a_pos_idx), mt_pol_a(~mt_pol_a_pos_idx));    
+    mt_pol_cons(~mt_pol_a_pos_idx) = f_cons_coh_fbis(mt_coh(~mt_pol_a_pos_idx), mt_pol_a(~mt_pol_a_pos_idx));
     
     % 8. Find Formal Informal Choices given Fake Data
-    mt_pol_b_bridge = zeros(length(ar_a),length(ar_z));
-    mt_pol_inf_borr_nobridge = zeros(length(ar_a),length(ar_z));
-    mt_pol_for_borr = zeros(length(ar_a),length(ar_z));
-    mt_pol_for_save = zeros(length(ar_a),length(ar_z));    
+    mt_pol_b_bridge = zeros(it_a_n,it_z_n);
+    mt_pol_inf_borr_nobridge = zeros(it_a_n,it_z_n);
+    mt_pol_for_borr = zeros(it_a_n,it_z_n);
+    mt_pol_for_save = zeros(it_a_n,it_z_n);
     
     % 9. Solve for formal and informal combinations given the overall fake
     % choices.
-    for it_z_i = 1:length(ar_z)
-        for it_a_j = 1:length(ar_a)
-            fl_z = ar_z(it_z_i);
-            fl_a = ar_a(it_a_j);
-            fl_coh = f_coh(fl_z, fl_a);
-            fl_a_opti = mt_pol_a(it_a_j, it_z_i);
+    for it_z_i = 1:it_z_n
+        for it_a_j = 1:it_a_n
 
+            fl_z_r_borr = ar_z_r_borr_mesh_wage(it_z_i);
+            fl_z_wage = ar_z_wage_mesh_r_borr(it_z_i);
+            param_map('fl_r_inf') = fl_z_r_borr;
+            
+            fl_a = ar_a(it_a_j);
+            fl_coh = f_coh(fl_z_wage, fl_a);
+            fl_a_opti = mt_pol_a(it_a_j, it_z_i);
+            
             % call formal and informal function.
             [~, fl_opti_b_bridge, fl_opti_inf_borr_nobridge, fl_opti_for_borr, fl_opti_for_save] = ...
                 ffs_fibs_min_c_cost_bridge(fl_a_opti, fl_coh, ...
-                    param_map, support_map, armt_map, func_map, bl_input_override);
-
+                param_map, support_map, armt_map, func_map, bl_input_override);
+            
             % store savings and borrowing formal and inf optimal choices
             mt_pol_b_bridge(it_a_j,it_z_i) = fl_opti_b_bridge;
             mt_pol_inf_borr_nobridge(it_a_j,it_z_i) = fl_opti_inf_borr_nobridge;
             mt_pol_for_borr(it_a_j,it_z_i) = fl_opti_for_borr;
             mt_pol_for_save(it_a_j,it_z_i) = fl_opti_for_save;
-
+            
         end
-    end    
+    end
 
     % 10. Set Results Map
     result_map = containers.Map('KeyType','char', 'ValueType','any');
@@ -164,8 +173,12 @@ params_group = values(support_map, {'st_title_prefix'});
 [st_title_prefix] = params_group{:};
 
 % armt_map
-params_group = values(armt_map, {'ar_a', 'ar_z'});
-[ar_a, ar_z] = params_group{:};
+params_group = values(armt_map, {'ar_a'});
+[ar_a] = params_group{:};
+params_group = values(armt_map, {'ar_z_r_borr_mesh_wage', 'ar_z_wage_mesh_r_borr'});
+[ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
+params_group = values(param_map, {'it_z_wage_n', 'fl_z_r_borr_n'});
+[it_z_wage_n, fl_z_r_borr_n] = params_group{:};    
 
 % result_map standards
 params_group = values(result_map, {'cl_mt_pol_a'});
@@ -187,6 +200,22 @@ params_group = values(result_map, {'mt_it_frmsavng_only', 'mt_it_b_bridge_idx', 
 
 % How many zs to Graph
 ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)) (it_z_n)]);
+
+%% Generate Limited Legends
+    
+% 8 graph points, 2 levels of borrow rates, and 4 levels of rbr rates
+ar_it_z_r_borr = ([1 round((fl_z_r_borr_n)/2) (fl_z_r_borr_n)]);
+ar_it_z_wage = ([1 round((it_z_wage_n)/2) (it_z_wage_n)]);
+
+% combine by index
+mt_it_z_graph = ar_it_z_wage' + it_z_wage_n*(ar_it_z_r_borr-1);
+ar_it_z_graph = mt_it_z_graph(:)';
+
+% legends index final
+ar_it_legend2plot = ar_it_z_graph;
+ar_it_legend2plot_lth = ar_it_z_graph;
+cl_st_legendCell = cellstr([num2str(ar_z_r_borr_mesh_wage', 'zr=%3.2f;'), ...
+                      num2str(ar_z_wage_mesh_r_borr', 'zw=%3.2f')]);
 
 %% Graph Optimal Discrete
 % States: cash-on-hand, shock
@@ -211,7 +240,7 @@ if (bl_graph_forinf_discrete)
     end
     hold on;        
 
-    %% Graph Optimal Discrete Gen Discrete Outcomes    
+    % Graph Optimal Discrete Gen Discrete Outcomes    
     % * formal only (no bridge)
     % * Informal borrow only (no bridge)
     % * formal + informal borrow (no bridge)
@@ -219,19 +248,17 @@ if (bl_graph_forinf_discrete)
     % * bridge loan areas
     
     % Generate x and y arrays
-    [ar_z_mw, ar_w_mz] = meshgrid(ar_z, ar_a);
+    [ar_z_mw, ar_w_mz] = meshgrid(ar_z_wage_mesh_r_borr, ar_a);
     
     mt_x = ar_w_mz;
     mt_y = ar_z_mw;
-    
-    %% Graph Optimal Discrete Graph Discrete Outcomes
-    
+        
     % colors etc    
     cl_colors = {'blue', 'red', 'black', [0 0.4471 0.7412], 'blue', [.61 .51 .74]};
     cl_legend = {'For Borr', 'Inf Borr', 'For+Inf Br', 'For+Br+Save', 'Bridge Loan', 'For Save'};
     cl_shapes = {'s','x','o','d','p','*'};
     it_basesize = 20;
-    cl_csizes = {10*it_basesize, 10*it_basesize, 10*it_basesize, 10*it_basesize, 10*it_basesize, 10*it_basesize};
+    cl_csizes = {10*it_basesize, 20*it_basesize, 10*it_basesize, 10*it_basesize, 1*it_basesize, 2*it_basesize};
     
     % graphs to run       
     ar_it_graphs_run = 1:6;
@@ -273,9 +300,11 @@ if (bl_graph_forinf_discrete)
         % Figure Collect
         if (ismember(sub_j, [1]))
             ar_x_use = ar_x;
+            st_legend_loc = 'northeast';
         end
         if (ismember(sub_j, [2]))
             ar_x_use = log(ar_x - min(ar_a) + 1);
+            st_legend_loc = 'northeast';
         end
         
         % Graph
@@ -284,7 +313,7 @@ if (bl_graph_forinf_discrete)
     end
     
     % legend
-    legend(ls_chart, cl_legend, 'Location','northeast');
+    legend(ls_chart, cl_legend, 'Location', st_legend_loc);
     
     % labeling
     title('Borrow and Save Regions')
@@ -394,7 +423,15 @@ if (bl_graph_forinf_pol_lvl)
         end
         if (ismember(sub_j, [5,6,7,8]))
             st_x_label = {'log(Asset State - min(asset) + 1)'};
-            st_graph_loc = 'southeast';
+            if (ismember(sub_j, [5]))
+                st_graph_loc = 'southeast';
+            elseif (ismember(sub_j, [6]))
+                st_graph_loc = 'southeast';                
+            elseif (ismember(sub_j, [7]))
+                st_graph_loc = 'southeast';                
+            elseif (ismember(sub_j, [8]))
+                st_graph_loc = 'northwest';
+            end
         end
         
         % Y Label
@@ -428,8 +465,9 @@ if (bl_graph_forinf_pol_lvl)
         grid minor;
         
         % Legend
-        legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
-        legend(legendCell(ar_it_z_graph), 'Location', st_graph_loc);
+%         legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
+%         legend(legendCell(ar_it_z_graph), 'Location', st_graph_loc);
+        legend(cl_st_legendCell(ar_it_legend2plot), 'Location', st_graph_loc);
         
         % Title and X Y Labels
         title([st_title_prefix st_y_label]);
@@ -561,22 +599,30 @@ if (bl_graph_forinf_pol_pct)
             st_y_label = 'Inf Borr (-bridge) Share';
             if (ismember(sub_j, [6]))
                 st_y_label = ['-log(-(' st_y_label ')+1)' ];
+                st_graph_loc = 'northwest';
+            else
+                st_graph_loc = 'northeast';
             end
-            st_graph_loc = 'northeast';
+            
         end
         if (ismember(sub_j, [3,7]))
             st_y_label = 'For Borr Menu Share';
             if (ismember(sub_j, [7]))
                 st_y_label = ['-log(-(' st_y_label ')+1)' ];
-            end
-            st_graph_loc = 'northeast';
+                st_graph_loc = 'northwest';
+            else
+                st_graph_loc = 'northeast';
+            end            
         end
         if (ismember(sub_j, [4,8]))
             st_y_label = 'Savings Share';
             if (ismember(sub_j, [8]))
                 st_y_label = ['log(' st_y_label '+1)' ];
+                st_graph_loc = 'southwest';
+            else
+                st_graph_loc = 'southeast';
             end
-            st_graph_loc = 'southeast';
+            
         end
         
         % Grid
@@ -584,8 +630,9 @@ if (bl_graph_forinf_pol_pct)
         grid minor;
         
         % Legend
-        legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
-        legend(legendCell(ar_it_z_graph), 'Location', st_graph_loc);
+%         legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
+%         legend(legendCell(ar_it_z_graph), 'Location', st_graph_loc);
+        legend(cl_st_legendCell(ar_it_legend2plot), 'Location', st_graph_loc);
         
         % Title and X Y Labels
         title([st_title_prefix st_y_label]);
