@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Risky + Safe Asset (Saving Only) Interpolated-Percentage (Optimized-Vectorized)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-04"><meta name="DC.source" content="ff_ipwkz_vf_vecsv.m"><style type="text/css">
+      --><title>Risky + Safe Asset (Saving Only) Interpolated-Percentage (Optimized-Vectorized)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-08"><meta name="DC.source" content="ff_ipwkz_vf_vecsv.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Risky + Safe Asset (Saving Only) Interpolated-Percentage (Optimized-Vectorized)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_IPWKZ_VF_VECSV solve infinite horizon exo shock + endo asset problem</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1</a></li><li><a href="#5">Parse Parameters 2</a></li><li><a href="#6">Initialize Output Matrixes</a></li><li><a href="#7">Initialize Convergence Conditions</a></li><li><a href="#8">Pre-calculate u(c)</a></li><li><a href="#9">Iterate Value Function</a></li><li><a href="#11">Interpolate (1) reacahble v(coh(k(w,z),b(w,z),z),z) given v(coh, z)</a></li><li><a href="#12">Solve Second Stage Problem k*(w,z)</a></li><li><a href="#13">Solve First Stage Problem w*(z) given k*(w,z)</a></li><li><a href="#15">A. Interpolate FULL to get k*(w_perc, z), b*(k,w) based on k*(w_level, z)</a></li><li><a href="#16">B. Calculate UPDATE u(c): u(c(coh_level, w_perc)) given k*_interp, b*_interp</a></li><li><a href="#17">C. Interpolate FULL EV(k*(coh_level, w_perc, z), w - b*|z) based on EV(k*(w_level, z))</a></li><li><a href="#18">D. Compute FULL U(coh_level, w_perc, z) over all w_perc</a></li><li><a href="#19">E. Optimize Over Choices: max_{w_perc} U(coh_level, w_perc, z)</a></li><li><a href="#20">F. Store Results</a></li><li><a href="#22">Check Tolerance and Continuation</a></li><li><a href="#24">Process Optimal Choices</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> result_map = ff_ipwkz_vf_vecsv(varargin)
+  </style></head><body><div class="content"><h1>Risky + Safe Asset (Saving Only) Interpolated-Percentage (Optimized-Vectorized)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_IPWKZ_VF_VECSV solve infinite horizon exo shock + endo asset problem</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1</a></li><li><a href="#5">Parse Parameters 2</a></li><li><a href="#6">Display Parameters</a></li><li><a href="#7">Initialize Output Matrixes</a></li><li><a href="#8">Initialize Convergence Conditions</a></li><li><a href="#9">Pre-calculate u(c)</a></li><li><a href="#10">Iterate Value Function</a></li><li><a href="#12">Interpolate (1) reacahble v(coh(k(w,z),b(w,z),z),z) given v(coh, z)</a></li><li><a href="#13">Solve Second Stage Problem k*(w,z)</a></li><li><a href="#14">Solve First Stage Problem w*(z) given k*(w,z)</a></li><li><a href="#16">A. Interpolate FULL to get k*(w_perc, z), b*(k,w) based on k*(w_level, z)</a></li><li><a href="#17">B. Calculate UPDATE u(c): u(c(coh_level, w_perc)) given k*_interp, b*_interp</a></li><li><a href="#18">C. Interpolate FULL EV(k*(coh_level, w_perc, z), w - b*|z) based on EV(k*(w_level, z))</a></li><li><a href="#19">D. Compute FULL U(coh_level, w_perc, z) over all w_perc</a></li><li><a href="#20">E. Optimize Over Choices: max_{w_perc} U(coh_level, w_perc, z)</a></li><li><a href="#21">F. Store Results</a></li><li><a href="#23">Check Tolerance and Continuation</a></li><li><a href="#25">Process Optimal Choices</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> result_map = ff_ipwkz_vf_vecsv(varargin)
 </pre><h2 id="2">FF_IPWKZ_VF_VECSV solve infinite horizon exo shock + endo asset problem</h2><p>This program solves the infinite horizon dynamic savings and risky capital asset problem with some ar1 shock. This is the two step solution with interpolation and with percentage asset grids version of <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf_vecsv.html">ff_iwkz_vf_vecsv</a>. See that file for more descriptions. This is the optimized-vectorized version of the program.</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@param func_map container container with function handles for consumption cash-on-hand etc.</p><p>@return result_map container contains policy function matrix, value function matrix, iteration results, and policy function, value function and iteration results tables.</p><p>keys included in result_map:</p><div><ul><li>mt_val matrix states_n by shock_n matrix of converged value function grid</li><li>mt_pol_a matrix states_n by shock_n matrix of converged policy function grid</li><li>ar_val_diff_norm array if bl_post = true it_iter_last by 1 val function difference between iteration</li><li>ar_pol_diff_norm array if bl_post = true it_iter_last by 1 policy function difference between iterations</li><li>mt_pol_perc_change matrix if bl_post = true it_iter_last by shock_n the proportion of grid points at which policy function changed between current and last iteration for each element of shock</li></ul></div><p>@example</p><p>@include</p><div><ul><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/paramfunc/ff_ipwkz_evf.m">ff_ipwkz_evf</a></li><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/paramfunc/ffs_ipwkz_set_default_param.m">ffs_ipwkz_set_default_param</a></li><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/paramfunc/ffs_ipwkz_get_funcgrid.m">ffs_ipwkz_get_funcgrid</a></li><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solvepost/ff_akz_vf_post.m">ff_akz_vf_post</a></li></ul></div><h2 id="3">Default</h2><div><ul><li>it_param_set = 1: quick test</li><li>it_param_set = 2: benchmark run</li><li>it_param_set = 3: benchmark profile</li><li>it_param_set = 4: press publish button</li></ul></div><pre class="codeinput">it_param_set = 4;
 bl_input_override = true;
 [param_map, support_map] = ffs_ipwkz_set_default_param(it_param_set);
@@ -136,11 +136,97 @@ params_group = values(param_map, {<span class="string">'it_maxiter_val'</span>, 
 <span class="comment">% support_map</span>
 params_group = values(support_map, {<span class="string">'bl_profile'</span>, <span class="string">'st_profile_path'</span>, <span class="keyword">...</span>
     <span class="string">'st_profile_prefix'</span>, <span class="string">'st_profile_name_main'</span>, <span class="string">'st_profile_suffix'</span>,<span class="keyword">...</span>
-    <span class="string">'bl_time'</span>, <span class="string">'bl_graph_evf'</span>, <span class="string">'bl_display'</span>, <span class="string">'it_display_every'</span>, <span class="string">'bl_post'</span>});
+    <span class="string">'bl_time'</span>, <span class="string">'bl_display_defparam'</span>, <span class="string">'bl_graph_evf'</span>, <span class="string">'bl_display'</span>, <span class="string">'it_display_every'</span>, <span class="string">'bl_post'</span>});
 [bl_profile, st_profile_path, <span class="keyword">...</span>
     st_profile_prefix, st_profile_name_main, st_profile_suffix, <span class="keyword">...</span>
-    bl_time, bl_graph_evf, bl_display, it_display_every, bl_post] = params_group{:};
-</pre><h2 id="6">Initialize Output Matrixes</h2><pre class="codeinput">mt_val_cur = zeros(length(ar_interp_coh_grid),length(ar_z));
+    bl_time, bl_display_defparam, bl_graph_evf, bl_display, it_display_every, bl_post] = params_group{:};
+</pre><h2 id="6">Display Parameters</h2><pre class="codeinput"><span class="keyword">if</span> (bl_display_defparam)
+    fft_container_map_display(param_map);
+    fft_container_map_display(support_map);
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">  Map with properties:
+
+        Count: 31
+      KeyType: char
+    ValueType: any
+
+pos = 1 ; key = fl_Amean ; val = 1
+pos = 2 ; key = fl_alpha ; val = 0.36
+pos = 3 ; key = fl_b_bd ; val = 0
+pos = 4 ; key = fl_beta ; val = 0.94
+pos = 5 ; key = fl_c_min ; val = 0.001
+pos = 6 ; key = fl_coh_interp_grid_gap ; val = 0.1
+pos = 7 ; key = fl_crra ; val = 1.5
+pos = 8 ; key = fl_delta ; val = 0.08
+pos = 9 ; key = fl_k_max ; val = 50
+pos = 10 ; key = fl_k_min ; val = 0
+pos = 11 ; key = fl_nan_replace ; val = -Inf
+pos = 12 ; key = fl_r_borr ; val = 0.025
+pos = 13 ; key = fl_r_save ; val = 0.025
+pos = 14 ; key = fl_tol_dist ; val = 1e-05
+pos = 15 ; key = fl_tol_pol ; val = 1e-05
+pos = 16 ; key = fl_tol_val ; val = 1e-05
+pos = 17 ; key = fl_w ; val = 0.44365
+pos = 18 ; key = fl_w_interp_grid_gap ; val = 0.1
+pos = 19 ; key = fl_w_max ; val = 50
+pos = 20 ; key = fl_w_min ; val = 0
+pos = 21 ; key = fl_z_mu ; val = 0
+pos = 22 ; key = fl_z_rho ; val = 0.8
+pos = 23 ; key = fl_z_sig ; val = 0.2
+pos = 24 ; key = it_ak_perc_n ; val = 50
+pos = 25 ; key = it_c_interp_grid_gap ; val = 0.0001
+pos = 26 ; key = it_maxiter_dist ; val = 1000
+pos = 27 ; key = it_maxiter_val ; val = 250
+pos = 28 ; key = it_tol_pol_nochange ; val = 25
+pos = 29 ; key = it_w_perc_n ; val = 50
+pos = 30 ; key = it_z_n ; val = 15
+pos = 31 ; key = st_analytical_stationary_type ; val = eigenvector
+  Map with properties:
+
+        Count: 39
+      KeyType: char
+    ValueType: any
+
+pos = 1 ; key = bl_display ; val = false
+pos = 2 ; key = bl_display_defparam ; val = true
+pos = 3 ; key = bl_display_dist ; val = false
+pos = 4 ; key = bl_display_evf ; val = false
+pos = 5 ; key = bl_display_final ; val = true
+pos = 6 ; key = bl_display_final_dist ; val = false
+pos = 7 ; key = bl_display_final_dist_detail ; val = false
+pos = 8 ; key = bl_display_funcgrids ; val = false
+pos = 9 ; key = bl_graph ; val = true
+pos = 10 ; key = bl_graph_coh_t_coh ; val = true
+pos = 11 ; key = bl_graph_evf ; val = false
+pos = 12 ; key = bl_graph_funcgrids ; val = false
+pos = 13 ; key = bl_graph_onebyones ; val = true
+pos = 14 ; key = bl_graph_pol_lvl ; val = true
+pos = 15 ; key = bl_graph_pol_pct ; val = true
+pos = 16 ; key = bl_graph_val ; val = true
+pos = 17 ; key = bl_img_save ; val = false
+pos = 18 ; key = bl_mat ; val = false
+pos = 19 ; key = bl_post ; val = true
+pos = 20 ; key = bl_profile ; val = false
+pos = 21 ; key = bl_profile_dist ; val = false
+pos = 22 ; key = bl_time ; val = false
+pos = 23 ; key = it_display_every ; val = 5
+pos = 24 ; key = it_display_final_colmax ; val = 12
+pos = 25 ; key = it_display_final_rowmax ; val = 100
+pos = 26 ; key = st_img_name_main ; val = ff_ipwkz_vf_vecsv_default
+pos = 27 ; key = st_img_path ; val = C:/Users/fan/CodeDynaAsset//m_ipwkz//solve/img/
+pos = 28 ; key = st_img_prefix ; val = 
+pos = 29 ; key = st_img_suffix ; val = _p4.png
+pos = 30 ; key = st_mat_name_main ; val = ff_ipwkz_vf_vecsv_default
+pos = 31 ; key = st_mat_path ; val = C:/Users/fan/CodeDynaAsset//m_ipwkz//solve/mat/
+pos = 32 ; key = st_mat_prefix ; val = 
+pos = 33 ; key = st_mat_suffix ; val = _p4
+pos = 34 ; key = st_matimg_path_root ; val = C:/Users/fan/CodeDynaAsset//m_ipwkz/
+pos = 35 ; key = st_profile_name_main ; val = ff_ipwkz_vf_vecsv_default
+pos = 36 ; key = st_profile_path ; val = C:/Users/fan/CodeDynaAsset//m_ipwkz//solve/profile/
+pos = 37 ; key = st_profile_prefix ; val = 
+pos = 38 ; key = st_profile_suffix ; val = _p4
+pos = 39 ; key = st_title_prefix ; val = 
+</pre><h2 id="7">Initialize Output Matrixes</h2><pre class="codeinput">mt_val_cur = zeros(length(ar_interp_coh_grid),length(ar_z));
 mt_val = mt_val_cur - 1;
 mt_pol_a = zeros(length(ar_interp_coh_grid),length(ar_z));
 mt_pol_a_cur = mt_pol_a - 1;
@@ -157,12 +243,12 @@ cl_w_kstar_interp_z = cell([it_z_n, 1]);
 <span class="keyword">for</span> it_z_i = 1:length(ar_z)
     cl_w_kstar_interp_z{it_z_i} = zeros([length(ar_w_perc), length(ar_interp_coh_grid)]) - 1;
 <span class="keyword">end</span>
-</pre><h2 id="7">Initialize Convergence Conditions</h2><pre class="codeinput">bl_vfi_continue = true;
+</pre><h2 id="8">Initialize Convergence Conditions</h2><pre class="codeinput">bl_vfi_continue = true;
 it_iter = 0;
 ar_val_diff_norm = zeros([it_maxiter_val, 1]);
 ar_pol_diff_norm = zeros([it_maxiter_val, 1]);
 mt_pol_perc_change = zeros([it_maxiter_val, it_z_n]);
-</pre><h2 id="8">Pre-calculate u(c)</h2><p>Interpolation, see <a href="https://fanwangecon.github.io/M4Econ/support/speed/partupdate/fs_u_c_partrepeat_main.html">fs_u_c_partrepeat_main</a> for why interpolate over u(c)</p><pre class="codeinput"><span class="comment">% Evaluate</span>
+</pre><h2 id="9">Pre-calculate u(c)</h2><p>Interpolation, see <a href="https://fanwangecon.github.io/M4Econ/support/speed/partupdate/fs_u_c_partrepeat_main.html">fs_u_c_partrepeat_main</a> for why interpolate over u(c)</p><pre class="codeinput"><span class="comment">% Evaluate</span>
 <span class="keyword">if</span> (fl_crra == 1)
     ar_interp_u_of_c_grid = f_util_log(ar_interp_c_grid);
     fl_u_neg_c = f_util_log(fl_c_min);
@@ -174,7 +260,7 @@ ar_interp_u_of_c_grid(ar_interp_c_grid &lt;= fl_c_min) = fl_u_neg_c;
 
 <span class="comment">% Get Interpolant</span>
 f_grid_interpolant_spln = griddedInterpolant(ar_interp_c_grid, ar_interp_u_of_c_grid, <span class="string">'spline'</span>, <span class="string">'nearest'</span>);
-</pre><h2 id="9">Iterate Value Function</h2><p>Loop solution with 4 nested loops</p><div><ol><li>loop 1: over exogenous states</li><li>loop 2: over endogenous states</li><li>loop 3: over choices</li><li>loop 4: add future utility, integration--loop over future shocks</li></ol></div><pre class="codeinput"><span class="comment">% Start Profile</span>
+</pre><h2 id="10">Iterate Value Function</h2><p>Loop solution with 4 nested loops</p><div><ol><li>loop 1: over exogenous states</li><li>loop 2: over endogenous states</li><li>loop 3: over choices</li><li>loop 4: add future utility, integration--loop over future shocks</li></ol></div><pre class="codeinput"><span class="comment">% Start Profile</span>
 <span class="keyword">if</span> (bl_profile)
     close <span class="string">all</span>;
     profile <span class="string">off</span>;
@@ -189,13 +275,13 @@ f_grid_interpolant_spln = griddedInterpolant(ar_interp_c_grid, ar_interp_u_of_c_
 <span class="comment">% Value Function Iteration</span>
 <span class="keyword">while</span> bl_vfi_continue
 </pre><pre class="codeinput">    it_iter = it_iter + 1;
-</pre><h2 id="11">Interpolate (1) reacahble v(coh(k(w,z),b(w,z),z),z) given v(coh, z)</h2><p>v(coh,z) solved on ar_interp_coh_grid, ar_z grids, see ffs_ipwkz_get_funcgrid.m. Generate interpolant based on that, Then interpolate for the coh reachable levels given the k(w,z) percentage choice grids in the second stage of the problem</p><pre class="codeinput">    <span class="comment">% Generate Interpolant for v(coh,z)</span>
+</pre><h2 id="12">Interpolate (1) reacahble v(coh(k(w,z),b(w,z),z),z) given v(coh, z)</h2><p>v(coh,z) solved on ar_interp_coh_grid, ar_z grids, see ffs_ipwkz_get_funcgrid.m. Generate interpolant based on that, Then interpolate for the coh reachable levels given the k(w,z) percentage choice grids in the second stage of the problem</p><pre class="codeinput">    <span class="comment">% Generate Interpolant for v(coh,z)</span>
     f_grid_interpolant_value = griddedInterpolant(<span class="keyword">...</span>
         mt_z_mesh_coh_interp_grid', mt_interp_coh_grid_mesh_z', mt_val_cur', <span class="string">'linear'</span>, <span class="string">'nearest'</span>);
 
     <span class="comment">% Interpolate for v(coh(k(w,z),b(w,z),z),z)</span>
     mt_val_wkb_interpolated = f_grid_interpolant_value(mt_z_mesh_coh_wkb, mt_coh_wkb);
-</pre><h2 id="12">Solve Second Stage Problem k*(w,z)</h2><p>This is the key difference between this function and <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html">ffs_akz_set_functions</a> which solves the two stages jointly Interpolation first, because solution coh grid is not the same as all points reachable by k and b choices given w.</p><pre class="codeinput">    support_map(<span class="string">'bl_graph_evf'</span>) = false;
+</pre><h2 id="13">Solve Second Stage Problem k*(w,z)</h2><p>This is the key difference between this function and <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html">ffs_akz_set_functions</a> which solves the two stages jointly Interpolation first, because solution coh grid is not the same as all points reachable by k and b choices given w.</p><pre class="codeinput">    support_map(<span class="string">'bl_graph_evf'</span>) = false;
     <span class="keyword">if</span> (it_iter == (it_maxiter_val + 1))
         support_map(<span class="string">'bl_graph_evf'</span>) = bl_graph_evf;
     <span class="keyword">end</span>
@@ -203,9 +289,9 @@ f_grid_interpolant_spln = griddedInterpolant(ar_interp_c_grid, ar_interp_u_of_c_
     bl_input_override = true;
     [mt_ev_condi_z_max, ~, mt_ev_condi_z_max_kp, ~] = <span class="keyword">...</span>
         ff_ipwkz_evf(mt_val_wkb_interpolated, param_map, support_map, armt_map, bl_input_override);
-</pre><h2 id="13">Solve First Stage Problem w*(z) given k*(w,z)</h2><pre class="codeinput">    <span class="comment">% loop 1: over exogenous states</span>
+</pre><h2 id="14">Solve First Stage Problem w*(z) given k*(w,z)</h2><pre class="codeinput">    <span class="comment">% loop 1: over exogenous states</span>
     <span class="keyword">for</span> it_z_i = 1:length(ar_z)
-</pre><h2 id="15">A. Interpolate FULL to get k*(w_perc, z), b*(k,w) based on k*(w_level, z)</h2><p>Generate interpolant for (2) k*(ar_w_perc) from k*(ar_w_level,z) There are two w=k'+b' arrays. ar_w_level is the level even grid based on which we solve the 2nd stage problem in ff_ipwkz_evf.m. Here for each coh level, we have a different vector of w levels, but the same vector of percentage ws. So we need to interpolate to get the optimal k* and b* choices at each percentage level of w.</p><pre class="codeinput">        f_interpolante_w_level_kstar_z = griddedInterpolant(ar_w_level, mt_ev_condi_z_max_kp(:, it_z_i)', <span class="string">'linear'</span>, <span class="string">'nearest'</span>);
+</pre><h2 id="16">A. Interpolate FULL to get k*(w_perc, z), b*(k,w) based on k*(w_level, z)</h2><p>Generate interpolant for (2) k*(ar_w_perc) from k*(ar_w_level,z) There are two w=k'+b' arrays. ar_w_level is the level even grid based on which we solve the 2nd stage problem in ff_ipwkz_evf.m. Here for each coh level, we have a different vector of w levels, but the same vector of percentage ws. So we need to interpolate to get the optimal k* and b* choices at each percentage level of w.</p><pre class="codeinput">        f_interpolante_w_level_kstar_z = griddedInterpolant(ar_w_level, mt_ev_condi_z_max_kp(:, it_z_i)', <span class="string">'linear'</span>, <span class="string">'nearest'</span>);
 
         <span class="comment">% Interpolate (2), shift from w_level to w_perc</span>
         mt_w_kstar_interp_z = f_interpolante_w_level_kstar_z(mt_w_by_interp_coh_interp_grid);
@@ -213,7 +299,7 @@ f_grid_interpolant_spln = griddedInterpolant(ar_interp_c_grid, ar_interp_u_of_c_
 
         <span class="comment">% changes in w_perc kstar choices</span>
         mt_w_kstar_diff_idx = (cl_w_kstar_interp_z{it_z_i} ~= mt_w_kstar_interp_z);
-</pre><h2 id="16">B. Calculate UPDATE u(c): u(c(coh_level, w_perc)) given k*_interp, b*_interp</h2><p>Note that compared to <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html">ffs_akz_set_functions</a> the mt_c here is much smaller the same number of columns (states) as in the ffs_akz_set_functions file, but the number of rows equal to ar_w length.</p><pre class="codeinput">        ar_c = f_cons(mt_interp_coh_grid_mesh_w_perc(mt_w_kstar_diff_idx), <span class="keyword">...</span>
+</pre><h2 id="17">B. Calculate UPDATE u(c): u(c(coh_level, w_perc)) given k*_interp, b*_interp</h2><p>Note that compared to <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html">ffs_akz_set_functions</a> the mt_c here is much smaller the same number of columns (states) as in the ffs_akz_set_functions file, but the number of rows equal to ar_w length.</p><pre class="codeinput">        ar_c = f_cons(mt_interp_coh_grid_mesh_w_perc(mt_w_kstar_diff_idx), <span class="keyword">...</span>
                       mt_w_astar_interp_z(mt_w_kstar_diff_idx), <span class="keyword">...</span>
                       mt_w_kstar_interp_z(mt_w_kstar_diff_idx));
 
@@ -227,28 +313,28 @@ f_grid_interpolant_spln = griddedInterpolant(ar_interp_c_grid, ar_interp_u_of_c_
             cl_u_c_store{it_z_i}(mt_w_kstar_diff_idx) = ar_utility_update;
         <span class="keyword">end</span>
         cl_w_kstar_interp_z{it_z_i} = mt_w_kstar_interp_z;
-</pre><h2 id="17">C. Interpolate FULL EV(k*(coh_level, w_perc, z), w - b*|z) based on EV(k*(w_level, z))</h2><p>Generate Interpolant for (3) EV(k*(ar_w_perc),Z)</p><pre class="codeinput">        f_interpolante_ev_condi_z_max_z = griddedInterpolant(ar_w_level, mt_ev_condi_z_max(:, it_z_i)', <span class="string">'linear'</span>, <span class="string">'nearest'</span>);
+</pre><h2 id="18">C. Interpolate FULL EV(k*(coh_level, w_perc, z), w - b*|z) based on EV(k*(w_level, z))</h2><p>Generate Interpolant for (3) EV(k*(ar_w_perc),Z)</p><pre class="codeinput">        f_interpolante_ev_condi_z_max_z = griddedInterpolant(ar_w_level, mt_ev_condi_z_max(:, it_z_i)', <span class="string">'linear'</span>, <span class="string">'nearest'</span>);
         <span class="comment">% Interpolate (3), EVAL add on future utility, N by N + N by N</span>
         mt_ev_condi_z_max_interp_z = f_interpolante_ev_condi_z_max_z(mt_w_by_interp_coh_interp_grid);
-</pre><h2 id="18">D. Compute FULL U(coh_level, w_perc, z) over all w_perc</h2><pre class="codeinput">        mt_utility = cl_u_c_store{it_z_i} + fl_beta*mt_ev_condi_z_max_interp_z;
+</pre><h2 id="19">D. Compute FULL U(coh_level, w_perc, z) over all w_perc</h2><pre class="codeinput">        mt_utility = cl_u_c_store{it_z_i} + fl_beta*mt_ev_condi_z_max_interp_z;
 
         <span class="comment">% percentage algorithm does not have invalid (check to make sure</span>
         <span class="comment">% min percent is not 0 in ffs_ipwkz_get_funcgrid.m)</span>
         <span class="comment">% mt_utility = mt_utility.*(~mt_it_c_valid_idx) + fl_u_neg_c*(mt_it_c_valid_idx);</span>
-</pre><h2 id="19">E. Optimize Over Choices: max_{w_perc} U(coh_level, w_perc, z)</h2><p>Optimization: remember matlab is column major, rows must be choices, columns must be states <a href="https://en.wikipedia.org/wiki/Row-_and_column-major_order">COLUMN-MAJOR</a></p><pre class="codeinput">        [ar_opti_val1_z, ar_opti_idx_z] = max(mt_utility);
+</pre><h2 id="20">E. Optimize Over Choices: max_{w_perc} U(coh_level, w_perc, z)</h2><p>Optimization: remember matlab is column major, rows must be choices, columns must be states <a href="https://en.wikipedia.org/wiki/Row-_and_column-major_order">COLUMN-MAJOR</a></p><pre class="codeinput">        [ar_opti_val1_z, ar_opti_idx_z] = max(mt_utility);
 
         <span class="comment">% Generate Linear Opti Index</span>
         [it_choies_n, it_states_n] = size(mt_utility);
         ar_add_grid = linspace(0, it_choies_n*(it_states_n-1), it_states_n);
         ar_opti_linear_idx_z = ar_opti_idx_z + ar_add_grid;
-</pre><h2 id="20">F. Store Results</h2><pre class="codeinput">        mt_val(:,it_z_i) = ar_opti_val1_z;
+</pre><h2 id="21">F. Store Results</h2><pre class="codeinput">        mt_val(:,it_z_i) = ar_opti_val1_z;
         mt_pol_a(:,it_z_i) = mt_w_astar_interp_z(ar_opti_linear_idx_z);
         mt_pol_k(:,it_z_i) = mt_w_kstar_interp_z(ar_opti_linear_idx_z);
         <span class="keyword">if</span> (it_iter == (it_maxiter_val + 1))
             mt_pol_idx(:,it_z_i) = ar_opti_linear_idx_z;
         <span class="keyword">end</span>
 </pre><pre class="codeinput">    <span class="keyword">end</span>
-</pre><h2 id="22">Check Tolerance and Continuation</h2><pre class="codeinput">    <span class="comment">% Difference across iterations</span>
+</pre><h2 id="23">Check Tolerance and Continuation</h2><pre class="codeinput">    <span class="comment">% Difference across iterations</span>
     ar_val_diff_norm(it_iter) = norm(mt_val - mt_val_cur);
     ar_pol_diff_norm(it_iter) = norm(mt_pol_a - mt_pol_a_cur) + norm(mt_pol_k - mt_pol_k_cur);
     ar_pol_a_perc_change = sum((mt_pol_a ~= mt_pol_a_cur))/(length(ar_interp_coh_grid));
@@ -308,7 +394,7 @@ f_grid_interpolant_spln = griddedInterpolant(ar_interp_c_grid, ar_interp_u_of_c_
     st_file_name = [st_profile_prefix st_profile_name_main st_profile_suffix];
     profsave(profile(<span class="string">'info'</span>), strcat(st_profile_path, st_file_name));
 <span class="keyword">end</span>
-</pre><h2 id="24">Process Optimal Choices</h2><pre class="codeinput">result_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
+</pre><h2 id="25">Process Optimal Choices</h2><pre class="codeinput">result_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
 result_map(<span class="string">'mt_val'</span>) = mt_val;
 result_map(<span class="string">'mt_pol_idx'</span>) = mt_pol_idx;
 
@@ -1004,10 +1090,17 @@ params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol', 
 % support_map
 params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
     'st_profile_prefix', 'st_profile_name_main', 'st_profile_suffix',...
-    'bl_time', 'bl_graph_evf', 'bl_display', 'it_display_every', 'bl_post'});
+    'bl_time', 'bl_display_defparam', 'bl_graph_evf', 'bl_display', 'it_display_every', 'bl_post'});
 [bl_profile, st_profile_path, ...
     st_profile_prefix, st_profile_name_main, st_profile_suffix, ...
-    bl_time, bl_graph_evf, bl_display, it_display_every, bl_post] = params_group{:};
+    bl_time, bl_display_defparam, bl_graph_evf, bl_display, it_display_every, bl_post] = params_group{:};
+
+%% Display Parameters
+
+if (bl_display_defparam)
+    fft_container_map_display(param_map);
+    fft_container_map_display(support_map);
+end
 
 %% Initialize Output Matrixes
 

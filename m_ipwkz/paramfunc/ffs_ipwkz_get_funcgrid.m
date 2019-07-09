@@ -64,16 +64,19 @@ if (bl_input_override)
 else
     % default internal run
     [param_map, support_map] = ffs_ipwkz_set_default_param();
+    
     support_map('bl_graph_funcgrids') = true;
     support_map('bl_display_funcgrids') = true;
 
     % to be able to visually see choice grid points
     param_map('fl_b_bd') = 0;
+    
     param_map('fl_w_min') = param_map('fl_b_bd');
     param_map('it_w_perc_n') = 25;
     param_map('it_ak_perc_n') = 45;
     param_map('fl_w_interp_grid_gap') = 2;
     param_map('fl_coh_interp_grid_gap') = 2;
+    
     default_maps = {param_map, support_map};
 
     % numvarargs is the number of varagin inputted
@@ -82,21 +85,13 @@ else
     support_map = [support_map; default_maps{2}];
 end
 
-%% Parse Parameters
+%% Parse Parameters 1a
 
-params_group = values(param_map, {'it_z_n', 'fl_z_mu', 'fl_z_rho', 'fl_z_sig'});
-[it_z_n, fl_z_mu, fl_z_rho, fl_z_sig] = params_group{:};
+params_group = values(param_map, {'fl_b_bd', 'fl_w_min', 'fl_w_max'});
+[fl_b_bd, fl_w_min, fl_w_max] = params_group{:};
 
-params_group = values(param_map, {'fl_b_bd', 'fl_w_min', 'fl_w_max', ...
-    'it_w_perc_n', 'fl_w_interp_grid_gap', 'fl_coh_interp_grid_gap'});
-[fl_b_bd, fl_w_min, fl_w_max, ...
-    it_w_perc_n, fl_w_interp_grid_gap, fl_coh_interp_grid_gap] = params_group{:};
-
-params_group = values(param_map, {'fl_k_min', 'fl_k_max', 'it_ak_perc_n'});
-[fl_k_min, fl_k_max, it_ak_perc_n] = params_group{:};
-
-params_group = values(param_map, {'fl_crra', 'fl_c_min', 'it_c_interp_grid_gap'});
-[fl_crra, fl_c_min, it_c_interp_grid_gap] = params_group{:};
+params_group = values(param_map, {'fl_crra', 'fl_c_min'});
+[fl_crra, fl_c_min] = params_group{:};
 
 params_group = values(param_map, {'fl_Amean', 'fl_alpha', 'fl_delta'});
 [fl_Amean, fl_alpha, fl_delta] = params_group{:};
@@ -104,8 +99,25 @@ params_group = values(param_map, {'fl_Amean', 'fl_alpha', 'fl_delta'});
 params_group = values(param_map, {'fl_r_save', 'fl_r_borr', 'fl_w'});
 [fl_r_save, fl_r_borr, fl_w] = params_group{:};
 
+%% Parse Parameters 1b
+
+params_group = values(param_map, {...
+    'it_w_perc_n', 'it_ak_perc_n',...    
+    'it_c_interp_grid_gap', 'fl_w_interp_grid_gap', 'fl_coh_interp_grid_gap'});
+[it_w_perc_n, it_ak_perc_n,...
+    it_c_interp_grid_gap, fl_w_interp_grid_gap, fl_coh_interp_grid_gap] = params_group{:};
+
+
+%% Parse Parameters 2
+
+params_group = values(param_map, {'it_z_n', 'fl_z_mu', 'fl_z_rho', 'fl_z_sig'});
+[it_z_n, fl_z_mu, fl_z_rho, fl_z_sig] = params_group{:};
+
+%% Parse Parameters 3
+
 params_group = values(support_map, {'bl_graph_funcgrids', 'bl_display_funcgrids'});
 [bl_graph_funcgrids, bl_display_funcgrids] = params_group{:};
+
 
 %% Generate Asset and Choice Grid for 2nd stage Problem
 % This generate triangular choice structure. Household choose total

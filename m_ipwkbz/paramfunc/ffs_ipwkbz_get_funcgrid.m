@@ -12,10 +12,16 @@ function [armt_map, func_map] = ffs_ipwkbz_get_funcgrid(varargin)
 % ffs_akz_get_funcgrid> function. This code deals with problems with
 % savings and borrowing.
 %
-% The graphs below show the difference between percentage choice grid and
-% level choice grid. See comments by graphs below for explanations of
-% differences between the choice grids here and choice grids in the
-% ffs_akz_get_funcgrid function.
+% This file is a continuation of
+% <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/paramfunc/html/ffs_ipwkz_get_funcgrid.html
+% ffs_ipwkz_get_funcgrid>. A significant change here is the inclusion of
+% borrowing shocks, which changes significantly the implementation of the
+% two-stage solution structure. Specifically, for the coh matrix here,
+% there is another dimension which is the borrowing interest rate shock
+% states, which expands the number of cash-on-hand points given the same
+% productivity shock z. So compared to <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/paramfunc/html/ffs_ipwkz_get_funcgrid.html
+% ffs_ipwkz_get_funcgrid>, the same number of columns for the
+% _mt_coh_wkb_full_ matirx, but more rows. 
 %
 % Note that for borrowing, we can not start at the min(coh(k,w-k,z))
 % reacheable given the w and k choice grids. That would be:
@@ -37,6 +43,8 @@ function [armt_map, func_map] = ffs_ipwkbz_get_funcgrid(varargin)
 %
 % Note that even when w = 0, as long as interest rate is low, only the
 % lowest level of borrowing is invalid.
+%
+% All discussion of of the word _wage_ refers to productivity shock.
 %
 % @param param_map container parameter container
 %
@@ -77,23 +85,59 @@ if (bl_input_override)
     % override when called from outside
     [param_map, support_map, ~] = varargin{:};
 else
+    
+    close all;
+    
     % default internal run
     [param_map, support_map] = ffs_ipwkbz_set_default_param();
+    
     support_map('bl_graph_funcgrids') = true;
     support_map('bl_graph_funcgrids_detail') = true;
     support_map('bl_display_funcgrids') = true;
+
+    st_param_which = 'default';
+
+    if (ismember(st_param_which, ['default']))
+
+        % to be able to visually see choice grid points
+        param_map('fl_b_bd') = -20; % borrow bound, = 0 if save only
+        param_map('fl_default_aprime') = 0;
+        param_map('bl_default') = 0; % if borrowing is default allowed
+
+        param_map('fl_w_min') = param_map('fl_b_bd');
+        param_map('it_w_perc_n') = 25;
+        param_map('it_ak_perc_n') = 45;
+
+        param_map('fl_w_interp_grid_gap') = 2;
+        param_map('fl_coh_interp_grid_gap') = 2;
+
+        param_map('fl_z_r_borr_min') = 0.025;
+        param_map('fl_z_r_borr_max') = 0.95;
+        param_map('fl_z_r_borr_n') = 3;
+        
+    elseif (strcmp(st_param_which, 'small'))
+
+        param_map('fl_z_r_borr_n') = 2;
+        param_map('it_z_wage_n') = 3;
+        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+
+        param_map('fl_b_bd') = -20; % borrow bound, = 0 if save only
+        param_map('fl_default_aprime') = 0;
+        param_map('bl_default') = 0; % if borrowing is default allowed
+
+        param_map('fl_w_min') = param_map('fl_b_bd');
+        param_map('it_w_perc_n') = 5;
+        param_map('it_ak_perc_n') = 6;
+
+        param_map('fl_w_interp_grid_gap') = 3;
+        param_map('fl_coh_interp_grid_gap') = 3;
+
+        param_map('fl_z_r_borr_min') = 0.025;
+        param_map('fl_z_r_borr_max') = 0.95;
+        param_map('fl_z_r_borr_n') = 3;
+        
+    end    
     
-    % to be able to visually see choice grid points
-    param_map('fl_b_bd') = -20; % borrow bound, = 0 if save only
-    param_map('fl_default_aprime') = 0;
-    param_map('bl_default') = 0; % if borrowing is default allowed
-
-    param_map('fl_w_min') = param_map('fl_b_bd');
-    param_map('it_w_perc_n') = 25;
-    param_map('it_ak_perc_n') = 45;
-    param_map('fl_w_interp_grid_gap') = 2;
-    param_map('fl_coh_interp_grid_gap') = 2;
-
     default_maps = {param_map, support_map};
 
     % numvarargs is the number of varagin inputted
@@ -151,7 +195,7 @@ params_group = values(support_map, {'bl_graph_funcgrids', 'bl_graph_funcgrids_de
 % percentage grid for 1st stage choice problem, level grid for 2nd stage
 % solving optimal k given w and z.
 ar_w_perc = linspace(0.001, 0.999, it_w_perc_n);
-it_w_interp_n = (fl_w_max-fl_w_min)/(fl_w_interp_grid_gap);
+it_w_interp_n = round((fl_w_max-fl_w_min)/(fl_w_interp_grid_gap));
 ar_w_level_full = fft_array_add_zero(linspace(fl_w_min, fl_w_max, it_w_interp_n), true);
 ar_w_level = ar_w_level_full;
 
@@ -185,7 +229,7 @@ ar_k_mesha = ar_k_mesha_full;
 
 %% Get Shock: Income Shock (ar1)
 
-[~, mt_z_wage_trans, ~, ar_z_wage] = ffto_gen_tauchen_jhl(fl_z_wage_mu,fl_z_wage_rho,fl_z_wage_sig,it_z_wage_n);
+[~, mt_z_wage_trans, ar_z_wage_prob, ar_z_wage] = ffto_gen_tauchen_jhl(fl_z_wage_mu,fl_z_wage_rho,fl_z_wage_sig,it_z_wage_n);
 
 %% Get Shock: Interest Rate Shock (iid)
 
@@ -208,13 +252,13 @@ mt_z_r_borr_prob_trans = repmat(ar_z_r_borr_prob, [length(ar_z_r_borr_prob), 1])
 mt_z_trans = kron(mt_z_r_borr_prob_trans, mt_z_wage_trans);
 
 % mesh the shock vectors
-[mt_z_wage_mesh_r_borr, mt_z_r_borr_mesh_wage] = ndgrid(ar_z_wage, ar_z_r_borr);
+[mt_z_r_borr_mesh_wage, mt_z_wage_mesh_r_borr] = ndgrid(ar_z_r_borr, ar_z_wage);
 ar_z_r_borr_mesh_wage = mt_z_r_borr_mesh_wage(:)';
 ar_z_wage_mesh_r_borr = mt_z_wage_mesh_r_borr(:)';
 
 %% Get Equations
 
-[f_util_log, f_util_crra, f_util_standin, f_prod, f_inc, f_coh, f_cons] = ...
+[f_util_log, f_util_crra, f_util_standin, f_util_standin_coh, f_prod, f_inc, f_coh, f_cons] = ...
     ffs_ipwkbz_set_functions(fl_crra, fl_c_min, fl_b_bd, fl_Amean, fl_alpha, fl_delta, fl_r_save, fl_w);
 
 %% Generate Cash-on-Hand/State Matrix
@@ -222,11 +266,21 @@ ar_z_wage_mesh_r_borr = mt_z_wage_mesh_r_borr(:)';
 % number of points, covering all reachable points when ar_a is the choice
 % vector and ar_z is the shock vector. requires inputs from get Asset and
 % choice grids, get shock grids, and get equations above.
+% 
+% # mt_coh_wkb_full: this is the (I^k x I^w) by (M^r x M^z) matrix, where
+% rows = it_w_interp_n*it_ak_perc_n, and cols = fl_z_r_borr_n*it_z_wage_n.
+% # mt_coh_wkb_full: this is the (I^k x I^w x M^r) by (M^z) matrix, where
+% rows = it_w_interp_n*it_ak_perc_n*fl_z_r_borr_n, and cols = it_z_wage_n.
+%
 
 mt_coh_wkb_full = f_coh(ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr, ...
                         ar_a_meshk_full, ar_k_mesha_full);
 
-if (bl_display_funcgrids)
+it_coh_wkb_reshape_rows = it_w_interp_n*it_ak_perc_n*fl_z_r_borr_n;
+it_coh_wkb_reshape_cols = it_z_wage_n;
+mt_coh_wkb_full = reshape(mt_coh_wkb_full, [it_coh_wkb_reshape_rows, it_coh_wkb_reshape_cols]);
+
+if (bl_display_funcgrids || bl_graph_funcgrids)
     
     % Generate Aggregate Variables
     ar_aplusk_mesh = ar_a_meshk_full + ar_k_mesha_full;
@@ -258,7 +312,22 @@ if (bl_display_funcgrids)
     disp(head(array2table(tab_ak_choices), it_rows_toshow));
     disp(tail(array2table(tab_ak_choices), it_rows_toshow));
 
+    % Generate Shock Full Mat to See coh_wkb_full zr and zw
+    mt_z_r_borr_mwge_makfull = zeros([length(ar_a_meshk_full), length(ar_z_r_borr_mesh_wage)]) + ar_z_r_borr_mesh_wage;
+    mt_z_wage_mesh_r_makfull = zeros([length(ar_a_meshk_full), length(ar_z_r_borr_mesh_wage)]) + ar_z_wage_mesh_r_borr;
+    % use the same reshape command as above
+    mt_z_r_borr_mwge_makfull = reshape(mt_z_r_borr_mwge_makfull, [it_coh_wkb_reshape_rows, it_coh_wkb_reshape_cols]);
+    mt_z_wage_mesh_r_makfull = reshape(mt_z_wage_mesh_r_makfull, [it_coh_wkb_reshape_rows, it_coh_wkb_reshape_cols]);
 
+    % Generate W and K Choices Full Mat to see which w and k
+    mt_aplusk_mesh = zeros([length(ar_a_meshk_full), length(ar_z_r_borr_mesh_wage)]) + ar_aplusk_mesh;
+    mt_a_meshk_full = zeros([length(ar_a_meshk_full), length(ar_z_r_borr_mesh_wage)]) + ar_a_meshk_full;
+    mt_k_mesha_full = zeros([length(ar_a_meshk_full), length(ar_z_r_borr_mesh_wage)]) + ar_k_mesha_full;
+    % use the same reshape command as above
+    mt_aplusk_mesh = reshape(mt_aplusk_mesh, [it_coh_wkb_reshape_rows, it_coh_wkb_reshape_cols]);
+    mt_a_meshk_full = reshape(mt_a_meshk_full, [it_coh_wkb_reshape_rows, it_coh_wkb_reshape_cols]);
+    mt_k_mesha_full = reshape(mt_k_mesha_full, [it_coh_wkb_reshape_rows, it_coh_wkb_reshape_cols]);
+        
     disp('----------------------------------------');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_coh_wkb_full');
@@ -266,6 +335,42 @@ if (bl_display_funcgrids)
     disp(size(mt_coh_wkb_full));
     disp(head(array2table(mt_coh_wkb_full), it_rows_toshow));
     disp(tail(array2table(mt_coh_wkb_full), it_rows_toshow));
+
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('Shock Borrow R: mt_z_r_borr_mwge_makfull');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp(size(mt_z_r_borr_mwge_makfull));
+    disp(head(array2table(mt_z_r_borr_mwge_makfull), it_rows_toshow));
+    disp(tail(array2table(mt_z_r_borr_mwge_makfull), it_rows_toshow));
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('Shock Productivity: mt_z_wage_mesh_r_makfull');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp(size(mt_z_wage_mesh_r_makfull));
+    disp(head(array2table(mt_z_wage_mesh_r_makfull), it_rows_toshow));
+    disp(tail(array2table(mt_z_wage_mesh_r_makfull), it_rows_toshow));
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('W = Aprime + Kprime; mt_aplusk_mesh');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp(size(mt_aplusk_mesh));
+    disp(head(array2table(mt_aplusk_mesh), it_rows_toshow));
+    disp(tail(array2table(mt_aplusk_mesh), it_rows_toshow));
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('Kprime: mt_k_mesha_full');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp(size(mt_k_mesha_full));
+    disp(head(array2table(mt_k_mesha_full), it_rows_toshow));
+    disp(tail(array2table(mt_k_mesha_full), it_rows_toshow));
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('Aprime: mt_a_meshk_full');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp(size(mt_a_meshk_full));
+    disp(head(array2table(mt_a_meshk_full), it_rows_toshow));
+    disp(tail(array2table(mt_a_meshk_full), it_rows_toshow));
     
 end
 
@@ -277,7 +382,7 @@ mt_bl_coh_wkb_invalid = (mt_coh_wkb_full < fl_b_bd);
 
 % (k,a) invalid if coh(k,a,z) < bd for any z
 ar_bl_wkb_invalid = max(mt_bl_coh_wkb_invalid,[], 2);
-mt_bl_wkb_invalid = reshape(ar_bl_wkb_invalid, size(mt_a));
+mt_bl_wkb_invalid = reshape(ar_bl_wkb_invalid, [it_ak_perc_n, it_w_interp_n*fl_z_r_borr_n]);
 
 % find the first w_level choice where some k(w) percent choices are valid?
 ar_bl_w_level_invalid =  min(mt_bl_wkb_invalid, [], 1);
@@ -288,7 +393,8 @@ ar_bl_w_level_invalid =  min(mt_bl_wkb_invalid, [], 1);
 % next period, and given the shock distribution, there exists some state in
 % the future when the household when making this choice will be unable to
 % borrow sufficiently to maintain positive consumption.
-fl_w_level_min_valid = min(ar_w_level_full(~ar_bl_w_level_invalid));
+ar_w_level_full_dup = repmat(ar_w_level_full, [1,fl_z_r_borr_n]);
+fl_w_level_min_valid = min(ar_w_level_full_dup(~ar_bl_w_level_invalid));
 
 %% Update Valid 2nd stage choice matrix
 % ar_w_level = linspace(fl_w_level_min_valid, fl_w_max, it_w_interp_n);
@@ -409,11 +515,18 @@ armt_map('mt_z_trans') = mt_z_trans;
 armt_map('ar_z_r_borr_mesh_wage') = ar_z_r_borr_mesh_wage;
 armt_map('ar_z_wage_mesh_r_borr') = ar_z_wage_mesh_r_borr;
 
+armt_map('ar_z_r_borr') = ar_z_r_borr;
+armt_map('ar_z_r_borr_prob') = ar_z_r_borr_prob;
+
+armt_map('ar_z_wage') = ar_z_wage;
+armt_map('ar_z_wage_prob') = ar_z_wage_prob;
+
 %% Store Function Map
 func_map = containers.Map('KeyType','char', 'ValueType','any');
 func_map('f_util_log') = f_util_log;
 func_map('f_util_crra') = f_util_crra;
 func_map('f_util_standin') = f_util_standin;
+func_map('f_util_standin_coh') = f_util_standin_coh;
 func_map('f_prod') = f_prod;
 func_map('f_inc') = f_inc;
 func_map('f_coh') = f_coh;
@@ -431,11 +544,16 @@ if (bl_graph_funcgrids)
     % combine by index
     mt_it_z_graph = ar_it_z_wage' + it_z_wage_n*(ar_it_z_r_borr-1);
     ar_it_z_graph = mt_it_z_graph(:)';
+    ar_it_z_graph_zwage = ([1 round((it_z_wage_n)/4) 2*round((it_z_wage_n)/4) 3*round((it_z_wage_n)/4) (it_z_wage_n)]);
 
     % legends index final
     cl_st_legendCell = cellstr([num2str(ar_z_r_borr_mesh_wage', 'zr=%3.2f;'), ...
-                          num2str(ar_z_wage_mesh_r_borr', 'zw=%3.2f')]);
+                                num2str(ar_z_wage_mesh_r_borr', 'zw=%3.2f')]);
 
+    % legends index final full mat wage only
+    cl_st_legendCell_zwage = cellstr([num2str(ar_z_wage', 'zw=%3.2f')]);
+
+                            
     %% Graph 1: a and k choice grid graphs
     % compare the figure here to the same figure in
     % <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html
@@ -458,11 +576,11 @@ if (bl_graph_funcgrids)
             'MarkerEdgeColor', 'b', 'MarkerFaceColor', 'b');
 %     end
     if (length(ar_w_level_full) <= 100)
-        gf_invalid_scatter = scatter(ar_a_meshk_full(ar_bl_wkb_invalid),...
-                                     ar_k_mesha_full(ar_bl_wkb_invalid),...
+        gf_invalid_scatter = scatter(mt_a_meshk_full(ar_bl_wkb_invalid),...
+                                     mt_k_mesha_full(ar_bl_wkb_invalid),...
                 20, 'O', 'MarkerEdgeColor', 'black', 'MarkerFaceColor', 'black');
     end
-
+ 
     xline(0);
     yline(0);
 
@@ -519,15 +637,15 @@ if (bl_graph_funcgrids)
     title('Cash-on-Hand given w(k+b),k,z');
     ylabel('Cash-on-Hand (mt\_coh\_wkb\_full)');
     xlabel({'Index of Cash-on-Hand Discrete Point (0:1:(size(mt\_coh\_wkb\_full,1)-1))'...
-        'Each Segment is a w=k+b; within segment increasing k'...
-        'For each w and z, coh maximizing k is different'});
+            'Super-Segment: borrow r; Sub-Segment: w=k+b; within seg increasing k'...
+            'For each w and z, coh maximizing k is different'});
 
-    cl_st_legendCell_here = cl_st_legendCell;
+    cl_st_legendCell_here = cl_st_legendCell_zwage;
 
     cl_st_legendCell_here{length(cl_st_legendCell_here) + 1} = 'borrow-constraint';
     chart(length(chart)+1) = yline_borrbound;
-    legend(chart([ar_it_z_graph length(cl_st_legendCell_here)]), ...
-            cl_st_legendCell_here([ar_it_z_graph length(cl_st_legendCell_here)]), 'Location', 'southeast');
+    legend(chart([ar_it_z_graph_zwage length(cl_st_legendCell_here)]), ...
+                  cl_st_legendCell_here([ar_it_z_graph_zwage length(cl_st_legendCell_here)]), 'Location', 'southeast');
 
     grid on;
 

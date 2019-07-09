@@ -80,14 +80,31 @@ else
     [armt_map, func_map] = ffs_ipwkbz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
     
     % Generating Defaults
-    params_group = values(armt_map, {'ar_a_meshk', 'ar_k_mesha', 'ar_z'});
-    [ar_a_meshk, ar_k_mesha, ar_z] = params_group{:};
-    params_group = values(func_map, {'f_util_standin', 'f_coh'});
-    [f_util_standin, f_coh] = params_group{:};
-    mt_val = f_util_standin(ar_z, ar_a_meshk, ar_k_mesha);
-    mt_coh = f_coh(ar_z, ar_a_meshk, ar_k_mesha);
-       
+    params_group = values(param_map, {'fl_z_r_borr_n', 'it_z_wage_n', 'ar_z_r_borr'});
+    [fl_z_r_borr_n, it_z_wage_n, ar_z_r_borr] = params_group{:};
+    % Generating Defaults
+    params_group = values(armt_map, {'mt_coh_wkb'});
+    [mt_coh_wkb] = params_group{:};
+    params_group = values(func_map, {'f_util_standin_coh'});
+    [f_util_standin_coh] = params_group{:};
+    
+    % # mt_val first: this is the (I^k x I^w) by (M^r x M^z) matrix, where
+    % rows = it_w_interp_n*it_ak_perc_n, and cols = fl_z_r_borr_n*it_z_wage_n.
+    mt_val = f_util_standin(ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr, ar_a_meshk, ar_k_mesha);
+    % # mt_val reshape: this is the (I^k x I^w x M^r) by (M^z) matrix, where
+    % rows = it_w_interp_n*it_ak_perc_n*fl_z_r_borr_n, and cols = it_z_wage_n.
+    it_coh_wkb_reshape_rows = length(ar_a_meshk)*fl_z_r_borr_n;
+    it_coh_wkb_reshape_cols = it_z_wage_n;
+    mt_val = reshape(mt_val, [it_coh_wkb_reshape_rows, it_coh_wkb_reshape_cols]);
+    % # mt_val expand: this is the (I^k x I^w x M^r) by (M^z) matrix, where
+    % rows = it_w_interp_n*it_ak_perc_n*fl_z_r_borr_n, and cols = it_z_wage_n.    
+    mt_val = repmat(mt_val, [1, fl_z_r_borr_n]);
+
+    
 end
+
+
+
 
 %% Parse Parameters
 params_group = values(armt_map, {'mt_z_trans', 'ar_z',...

@@ -48,7 +48,6 @@ function result_map = ff_ipwkbz_vf_vecsv(varargin)
 % * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solvepost/ff_akz_vf_post.m ff_akz_vf_post>
 %
 
-
 %% Default
 % * it_param_set = 1: quick test
 % * it_param_set = 2: benchmark run
@@ -68,7 +67,9 @@ bl_input_override = true;
 % param_map('fl_w_interp_grid_gap') = 0.25;
 % param_map('it_w_perc_n') = 100;
 % param_map('it_ak_perc_n') = param_map('it_w_perc_n');
-% param_map('it_z_n') = 11;
+% param_map('fl_z_r_borr_n') = 5;
+% param_map('it_z_wage_n') = 15;
+% param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
 % param_map('fl_coh_interp_grid_gap') = 0.1;
 % param_map('it_c_interp_grid_gap') = 10^-4;
 % param_map('fl_w_interp_grid_gap') = 0.1;

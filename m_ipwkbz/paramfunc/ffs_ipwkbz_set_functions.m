@@ -4,7 +4,7 @@
 % Table of Content.*
 
 %%
-function [f_util_log, f_util_crra, f_util_standin, f_prod, f_inc, f_coh, f_cons] = ffs_ipwkbz_set_functions(varargin)
+function [f_util_log, f_util_crra, f_util_standin, f_util_standin_coh, f_prod, f_inc, f_coh, f_cons] = ffs_ipwkbz_set_functions(varargin)
 %% FFS_IPWKZ_SET_FUNCTIONS setting model functions
 % define functions here to avoid copy paste mistakes. This function is
 % identical to the
@@ -119,6 +119,8 @@ f_cons = @(coh, bprime, kprime) (coh - kprime - bprime);
 % shock on utility, it is fully captured by the coh.
 f_util_standin = @(fl_r_borr, z, b, k) f_util_log((f_coh(fl_r_borr,z,b,k)-fl_b_bd).*((f_coh(fl_r_borr,z,b,k) - fl_b_bd) > fl_c_min) + ...
                                        fl_c_min.*((f_coh(fl_r_borr,z,b,k) - fl_b_bd) <= fl_c_min));
+f_util_standin_coh = @(coh) f_util_log((coh-fl_b_bd).*((coh - fl_b_bd) > fl_c_min) + ...
+                                       fl_c_min.*((coh - fl_b_bd) <= fl_c_min));
 
 
 end

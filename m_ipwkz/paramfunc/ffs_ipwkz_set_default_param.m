@@ -31,7 +31,11 @@ function [param_map, support_map] = ffs_ipwkz_set_default_param(varargin)
 %% Default
 
 it_subset = 0;
-bl_display_defparam = false;
+if (isempty(varargin))
+    bl_display_defparam = true;
+else
+    bl_display_defparam = false;
+end
 default_params = {it_subset bl_display_defparam};
 [default_params{1:length(varargin)}] = varargin{:};
 [it_subset, bl_display_defparam] = default_params{:};
