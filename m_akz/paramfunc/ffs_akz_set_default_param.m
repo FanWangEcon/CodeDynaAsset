@@ -59,6 +59,11 @@ function [param_map, support_map] = ffs_akz_set_default_param(varargin)
 %% Default
 
 it_subset = 0;
+if (isempty(varargin))
+    bl_display_defparam = true;
+else
+    bl_display_defparam = false;
+end
 bl_display_defparam = false;
 default_params = {it_subset bl_display_defparam};
 [default_params{1:length(varargin)}] = varargin{:};
@@ -67,6 +72,9 @@ default_params = {it_subset bl_display_defparam};
 %% Setting param_map container
 
 param_map = containers.Map('KeyType','char', 'ValueType','any');
+
+% model name
+param_map('st_model') = 'akz_wkz_iwkz';
 
 % Preferences
 param_map('fl_crra') = 1.5;

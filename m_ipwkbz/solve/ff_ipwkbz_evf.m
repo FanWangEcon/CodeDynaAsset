@@ -135,7 +135,13 @@ else
     % once the problem is dynamic. But the object of interest here is:
     % EV(k', b', zw, zr), conditionally on the same k'/b', will zr have an
     % impact? yes it will, even just through interest rate on b'.
+    
+    % mt_col_wkb is: (I^k x I^w x M^r) by (M^z)
+    % mt_coh_wkb(:) is: (I^k x I^w x M^r x M^z)
+    % ar_z_r_borr is: (1 x M^z)
+    % mt_val is: (I^k x I^w x M^r x M^z) by (M^r)
     mt_val = f_util_standin_coh(mt_coh_wkb(:), ar_z_r_borr);
+    % mt_val is: (I^k x I^w x M^r) by (M^z x M^r)
     mt_val = reshape(mt_val, [size(mt_coh_wkb, 1), it_z_n]);
         
     % Display Parameters

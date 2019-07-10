@@ -67,8 +67,8 @@ if (bl_input_override)
     % Get Parameters
     params_group = values(param_map, {'it_z_n'});
     [it_z_n] = params_group{:};
-    params_group = values(armt_map, {'ar_a_meshk', 'ar_k_mesha', 'ar_z', 'mt_coh_wkb', 'it_ameshk_n'});
-    [ar_a_meshk, ar_k_mesha, ar_z, mt_coh_wkb, it_ameshk_n] = params_group{:};
+    params_group = values(armt_map, {'ar_a_meshk', 'ar_k_mesha', 'mt_coh_wkb', 'it_ameshk_n'});
+    [ar_a_meshk, ar_k_mesha, mt_coh_wkb, it_ameshk_n] = params_group{:};
 
 else
     clear all;
@@ -110,6 +110,21 @@ end
 
 %% Parse Parameter
 
+% Get Parameters
+params_group = values(param_map, {'st_model'});
+[st_model] = params_group{:};
+
+% armt_map
+if (strcmp(st_model, 'ipwkbzr'))
+    params_group = values(armt_map, {'ar_z_r_borr_mesh_wage_w1r2', 'ar_z_wage_mesh_r_borr_w1r2'});
+    [ar_z_r_borr_mesh_wage_w1r2, ar_z_wage_mesh_r_borr_w1r2] = params_group{:};
+    params_group = values(param_map, {'fl_z_r_borr_n'});
+    [fl_z_r_borr_n] = params_group{:};        
+else
+    params_group = values(armt_map, {'ar_z'});
+    [ar_z] = params_group{:};    
+end
+
 % support_map
 params_group = values(support_map, {'bl_display_final', 'it_display_final_rowmax', 'it_display_final_colmax'});
 [bl_display_final, it_display_final_rowmax, it_display_final_colmax] = params_group{:};
@@ -148,7 +163,29 @@ end
 %% Display Val Pol Iter Table
 
 if (bl_display_final)
+    
+    % Columns to Display    
+    if (it_z_n >= it_display_final_colmax)
+        ar_it_cols = (1:1:round(it_display_final_colmax/2));
+        ar_it_cols = [ar_it_cols ((it_z_n)-round(it_display_final_colmax/2)+1):1:(it_z_n)];
+    else
+        ar_it_cols = 1:1:it_z_n;
+    end
+    ar_it_cols = unique(ar_it_cols);    
 
+    % Column Z Names
+    if (strcmp(st_model, 'ipwkbzr'))
+        if (fl_z_r_borr_n == 1)
+            ar_st_col_zs = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z_wage_mesh_r_borr_w1r2(ar_it_cols))));
+        else
+            ar_st_col_zs = matlab.lang.makeValidName(strcat('zi', string(ar_it_cols), ...
+                                                            ':zr=', string(ar_z_r_borr_mesh_wage_w1r2(ar_it_cols)), ...
+                                                            ';zw=', string(ar_z_wage_mesh_r_borr_w1r2(ar_it_cols))));
+        end
+    else        
+        ar_st_col_zs = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));        
+    end
+    
     % Display Value Function Iteration Step by Step REsults
     it_iter_max = length(ar_val_diff_norm);
     if (it_iter_max >= it_display_final_rowmax)
@@ -185,50 +222,41 @@ if (bl_display_final)
     else
         ar_it_rows = 1:1:it_ameshk_n;
     end
-    if (it_z_n >= it_display_final_colmax)
-        ar_it_cols = (1:1:round(it_display_final_colmax/2));
-        ar_it_cols = [ar_it_cols ((it_z_n)-round(it_display_final_colmax/2)+1):1:(it_z_n)];
-    else
-        ar_it_cols = 1:1:it_z_n;
-    end
     mt_val_print = mt_val(ar_it_rows, ar_it_cols);
     mt_pol_a_print = mt_pol_a(ar_it_rows, ar_it_cols);
     mt_pol_k_print = mt_pol_k(ar_it_rows, ar_it_cols);
     mt_pol_w_print = mt_pol_a_print + mt_pol_k_print;
-
+    
+    % Row Name Define
+    ar_st_row_coh = strcat('coh', string(ar_it_rows), ...
+                            ':k=', string(ar_a_meshk(ar_it_rows)'), ...
+                            ',b=', string(ar_k_mesha(ar_it_rows)'));
+                                    
     % Display Optimal Values
     tb_val = array2table(mt_val_print);
-    tb_val.Properties.RowNames = strcat('coh', string(ar_it_rows),...
-                                        ':k=', string(ar_a_meshk(ar_it_rows)'),...
-                                        ',b=', string(ar_k_mesha(ar_it_rows)'));
-    tb_val.Properties.VariableNames = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));
+    tb_val.Properties.RowNames = ar_st_row_coh;
+    tb_val.Properties.VariableNames = ar_st_col_zs;
     disp('tb_val: V(a,z) value at each state space point');
     disp(tb_val);
 
     % Display Optimal Choices for a
     tb_pol_a = array2table(mt_pol_a_print);
-    tb_pol_a.Properties.RowNames = strcat('coh', string(ar_it_rows),...
-                                        ':k=', string(ar_a_meshk(ar_it_rows)'),...
-                                        ',b=', string(ar_k_mesha(ar_it_rows)'));
-    tb_pol_a.Properties.VariableNames = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));
+    tb_pol_a.Properties.RowNames = ar_st_row_coh;
+    tb_pol_a.Properties.VariableNames = ar_st_col_zs;
     disp('tb_pol_a: optimal safe savings choice for each state space point');
     disp(tb_pol_a);
 
     % Display Optimal Choices for k
     tb_pol_k = array2table(mt_pol_k_print);
-    tb_pol_k.Properties.RowNames = strcat('coh', string(ar_it_rows),...
-                                        ':k=', string(ar_a_meshk(ar_it_rows)'),...
-                                        ',b=', string(ar_k_mesha(ar_it_rows)'));
-    tb_pol_k.Properties.VariableNames = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));
+    tb_pol_k.Properties.RowNames = ar_st_row_coh;
+    tb_pol_k.Properties.VariableNames = ar_st_col_zs;
     disp('tb_pol_k: optimal risky investment choice for each state space point');
     disp(tb_pol_k);
 
     % Display Optimal Choices for k+a
     tb_pol_w = array2table(mt_pol_w_print);
-    tb_pol_w.Properties.RowNames = strcat('coh', string(ar_it_rows),...
-                                        ':k=', string(ar_a_meshk(ar_it_rows)'),...
-                                        ',b=', string(ar_k_mesha(ar_it_rows)'));
-    tb_pol_w.Properties.VariableNames = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));
+    tb_pol_w.Properties.RowNames = ar_st_row_coh;
+    tb_pol_w.Properties.VariableNames = ar_st_col_zs;
     disp('tb_pol_w: risky + safe investment choices (first stage choice, choose within risky vs safe)');
     disp(tb_pol_w);
 
@@ -236,6 +264,7 @@ if (bl_display_final)
     result_map('tb_valpol_alliter') = tb_valpol_alliter;
     result_map('tb_val') = tb_val;
     result_map('tb_pol_a') = tb_pol_a;
+    
 end
 
 end

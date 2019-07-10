@@ -54,14 +54,13 @@ function result_map = ff_ipwkbz_vf_vecsv(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 1;
+it_param_set = 3;
 bl_input_override = true;
 [param_map, support_map] = ffs_ipwkbz_set_default_param(it_param_set);
 
 % parameters can be set inside ffs_ipwkbz_set_default_param or updated here
 % param_map('it_w_perc_n') = 50;
 % param_map('it_ak_perc_n') = param_map('it_w_perc_n');
-% param_map('it_z_n') = 15;
 % param_map('fl_coh_interp_grid_gap') = 0.025;
 % param_map('it_c_interp_grid_gap') = 0.001;
 % param_map('fl_w_interp_grid_gap') = 0.25;
@@ -102,22 +101,62 @@ support_map('st_profile_name_main') = [st_func_name support_map('st_profile_name
 support_map('st_mat_name_main') = [st_func_name support_map('st_mat_name_main')];
 support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')];
 
-%% Parse Parameters 2
+%% Parse Parameters 2, Asset Arrays
+% Dimensions of Various Grids: I for level grid, M for shock grid, P for
+% percent grid
+%
+% # ar_interp_c_grid: 1 by I^c, 1st stage consumption interpolation
+% # ar_interp_coh_grid: 1 by I^{coh}, 1st stage value function V(coh,z)
+% # ar_w_perc: 1 by P^{W=k+b}, 1st stage w \in {w_perc(coh)} choice set
+% # ar_w_level: 1 by I^{W=k+b}, 2nd stage k*(w,z) w grid
+% # ar_ak_perc: 1 by P^{k and b}, 2nd stage k \in {ask_perc(w,z)} set
+%
 
-% armt_map
-params_group = values(armt_map, {'ar_w_perc', 'ar_w_level', 'ar_ak_perc'});
-[ar_w_perc, ar_w_level, ar_ak_perc] = params_group{:};
-params_group = values(armt_map, {'ar_interp_c_grid', 'ar_interp_coh_grid', ...
-    'ar_a_meshk', 'ar_k_mesha', ...
-    'mt_interp_coh_grid_mesh_z_wage', 'mt_z_wage_mesh_coh_interp_grid',...
-    'mt_interp_coh_grid_mesh_w_perc',...
-    'mt_w_by_interp_coh_interp_grid'});
-[ar_interp_c_grid, ar_interp_coh_grid, ar_a_meshk, ar_k_mesha, ...
-    mt_interp_coh_grid_mesh_z_wage, mt_z_wage_mesh_coh_interp_grid, ...
-    mt_interp_coh_grid_mesh_w_perc,...
-    mt_w_by_interp_coh_interp_grid] = params_group{:};
+params_group = values(armt_map, {...
+    'ar_interp_c_grid', 'ar_interp_coh_grid', ...
+    'ar_w_perc', 'ar_w_level', 'ar_ak_perc'});
+[ar_interp_c_grid, ar_interp_coh_grid, ...
+    ar_w_perc, ar_w_level, ar_ak_perc] = params_group{:};
+
+%% Parse Parameters 2, interp_coh related matrixes
+% Dimensions of Various Grids: I for level grid, M for shock grid, P for
+% percent grid. These are grids for 1st stage solution
+%
+% # mt_interp_coh_grid_mesh_z_wage: I^{coh} by M^w
+% # mt_z_wage_mesh_interp_coh_grid: I^{coh} by M^w
+% # mt_interp_coh_grid_mesh_w_perc: I^{coh} by P^{LAM=k+b}
+% # mt_w_perc_mesh_interp_coh_grid: I^{coh} by P^{LAM=k+b}
+%
+
+params_group = values(armt_map, {...
+    'mt_interp_coh_grid_mesh_z_wage', ...
+    'mt_interp_coh_grid_mesh_w_perc', ...
+    'mt_z_wage_mesh_interp_coh_grid', ...
+    'mt_w_perc_mesh_interp_coh_grid', ...
+    'mt_interp_coh_grid_mesh_z'});
+[mt_interp_coh_grid_mesh_z_wage, ...
+    mt_interp_coh_grid_mesh_w_perc, ...
+    mt_z_wage_mesh_interp_coh_grid, ...
+    mt_w_perc_mesh_interp_coh_grid, ...
+    mt_interp_coh_grid_mesh_z] = params_group{:};
+
+%% Parse Parameters 3, reachable cash-on-hand
+% Dimensions of Various Grids: I for level grid, M for shock grid, P for
+% percent grid. These are grids for 1st stage solution
+%
+% # mt_coh_wkb: (I^k x I^w x M^r) by (M^z)
+% # mt_z_wage_mesh_coh_wkb: (I^k x I^w x M^r) by (M^z)
+%
+
 params_group = values(armt_map, {'mt_coh_wkb', 'mt_z_wage_mesh_coh_wkb'});
 [mt_coh_wkb, mt_z_wage_mesh_coh_wkb] = params_group{:};
+
+%% Parse Parameters 4, other asset arrays
+
+params_group = values(armt_map, {'ar_a_meshk', 'ar_k_mesha'});
+[ar_a_meshk, ar_k_mesha] = params_group{:};
+
+%% Parse Parameters 5, Others
 
 % func_map
 params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons'});
@@ -220,8 +259,9 @@ while bl_vfi_continue
     it_wak_n = it_w_interp_n*it_ak_perc_n;
     
     % 2. Initialize V(coh(k'(w),b'(w),zr,zw'),zw',zr'))
+    % mt_val_wkb_interpolated is: (I^k x I^w x M^r) by (M^z x M^r)
     % reachable cash-on-hand (as rows) and shocks next period given choices
-    % and shocks next period. 
+    % and shocks next period.
     mt_val_wkb_interpolated = zeros([it_wak_n*fl_z_r_borr_n, it_z_n]);
     
     % 3. Loop over possible shocks over interest rate
@@ -231,7 +271,7 @@ while bl_vfi_continue
         % v(coh,z) solved on ar_interp_coh_grid, ar_z grids, see
         % ffs_ipwkbz_get_funcgrid.m. Generate interpolant based on that, Then
         % interpolate for the coh reachable levels given the k(w,z) percentage
-        % choice grids in the second stage of the problem. 
+        % choice grids in the second stage of the problem.
         %
         % Note mt_val_cur/mt_val dimension is based on interpolant
         % cash-on-hand for rows, and meshed shocks for columns. The meshed
@@ -239,35 +279,37 @@ while bl_vfi_continue
         % <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_get_funcgrid.html
         % ffs_ipwkbz_get_funcgrid> for details on how the shock grids are
         % formed.
-    
+        
         % Get current z_r_borr from mt_val
         it_mt_val_col_start = it_z_wage_n*(it_z_r_borr_ctr-1) + 1;
-        it_mt_val_col_end   = it_mt_val_col_start + it_z_wage_n - 1;    
+        it_mt_val_col_end   = it_mt_val_col_start + it_z_wage_n - 1;
         mt_val_cur_rcolseg =  mt_val_cur(:, it_mt_val_col_start:it_mt_val_col_end);
-
+        
         % Generate Interpolant for v(coh,z)
+        % mt_z_wage_mesh_interp_coh_grid is: (I^{coh_interp}) by (M^z)
         f_grid_interpolant_value = griddedInterpolant(...
-            mt_z_wage_mesh_coh_interp_grid', mt_interp_coh_grid_mesh_z_wage', ...
+            mt_z_wage_mesh_interp_coh_grid', mt_interp_coh_grid_mesh_z_wage', ...
             mt_val_cur_rcolseg', 'linear', 'nearest');
-
+        
         % Interpolate V(coh(k',b',z',r),z',r') for a specific r'
-        mt_val_wkb_interpolated(:, it_mt_val_col_start:it_mt_val_col_end) = ...
-            f_grid_interpolant_value(mt_z_wage_mesh_coh_wkb, mt_coh_wkb);
+        % mt_z_wage_mesh_coh_wkb and mt_coh_wkb are: (I^k x I^w x M^r) by (M^z)
+        mt_val_wkb_interpolated_seg = f_grid_interpolant_value(mt_z_wage_mesh_coh_wkb, mt_coh_wkb);
+        mt_val_wkb_interpolated(:, it_mt_val_col_start:it_mt_val_col_end) = mt_val_wkb_interpolated_seg;
         
     end
     
-%     %% Interpolate (1) reacahble v(coh(k(w,z),b(w,z),z),z) given v(coh, z)
-%     % v(coh,z) solved on ar_interp_coh_grid, ar_z grids, see
-%     % ffs_ipwkbz_get_funcgrid.m. Generate interpolant based on that, Then
-%     % interpolate for the coh reachable levels given the k(w,z) percentage
-%     % choice grids in the second stage of the problem
-% 
-%     % Generate Interpolant for v(coh,z)
-%     f_grid_interpolant_value = griddedInterpolant(...
-%         mt_z_mesh_coh_interp_grid', mt_interp_coh_grid_mesh_z', mt_val_cur', 'linear', 'nearest');
-% 
-%     % Interpolate for v(coh(k(w,z),b(w,z),z),z)
-%     mt_val_wkb_interpolated = f_grid_interpolant_value(mt_z_mesh_coh_wkb, mt_coh_wkb);
+    %     %% Interpolate (1) reacahble v(coh(k(w,z),b(w,z),z),z) given v(coh, z)
+    %     % v(coh,z) solved on ar_interp_coh_grid, ar_z grids, see
+    %     % ffs_ipwkbz_get_funcgrid.m. Generate interpolant based on that, Then
+    %     % interpolate for the coh reachable levels given the k(w,z) percentage
+    %     % choice grids in the second stage of the problem
+    %
+    %     % Generate Interpolant for v(coh,z)
+    %     f_grid_interpolant_value = griddedInterpolant(...
+    %         mt_z_mesh_coh_interp_grid', mt_interp_coh_grid_mesh_z', mt_val_cur', 'linear', 'nearest');
+    %
+    %     % Interpolate for v(coh(k(w,z),b(w,z),z),z)
+    %     mt_val_wkb_interpolated = f_grid_interpolant_value(mt_z_mesh_coh_wkb, mt_coh_wkb);
     
     %% Solve Second Stage Problem k*(w,z)
     % This is the key difference between this function and
@@ -282,12 +324,12 @@ while bl_vfi_continue
     bl_input_override = true;
     [mt_ev_condi_z_max, ~, mt_ev_condi_z_max_kp, ~] = ...
         ff_ipwkbz_evf(mt_val_wkb_interpolated, param_map, support_map, armt_map, bl_input_override);
-
+    
     %% Solve First Stage Problem w*(z) given k*(w,z)
-
+    
     % loop 1: over exogenous states
     for it_z_i = 1:it_z_n
-
+        
         %% A. Interpolate FULL to get k*(w_perc, z), b*(k,w) based on k*(w_level, z)
         % Generate interpolant for (2) k*(ar_w_perc) from k*(ar_w_level,z)
         % There are two w=k'+b' arrays. ar_w_level is the level even grid based
@@ -296,14 +338,14 @@ while bl_vfi_continue
         % vector of percentage ws. So we need to interpolate to get the optimal
         % k* and b* choices at each percentage level of w.
         f_interpolante_w_level_kstar_z = griddedInterpolant(ar_w_level, mt_ev_condi_z_max_kp(:, it_z_i)', 'linear', 'nearest');
-
+        
         % Interpolate (2), shift from w_level to w_perc
-        mt_w_kstar_interp_z = f_interpolante_w_level_kstar_z(mt_w_by_interp_coh_interp_grid);
-        mt_w_astar_interp_z = mt_w_by_interp_coh_interp_grid - mt_w_kstar_interp_z;
-
+        mt_w_kstar_interp_z = f_interpolante_w_level_kstar_z(mt_w_perc_mesh_interp_coh_grid);
+        mt_w_astar_interp_z = mt_w_perc_mesh_interp_coh_grid - mt_w_kstar_interp_z;
+        
         % changes in w_perc kstar choices
         mt_w_kstar_diff_idx = (cl_w_kstar_interp_z{it_z_i} ~= mt_w_kstar_interp_z);
-
+        
         %% B. Calculate UPDATE u(c): u(c(coh_level, w_perc)) given k*_interp, b*_interp
         % Note that compared to
         % <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html
@@ -311,13 +353,13 @@ while bl_vfi_continue
         % number of columns (states) as in the ffs_akz_set_functions file,
         % but the number of rows equal to ar_w length.
         ar_c = f_cons(mt_interp_coh_grid_mesh_w_perc(mt_w_kstar_diff_idx), ...
-                      mt_w_astar_interp_z(mt_w_kstar_diff_idx), ...
-                      mt_w_kstar_interp_z(mt_w_kstar_diff_idx));
-
+            mt_w_astar_interp_z(mt_w_kstar_diff_idx), ...
+            mt_w_kstar_interp_z(mt_w_kstar_diff_idx));
+        
         ar_it_c_valid_idx = (ar_c <= fl_c_min);
         % EVAL current utility: N by N, f_util defined earlier
         ar_utility_update = f_grid_interpolant_spln(ar_c);
-
+        
         % Update Storage
         if (it_iter == 1)
             cl_u_c_store{it_z_i} = reshape(ar_utility_update, [length(ar_w_perc), length(ar_interp_coh_grid)]);
@@ -327,16 +369,16 @@ while bl_vfi_continue
             cl_c_valid_idx{it_z_i}(mt_w_kstar_diff_idx) = ar_it_c_valid_idx;
         end
         cl_w_kstar_interp_z{it_z_i} = mt_w_kstar_interp_z;
-
+        
         %% C. Interpolate FULL EV(k*(coh_level, w_perc, z), w - b*|z) based on EV(k*(w_level, z))
         % Generate Interpolant for (3) EV(k*(ar_w_perc),Z)
         f_interpolante_ev_condi_z_max_z = griddedInterpolant(ar_w_level, mt_ev_condi_z_max(:, it_z_i)', 'linear', 'nearest');
         % Interpolate (3), EVAL add on future utility, N by N + N by N
-        mt_ev_condi_z_max_interp_z = f_interpolante_ev_condi_z_max_z(mt_w_by_interp_coh_interp_grid);
+        mt_ev_condi_z_max_interp_z = f_interpolante_ev_condi_z_max_z(mt_w_perc_mesh_interp_coh_grid);
         
         %% D. Compute FULL U(coh_level, w_perc, z) over all w_perc
         mt_utility = cl_u_c_store{it_z_i} + fl_beta*mt_ev_condi_z_max_interp_z;
-
+        
         % Index update
         % using the method below is much faster than index replace
         % see <https://fanwangecon.github.io/M4Econ/support/speed/index/fs_subscript.html fs_subscript>
@@ -350,26 +392,26 @@ while bl_vfi_continue
             % if default is not allowed: v = u(cmin)
             mt_utility = mt_utility.*(~mt_it_c_valid_idx) + fl_nan_replace*(mt_it_c_valid_idx);
         end
-
+        
         % percentage algorithm does not have invalid (check to make sure
         % min percent is not 0 in ffs_ipwkbz_get_funcgrid.m)
         % mt_utility = mt_utility.*(~mt_it_c_valid_idx) + fl_u_neg_c*(mt_it_c_valid_idx);
-
-        %% E. Optimize Over Choices: max_{w_perc} U(coh_level, w_perc, z)        
+        
+        %% E. Optimize Over Choices: max_{w_perc} U(coh_level, w_perc, z)
         % Optimization: remember matlab is column major, rows must be
         % choices, columns must be states
         % <https://en.wikipedia.org/wiki/Row-_and_column-major_order COLUMN-MAJOR>
         [ar_opti_val_z, ar_opti_idx_z] = max(mt_utility);
-
+        
         % Generate Linear Opti Index
         [it_choies_n, it_states_n] = size(mt_utility);
         ar_add_grid = linspace(0, it_choies_n*(it_states_n-1), it_states_n);
         ar_opti_linear_idx_z = ar_opti_idx_z + ar_add_grid;
-
+        
         ar_opti_aprime_z = mt_w_astar_interp_z(ar_opti_linear_idx_z);
         ar_opti_kprime_z = mt_w_kstar_interp_z(ar_opti_linear_idx_z);
         ar_opti_c_z = f_cons(ar_interp_coh_grid, ar_opti_aprime_z, ar_opti_kprime_z);
-
+        
         % Handle Default is optimal or not
         if (bl_default)
             % if defaulting is optimal choice, at these states, not required
@@ -384,41 +426,41 @@ while bl_vfi_continue
             ar_opti_aprime_z(ar_opti_c_z <= fl_c_min) = min(ar_a_meshk);
             ar_opti_kprime_z(ar_opti_c_z <= fl_c_min) = min(ar_k_mesha);
         end
-
-        %% F. Store Results        
+        
+        %% F. Store Results
         mt_val(:,it_z_i) = ar_opti_val_z;
         mt_pol_a(:,it_z_i) = ar_opti_aprime_z;
         mt_pol_k(:,it_z_i) = ar_opti_kprime_z;
         if (it_iter == (it_maxiter_val + 1))
             mt_pol_idx(:,it_z_i) = ar_opti_linear_idx_z;
         end
-
+        
     end
-
+    
     %% Check Tolerance and Continuation
-
+    
     % Difference across iterations
     ar_val_diff_norm(it_iter) = norm(mt_val - mt_val_cur);
     ar_pol_diff_norm(it_iter) = norm(mt_pol_a - mt_pol_a_cur) + norm(mt_pol_k - mt_pol_k_cur);
     ar_pol_a_perc_change = sum((mt_pol_a ~= mt_pol_a_cur))/(length(ar_interp_coh_grid));
     ar_pol_k_perc_change = sum((mt_pol_k ~= mt_pol_k_cur))/(length(ar_interp_coh_grid));
     mt_pol_perc_change(it_iter, :) = mean([ar_pol_a_perc_change;ar_pol_k_perc_change]);
-
+    
     % Update
     mt_val_cur = mt_val;
     mt_pol_a_cur = mt_pol_a;
     mt_pol_k_cur = mt_pol_k;
-
+    
     % Print Iteration Results
     if (bl_display && (rem(it_iter, it_display_every)==0))
         fprintf('VAL it_iter:%d, fl_diff:%d, fl_diff_pol:%d\n', ...
             it_iter, ar_val_diff_norm(it_iter), ar_pol_diff_norm(it_iter));
         tb_valpol_iter = array2table([mean(mt_val_cur,1);...
-                                      mean(mt_pol_a_cur,1); ...
-                                      mean(mt_pol_k_cur,1); ...
-                                      mt_val_cur(length(ar_interp_coh_grid),:); ...
-                                      mt_pol_a_cur(length(ar_interp_coh_grid),:); ...
-                                      mt_pol_k_cur(length(ar_interp_coh_grid),:)]);
+            mean(mt_pol_a_cur,1); ...
+            mean(mt_pol_k_cur,1); ...
+            mt_val_cur(length(ar_interp_coh_grid),:); ...
+            mt_pol_a_cur(length(ar_interp_coh_grid),:); ...
+            mt_pol_k_cur(length(ar_interp_coh_grid),:)]);
         tb_valpol_iter.Properties.VariableNames = strcat('z', string((1:size(mt_val_cur,2))));
         tb_valpol_iter.Properties.RowNames = {'mval', 'map', 'mak', 'Hval', 'Hap', 'Hak'};
         disp('mval = mean(mt_val_cur,1), average value over a')
@@ -429,7 +471,7 @@ while bl_vfi_continue
         disp('mak = mt_pol_k_cur(it_ameshk_n,:), highest k state choice')
         disp(tb_valpol_iter);
     end
-
+    
     % Continuation Conditions:
     % 1. if value function convergence criteria reached
     % 2. if policy function variation over iterations is less than
@@ -443,7 +485,7 @@ while bl_vfi_continue
         it_iter_last = it_iter;
         it_iter = it_maxiter_val;
     end
-
+    
 end
 
 % End Timer
@@ -471,20 +513,19 @@ result_map('cl_mt_pol_k') = {mt_pol_k, zeros(1)};
 result_map('cl_mt_pol_c') = {f_cons(mt_interp_coh_grid_mesh_z, mt_pol_a, mt_pol_k), zeros(1)};
 result_map('ar_st_pol_names') = ["cl_mt_coh", "cl_mt_pol_a", "cl_mt_pol_k", "cl_mt_pol_c"];
 
-
 if (bl_post)
     bl_input_override = true;
     result_map('ar_val_diff_norm') = ar_val_diff_norm(1:it_iter_last);
     result_map('ar_pol_diff_norm') = ar_pol_diff_norm(1:it_iter_last);
     result_map('mt_pol_perc_change') = mt_pol_perc_change(1:it_iter_last, :);
-
+    
     % graphing based on coh_wkb, but that does not match optimal choice
     % matrixes for graphs.
     armt_map('mt_coh_wkb') = mt_interp_coh_grid_mesh_z;
     armt_map('it_ameshk_n') = length(ar_interp_coh_grid);
     armt_map('ar_a_meshk') = mt_interp_coh_grid_mesh_z(:,1);
     armt_map('ar_k_mesha') = zeros(size(mt_interp_coh_grid_mesh_z(:,1)) + 0);
-
+    
     result_map = ff_akz_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
 end
 

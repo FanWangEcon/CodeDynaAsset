@@ -45,7 +45,7 @@ default_params = {it_subset bl_display_defparam};
 param_map = containers.Map('KeyType','char', 'ValueType','any');
 
 % model name
-param_map('st_model') = 'ipwkbz';
+param_map('st_model') = 'ipwkbzr';
 
 % Preferences
 param_map('fl_crra') = 1.5;
@@ -299,6 +299,7 @@ if (ismember(it_subset, [5,6,7,8,9]))
         % TEST quick (need to enough to have distribution)
         param_map('it_w_perc_n') = 40;
         param_map('it_ak_perc_n') = param_map('it_w_perc_n');
+        
         param_map('it_z_wage_n') = 3;
         param_map('fl_z_r_borr_n') = 2;
         param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');

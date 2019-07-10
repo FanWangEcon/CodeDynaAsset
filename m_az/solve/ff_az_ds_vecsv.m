@@ -139,7 +139,7 @@ else
     % default invoke
     close all;
 
-    it_param_set = 8;
+    it_param_set = 6;
     bl_input_override = true;
 
     % 1. Generate Parameters

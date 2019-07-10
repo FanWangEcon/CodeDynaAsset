@@ -258,9 +258,11 @@ if (ismember(it_subset, [5,6,7,8,9]))
     if (ismember(it_subset, [5]))
         % TEST quick (need to enough to have distribution)
         param_map('it_a_n') = 100;
+
         param_map('it_z_wage_n') = 5;
         param_map('fl_z_r_borr_n') = 2;
         param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+
         param_map('it_maxiter_val') = 50;
         param_map('it_maxiter_dist') = 50;
         param_map('it_tol_pol_nochange') = 1000;
@@ -273,7 +275,7 @@ if (ismember(it_subset, [5,6,7,8,9]))
         support_map('bl_time') = true;
         support_map('bl_display_defparam') = true;
         support_map('bl_display') = false;
-        support_map('bl_display_dist') = false;
+        support_map('bl_display_dist') = true;
         support_map('it_display_every') = 20;
 
         support_map('bl_post') = true;

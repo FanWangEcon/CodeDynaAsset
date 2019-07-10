@@ -15,7 +15,7 @@ function [result_map] = ff_ipwkbz_ds_wrapper(varargin)
 % # it_subset = 8 is matlab publish
 % # it_subset = 9 is invoke operational (only final stats) and coh graph
 
-it_param_set = 8;
+it_param_set = 6;
 bl_input_override = true;
 [param_map, support_map] = ffs_ipwkbz_set_default_param(it_param_set);
 
@@ -34,12 +34,14 @@ bl_input_override = true;
 % param_map('fl_w_interp_grid_gap') = 0.1;
 % param_map('it_w_perc_n') = 100;
 % param_map('fl_r_save') = 0.025;
-% param_map('fl_r_borr') = 0.025;
+% param_map('fl_c_min') = 0.02;
 
 % These parameters below for comparison with abz_fibs model
-param_map('fl_r_save') = 0.025;
-param_map('fl_r_borr') = 0.095;
-param_map('fl_c_min') = 0.02;
+% param_map('fl_c_min') = 0.02;
+param_map('fl_z_r_borr_poiss_mean') = 7;
+% param_map('fl_z_r_borr_max') = 0.095;
+% param_map('fl_z_r_borr_min') = 0.025;
+% param_map('fl_z_r_borr_n') = 5;
 
 % param_map('st_analytical_stationary_type') = 'loop';
 % param_map('st_analytical_stationary_type') = 'vector';

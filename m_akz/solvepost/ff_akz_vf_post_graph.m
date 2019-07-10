@@ -82,11 +82,14 @@ else
     result_map('cl_mt_pol_k') = {mt_pol_k, zeros(1)};
     result_map('cl_mt_cons') = {mt_cons, zeros(1)};
     result_map('cl_mt_coh') = {mt_coh, zeros(1)};
-    
+
 end
 
 %% Parse Parameters
 
+% Get Model Name
+params_group = values(param_map, {'st_model'});
+[st_model] = params_group{:};
 % param_map
 params_group = values(param_map, {'it_z_n', 'fl_w_max'});
 [it_z_n, fl_w_max] = params_group{:};
@@ -100,8 +103,17 @@ params_group = values(support_map, {'st_title_prefix'});
 [st_title_prefix] = params_group{:};
 
 % armt_map
-params_group = values(armt_map, {'ar_z', 'mt_coh_wkb', 'ar_a_meshk'});
-[ar_z, mt_coh_wkb, ar_a_meshk] = params_group{:};
+params_group = values(armt_map, {'mt_coh_wkb', 'ar_a_meshk'});
+[mt_coh_wkb, ar_a_meshk] = params_group{:};
+if (strcmp(st_model, 'ipwkbzr'))
+    params_group = values(armt_map, {'ar_z_r_borr_mesh_wage_w1r2', 'ar_z_wage_mesh_r_borr_w1r2'});
+    [ar_z_r_borr_mesh_wage_w1r2, ar_z_wage_mesh_r_borr_w1r2] = params_group{:};
+    params_group = values(param_map, {'it_z_wage_n', 'fl_z_r_borr_n'});
+    [it_z_wage_n, fl_z_r_borr_n] = params_group{:};
+else
+    params_group = values(armt_map, {'ar_z'});
+    [ar_z] = params_group{:};
+end
 
 % func_map
 params_group = values(func_map, {'f_coh'});
@@ -112,8 +124,35 @@ params_group = values(result_map, {'mt_val', 'cl_mt_cons', 'cl_mt_coh', 'cl_mt_p
 [mt_val, cl_mt_cons, cl_mt_coh, cl_mt_pol_a, cl_mt_pol_k] = params_group{:};
 [mt_cons, mt_coh, mt_pol_a, mt_pol_k] = deal(cl_mt_cons{1}, cl_mt_coh{1}, cl_mt_pol_a{1}, cl_mt_pol_k{1});
 
+%% Generate Limited Legends
+
+if (strcmp(st_model, 'ipwkbzr'))
+
+    % 8 graph points, 2 levels of borrow rates, and 4 levels of rbr rates
+    ar_it_z_r_borr = ([1 round((fl_z_r_borr_n)/2) (fl_z_r_borr_n)]);
+    ar_it_z_wage = ([1 round((it_z_wage_n)/2) (it_z_wage_n)]);
+
+    % combine by index
+    mt_it_z_graph = ar_it_z_wage' + it_z_wage_n*(ar_it_z_r_borr-1);
+    ar_it_z_graph = mt_it_z_graph(:)';
+
+    % legends index final
+    ar_it_legend2plot = fliplr(ar_it_z_graph);
+    ar_it_legend2plot_lth = ar_it_z_graph;
+    cl_st_legendCell = cellstr([num2str(ar_z_r_borr_mesh_wage_w1r2', 'zr=%3.2f;'), ...
+                          num2str(ar_z_wage_mesh_r_borr_w1r2', 'zw=%3.2f')]);
+
+else
+
+    ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)) (it_z_n)]);
+    ar_it_legend2plot = fliplr(ar_it_z_graph);
+    ar_it_legend2plot_lth = ar_it_z_graph;
+    cl_st_legendCell = cellstr(num2str(ar_z', 'shock next=%3.2f'));
+
+end
+
 % How many zs to Graph
-ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)) (it_z_n)]);
+
 
 %% Graphing COH today vs COH tomorrow
 % This plots the cash-on-hand today vs cash-on-hand tomorrow. This is an
@@ -148,15 +187,21 @@ ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)
 %
 
 if (bl_graph_coh_t_coh)
-    
+
     % 1. Single Array A' Next Period and COH today
     ar_pol_a_full = mt_pol_a(:);
     ar_pol_k_full = mt_pol_k(:);
     ar_coh_full = mt_coh(:);
-    
+
     % 2. COH Next Period
-    mt_coh_next = f_coh(ar_z, ar_pol_a_full, ar_pol_k_full);
-    
+    % 2. COH Next Period
+    if (strcmp(st_model, 'ipwkbzr'))
+        mt_coh_next = f_coh(ar_z_r_borr_mesh_wage_w1r2, ar_z_wage_mesh_r_borr_w1r2, ...
+                            ar_pol_a_full, ar_pol_k_full);
+    else
+        mt_coh_next = f_coh(ar_z, ar_pol_a_full, ar_pol_k_full);
+    end
+
     % 3. Start Figure
     if(~bl_graph_onebyones)
         figure('PaperPosition', [0 0 21 4]);
@@ -164,50 +209,50 @@ if (bl_graph_coh_t_coh)
     else
         ar_sub_j = [3 2];
     end
-    
+
     for sub_j = ar_sub_j
-        
+
         % 4. Legends and values
         if (ismember(sub_j, [2]))
             bl_log_coh = 1;
         else
             bl_log_coh = 0;
         end
-        
+
         if (sub_j==1)
-            
+
             mt_outcome = mt_coh_next;
             ar_xvar = ar_coh_full;
-            
+
             st_y_label = 'cash-on-hand t+1 = coh(a''(a,k,z), k''(a,k,z), z'')';
             st_x_label = 'cash-on-hand t = coh(a,k,z)';
             st_title = 'coh(a''(coh(a,k,z),z), z''): reachable coh'' given coh';
             st_legend_loc = 'southeast';
-            
+
         end
         if (sub_j==2)
-            
+
             mt_outcome = log(mt_coh_next - min(ar_a_meshk) + 1);
             ar_xvar = log(ar_coh_full - min(ar_a_meshk) + 1);
-            
+
             st_y_label = 'log(coh''(a'',k'',z'') - min(a'') + 1)';
             st_x_label = 'log(coh(a,k,z) - min(a) + 1)';
             st_title = 'coh(a'',k'', z''): reachable coh'' given coh';
             st_legend_loc = 'southeast';
-            
+
         end
         if (sub_j==3)
-            
+
             mt_outcome = mt_coh_next - ar_coh_full;
             ar_xvar = ar_coh_full;
-            
+
             st_y_label = 'coh(a''(a,k,z), k''(a,k,z), z'') - coh(a,k,z)';
             st_x_label = 'coh(a,k,z)';
             st_title = 'coh''(a'',k'',z''|a,z) - coh(a,k,z): reachable coh'' given coh';
             st_legend_loc = 'northeast';
-            
+
         end
-        
+
         % 5. Start Figure
         if (~bl_graph_onebyones)
             subplot(1,3,sub_j)
@@ -215,22 +260,25 @@ if (bl_graph_coh_t_coh)
             figure('PaperPosition', [0 0 7 4]);
         end
         hold on;
-        
+
         % 7. Color
-        clr = jet(length(ar_z));
-        for m = 1:length(ar_z)
+        clr = jet(it_z_n);
+        for m = 1:it_z_n
             % scatter
-            fig_cur_z = scatter(ar_xvar, mt_outcome(:,m), 1, ...
+            mt_y = real(mt_outcome(:,m));
+            ar_x = real(ar_xvar);
+            fig_cur_z = scatter(ar_x, mt_y, 1, ...
                 'MarkerEdgeColor', clr(m,:), 'MarkerFaceAlpha', 0.3, ...
                 'MarkerFaceColor', clr(m,:), 'MarkerEdgeAlpha', 0.3);
             chart(m) = fig_cur_z;
         end
-        
+
         % 8. Legends
-        legend2plot = fliplr([1 round(length(ar_z)/4) round((2*length(ar_z))/4) round((3*length(ar_z))/4)  length(ar_z)]);
-        legendCell = cellstr(num2str(ar_z', 'shock next=%3.2f'));
-        legend(chart(legend2plot), legendCell(legend2plot), 'Location', st_legend_loc);
-        
+%         legend2plot = fliplr([1 round(it_z_n/4) round((2*it_z_n)/4) round((3*it_z_n)/4)  it_z_n]);
+%         legendCell = cellstr(num2str(ar_z', 'shock next=%3.2f'));
+%         legend(chart(legend2plot), legendCell(legend2plot), 'Location', st_legend_loc);
+        legend(chart(ar_it_legend2plot), cl_st_legendCell(ar_it_legend2plot), 'Location', st_legend_loc);
+
         % 9. Titling etc
         grid on;
         title([st_title_prefix st_title]);
@@ -241,38 +289,38 @@ if (bl_graph_coh_t_coh)
         if (bl_log_coh == 0)
             xline0 = xline(0);
             xline0.HandleVisibility = 'off';
-            
+
             yline0 = yline(0);
             yline0.HandleVisibility = 'off';
         else
             xline0 = xline(log(0 - min(ar_a_meshk) + 1));
             xline0.HandleVisibility = 'off';
-            
+
             yline0 = yline(log(0 - min(ar_a_meshk) + 1));
             yline0.HandleVisibility = 'off';
         end
-        
-        
+
+
         % 45 Degree Line
-        if (sub_j~=3)        
+        if (sub_j~=3)
             hline = refline([1 0]);
             hline.Color = 'k';
             hline.LineStyle = ':';
             hline.HandleVisibility = 'off';
             hline.LineWidth = 2.5;
         end
-        
+
         grid on;
         grid minor;
     end
-    
+
     % save file
     if (bl_img_save)
-        mkdir(support_map('st_img_path'));
+        if ~exist(support_map('st_img_path'),'dir'); mkdir(support_map('st_img_path')); end
         st_file_name = [st_img_prefix st_img_name_main '_coh' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
-    
+
 end
 
 %% Graphing Values
@@ -328,11 +376,12 @@ if (bl_graph_val)
             xlabel({'log(COH - borrbound + 1)'})
         end
 
-        legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
         xlinemax.Color = 'b';
         xlinemax.LineWidth = 1.5;
-        legendCell{length(legendCell) + 1} = 'max-agg-save';
-        legend(legendCell([ar_it_z_graph length(legendCell)]), 'Location','southeast');
+
+        cl_st_legendCell_here = cl_st_legendCell;
+        cl_st_legendCell_here{length(cl_st_legendCell_here) + 1} = 'max-agg-save';
+        legend(cl_st_legendCell_here([ar_it_legend2plot_lth length(cl_st_legendCell_here)]), 'Location','southeast');
 
         xline0 = xline(0);
         xline0.HandleVisibility = 'off';
@@ -343,7 +392,7 @@ if (bl_graph_val)
 
     % save file
     if (bl_img_save)
-        mkdir(support_map('st_img_path'));
+        if ~exist(support_map('st_img_path'),'dir'); mkdir(support_map('st_img_path')); end
         st_file_name = [st_img_prefix st_img_name_main '_val' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
@@ -455,12 +504,17 @@ if (bl_graph_pol_lvl)
         ylabel(st_y_label);
         xlabel(st_x_label);
 
-        legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
         xlinemax = xline(fl_w_max_line);
         xlinemax.Color = 'b';
         xlinemax.LineWidth = 1.5;
-        legendCell{length(legendCell) + 1} = 'max-agg-save';
-        legend(legendCell([ar_it_z_graph length(legendCell)]), 'Location','northwest');
+
+%         legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
+%         legendCell{length(legendCell) + 1} = 'max-agg-save';
+%         legend(legendCell([ar_it_z_graph length(legendCell)]), 'Location','northwest');
+
+        cl_st_legendCell_here = cl_st_legendCell;
+        cl_st_legendCell_here{length(cl_st_legendCell_here) + 1} = 'max-agg-save';
+        legend(cl_st_legendCell_here([ar_it_legend2plot_lth length(cl_st_legendCell_here)]), 'Location','southeast');
 
         hline = refline([1 0]);
         hline.Color = 'k';
@@ -480,7 +534,7 @@ if (bl_graph_pol_lvl)
 
     % save file
     if (bl_img_save)
-        mkdir(support_map('st_img_path'));
+        if ~exist(support_map('st_img_path'),'dir'); mkdir(support_map('st_img_path')); end
         st_file_name = [st_img_prefix st_img_name_main '_pol_lvl' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
@@ -589,7 +643,7 @@ if (bl_graph_pol_pct)
         title([st_title_prefix st_title st_title_suffix])
         ylabel(st_y_label)
 
-        legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
+%         legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
 
         if (bl_log_coh == 0)
             xlinemax = xline(fl_w_max);
@@ -601,8 +655,12 @@ if (bl_graph_pol_pct)
 
         xlinemax.Color = 'b';
         xlinemax.LineWidth = 1.5;
-        legendCell{length(legendCell) + 1} = 'max-agg-save';
-        legend(legendCell([ar_it_z_graph length(legendCell)]), 'Location', st_legend_loc);
+%         legendCell{length(legendCell) + 1} = 'max-agg-save';
+%         legend(legendCell([ar_it_z_graph length(legendCell)]), 'Location', st_legend_loc);
+
+        cl_st_legendCell_here = cl_st_legendCell;
+        cl_st_legendCell_here{length(cl_st_legendCell_here) + 1} = 'max-agg-save';
+        legend(cl_st_legendCell_here([ar_it_legend2plot_lth length(cl_st_legendCell_here)]), 'Location','southeast');
 
         % xlim([min(ar_coh_curz)+1.5 15]);
 
@@ -626,7 +684,7 @@ if (bl_graph_pol_pct)
 
     % save file
     if (bl_img_save)
-        mkdir(support_map('st_img_path'));
+        if ~exist(support_map('st_img_path'),'dir'); mkdir(support_map('st_img_path')); end
         st_file_name = [st_img_prefix st_img_name_main '_pol_pct' st_sv_suffix st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end

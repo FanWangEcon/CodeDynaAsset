@@ -104,7 +104,8 @@ elseif (ismember(st_model, ['abz', 'abz_fibs']))
     [ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
     params_group = values(param_map, {'it_z_wage_n', 'fl_z_r_borr_n'});
     [it_z_wage_n, fl_z_r_borr_n] = params_group{:};    
-end  
+end
+
 % func_map
 params_group = values(func_map, {'f_coh'});
 [f_coh] = params_group{:};
@@ -253,7 +254,9 @@ if (bl_graph_coh_t_coh)
         clr = jet(it_z_n);
         for m = 1:it_z_n
             % scatter
-            fig_cur_z = scatter(ar_xvar, mt_outcome(:,m), 1, ...
+            mt_y = real(mt_outcome(:,m));
+            ar_x = real(ar_xvar);
+            fig_cur_z = scatter(ar_x, mt_y, 1, ...
                 'MarkerEdgeColor', clr(m,:), 'MarkerFaceAlpha', 0.3, ...
                 'MarkerFaceColor', clr(m,:), 'MarkerEdgeAlpha', 0.3);
             chart(m) = fig_cur_z;
@@ -299,7 +302,7 @@ if (bl_graph_coh_t_coh)
 
     % save file
     if (bl_img_save)
-        mkdir(support_map('st_img_path'));
+        if ~exist(support_map('st_img_path'),'dir'); mkdir(support_map('st_img_path')); end
         st_file_name = [st_img_prefix st_img_name_main '_coh' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
@@ -376,7 +379,7 @@ if (bl_graph_val)
 
     % save file
     if (bl_img_save)
-        mkdir(support_map('st_img_path'));
+        if ~exist(support_map('st_img_path'),'dir'); mkdir(support_map('st_img_path')); end;
         st_file_name = [st_img_prefix st_img_name_main '_val' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
@@ -512,7 +515,7 @@ if (bl_graph_pol_lvl)
 
     % save file
     if (bl_img_save)
-        mkdir(support_map('st_img_path'));
+        if ~exist(support_map('st_img_path'),'dir'); mkdir(support_map('st_img_path')); end;
         st_file_name = [st_img_prefix st_img_name_main '_pol_lvl' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
@@ -622,7 +625,7 @@ if (bl_graph_pol_pct)
 
     % save file
     if (bl_img_save)
-        mkdir(support_map('st_img_path'));
+        if ~exist(support_map('st_img_path'),'dir'); mkdir(support_map('st_img_path')); end;
         st_file_name = [st_img_prefix st_img_name_main '_pol_pct' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
