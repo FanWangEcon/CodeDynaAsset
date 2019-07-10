@@ -111,16 +111,25 @@ f_coh = @(fl_r_borr, z, b, k) (f_prod(z, k) + k*(1-fl_delta) + fl_w + b.*(1+fl_r
 %% Equations Consumption
 % Simple Consumption given cash-on-hand
 % f_cons = @(coh, bprime, kprime) (coh - kprime - ((bprime./(1+fl_r_save)).*(bprime>0)) - ((bprime./(1+fl_r_borr)).*(bprime<=0)));
+
 f_cons = @(coh, bprime, kprime) (coh - kprime - bprime);
 
 %% Equations Stand-in Fake Utility for Graphs
 % Utility for graphing with random data, note that when we graph with coh
 % as the state variable using this equation here, there is no effect of
 % shock on utility, it is fully captured by the coh.
+
 f_util_standin = @(fl_r_borr, z, b, k) f_util_log((f_coh(fl_r_borr,z,b,k)-fl_b_bd).*((f_coh(fl_r_borr,z,b,k) - fl_b_bd) > fl_c_min) + ...
                                        fl_c_min.*((f_coh(fl_r_borr,z,b,k) - fl_b_bd) <= fl_c_min));
-f_util_standin_coh = @(coh) f_util_log((coh-fl_b_bd).*((coh - fl_b_bd) > fl_c_min) + ...
-                                       fl_c_min.*((coh - fl_b_bd) <= fl_c_min));
+                                   
+% f_util_standin_coh = @(coh, fl_r_borr) f_util_log((coh-fl_b_bd).*( (coh > 0) & (((coh - fl_b_bd)./(1+fl_r_borr)) > fl_c_min) ) + ...
+%                                                   ((coh-fl_b_bd)./(1+fl_r_borr)).*( (coh <= 0) & (((coh - fl_b_bd)./(1+fl_r_borr)) > fl_c_min) ) + ...
+%                                                   fl_c_min.*( (((coh - fl_b_bd)./(1+fl_r_borr)) <= fl_c_min) ));
 
+% fl_r_borr does not need to matter explicitly here for testing to work.
+f_util_standin_coh = @(coh, fl_r_borr) f_util_log((coh-fl_b_bd).*( (coh > 0) & (((coh - fl_b_bd)./(1)) > fl_c_min)) + ...
+                                                  ((coh-fl_b_bd)./(1)).*( (coh <= 0) & (((coh - fl_b_bd)./(1)) > fl_c_min)) + ...
+                                                  (fl_c_min./(1+fl_r_borr)).*( (((coh - fl_b_bd)./(1)) <= fl_c_min)));
+                                              
 
 end

@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Generate States, Choices and Shocks Grids and Get Functions (ABZ FIBS)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-07"><meta name="DC.source" content="ffs_abz_fibs_get_funcgrid.m"><style type="text/css">
+      --><title>Generate States, Choices and Shocks Grids and Get Functions (ABZ FIBS)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-09"><meta name="DC.source" content="ffs_abz_fibs_get_funcgrid.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -126,10 +126,10 @@ param_dsv_map(<span class="string">'fl_poiss_mean'</span>) = fl_z_r_borr_poiss_m
 param_dsv_map(<span class="string">'fl_max'</span>) = fl_z_r_borr_max;
 param_dsv_map(<span class="string">'fl_min'</span>) = fl_z_r_borr_min;
 param_dsv_map(<span class="string">'fl_n'</span>) = fl_z_r_borr_n;
-[ar_z_r_inf, ar_z_r_borr_prob] = fft_gen_discrete_var(param_dsv_map, true);
+[ar_z_r_inf, ar_z_r_inf_prob] = fft_gen_discrete_var(param_dsv_map, true);
 
 <span class="comment">% iid transition matrix</span>
-mt_z_r_borr_prob_trans = repmat(ar_z_r_borr_prob, [length(ar_z_r_borr_prob), 1]);
+mt_z_r_borr_prob_trans = repmat(ar_z_r_inf_prob, [length(ar_z_r_inf_prob), 1]);
 </pre><h2 id="9">Get Shock: Mesh Shocks Together</h2><pre class="codeinput"><span class="comment">% Kronecker product to get full transition matrix for the two shocks</span>
 mt_z_trans = kron(mt_z_r_borr_prob_trans, mt_z_wage_trans);
 
@@ -137,6 +137,260 @@ mt_z_trans = kron(mt_z_r_borr_prob_trans, mt_z_wage_trans);
 [mt_z_wage_mesh_r_borr, mt_z_r_inf_mesh_wage] = ndgrid(ar_z_wage, ar_z_r_inf);
 ar_z_r_inf_mesh_wage = mt_z_r_inf_mesh_wage(:)';
 ar_z_wage_mesh_r_borr = mt_z_wage_mesh_r_borr(:)';
+
+<span class="keyword">if</span> (bl_display_funcgrids)
+
+    disp(<span class="string">'----------------------------------------'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp(<span class="string">'Borrow R Shock: ar_z_r_inf_mesh_wage'</span>);
+    disp(<span class="string">'Prod/Wage Shock: mt_z_wage_mesh_r_borr'</span>);
+    disp(<span class="string">'show which shock is inner and which is outter'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+
+    tb_two_shocks = array2table([ar_z_r_inf_mesh_wage;<span class="keyword">...</span>
+        ar_z_wage_mesh_r_borr]');
+    cl_col_names = [<span class="string">"Borrow R Shock (Meshed)"</span>, <span class="string">"Wage R Shock (Meshed)"</span>];
+    cl_row_names = strcat(<span class="string">'zi='</span>, string((1:length(ar_z_r_inf_mesh_wage))));
+    tb_two_shocks.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_two_shocks.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
+
+    it_row_display = it_z_wage_n*2;
+
+    disp(size(tb_two_shocks));
+    disp(head(tb_two_shocks, it_row_display));
+    disp(tail(tb_two_shocks, it_row_display));
+
+
+    disp(<span class="string">'----------------------------------------'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp(<span class="string">'Borrow Rate Transition Matrix: mt_z_r_borr_prob_trans'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    it_col_n_keep = 15;
+    it_row_n_keep = 15;
+    [it_row_n, it_col_n] = size(mt_z_r_borr_prob_trans);
+    [ar_it_cols, ar_it_rows] = fft_row_col_subset(it_col_n, it_col_n_keep, it_row_n, it_row_n_keep);
+    cl_st_full_rowscols = cellstr([num2str(ar_z_r_inf', <span class="string">'r%3.2f'</span>)]);
+    tb_z_r_borr_prob_trans = array2table(round(mt_z_r_borr_prob_trans(ar_it_rows, ar_it_cols), 6));
+    cl_col_names = strcat(<span class="string">'zi='</span>, num2str(ar_it_cols'), <span class="string">':'</span>, cl_st_full_rowscols(ar_it_cols));
+    cl_row_names = strcat(<span class="string">'zi='</span>, num2str(ar_it_rows'), <span class="string">':'</span>, cl_st_full_rowscols(ar_it_cols));
+    tb_z_r_borr_prob_trans.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_z_r_borr_prob_trans.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
+
+    disp(size(tb_z_r_borr_prob_trans));
+    disp(tb_z_r_borr_prob_trans);
+
+
+    disp(<span class="string">'----------------------------------------'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp(<span class="string">'Wage Prod Shock Transition Matrix: mt_z_r_borr_prob_trans'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    it_col_n_keep = 15;
+    it_row_n_keep = 15;
+    [it_row_n, it_col_n] = size(mt_z_wage_trans);
+    [ar_it_cols, ar_it_rows] = fft_row_col_subset(it_col_n, it_col_n_keep, it_row_n, it_row_n_keep);
+    cl_st_full_rowscols = cellstr([num2str(ar_z_wage', <span class="string">'w%3.2f'</span>)]);
+    tb_z_wage_trans = array2table(round(mt_z_wage_trans(ar_it_rows, ar_it_cols),6));
+    cl_col_names = strcat(<span class="string">'zi='</span>, num2str(ar_it_cols'), <span class="string">':'</span>, cl_st_full_rowscols(ar_it_cols));
+    cl_row_names = strcat(<span class="string">'zi='</span>, num2str(ar_it_rows'), <span class="string">':'</span>, cl_st_full_rowscols(ar_it_cols));
+    tb_z_wage_trans.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_z_wage_trans.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
+
+    disp(size(tb_z_wage_trans));
+    disp(tb_z_wage_trans);
+
+
+    disp(<span class="string">'----------------------------------------'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp(<span class="string">'Full Transition Matrix: mt_z_trans'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    it_col_n_keep = it_z_wage_n*3;
+    it_row_n_keep = it_z_wage_n*3;
+    [it_row_n, it_col_n] = size(mt_z_trans);
+    [ar_it_cols, ar_it_rows] = fft_row_col_subset(it_col_n, it_col_n_keep, it_row_n, it_row_n_keep);
+    cl_st_full_rowscols = cellstr([num2str(ar_z_r_inf_mesh_wage', <span class="string">'r%3.2f;'</span>), <span class="keyword">...</span>
+                                   num2str(ar_z_wage_mesh_r_borr', <span class="string">'w%3.2f'</span>)]);
+    tb_mt_z_trans = array2table(round(mt_z_trans(ar_it_rows, ar_it_cols),6));
+    cl_col_names = strcat(<span class="string">'i'</span>, num2str(ar_it_cols'), <span class="string">':'</span>, cl_st_full_rowscols(ar_it_cols));
+    cl_row_names = strcat(<span class="string">'i'</span>, num2str(ar_it_rows'), <span class="string">':'</span>, cl_st_full_rowscols(ar_it_cols));
+    tb_mt_z_trans.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_mt_z_trans.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
+
+    disp(size(tb_mt_z_trans));
+    disp(tb_mt_z_trans);
+
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Borrow R Shock: ar_z_r_inf_mesh_wage
+Prod/Wage Shock: mt_z_wage_mesh_r_borr
+show which shock is inner and which is outter
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    75     2
+
+             BorrowRShock_Meshed_    WageRShock_Meshed_
+             ____________________    __________________
+
+    zi_1             0.025                0.34741      
+    zi_2             0.025                0.40076      
+    zi_3             0.025                 0.4623      
+    zi_4             0.025                 0.5333      
+    zi_5             0.025                0.61519      
+    zi_6             0.025                0.70966      
+    zi_7             0.025                0.81864      
+    zi_8             0.025                0.94436      
+    zi_9             0.025                 1.0894      
+    zi_10            0.025                 1.2567      
+    zi_11            0.025                 1.4496      
+    zi_12            0.025                 1.6723      
+    zi_13            0.025                 1.9291      
+    zi_14            0.025                 2.2253      
+    zi_15            0.025                  2.567      
+    zi_16           0.0425                0.34741      
+    zi_17           0.0425                0.40076      
+    zi_18           0.0425                 0.4623      
+    zi_19           0.0425                 0.5333      
+    zi_20           0.0425                0.61519      
+    zi_21           0.0425                0.70966      
+    zi_22           0.0425                0.81864      
+    zi_23           0.0425                0.94436      
+    zi_24           0.0425                 1.0894      
+    zi_25           0.0425                 1.2567      
+    zi_26           0.0425                 1.4496      
+    zi_27           0.0425                 1.6723      
+    zi_28           0.0425                 1.9291      
+    zi_29           0.0425                 2.2253      
+    zi_30           0.0425                  2.567      
+
+             BorrowRShock_Meshed_    WageRShock_Meshed_
+             ____________________    __________________
+
+    zi_46           0.0775                0.34741      
+    zi_47           0.0775                0.40076      
+    zi_48           0.0775                 0.4623      
+    zi_49           0.0775                 0.5333      
+    zi_50           0.0775                0.61519      
+    zi_51           0.0775                0.70966      
+    zi_52           0.0775                0.81864      
+    zi_53           0.0775                0.94436      
+    zi_54           0.0775                 1.0894      
+    zi_55           0.0775                 1.2567      
+    zi_56           0.0775                 1.4496      
+    zi_57           0.0775                 1.6723      
+    zi_58           0.0775                 1.9291      
+    zi_59           0.0775                 2.2253      
+    zi_60           0.0775                  2.567      
+    zi_61            0.095                0.34741      
+    zi_62            0.095                0.40076      
+    zi_63            0.095                 0.4623      
+    zi_64            0.095                 0.5333      
+    zi_65            0.095                0.61519      
+    zi_66            0.095                0.70966      
+    zi_67            0.095                0.81864      
+    zi_68            0.095                0.94436      
+    zi_69            0.095                 1.0894      
+    zi_70            0.095                 1.2567      
+    zi_71            0.095                 1.4496      
+    zi_72            0.095                 1.6723      
+    zi_73            0.095                 1.9291      
+    zi_74            0.095                 2.2253      
+    zi_75            0.095                  2.567      
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Borrow Rate Transition Matrix: mt_z_r_borr_prob_trans
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+     5     5
+
+                  zi_1_r0_03    zi_2_r0_04    zi_3_r0_06    zi_4_r0_08    zi_5_r0_10
+                  __________    __________    __________    __________    __________
+
+    zi_1_r0_03     0.000122      0.002433      0.024328      0.16219       0.81093  
+    zi_2_r0_04     0.000122      0.002433      0.024328      0.16219       0.81093  
+    zi_3_r0_06     0.000122      0.002433      0.024328      0.16219       0.81093  
+    zi_4_r0_08     0.000122      0.002433      0.024328      0.16219       0.81093  
+    zi_5_r0_10     0.000122      0.002433      0.024328      0.16219       0.81093  
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Wage Prod Shock Transition Matrix: mt_z_r_borr_prob_trans
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    15    15
+
+                   zi_1_w0_35    zi_2_w0_40    zi_3_w0_46    zi_4_w0_53    zi_5_w0_62    zi_6_w0_71    zi_7_w0_82    zi_8_w0_94    zi_9_w1_09    zi_10_w1_26    zi_11_w1_45    zi_12_w1_67    zi_13_w1_93    zi_14_w2_23    zi_15_w2_57
+                   __________    __________    __________    __________    __________    __________    __________    __________    __________    ___________    ___________    ___________    ___________    ___________    ___________
+
+    zi_1_w0_35       0.26016       0.26831       0.25551       0.14921      0.053403      0.011702      0.001568      0.000128         6e-06             0              0              0              0              0              0  
+    zi_2_w0_40       0.11232       0.19622        0.2763       0.23861       0.12635      0.040998      0.008143      0.000989       7.3e-05         3e-06              0              0              0              0              0  
+    zi_3_w0_46      0.037073       0.10492        0.2185       0.27902        0.2185       0.10492      0.030863      0.005556      0.000611       4.1e-05          2e-06              0              0              0              0  
+    zi_4_w0_53      0.009208      0.040998       0.12635       0.23861        0.2763       0.19622      0.085427      0.022782      0.003717       0.00037        2.3e-05          1e-06              0              0              0  
+    zi_5_w0_62      0.001703      0.011702      0.053403       0.14921       0.25551       0.26831       0.17279      0.068209      0.016489      0.002438        0.00022        1.2e-05              0              0              0  
+    zi_6_w0_71      0.000233      0.002438      0.016489      0.068209       0.17279       0.26831       0.25551       0.14921      0.053403      0.011702       0.001568       0.000128          6e-06              0              0  
+    zi_7_w0_82       2.3e-05       0.00037      0.003717      0.022782      0.085427       0.19622        0.2763       0.23861       0.12635      0.040998       0.008143       0.000989        7.3e-05          3e-06              0  
+    zi_8_w0_94         2e-06       4.1e-05      0.000611      0.005556      0.030863       0.10492        0.2185       0.27902        0.2185       0.10492       0.030863       0.005556       0.000611        4.1e-05          2e-06  
+    zi_9_w1_09             0         3e-06       7.3e-05      0.000989      0.008143      0.040998       0.12635       0.23861        0.2763       0.19622       0.085427       0.022782       0.003717        0.00037        2.3e-05  
+    zi_10_w1_26            0             0         6e-06      0.000128      0.001568      0.011702      0.053403       0.14921       0.25551       0.26831        0.17279       0.068209       0.016489       0.002438       0.000233  
+    zi_11_w1_45            0             0             0       1.2e-05       0.00022      0.002438      0.016489      0.068209       0.17279       0.26831        0.25551        0.14921       0.053403       0.011702       0.001703  
+    zi_12_w1_67            0             0             0         1e-06       2.3e-05       0.00037      0.003717      0.022782      0.085427       0.19622         0.2763        0.23861        0.12635       0.040998       0.009208  
+    zi_13_w1_93            0             0             0             0         2e-06       4.1e-05      0.000611      0.005556      0.030863       0.10492         0.2185        0.27902         0.2185        0.10492       0.037073  
+    zi_14_w2_23            0             0             0             0             0         3e-06       7.3e-05      0.000989      0.008143      0.040998        0.12635        0.23861         0.2763        0.19622        0.11232  
+    zi_15_w2_57            0             0             0             0             0             0         6e-06      0.000128      0.001568      0.011702       0.053403        0.14921        0.25551        0.26831        0.26016  
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Full Transition Matrix: mt_z_trans
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    46    46
+
+                       i1_r0_03_w0_35    i2_r0_03_w0_40    i3_r0_03_w0_46    i4_r0_03_w0_53    i5_r0_03_w0_62    i6_r0_03_w0_71    i7_r0_03_w0_82    i8_r0_03_w0_94    i9_r0_03_w1_09    i10_r0_03_w1_26    i11_r0_03_w1_45    i12_r0_03_w1_67    i13_r0_03_w1_93    i14_r0_03_w2_23    i15_r0_03_w2_57    i16_r0_04_w0_35    i17_r0_04_w0_40    i18_r0_04_w0_46    i19_r0_04_w0_53    i20_r0_04_w0_62    i21_r0_04_w0_71    i22_r0_04_w0_82    i23_r0_04_w0_94    i53_r0_08_w0_94    i54_r0_08_w1_09    i55_r0_08_w1_26    i56_r0_08_w1_45    i57_r0_08_w1_67    i58_r0_08_w1_93    i59_r0_08_w2_23    i60_r0_08_w2_57    i61_r0_10_w0_35    i62_r0_10_w0_40    i63_r0_10_w0_46    i64_r0_10_w0_53    i65_r0_10_w0_62    i66_r0_10_w0_71    i67_r0_10_w0_82    i68_r0_10_w0_94    i69_r0_10_w1_09    i70_r0_10_w1_26    i71_r0_10_w1_45    i72_r0_10_w1_67    i73_r0_10_w1_93    i74_r0_10_w2_23    i75_r0_10_w2_57
+                       ______________    ______________    ______________    ______________    ______________    ______________    ______________    ______________    ______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________
+
+    i1_r0_03_w0_35        3.2e-05           3.3e-05           3.1e-05           1.8e-05             6e-06             1e-06                 0                 0                 0                  0                  0                  0                  0                  0                  0           0.000633           0.000653           0.000622           0.000363            0.00013            2.8e-05              4e-06                  0            2.1e-05              1e-06                  0                  0                  0                  0                  0                  0            0.21097            0.21758             0.2072              0.121           0.043306           0.009489           0.001271           0.000104              5e-06                  0                  0                  0                  0                  0                  0    
+    i2_r0_03_w0_40        1.4e-05           2.4e-05           3.4e-05           2.9e-05           1.5e-05             5e-06             1e-06                 0                 0                  0                  0                  0                  0                  0                  0           0.000273           0.000477           0.000672            0.00058           0.000307             0.0001              2e-05              2e-06            0.00016            1.2e-05              1e-06                  0                  0                  0                  0                  0           0.091083            0.15912            0.22406            0.19349            0.10246           0.033247           0.006603           0.000802            5.9e-05              3e-06                  0                  0                  0                  0                  0    
+    i3_r0_03_w0_46          5e-06           1.3e-05           2.7e-05           3.4e-05           2.7e-05           1.3e-05             4e-06             1e-06                 0                  0                  0                  0                  0                  0                  0              9e-05           0.000255           0.000532           0.000679           0.000532           0.000255            7.5e-05            1.4e-05           0.000901            9.9e-05              7e-06                  0                  0                  0                  0                  0           0.030063           0.085079            0.17719            0.22626            0.17719           0.085079           0.025028           0.004505           0.000496            3.3e-05              1e-06                  0                  0                  0                  0    
+    i4_r0_03_w0_53          1e-06             5e-06           1.5e-05           2.9e-05           3.4e-05           2.4e-05             1e-05             3e-06                 0                  0                  0                  0                  0                  0                  0            2.2e-05             0.0001           0.000307            0.00058           0.000672           0.000477           0.000208            5.5e-05           0.003695           0.000603              6e-05              4e-06                  0                  0                  0                  0           0.007467           0.033247            0.10246            0.19349            0.22406            0.15912           0.069276           0.018474           0.003014             0.0003            1.8e-05              1e-06                  0                  0                  0    
+    i5_r0_03_w0_62              0             1e-06             6e-06           1.8e-05           3.1e-05           3.3e-05           2.1e-05             8e-06             2e-06                  0                  0                  0                  0                  0                  0              4e-06            2.8e-05            0.00013           0.000363           0.000622           0.000653            0.00042           0.000166           0.011062           0.002674           0.000395            3.6e-05              2e-06                  0                  0                  0           0.001381           0.009489           0.043306              0.121             0.2072            0.21758            0.14012           0.055312           0.013371           0.001977           0.000178              1e-05                  0                  0                  0    
+    i6_r0_03_w0_71              0                 0             2e-06             8e-06           2.1e-05           3.3e-05           3.1e-05           1.8e-05             6e-06              1e-06                  0                  0                  0                  0                  0              1e-06              6e-06              4e-05           0.000166            0.00042           0.000653           0.000622           0.000363             0.0242           0.008661           0.001898           0.000254            2.1e-05              1e-06                  0                  0           0.000189           0.001977           0.013371           0.055312            0.14012            0.21758             0.2072              0.121           0.043306           0.009489           0.001271           0.000104              5e-06                  0                  0    
+    i7_r0_03_w0_82              0                 0                 0             3e-06             1e-05           2.4e-05           3.4e-05           2.9e-05           1.5e-05              5e-06              1e-06                  0                  0                  0                  0                  0              1e-06              9e-06            5.5e-05           0.000208           0.000477           0.000672            0.00058           0.038699           0.020492           0.006649           0.001321            0.00016            1.2e-05              1e-06                  0            1.9e-05             0.0003           0.003014           0.018474           0.069276            0.15912            0.22406            0.19349            0.10246           0.033247           0.006603           0.000802            5.9e-05              3e-06                  0    
+    i8_r0_03_w0_94              0                 0                 0             1e-06             4e-06           1.3e-05           2.7e-05           3.4e-05           2.7e-05            1.3e-05              4e-06              1e-06                  0                  0                  0                  0                  0              1e-06            1.4e-05            7.5e-05           0.000255           0.000532           0.000679           0.045252           0.035438           0.017016           0.005006           0.000901            9.9e-05              7e-06                  0              1e-06            3.3e-05           0.000496           0.004505           0.025028           0.085079            0.17719            0.22626            0.17719           0.085079           0.025028           0.004505           0.000496            3.3e-05              1e-06    
+    i9_r0_03_w1_09              0                 0                 0                 0             1e-06             5e-06           1.5e-05           2.9e-05           3.4e-05            2.4e-05              1e-05              3e-06                  0                  0                  0                  0                  0                  0              2e-06              2e-05             0.0001           0.000307            0.00058           0.038699           0.044812           0.031824           0.013855           0.003695           0.000603              6e-05              4e-06                  0              3e-06            5.9e-05           0.000802           0.006603           0.033247            0.10246            0.19349            0.22406            0.15912           0.069276           0.018474           0.003014             0.0003            1.9e-05    
+    i10_r0_03_w1_26             0                 0                 0                 0                 0             1e-06             6e-06           1.8e-05           3.1e-05            3.3e-05            2.1e-05              8e-06              2e-06                  0                  0                  0                  0                  0                  0              4e-06            2.8e-05            0.00013           0.000363             0.0242            0.04144           0.043517           0.028024           0.011062           0.002674           0.000395            3.8e-05                  0                  0              5e-06           0.000104           0.001271           0.009489           0.043306              0.121             0.2072            0.21758            0.14012           0.055312           0.013371           0.001977           0.000189    
+    i11_r0_03_w1_45             0                 0                 0                 0                 0                 0             2e-06             8e-06           2.1e-05            3.3e-05            3.1e-05            1.8e-05              6e-06              1e-06                  0                  0                  0                  0                  0              1e-06              6e-06              4e-05           0.000166           0.011062           0.028024           0.043517            0.04144             0.0242           0.008661           0.001898           0.000276                  0                  0                  0              1e-05           0.000178           0.001977           0.013371           0.055312            0.14012            0.21758             0.2072              0.121           0.043306           0.009489           0.001381    
+    i12_r0_03_w1_67             0                 0                 0                 0                 0                 0                 0             3e-06             1e-05            2.4e-05            3.4e-05            2.9e-05            1.5e-05              5e-06              1e-06                  0                  0                  0                  0                  0              1e-06              9e-06            5.5e-05           0.003695           0.013855           0.031824           0.044812           0.038699           0.020492           0.006649           0.001493                  0                  0                  0              1e-06            1.8e-05             0.0003           0.003014           0.018474           0.069276            0.15912            0.22406            0.19349            0.10246           0.033247           0.007467    
+    i13_r0_03_w1_93             0                 0                 0                 0                 0                 0                 0             1e-06             4e-06            1.3e-05            2.7e-05            3.4e-05            2.7e-05            1.3e-05              5e-06                  0                  0                  0                  0                  0                  0              1e-06            1.4e-05           0.000901           0.005006           0.017016           0.035438           0.045252           0.035438           0.017016           0.006013                  0                  0                  0                  0              1e-06            3.3e-05           0.000496           0.004505           0.025028           0.085079            0.17719            0.22626            0.17719           0.085079           0.030063    
+    i14_r0_03_w2_23             0                 0                 0                 0                 0                 0                 0                 0             1e-06              5e-06            1.5e-05            2.9e-05            3.4e-05            2.4e-05            1.4e-05                  0                  0                  0                  0                  0                  0                  0              2e-06            0.00016           0.001321           0.006649           0.020492           0.038699           0.044812           0.031824           0.018217                  0                  0                  0                  0                  0              3e-06            5.9e-05           0.000802           0.006603           0.033247            0.10246            0.19349            0.22406            0.15912           0.091083    
+    i15_r0_03_w2_57             0                 0                 0                 0                 0                 0                 0                 0                 0              1e-06              6e-06            1.8e-05            3.1e-05            3.3e-05            3.2e-05                  0                  0                  0                  0                  0                  0                  0                  0            2.1e-05           0.000254           0.001898           0.008661             0.0242            0.04144           0.043517           0.042194                  0                  0                  0                  0                  0                  0              5e-06           0.000104           0.001271           0.009489           0.043306              0.121             0.2072            0.21758            0.21097    
+    i16_r0_04_w0_35       3.2e-05           3.3e-05           3.1e-05           1.8e-05             6e-06             1e-06                 0                 0                 0                  0                  0                  0                  0                  0                  0           0.000633           0.000653           0.000622           0.000363            0.00013            2.8e-05              4e-06                  0            2.1e-05              1e-06                  0                  0                  0                  0                  0                  0            0.21097            0.21758             0.2072              0.121           0.043306           0.009489           0.001271           0.000104              5e-06                  0                  0                  0                  0                  0                  0    
+    i17_r0_04_w0_40       1.4e-05           2.4e-05           3.4e-05           2.9e-05           1.5e-05             5e-06             1e-06                 0                 0                  0                  0                  0                  0                  0                  0           0.000273           0.000477           0.000672            0.00058           0.000307             0.0001              2e-05              2e-06            0.00016            1.2e-05              1e-06                  0                  0                  0                  0                  0           0.091083            0.15912            0.22406            0.19349            0.10246           0.033247           0.006603           0.000802            5.9e-05              3e-06                  0                  0                  0                  0                  0    
+    i18_r0_04_w0_46         5e-06           1.3e-05           2.7e-05           3.4e-05           2.7e-05           1.3e-05             4e-06             1e-06                 0                  0                  0                  0                  0                  0                  0              9e-05           0.000255           0.000532           0.000679           0.000532           0.000255            7.5e-05            1.4e-05           0.000901            9.9e-05              7e-06                  0                  0                  0                  0                  0           0.030063           0.085079            0.17719            0.22626            0.17719           0.085079           0.025028           0.004505           0.000496            3.3e-05              1e-06                  0                  0                  0                  0    
+    i19_r0_04_w0_53         1e-06             5e-06           1.5e-05           2.9e-05           3.4e-05           2.4e-05             1e-05             3e-06                 0                  0                  0                  0                  0                  0                  0            2.2e-05             0.0001           0.000307            0.00058           0.000672           0.000477           0.000208            5.5e-05           0.003695           0.000603              6e-05              4e-06                  0                  0                  0                  0           0.007467           0.033247            0.10246            0.19349            0.22406            0.15912           0.069276           0.018474           0.003014             0.0003            1.8e-05              1e-06                  0                  0                  0    
+    i20_r0_04_w0_62             0             1e-06             6e-06           1.8e-05           3.1e-05           3.3e-05           2.1e-05             8e-06             2e-06                  0                  0                  0                  0                  0                  0              4e-06            2.8e-05            0.00013           0.000363           0.000622           0.000653            0.00042           0.000166           0.011062           0.002674           0.000395            3.6e-05              2e-06                  0                  0                  0           0.001381           0.009489           0.043306              0.121             0.2072            0.21758            0.14012           0.055312           0.013371           0.001977           0.000178              1e-05                  0                  0                  0    
+    i21_r0_04_w0_71             0                 0             2e-06             8e-06           2.1e-05           3.3e-05           3.1e-05           1.8e-05             6e-06              1e-06                  0                  0                  0                  0                  0              1e-06              6e-06              4e-05           0.000166            0.00042           0.000653           0.000622           0.000363             0.0242           0.008661           0.001898           0.000254            2.1e-05              1e-06                  0                  0           0.000189           0.001977           0.013371           0.055312            0.14012            0.21758             0.2072              0.121           0.043306           0.009489           0.001271           0.000104              5e-06                  0                  0    
+    i22_r0_04_w0_82             0                 0                 0             3e-06             1e-05           2.4e-05           3.4e-05           2.9e-05           1.5e-05              5e-06              1e-06                  0                  0                  0                  0                  0              1e-06              9e-06            5.5e-05           0.000208           0.000477           0.000672            0.00058           0.038699           0.020492           0.006649           0.001321            0.00016            1.2e-05              1e-06                  0            1.9e-05             0.0003           0.003014           0.018474           0.069276            0.15912            0.22406            0.19349            0.10246           0.033247           0.006603           0.000802            5.9e-05              3e-06                  0    
+    i23_r0_04_w0_94             0                 0                 0             1e-06             4e-06           1.3e-05           2.7e-05           3.4e-05           2.7e-05            1.3e-05              4e-06              1e-06                  0                  0                  0                  0                  0              1e-06            1.4e-05            7.5e-05           0.000255           0.000532           0.000679           0.045252           0.035438           0.017016           0.005006           0.000901            9.9e-05              7e-06                  0              1e-06            3.3e-05           0.000496           0.004505           0.025028           0.085079            0.17719            0.22626            0.17719           0.085079           0.025028           0.004505           0.000496            3.3e-05              1e-06    
+    i53_r0_08_w0_94             0                 0                 0             1e-06             4e-06           1.3e-05           2.7e-05           3.4e-05           2.7e-05            1.3e-05              4e-06              1e-06                  0                  0                  0                  0                  0              1e-06            1.4e-05            7.5e-05           0.000255           0.000532           0.000679           0.045252           0.035438           0.017016           0.005006           0.000901            9.9e-05              7e-06                  0              1e-06            3.3e-05           0.000496           0.004505           0.025028           0.085079            0.17719            0.22626            0.17719           0.085079           0.025028           0.004505           0.000496            3.3e-05              1e-06    
+    i54_r0_08_w1_09             0                 0                 0                 0             1e-06             5e-06           1.5e-05           2.9e-05           3.4e-05            2.4e-05              1e-05              3e-06                  0                  0                  0                  0                  0                  0              2e-06              2e-05             0.0001           0.000307            0.00058           0.038699           0.044812           0.031824           0.013855           0.003695           0.000603              6e-05              4e-06                  0              3e-06            5.9e-05           0.000802           0.006603           0.033247            0.10246            0.19349            0.22406            0.15912           0.069276           0.018474           0.003014             0.0003            1.9e-05    
+    i55_r0_08_w1_26             0                 0                 0                 0                 0             1e-06             6e-06           1.8e-05           3.1e-05            3.3e-05            2.1e-05              8e-06              2e-06                  0                  0                  0                  0                  0                  0              4e-06            2.8e-05            0.00013           0.000363             0.0242            0.04144           0.043517           0.028024           0.011062           0.002674           0.000395            3.8e-05                  0                  0              5e-06           0.000104           0.001271           0.009489           0.043306              0.121             0.2072            0.21758            0.14012           0.055312           0.013371           0.001977           0.000189    
+    i56_r0_08_w1_45             0                 0                 0                 0                 0                 0             2e-06             8e-06           2.1e-05            3.3e-05            3.1e-05            1.8e-05              6e-06              1e-06                  0                  0                  0                  0                  0              1e-06              6e-06              4e-05           0.000166           0.011062           0.028024           0.043517            0.04144             0.0242           0.008661           0.001898           0.000276                  0                  0                  0              1e-05           0.000178           0.001977           0.013371           0.055312            0.14012            0.21758             0.2072              0.121           0.043306           0.009489           0.001381    
+    i57_r0_08_w1_67             0                 0                 0                 0                 0                 0                 0             3e-06             1e-05            2.4e-05            3.4e-05            2.9e-05            1.5e-05              5e-06              1e-06                  0                  0                  0                  0                  0              1e-06              9e-06            5.5e-05           0.003695           0.013855           0.031824           0.044812           0.038699           0.020492           0.006649           0.001493                  0                  0                  0              1e-06            1.8e-05             0.0003           0.003014           0.018474           0.069276            0.15912            0.22406            0.19349            0.10246           0.033247           0.007467    
+    i58_r0_08_w1_93             0                 0                 0                 0                 0                 0                 0             1e-06             4e-06            1.3e-05            2.7e-05            3.4e-05            2.7e-05            1.3e-05              5e-06                  0                  0                  0                  0                  0                  0              1e-06            1.4e-05           0.000901           0.005006           0.017016           0.035438           0.045252           0.035438           0.017016           0.006013                  0                  0                  0                  0              1e-06            3.3e-05           0.000496           0.004505           0.025028           0.085079            0.17719            0.22626            0.17719           0.085079           0.030063    
+    i59_r0_08_w2_23             0                 0                 0                 0                 0                 0                 0                 0             1e-06              5e-06            1.5e-05            2.9e-05            3.4e-05            2.4e-05            1.4e-05                  0                  0                  0                  0                  0                  0                  0              2e-06            0.00016           0.001321           0.006649           0.020492           0.038699           0.044812           0.031824           0.018217                  0                  0                  0                  0                  0              3e-06            5.9e-05           0.000802           0.006603           0.033247            0.10246            0.19349            0.22406            0.15912           0.091083    
+    i60_r0_08_w2_57             0                 0                 0                 0                 0                 0                 0                 0                 0              1e-06              6e-06            1.8e-05            3.1e-05            3.3e-05            3.2e-05                  0                  0                  0                  0                  0                  0                  0                  0            2.1e-05           0.000254           0.001898           0.008661             0.0242            0.04144           0.043517           0.042194                  0                  0                  0                  0                  0                  0              5e-06           0.000104           0.001271           0.009489           0.043306              0.121             0.2072            0.21758            0.21097    
+    i61_r0_10_w0_35       3.2e-05           3.3e-05           3.1e-05           1.8e-05             6e-06             1e-06                 0                 0                 0                  0                  0                  0                  0                  0                  0           0.000633           0.000653           0.000622           0.000363            0.00013            2.8e-05              4e-06                  0            2.1e-05              1e-06                  0                  0                  0                  0                  0                  0            0.21097            0.21758             0.2072              0.121           0.043306           0.009489           0.001271           0.000104              5e-06                  0                  0                  0                  0                  0                  0    
+    i62_r0_10_w0_40       1.4e-05           2.4e-05           3.4e-05           2.9e-05           1.5e-05             5e-06             1e-06                 0                 0                  0                  0                  0                  0                  0                  0           0.000273           0.000477           0.000672            0.00058           0.000307             0.0001              2e-05              2e-06            0.00016            1.2e-05              1e-06                  0                  0                  0                  0                  0           0.091083            0.15912            0.22406            0.19349            0.10246           0.033247           0.006603           0.000802            5.9e-05              3e-06                  0                  0                  0                  0                  0    
+    i63_r0_10_w0_46         5e-06           1.3e-05           2.7e-05           3.4e-05           2.7e-05           1.3e-05             4e-06             1e-06                 0                  0                  0                  0                  0                  0                  0              9e-05           0.000255           0.000532           0.000679           0.000532           0.000255            7.5e-05            1.4e-05           0.000901            9.9e-05              7e-06                  0                  0                  0                  0                  0           0.030063           0.085079            0.17719            0.22626            0.17719           0.085079           0.025028           0.004505           0.000496            3.3e-05              1e-06                  0                  0                  0                  0    
+    i64_r0_10_w0_53         1e-06             5e-06           1.5e-05           2.9e-05           3.4e-05           2.4e-05             1e-05             3e-06                 0                  0                  0                  0                  0                  0                  0            2.2e-05             0.0001           0.000307            0.00058           0.000672           0.000477           0.000208            5.5e-05           0.003695           0.000603              6e-05              4e-06                  0                  0                  0                  0           0.007467           0.033247            0.10246            0.19349            0.22406            0.15912           0.069276           0.018474           0.003014             0.0003            1.8e-05              1e-06                  0                  0                  0    
+    i65_r0_10_w0_62             0             1e-06             6e-06           1.8e-05           3.1e-05           3.3e-05           2.1e-05             8e-06             2e-06                  0                  0                  0                  0                  0                  0              4e-06            2.8e-05            0.00013           0.000363           0.000622           0.000653            0.00042           0.000166           0.011062           0.002674           0.000395            3.6e-05              2e-06                  0                  0                  0           0.001381           0.009489           0.043306              0.121             0.2072            0.21758            0.14012           0.055312           0.013371           0.001977           0.000178              1e-05                  0                  0                  0    
+    i66_r0_10_w0_71             0                 0             2e-06             8e-06           2.1e-05           3.3e-05           3.1e-05           1.8e-05             6e-06              1e-06                  0                  0                  0                  0                  0              1e-06              6e-06              4e-05           0.000166            0.00042           0.000653           0.000622           0.000363             0.0242           0.008661           0.001898           0.000254            2.1e-05              1e-06                  0                  0           0.000189           0.001977           0.013371           0.055312            0.14012            0.21758             0.2072              0.121           0.043306           0.009489           0.001271           0.000104              5e-06                  0                  0    
+    i67_r0_10_w0_82             0                 0                 0             3e-06             1e-05           2.4e-05           3.4e-05           2.9e-05           1.5e-05              5e-06              1e-06                  0                  0                  0                  0                  0              1e-06              9e-06            5.5e-05           0.000208           0.000477           0.000672            0.00058           0.038699           0.020492           0.006649           0.001321            0.00016            1.2e-05              1e-06                  0            1.9e-05             0.0003           0.003014           0.018474           0.069276            0.15912            0.22406            0.19349            0.10246           0.033247           0.006603           0.000802            5.9e-05              3e-06                  0    
+    i68_r0_10_w0_94             0                 0                 0             1e-06             4e-06           1.3e-05           2.7e-05           3.4e-05           2.7e-05            1.3e-05              4e-06              1e-06                  0                  0                  0                  0                  0              1e-06            1.4e-05            7.5e-05           0.000255           0.000532           0.000679           0.045252           0.035438           0.017016           0.005006           0.000901            9.9e-05              7e-06                  0              1e-06            3.3e-05           0.000496           0.004505           0.025028           0.085079            0.17719            0.22626            0.17719           0.085079           0.025028           0.004505           0.000496            3.3e-05              1e-06    
+    i69_r0_10_w1_09             0                 0                 0                 0             1e-06             5e-06           1.5e-05           2.9e-05           3.4e-05            2.4e-05              1e-05              3e-06                  0                  0                  0                  0                  0                  0              2e-06              2e-05             0.0001           0.000307            0.00058           0.038699           0.044812           0.031824           0.013855           0.003695           0.000603              6e-05              4e-06                  0              3e-06            5.9e-05           0.000802           0.006603           0.033247            0.10246            0.19349            0.22406            0.15912           0.069276           0.018474           0.003014             0.0003            1.9e-05    
+    i70_r0_10_w1_26             0                 0                 0                 0                 0             1e-06             6e-06           1.8e-05           3.1e-05            3.3e-05            2.1e-05              8e-06              2e-06                  0                  0                  0                  0                  0                  0              4e-06            2.8e-05            0.00013           0.000363             0.0242            0.04144           0.043517           0.028024           0.011062           0.002674           0.000395            3.8e-05                  0                  0              5e-06           0.000104           0.001271           0.009489           0.043306              0.121             0.2072            0.21758            0.14012           0.055312           0.013371           0.001977           0.000189    
+    i71_r0_10_w1_45             0                 0                 0                 0                 0                 0             2e-06             8e-06           2.1e-05            3.3e-05            3.1e-05            1.8e-05              6e-06              1e-06                  0                  0                  0                  0                  0              1e-06              6e-06              4e-05           0.000166           0.011062           0.028024           0.043517            0.04144             0.0242           0.008661           0.001898           0.000276                  0                  0                  0              1e-05           0.000178           0.001977           0.013371           0.055312            0.14012            0.21758             0.2072              0.121           0.043306           0.009489           0.001381    
+    i72_r0_10_w1_67             0                 0                 0                 0                 0                 0                 0             3e-06             1e-05            2.4e-05            3.4e-05            2.9e-05            1.5e-05              5e-06              1e-06                  0                  0                  0                  0                  0              1e-06              9e-06            5.5e-05           0.003695           0.013855           0.031824           0.044812           0.038699           0.020492           0.006649           0.001493                  0                  0                  0              1e-06            1.8e-05             0.0003           0.003014           0.018474           0.069276            0.15912            0.22406            0.19349            0.10246           0.033247           0.007467    
+    i73_r0_10_w1_93             0                 0                 0                 0                 0                 0                 0             1e-06             4e-06            1.3e-05            2.7e-05            3.4e-05            2.7e-05            1.3e-05              5e-06                  0                  0                  0                  0                  0                  0              1e-06            1.4e-05           0.000901           0.005006           0.017016           0.035438           0.045252           0.035438           0.017016           0.006013                  0                  0                  0                  0              1e-06            3.3e-05           0.000496           0.004505           0.025028           0.085079            0.17719            0.22626            0.17719           0.085079           0.030063    
+    i74_r0_10_w2_23             0                 0                 0                 0                 0                 0                 0                 0             1e-06              5e-06            1.5e-05            2.9e-05            3.4e-05            2.4e-05            1.4e-05                  0                  0                  0                  0                  0                  0                  0              2e-06            0.00016           0.001321           0.006649           0.020492           0.038699           0.044812           0.031824           0.018217                  0                  0                  0                  0                  0              3e-06            5.9e-05           0.000802           0.006603           0.033247            0.10246            0.19349            0.22406            0.15912           0.091083    
+    i75_r0_10_w2_57             0                 0                 0                 0                 0                 0                 0                 0                 0              1e-06              6e-06            1.8e-05            3.1e-05            3.3e-05            3.2e-05                  0                  0                  0                  0                  0                  0                  0                  0            2.1e-05           0.000254           0.001898           0.008661             0.0242            0.04144           0.043517           0.042194                  0                  0                  0                  0                  0                  0              5e-06           0.000104           0.001271           0.009489           0.043306              0.121             0.2072            0.21758            0.21097    
+
 </pre><h2 id="10">Get Equations</h2><pre class="codeinput">[f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons_coh_fbis, f_cons_coh_save, f_bprime] = <span class="keyword">...</span>
     ffs_abz_fibs_set_functions(fl_crra, fl_c_min, fl_r_fbr, fl_r_fsv, fl_w);
 </pre><h2 id="11">Get Formal Borrowing Blocks</h2><pre class="codeinput">[ar_forbrblk, ar_forbrblk_r] = <span class="keyword">...</span>
@@ -169,7 +423,7 @@ ar_z_wage_mesh_r_borr = mt_z_wage_mesh_r_borr(:)';
 </pre><h2 id="13">Store</h2><pre class="codeinput">armt_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
 armt_map(<span class="string">'ar_a'</span>) = ar_a;
 armt_map(<span class="string">'mt_z_trans'</span>) = mt_z_trans;
-armt_map(<span class="string">'ar_z_r_borr_mesh_wage'</span>) = ar_z_r_inf_mesh_wage;
+armt_map(<span class="string">'ar_z_r_inf_mesh_wage'</span>) = ar_z_r_inf_mesh_wage;
 armt_map(<span class="string">'ar_z_wage_mesh_r_borr'</span>) = ar_z_wage_mesh_r_borr;
 armt_map(<span class="string">'ar_forbrblk'</span>) = ar_forbrblk;
 armt_map(<span class="string">'ar_forbrblk_r'</span>) = ar_forbrblk_r;
@@ -1387,10 +1641,10 @@ param_dsv_map('fl_poiss_mean') = fl_z_r_borr_poiss_mean;
 param_dsv_map('fl_max') = fl_z_r_borr_max;
 param_dsv_map('fl_min') = fl_z_r_borr_min;
 param_dsv_map('fl_n') = fl_z_r_borr_n;
-[ar_z_r_inf, ar_z_r_borr_prob] = fft_gen_discrete_var(param_dsv_map, true);
+[ar_z_r_inf, ar_z_r_inf_prob] = fft_gen_discrete_var(param_dsv_map, true);
 
 % iid transition matrix
-mt_z_r_borr_prob_trans = repmat(ar_z_r_borr_prob, [length(ar_z_r_borr_prob), 1]);
+mt_z_r_borr_prob_trans = repmat(ar_z_r_inf_prob, [length(ar_z_r_inf_prob), 1]);
 
 %% Get Shock: Mesh Shocks Together
 
@@ -1401,6 +1655,88 @@ mt_z_trans = kron(mt_z_r_borr_prob_trans, mt_z_wage_trans);
 [mt_z_wage_mesh_r_borr, mt_z_r_inf_mesh_wage] = ndgrid(ar_z_wage, ar_z_r_inf);
 ar_z_r_inf_mesh_wage = mt_z_r_inf_mesh_wage(:)';
 ar_z_wage_mesh_r_borr = mt_z_wage_mesh_r_borr(:)';
+
+if (bl_display_funcgrids)
+    
+    disp('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('Borrow R Shock: ar_z_r_inf_mesh_wage');
+    disp('Prod/Wage Shock: mt_z_wage_mesh_r_borr');
+    disp('show which shock is inner and which is outter');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    
+    tb_two_shocks = array2table([ar_z_r_inf_mesh_wage;...
+        ar_z_wage_mesh_r_borr]');
+    cl_col_names = ["Borrow R Shock (Meshed)", "Wage R Shock (Meshed)"];
+    cl_row_names = strcat('zi=', string((1:length(ar_z_r_inf_mesh_wage))));
+    tb_two_shocks.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_two_shocks.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
+    
+    it_row_display = it_z_wage_n*2;
+    
+    disp(size(tb_two_shocks));
+    disp(head(tb_two_shocks, it_row_display));
+    disp(tail(tb_two_shocks, it_row_display));
+    
+    
+    disp('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('Borrow Rate Transition Matrix: mt_z_r_borr_prob_trans');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    it_col_n_keep = 15;
+    it_row_n_keep = 15;    
+    [it_row_n, it_col_n] = size(mt_z_r_borr_prob_trans);
+    [ar_it_cols, ar_it_rows] = fft_row_col_subset(it_col_n, it_col_n_keep, it_row_n, it_row_n_keep);    
+    cl_st_full_rowscols = cellstr([num2str(ar_z_r_inf', 'r%3.2f')]);
+    tb_z_r_borr_prob_trans = array2table(round(mt_z_r_borr_prob_trans(ar_it_rows, ar_it_cols), 6));
+    cl_col_names = strcat('zi=', num2str(ar_it_cols'), ':', cl_st_full_rowscols(ar_it_cols));
+    cl_row_names = strcat('zi=', num2str(ar_it_rows'), ':', cl_st_full_rowscols(ar_it_cols));
+    tb_z_r_borr_prob_trans.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_z_r_borr_prob_trans.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
+       
+    disp(size(tb_z_r_borr_prob_trans));
+    disp(tb_z_r_borr_prob_trans);
+    
+    
+    disp('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('Wage Prod Shock Transition Matrix: mt_z_r_borr_prob_trans');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    it_col_n_keep = 15;
+    it_row_n_keep = 15;    
+    [it_row_n, it_col_n] = size(mt_z_wage_trans);
+    [ar_it_cols, ar_it_rows] = fft_row_col_subset(it_col_n, it_col_n_keep, it_row_n, it_row_n_keep);    
+    cl_st_full_rowscols = cellstr([num2str(ar_z_wage', 'w%3.2f')]);
+    tb_z_wage_trans = array2table(round(mt_z_wage_trans(ar_it_rows, ar_it_cols),6));    
+    cl_col_names = strcat('zi=', num2str(ar_it_cols'), ':', cl_st_full_rowscols(ar_it_cols));
+    cl_row_names = strcat('zi=', num2str(ar_it_rows'), ':', cl_st_full_rowscols(ar_it_cols));
+    tb_z_wage_trans.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_z_wage_trans.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
+       
+    disp(size(tb_z_wage_trans));
+    disp(tb_z_wage_trans);
+    
+    
+    disp('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('Full Transition Matrix: mt_z_trans');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    it_col_n_keep = it_z_wage_n*3;
+    it_row_n_keep = it_z_wage_n*3;
+    [it_row_n, it_col_n] = size(mt_z_trans);
+    [ar_it_cols, ar_it_rows] = fft_row_col_subset(it_col_n, it_col_n_keep, it_row_n, it_row_n_keep);    
+    cl_st_full_rowscols = cellstr([num2str(ar_z_r_inf_mesh_wage', 'r%3.2f;'), ...
+                                   num2str(ar_z_wage_mesh_r_borr', 'w%3.2f')]);
+    tb_mt_z_trans = array2table(round(mt_z_trans(ar_it_rows, ar_it_cols),6));
+    cl_col_names = strcat('i', num2str(ar_it_cols'), ':', cl_st_full_rowscols(ar_it_cols));
+    cl_row_names = strcat('i', num2str(ar_it_rows'), ':', cl_st_full_rowscols(ar_it_cols));
+    tb_mt_z_trans.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_mt_z_trans.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
+       
+    disp(size(tb_mt_z_trans));
+    disp(tb_mt_z_trans);
+    
+end
 
 %% Get Equations
 
@@ -1447,7 +1783,7 @@ end
 armt_map = containers.Map('KeyType','char', 'ValueType','any');
 armt_map('ar_a') = ar_a;
 armt_map('mt_z_trans') = mt_z_trans;
-armt_map('ar_z_r_borr_mesh_wage') = ar_z_r_inf_mesh_wage;
+armt_map('ar_z_r_inf_mesh_wage') = ar_z_r_inf_mesh_wage;
 armt_map('ar_z_wage_mesh_r_borr') = ar_z_wage_mesh_r_borr;
 armt_map('ar_forbrblk') = ar_forbrblk;
 armt_map('ar_forbrblk_r') = ar_forbrblk_r;

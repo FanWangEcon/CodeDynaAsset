@@ -242,7 +242,9 @@ if (ismember(it_subset, [1,2,3,4]))
         % TEST quick
         param_map('it_w_perc_n') = 20;
         param_map('it_ak_perc_n') = param_map('it_w_perc_n');
-        param_map('it_z_n') = 3;
+        param_map('it_z_wage_n') = 3;
+        param_map('fl_z_r_borr_n') = 2;
+        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
 
         param_map('fl_coh_interp_grid_gap') = 0.25;
         param_map('it_c_interp_grid_gap') = 0.001;
@@ -297,7 +299,9 @@ if (ismember(it_subset, [5,6,7,8,9]))
         % TEST quick (need to enough to have distribution)
         param_map('it_w_perc_n') = 40;
         param_map('it_ak_perc_n') = param_map('it_w_perc_n');
-        param_map('it_z_n') = 5;
+        param_map('it_z_wage_n') = 3;
+        param_map('fl_z_r_borr_n') = 2;
+        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
 
         param_map('fl_coh_interp_grid_gap') = 0.25;
         param_map('it_c_interp_grid_gap') = 0.001;

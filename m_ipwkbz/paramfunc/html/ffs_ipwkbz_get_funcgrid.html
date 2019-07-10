@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Generate States/Choices/Shocks Grids, get Functions (Interpolated + Percentage + Risky + Safe Asset + Save + Borrow)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-08"><meta name="DC.source" content="ffs_ipwkbz_get_funcgrid.m"><style type="text/css">
+      --><title>Generate States/Choices/Shocks Grids, get Functions (Interpolated + Percentage + Risky + Safe Asset + Save + Borrow)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-09"><meta name="DC.source" content="ffs_ipwkbz_get_funcgrid.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -82,15 +82,20 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
     close <span class="string">all</span>;
 
     <span class="comment">% default internal run</span>
-    [param_map, support_map] = ffs_ipwkbz_set_default_param();
+    [param_map, support_map] = ffs_ipwkbz_set_default_param(4);
 
     support_map(<span class="string">'bl_graph_funcgrids'</span>) = true;
     support_map(<span class="string">'bl_graph_funcgrids_detail'</span>) = true;
-    support_map(<span class="string">'bl_display_funcgrids'</span>) = true;
+    bl_display_funcgrids = true;
+    support_map(<span class="string">'bl_display_funcgrids'</span>) = bl_display_funcgrids;
 
-    st_param_which = <span class="string">'default'</span>;
+    st_param_which = <span class="string">'medium'</span>;
 
     <span class="keyword">if</span> (ismember(st_param_which, [<span class="string">'default'</span>]))
+
+        param_map(<span class="string">'it_ak_perc_n'</span>) = 250;
+
+    <span class="keyword">elseif</span> (ismember(st_param_which, [<span class="string">'medium'</span>]))
 
         <span class="comment">% to be able to visually see choice grid points</span>
         param_map(<span class="string">'fl_b_bd'</span>) = -20; <span class="comment">% borrow bound, = 0 if save only</span>
@@ -104,9 +109,13 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         param_map(<span class="string">'fl_w_interp_grid_gap'</span>) = 2;
         param_map(<span class="string">'fl_coh_interp_grid_gap'</span>) = 2;
 
+<span class="comment">%         param_map('fl_z_r_borr_min') = 0.025;</span>
+<span class="comment">%         param_map('fl_z_r_borr_max') = 0.95;</span>
+<span class="comment">%         param_map('fl_z_r_borr_n') = 3;</span>
+
         param_map(<span class="string">'fl_z_r_borr_min'</span>) = 0.025;
         param_map(<span class="string">'fl_z_r_borr_max'</span>) = 0.95;
-        param_map(<span class="string">'fl_z_r_borr_n'</span>) = 3;
+        param_map(<span class="string">'fl_z_r_borr_n'</span>) = 2;
 
     <span class="keyword">elseif</span> (strcmp(st_param_which, <span class="string">'small'</span>))
 
@@ -131,106 +140,114 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
     <span class="keyword">end</span>
 
+    param_map(<span class="string">'it_z_n'</span>) = param_map(<span class="string">'it_z_wage_n'</span>) * param_map(<span class="string">'fl_z_r_borr_n'</span>);
+
     default_maps = {param_map, support_map};
 
     <span class="comment">% numvarargs is the number of varagin inputted</span>
     [default_maps{1:length(varargin)}] = varargin{:};
     param_map = [param_map; default_maps{1}];
     support_map = [support_map; default_maps{2}];
-<span class="keyword">end</span>
-</pre><pre class="codeoutput">param_map
-  Map with properties:
 
-        Count: 40
+    <span class="comment">% Display Parameters</span>
+    <span class="keyword">if</span> (bl_display_funcgrids)
+        fft_container_map_display(param_map);
+        fft_container_map_display(support_map);
+    <span class="keyword">end</span>
+
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">  Map with properties:
+
+        Count: 41
       KeyType: char
     ValueType: any
 
-pos = 1 ; key = bl_default ; val = true
+pos = 1 ; key = bl_default ; val = 0
 pos = 2 ; key = fl_Amean ; val = 1
 pos = 3 ; key = fl_alpha ; val = 0.36
 pos = 4 ; key = fl_b_bd ; val = -20
 pos = 5 ; key = fl_beta ; val = 0.94
 pos = 6 ; key = fl_c_min ; val = 0.001
-pos = 7 ; key = fl_coh_interp_grid_gap ; val = 0.1
+pos = 7 ; key = fl_coh_interp_grid_gap ; val = 2
 pos = 8 ; key = fl_crra ; val = 1.5
-pos = 9 ; key = fl_default_wprime ; val = 0
-pos = 10 ; key = fl_delta ; val = 0.08
-pos = 11 ; key = fl_k_max ; val = 70
-pos = 12 ; key = fl_k_min ; val = 0
-pos = 13 ; key = fl_nan_replace ; val = -9999
-pos = 14 ; key = fl_r_save ; val = 0.025
-pos = 15 ; key = fl_tol_dist ; val = 1e-05
-pos = 16 ; key = fl_tol_pol ; val = 1e-05
-pos = 17 ; key = fl_tol_val ; val = 1e-05
-pos = 18 ; key = fl_w ; val = 0.44365
-pos = 19 ; key = fl_w_interp_grid_gap ; val = 0.1
-pos = 20 ; key = fl_w_max ; val = 50
-pos = 21 ; key = fl_w_min ; val = -20
-pos = 22 ; key = fl_z_r_borr_max ; val = 0.095
-pos = 23 ; key = fl_z_r_borr_min ; val = 0.025
-pos = 24 ; key = fl_z_r_borr_n ; val = 5
-pos = 25 ; key = fl_z_r_borr_poiss_mean ; val = 1.75
-pos = 26 ; key = fl_z_wage_mu ; val = 0
-pos = 27 ; key = fl_z_wage_rho ; val = 0.8
-pos = 28 ; key = fl_z_wage_sig ; val = 0.2
-pos = 29 ; key = it_ak_perc_n ; val = 50
-pos = 30 ; key = it_c_interp_grid_gap ; val = 0.0001
-pos = 31 ; key = it_maxiter_dist ; val = 1000
-pos = 32 ; key = it_maxiter_val ; val = 250
-pos = 33 ; key = it_tol_pol_nochange ; val = 25
-pos = 34 ; key = it_w_perc_n ; val = 50
-pos = 35 ; key = it_z_n ; val = 75
-pos = 36 ; key = it_z_wage_n ; val = 15
-pos = 37 ; key = st_analytical_stationary_type ; val = eigenvector
-pos = 38 ; key = st_model ; val = ipwkbz
-pos = 39 ; key = st_z_r_borr_drv_ele_type ; val = unif
-pos = 40 ; key = st_z_r_borr_drv_prb_type ; val = poiss
-support_map
+pos = 9 ; key = fl_default_aprime ; val = 0
+pos = 10 ; key = fl_default_wprime ; val = 0
+pos = 11 ; key = fl_delta ; val = 0.08
+pos = 12 ; key = fl_k_max ; val = 70
+pos = 13 ; key = fl_k_min ; val = 0
+pos = 14 ; key = fl_nan_replace ; val = -9999
+pos = 15 ; key = fl_r_save ; val = 0.025
+pos = 16 ; key = fl_tol_dist ; val = 1e-05
+pos = 17 ; key = fl_tol_pol ; val = 1e-05
+pos = 18 ; key = fl_tol_val ; val = 1e-05
+pos = 19 ; key = fl_w ; val = 0.44365
+pos = 20 ; key = fl_w_interp_grid_gap ; val = 2
+pos = 21 ; key = fl_w_max ; val = 50
+pos = 22 ; key = fl_w_min ; val = -20
+pos = 23 ; key = fl_z_r_borr_max ; val = 0.95
+pos = 24 ; key = fl_z_r_borr_min ; val = 0.025
+pos = 25 ; key = fl_z_r_borr_n ; val = 2
+pos = 26 ; key = fl_z_r_borr_poiss_mean ; val = 1.75
+pos = 27 ; key = fl_z_wage_mu ; val = 0
+pos = 28 ; key = fl_z_wage_rho ; val = 0.8
+pos = 29 ; key = fl_z_wage_sig ; val = 0.2
+pos = 30 ; key = it_ak_perc_n ; val = 45
+pos = 31 ; key = it_c_interp_grid_gap ; val = 0.0001
+pos = 32 ; key = it_maxiter_dist ; val = 1000
+pos = 33 ; key = it_maxiter_val ; val = 250
+pos = 34 ; key = it_tol_pol_nochange ; val = 25
+pos = 35 ; key = it_w_perc_n ; val = 25
+pos = 36 ; key = it_z_n ; val = 30
+pos = 37 ; key = it_z_wage_n ; val = 15
+pos = 38 ; key = st_analytical_stationary_type ; val = eigenvector
+pos = 39 ; key = st_model ; val = ipwkbz
+pos = 40 ; key = st_z_r_borr_drv_ele_type ; val = unif
+pos = 41 ; key = st_z_r_borr_drv_prb_type ; val = poiss
   Map with properties:
 
         Count: 40
       KeyType: char
     ValueType: any
 
-pos = 1 ; key = bl_display ; val = true
-pos = 2 ; key = bl_display_defparam ; val = false
+pos = 1 ; key = bl_display ; val = false
+pos = 2 ; key = bl_display_defparam ; val = true
 pos = 3 ; key = bl_display_dist ; val = false
 pos = 4 ; key = bl_display_evf ; val = false
-pos = 5 ; key = bl_display_final ; val = false
+pos = 5 ; key = bl_display_final ; val = true
 pos = 6 ; key = bl_display_final_dist ; val = false
 pos = 7 ; key = bl_display_final_dist_detail ; val = false
-pos = 8 ; key = bl_display_funcgrids ; val = false
-pos = 9 ; key = bl_graph ; val = false
+pos = 8 ; key = bl_display_funcgrids ; val = true
+pos = 9 ; key = bl_graph ; val = true
 pos = 10 ; key = bl_graph_coh_t_coh ; val = true
 pos = 11 ; key = bl_graph_evf ; val = false
-pos = 12 ; key = bl_graph_funcgrids ; val = false
-pos = 13 ; key = bl_graph_funcgrids_detail ; val = false
+pos = 12 ; key = bl_graph_funcgrids ; val = true
+pos = 13 ; key = bl_graph_funcgrids_detail ; val = true
 pos = 14 ; key = bl_graph_onebyones ; val = true
 pos = 15 ; key = bl_graph_pol_lvl ; val = true
 pos = 16 ; key = bl_graph_pol_pct ; val = true
 pos = 17 ; key = bl_graph_val ; val = true
 pos = 18 ; key = bl_img_save ; val = false
 pos = 19 ; key = bl_mat ; val = false
-pos = 20 ; key = bl_post ; val = false
+pos = 20 ; key = bl_post ; val = true
 pos = 21 ; key = bl_profile ; val = false
 pos = 22 ; key = bl_profile_dist ; val = false
-pos = 23 ; key = bl_time ; val = true
+pos = 23 ; key = bl_time ; val = false
 pos = 24 ; key = it_display_every ; val = 5
 pos = 25 ; key = it_display_final_colmax ; val = 12
 pos = 26 ; key = it_display_final_rowmax ; val = 100
 pos = 27 ; key = st_img_name_main ; val = _default
 pos = 28 ; key = st_img_path ; val = C:/Users/fan/CodeDynaAsset//m_ipwkbz//solve/img/
 pos = 29 ; key = st_img_prefix ; val = 
-pos = 30 ; key = st_img_suffix ; val = _p0.png
+pos = 30 ; key = st_img_suffix ; val = _p4.png
 pos = 31 ; key = st_mat_name_main ; val = _default
 pos = 32 ; key = st_mat_path ; val = C:/Users/fan/CodeDynaAsset//m_ipwkbz//solve/mat/
 pos = 33 ; key = st_mat_prefix ; val = 
-pos = 34 ; key = st_mat_suffix ; val = _p0
+pos = 34 ; key = st_mat_suffix ; val = _p4
 pos = 35 ; key = st_matimg_path_root ; val = C:/Users/fan/CodeDynaAsset//m_ipwkbz/
 pos = 36 ; key = st_profile_name_main ; val = _default
 pos = 37 ; key = st_profile_path ; val = C:/Users/fan/CodeDynaAsset//m_ipwkbz//solve/profile/
 pos = 38 ; key = st_profile_prefix ; val = 
-pos = 39 ; key = st_profile_suffix ; val = _p0
+pos = 39 ; key = st_profile_suffix ; val = _p4
 pos = 40 ; key = st_title_prefix ; val = 
 </pre><h2 id="4">Parse Parameters 1a</h2><pre class="codeinput">params_group = values(param_map, {<span class="string">'fl_b_bd'</span>, <span class="string">'fl_w_min'</span>, <span class="string">'fl_w_max'</span>});
 [fl_b_bd, fl_w_min, fl_w_max] = params_group{:};
@@ -257,6 +274,10 @@ params_group = values(param_map, {<span class="string">'st_z_r_borr_drv_ele_type
     <span class="string">'fl_z_r_borr_max'</span>, <span class="string">'fl_z_r_borr_min'</span>, <span class="string">'fl_z_r_borr_n'</span>});
 [st_z_r_borr_drv_ele_type, st_z_r_borr_drv_prb_type, fl_z_r_borr_poiss_mean, <span class="keyword">...</span>
     fl_z_r_borr_max, fl_z_r_borr_min, fl_z_r_borr_n] = params_group{:};
+
+<span class="comment">% param_map shock income</span>
+params_group = values(param_map, {<span class="string">'it_z_n'</span>});
+[it_z_n] = params_group{:};
 </pre><h2 id="7">Parse Parameters 3</h2><pre class="codeinput">params_group = values(support_map, {<span class="string">'bl_graph_funcgrids'</span>, <span class="string">'bl_graph_funcgrids_detail'</span>, <span class="string">'bl_display_funcgrids'</span>});
 [bl_graph_funcgrids, bl_graph_funcgrids_detail, bl_display_funcgrids] = params_group{:};
 </pre><h2 id="8">Generate Asset and Choice Grid for 2nd stage Problem</h2><p>This generate triangular choice structure. Household choose total aggregate savings, and within that how much to put into risky capital and how much to put into safe assets, in percentages. See <a href="https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_set_default_param.html">ffs_ipwkbz_set_default_param</a> for details.</p><pre class="codeinput"><span class="comment">% percentage grid for 1st stage choice problem, level grid for 2nd stage</span>
@@ -306,26 +327,307 @@ param_dsv_map(<span class="string">'fl_n'</span>) = fl_z_r_borr_n;
 
 <span class="comment">% iid transition matrix</span>
 mt_z_r_borr_prob_trans = repmat(ar_z_r_borr_prob, [length(ar_z_r_borr_prob), 1]);
-</pre><h2 id="11">Get Shock: Mesh Shocks Together</h2><pre class="codeinput"><span class="comment">% Kronecker product to get full transition matrix for the two shocks</span>
+</pre><h2 id="11">Get Shock: Mesh Shocks Together</h2><p>R is outter, W is Inner</p><pre class="codeinput"><span class="comment">% Kronecker product to get full transition matrix for the two shocks</span>
 mt_z_trans = kron(mt_z_r_borr_prob_trans, mt_z_wage_trans);
 
 <span class="comment">% mesh the shock vectors</span>
-[mt_z_r_borr_mesh_wage, mt_z_wage_mesh_r_borr] = ndgrid(ar_z_r_borr, ar_z_wage);
-ar_z_r_borr_mesh_wage = mt_z_r_borr_mesh_wage(:)';
-ar_z_wage_mesh_r_borr = mt_z_wage_mesh_r_borr(:)';
-</pre><h2 id="12">Get Equations</h2><pre class="codeinput">[f_util_log, f_util_crra, f_util_standin, f_prod, f_inc, f_coh, f_cons] = <span class="keyword">...</span>
+[mt_z_wage_mesh_r_borr_w1r2, mt_z_r_borr_mesh_wage_w1r2] = ndgrid(ar_z_wage, ar_z_r_borr);
+ar_z_wage_mesh_r_borr_w1r2 = mt_z_wage_mesh_r_borr_w1r2(:)';
+ar_z_r_borr_mesh_wage_w1r2 = mt_z_r_borr_mesh_wage_w1r2(:)';
+
+<span class="comment">% mesh the shock vectors</span>
+[mt_z_r_borr_mesh_wage_r1w2, mt_z_wage_mesh_r_borr_r1w2] = ndgrid(ar_z_r_borr, ar_z_wage);
+ar_z_wage_mesh_r_borr_r1w2 = mt_z_wage_mesh_r_borr_r1w2(:)';
+ar_z_r_borr_mesh_wage_r1w2 = mt_z_r_borr_mesh_wage_r1w2(:)';
+
+<span class="keyword">if</span> (bl_display_funcgrids)
+
+    disp(<span class="string">'----------------------------------------'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp(<span class="string">'Borrow R Shock: ar_z_r_borr_mesh_wage_w1r2'</span>);
+    disp(<span class="string">'Prod/Wage Shock: ar_z_wage_mesh_r_borr_w1r2'</span>);
+    disp(<span class="string">'show which shock is inner and which is outter'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+
+    tb_two_shocks = array2table([ar_z_r_borr_mesh_wage_w1r2;<span class="keyword">...</span>
+                                 ar_z_wage_mesh_r_borr_w1r2]');
+    cl_col_names = [<span class="string">"Borrow R Shock (Meshed)"</span>, <span class="string">"Wage R Shock (Meshed)"</span>];
+    cl_row_names = strcat(<span class="string">'zi='</span>, string((1:it_z_n)));
+    tb_two_shocks.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_two_shocks.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
+
+    it_row_display = it_z_wage_n*2;
+
+    disp(size(tb_two_shocks));
+    disp(head(tb_two_shocks, it_row_display));
+    disp(tail(tb_two_shocks, it_row_display));
+
+    disp(<span class="string">'----------------------------------------'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp(<span class="string">'Borrow R Shock: ar_z_wage_mesh_r_borr_r1w2'</span>);
+    disp(<span class="string">'Prod/Wage Shock: ar_z_r_borr_mesh_wage_r1w2'</span>);
+    disp(<span class="string">'show which shock is inner and which is outter'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+
+    tb_two_shocks = array2table([ar_z_wage_mesh_r_borr_r1w2;<span class="keyword">...</span>
+                                 ar_z_r_borr_mesh_wage_r1w2]');
+    cl_col_names = [<span class="string">"Borrow R Shock (Meshed)"</span>, <span class="string">"Wage R Shock (Meshed)"</span>];
+    cl_row_names = strcat(<span class="string">'zi='</span>, string((1:length(ar_z_r_borr_mesh_wage_r1w2))));
+    tb_two_shocks.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_two_shocks.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
+
+    it_row_display = fl_z_r_borr_n*2;
+
+    disp(size(tb_two_shocks));
+    disp(head(tb_two_shocks, it_row_display));
+    disp(tail(tb_two_shocks, it_row_display));
+
+    disp(<span class="string">'----------------------------------------'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp(<span class="string">'Borrow Rate Transition Matrix: mt_z_r_borr_prob_trans'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    it_col_n_keep = 15;
+    it_row_n_keep = 15;
+    [it_row_n, it_col_n] = size(mt_z_r_borr_prob_trans);
+    [ar_it_cols, ar_it_rows] = fft_row_col_subset(it_col_n, it_col_n_keep, it_row_n, it_row_n_keep);
+    cl_st_full_rowscols = cellstr([num2str(ar_z_r_borr', <span class="string">'r%3.2f'</span>)]);
+    tb_z_r_borr_prob_trans = array2table(round(mt_z_r_borr_prob_trans(ar_it_rows, ar_it_cols), 6));
+    cl_col_names = strcat(<span class="string">'zi='</span>, num2str(ar_it_cols'), <span class="string">':'</span>, cl_st_full_rowscols(ar_it_cols));
+    cl_row_names = strcat(<span class="string">'zi='</span>, num2str(ar_it_rows'), <span class="string">':'</span>, cl_st_full_rowscols(ar_it_rows));
+    tb_z_r_borr_prob_trans.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_z_r_borr_prob_trans.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
+
+    disp(size(tb_z_r_borr_prob_trans));
+    disp(tb_z_r_borr_prob_trans);
+
+    disp(<span class="string">'----------------------------------------'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp(<span class="string">'Wage Prod Shock Transition Matrix: mt_z_r_borr_prob_trans'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    it_col_n_keep = 15;
+    it_row_n_keep = 15;
+    [it_row_n, it_col_n] = size(mt_z_wage_trans);
+    [ar_it_cols, ar_it_rows] = fft_row_col_subset(it_col_n, it_col_n_keep, it_row_n, it_row_n_keep);
+    cl_st_full_rowscols = cellstr([num2str(ar_z_wage', <span class="string">'w%3.2f'</span>)]);
+    tb_z_wage_trans = array2table(round(mt_z_wage_trans(ar_it_rows, ar_it_cols),6));
+    cl_col_names = strcat(<span class="string">'zi='</span>, num2str(ar_it_cols'), <span class="string">':'</span>, cl_st_full_rowscols(ar_it_cols));
+    cl_row_names = strcat(<span class="string">'zi='</span>, num2str(ar_it_rows'), <span class="string">':'</span>, cl_st_full_rowscols(ar_it_rows));
+    tb_z_wage_trans.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_z_wage_trans.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
+
+    disp(size(tb_z_wage_trans));
+    disp(tb_z_wage_trans);
+
+    disp(<span class="string">'----------------------------------------'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp(<span class="string">'Full Transition Matrix: mt_z_trans'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    it_col_n_keep = it_z_wage_n*3;
+    it_row_n_keep = it_z_wage_n*3;
+    [it_row_n, it_col_n] = size(mt_z_trans);
+    [ar_it_cols, ar_it_rows] = fft_row_col_subset(it_col_n, it_col_n_keep, it_row_n, it_row_n_keep);
+    cl_st_full_rowscols = cellstr([num2str(ar_z_r_borr_mesh_wage_w1r2', <span class="string">'r%3.2f;'</span>), <span class="keyword">...</span>
+                                   num2str(ar_z_wage_mesh_r_borr_w1r2', <span class="string">'w%3.2f'</span>)]);
+    tb_mt_z_trans = array2table(round(mt_z_trans(ar_it_rows, ar_it_cols),6));
+    cl_col_names = strcat(<span class="string">'i'</span>, num2str(ar_it_cols'), <span class="string">':'</span>, cl_st_full_rowscols(ar_it_cols));
+    cl_row_names = strcat(<span class="string">'i'</span>, num2str(ar_it_rows'), <span class="string">':'</span>, cl_st_full_rowscols(ar_it_rows));
+    tb_mt_z_trans.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_mt_z_trans.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
+
+    disp(size(tb_mt_z_trans));
+    disp(tb_mt_z_trans);
+
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Borrow R Shock: ar_z_r_borr_mesh_wage_w1r2
+Prod/Wage Shock: ar_z_wage_mesh_r_borr_w1r2
+show which shock is inner and which is outter
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    30     2
+
+             BorrowRShock_Meshed_    WageRShock_Meshed_
+             ____________________    __________________
+
+    zi_1            0.025                 0.34741      
+    zi_2            0.025                 0.40076      
+    zi_3            0.025                  0.4623      
+    zi_4            0.025                  0.5333      
+    zi_5            0.025                 0.61519      
+    zi_6            0.025                 0.70966      
+    zi_7            0.025                 0.81864      
+    zi_8            0.025                 0.94436      
+    zi_9            0.025                  1.0894      
+    zi_10           0.025                  1.2567      
+    zi_11           0.025                  1.4496      
+    zi_12           0.025                  1.6723      
+    zi_13           0.025                  1.9291      
+    zi_14           0.025                  2.2253      
+    zi_15           0.025                   2.567      
+    zi_16            0.95                 0.34741      
+    zi_17            0.95                 0.40076      
+    zi_18            0.95                  0.4623      
+    zi_19            0.95                  0.5333      
+    zi_20            0.95                 0.61519      
+    zi_21            0.95                 0.70966      
+    zi_22            0.95                 0.81864      
+    zi_23            0.95                 0.94436      
+    zi_24            0.95                  1.0894      
+    zi_25            0.95                  1.2567      
+    zi_26            0.95                  1.4496      
+    zi_27            0.95                  1.6723      
+    zi_28            0.95                  1.9291      
+    zi_29            0.95                  2.2253      
+    zi_30            0.95                   2.567      
+
+             BorrowRShock_Meshed_    WageRShock_Meshed_
+             ____________________    __________________
+
+    zi_1            0.025                 0.34741      
+    zi_2            0.025                 0.40076      
+    zi_3            0.025                  0.4623      
+    zi_4            0.025                  0.5333      
+    zi_5            0.025                 0.61519      
+    zi_6            0.025                 0.70966      
+    zi_7            0.025                 0.81864      
+    zi_8            0.025                 0.94436      
+    zi_9            0.025                  1.0894      
+    zi_10           0.025                  1.2567      
+    zi_11           0.025                  1.4496      
+    zi_12           0.025                  1.6723      
+    zi_13           0.025                  1.9291      
+    zi_14           0.025                  2.2253      
+    zi_15           0.025                   2.567      
+    zi_16            0.95                 0.34741      
+    zi_17            0.95                 0.40076      
+    zi_18            0.95                  0.4623      
+    zi_19            0.95                  0.5333      
+    zi_20            0.95                 0.61519      
+    zi_21            0.95                 0.70966      
+    zi_22            0.95                 0.81864      
+    zi_23            0.95                 0.94436      
+    zi_24            0.95                  1.0894      
+    zi_25            0.95                  1.2567      
+    zi_26            0.95                  1.4496      
+    zi_27            0.95                  1.6723      
+    zi_28            0.95                  1.9291      
+    zi_29            0.95                  2.2253      
+    zi_30            0.95                   2.567      
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Borrow R Shock: ar_z_wage_mesh_r_borr_r1w2
+Prod/Wage Shock: ar_z_r_borr_mesh_wage_r1w2
+show which shock is inner and which is outter
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    30     2
+
+            BorrowRShock_Meshed_    WageRShock_Meshed_
+            ____________________    __________________
+
+    zi_1          0.34741                 0.025       
+    zi_2          0.34741                  0.95       
+    zi_3          0.40076                 0.025       
+    zi_4          0.40076                  0.95       
+
+             BorrowRShock_Meshed_    WageRShock_Meshed_
+             ____________________    __________________
+
+    zi_27           2.2253                 0.025       
+    zi_28           2.2253                  0.95       
+    zi_29            2.567                 0.025       
+    zi_30            2.567                  0.95       
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Borrow Rate Transition Matrix: mt_z_r_borr_prob_trans
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+     2     2
+
+                  zi_1_r0_03    zi_2_r0_95
+                  __________    __________
+
+    zi_1_r0_03     0.36364       0.63636  
+    zi_2_r0_95     0.36364       0.63636  
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Wage Prod Shock Transition Matrix: mt_z_r_borr_prob_trans
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    15    15
+
+                   zi_1_w0_35    zi_2_w0_40    zi_3_w0_46    zi_4_w0_53    zi_5_w0_62    zi_6_w0_71    zi_7_w0_82    zi_8_w0_94    zi_9_w1_09    zi_10_w1_26    zi_11_w1_45    zi_12_w1_67    zi_13_w1_93    zi_14_w2_23    zi_15_w2_57
+                   __________    __________    __________    __________    __________    __________    __________    __________    __________    ___________    ___________    ___________    ___________    ___________    ___________
+
+    zi_1_w0_35       0.26016       0.26831       0.25551       0.14921      0.053403      0.011702      0.001568      0.000128         6e-06             0              0              0              0              0              0  
+    zi_2_w0_40       0.11232       0.19622        0.2763       0.23861       0.12635      0.040998      0.008143      0.000989       7.3e-05         3e-06              0              0              0              0              0  
+    zi_3_w0_46      0.037073       0.10492        0.2185       0.27902        0.2185       0.10492      0.030863      0.005556      0.000611       4.1e-05          2e-06              0              0              0              0  
+    zi_4_w0_53      0.009208      0.040998       0.12635       0.23861        0.2763       0.19622      0.085427      0.022782      0.003717       0.00037        2.3e-05          1e-06              0              0              0  
+    zi_5_w0_62      0.001703      0.011702      0.053403       0.14921       0.25551       0.26831       0.17279      0.068209      0.016489      0.002438        0.00022        1.2e-05              0              0              0  
+    zi_6_w0_71      0.000233      0.002438      0.016489      0.068209       0.17279       0.26831       0.25551       0.14921      0.053403      0.011702       0.001568       0.000128          6e-06              0              0  
+    zi_7_w0_82       2.3e-05       0.00037      0.003717      0.022782      0.085427       0.19622        0.2763       0.23861       0.12635      0.040998       0.008143       0.000989        7.3e-05          3e-06              0  
+    zi_8_w0_94         2e-06       4.1e-05      0.000611      0.005556      0.030863       0.10492        0.2185       0.27902        0.2185       0.10492       0.030863       0.005556       0.000611        4.1e-05          2e-06  
+    zi_9_w1_09             0         3e-06       7.3e-05      0.000989      0.008143      0.040998       0.12635       0.23861        0.2763       0.19622       0.085427       0.022782       0.003717        0.00037        2.3e-05  
+    zi_10_w1_26            0             0         6e-06      0.000128      0.001568      0.011702      0.053403       0.14921       0.25551       0.26831        0.17279       0.068209       0.016489       0.002438       0.000233  
+    zi_11_w1_45            0             0             0       1.2e-05       0.00022      0.002438      0.016489      0.068209       0.17279       0.26831        0.25551        0.14921       0.053403       0.011702       0.001703  
+    zi_12_w1_67            0             0             0         1e-06       2.3e-05       0.00037      0.003717      0.022782      0.085427       0.19622         0.2763        0.23861        0.12635       0.040998       0.009208  
+    zi_13_w1_93            0             0             0             0         2e-06       4.1e-05      0.000611      0.005556      0.030863       0.10492         0.2185        0.27902         0.2185        0.10492       0.037073  
+    zi_14_w2_23            0             0             0             0             0         3e-06       7.3e-05      0.000989      0.008143      0.040998        0.12635        0.23861         0.2763        0.19622        0.11232  
+    zi_15_w2_57            0             0             0             0             0             0         6e-06      0.000128      0.001568      0.011702       0.053403        0.14921        0.25551        0.26831        0.26016  
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Full Transition Matrix: mt_z_trans
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    30    30
+
+                       i1_r0_03_w0_35    i2_r0_03_w0_40    i3_r0_03_w0_46    i4_r0_03_w0_53    i5_r0_03_w0_62    i6_r0_03_w0_71    i7_r0_03_w0_82    i8_r0_03_w0_94    i9_r0_03_w1_09    i10_r0_03_w1_26    i11_r0_03_w1_45    i12_r0_03_w1_67    i13_r0_03_w1_93    i14_r0_03_w2_23    i15_r0_03_w2_57    i16_r0_95_w0_35    i17_r0_95_w0_40    i18_r0_95_w0_46    i19_r0_95_w0_53    i20_r0_95_w0_62    i21_r0_95_w0_71    i22_r0_95_w0_82    i23_r0_95_w0_94    i24_r0_95_w1_09    i25_r0_95_w1_26    i26_r0_95_w1_45    i27_r0_95_w1_67    i28_r0_95_w1_93    i29_r0_95_w2_23    i30_r0_95_w2_57
+                       ______________    ______________    ______________    ______________    ______________    ______________    ______________    ______________    ______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________
+
+    i1_r0_03_w0_35        0.094603          0.097568          0.092913          0.054258          0.019419          0.004255           0.00057           4.7e-05             2e-06                 0                  0                  0                  0                  0                  0            0.16556            0.17075             0.1626           0.094952           0.033983           0.007447           0.000998            8.2e-05              4e-06                  0                  0                  0                  0                  0                  0    
+    i2_r0_03_w0_40        0.040843          0.071352           0.10047          0.086766          0.045945          0.014908          0.002961          0.000359           2.7e-05             1e-06                  0                  0                  0                  0                  0           0.071476            0.12487            0.17583            0.15184           0.080404            0.02609           0.005182           0.000629            4.7e-05              2e-06                  0                  0                  0                  0                  0    
+    i3_r0_03_w0_46        0.013481          0.038151          0.079456           0.10146          0.079456          0.038151          0.011223           0.00202          0.000222           1.5e-05              1e-06                  0                  0                  0                  0           0.023592           0.066764            0.13905            0.17755            0.13905           0.066764            0.01964           0.003536           0.000389            2.6e-05              1e-06                  0                  0                  0                  0    
+    i4_r0_03_w0_53        0.003348          0.014908          0.045945          0.086766           0.10047          0.071352          0.031064          0.008284          0.001352          0.000135              8e-06                  0                  0                  0                  0            0.00586            0.02609           0.080404            0.15184            0.17583            0.12487           0.054363           0.014497           0.002365           0.000236            1.4e-05              1e-06                  0                  0                  0    
+    i5_r0_03_w0_62        0.000619          0.004255          0.019419          0.054258          0.092913          0.097568          0.062833          0.024803          0.005996          0.000886              8e-05              4e-06                  0                  0                  0           0.001083           0.007447           0.033983           0.094952             0.1626            0.17075            0.10996           0.043405           0.010493           0.001551            0.00014              8e-06                  0                  0                  0    
+    i6_r0_03_w0_71         8.5e-05          0.000886          0.005996          0.024803          0.062833          0.097568          0.092913          0.054258          0.019419          0.004255            0.00057            4.7e-05              2e-06                  0                  0           0.000148           0.001551           0.010493           0.043405            0.10996            0.17075             0.1626           0.094952           0.033983           0.007447           0.000998            8.2e-05              4e-06                  0                  0    
+    i7_r0_03_w0_82           8e-06          0.000135          0.001352          0.008284          0.031064          0.071352           0.10047          0.086766          0.045945          0.014908           0.002961           0.000359            2.7e-05              1e-06                  0            1.5e-05           0.000236           0.002365           0.014497           0.054363            0.12487            0.17583            0.15184           0.080404            0.02609           0.005182           0.000629            4.7e-05              2e-06                  0    
+    i8_r0_03_w0_94           1e-06           1.5e-05          0.000222           0.00202          0.011223          0.038151          0.079456           0.10146          0.079456          0.038151           0.011223            0.00202           0.000222            1.5e-05              1e-06              1e-06            2.6e-05           0.000389           0.003536            0.01964           0.066764            0.13905            0.17755            0.13905           0.066764            0.01964           0.003536           0.000389            2.6e-05              1e-06    
+    i9_r0_03_w1_09               0             1e-06           2.7e-05          0.000359          0.002961          0.014908          0.045945          0.086766           0.10047          0.071352           0.031064           0.008284           0.001352           0.000135              8e-06                  0              2e-06            4.7e-05           0.000629           0.005182            0.02609           0.080404            0.15184            0.17583            0.12487           0.054363           0.014497           0.002365           0.000236            1.5e-05    
+    i10_r0_03_w1_26              0                 0             2e-06           4.7e-05           0.00057          0.004255          0.019419          0.054258          0.092913          0.097568           0.062833           0.024803           0.005996           0.000886            8.5e-05                  0                  0              4e-06            8.2e-05           0.000998           0.007447           0.033983           0.094952             0.1626            0.17075            0.10996           0.043405           0.010493           0.001551           0.000148    
+    i11_r0_03_w1_45              0                 0                 0             4e-06             8e-05          0.000886          0.005996          0.024803          0.062833          0.097568           0.092913           0.054258           0.019419           0.004255           0.000619                  0                  0                  0              8e-06            0.00014           0.001551           0.010493           0.043405            0.10996            0.17075             0.1626           0.094952           0.033983           0.007447           0.001083    
+    i12_r0_03_w1_67              0                 0                 0                 0             8e-06          0.000135          0.001352          0.008284          0.031064          0.071352            0.10047           0.086766           0.045945           0.014908           0.003348                  0                  0                  0              1e-06            1.4e-05           0.000236           0.002365           0.014497           0.054363            0.12487            0.17583            0.15184           0.080404            0.02609            0.00586    
+    i13_r0_03_w1_93              0                 0                 0                 0             1e-06           1.5e-05          0.000222           0.00202          0.011223          0.038151           0.079456            0.10146           0.079456           0.038151           0.013481                  0                  0                  0                  0              1e-06            2.6e-05           0.000389           0.003536            0.01964           0.066764            0.13905            0.17755            0.13905           0.066764           0.023592    
+    i14_r0_03_w2_23              0                 0                 0                 0                 0             1e-06           2.7e-05          0.000359          0.002961          0.014908           0.045945           0.086766            0.10047           0.071352           0.040843                  0                  0                  0                  0                  0              2e-06            4.7e-05           0.000629           0.005182            0.02609           0.080404            0.15184            0.17583            0.12487           0.071476    
+    i15_r0_03_w2_57              0                 0                 0                 0                 0                 0             2e-06           4.7e-05           0.00057          0.004255           0.019419           0.054258           0.092913           0.097568           0.094603                  0                  0                  0                  0                  0                  0              4e-06            8.2e-05           0.000998           0.007447           0.033983           0.094952             0.1626            0.17075            0.16556    
+    i16_r0_95_w0_35       0.094603          0.097568          0.092913          0.054258          0.019419          0.004255           0.00057           4.7e-05             2e-06                 0                  0                  0                  0                  0                  0            0.16556            0.17075             0.1626           0.094952           0.033983           0.007447           0.000998            8.2e-05              4e-06                  0                  0                  0                  0                  0                  0    
+    i17_r0_95_w0_40       0.040843          0.071352           0.10047          0.086766          0.045945          0.014908          0.002961          0.000359           2.7e-05             1e-06                  0                  0                  0                  0                  0           0.071476            0.12487            0.17583            0.15184           0.080404            0.02609           0.005182           0.000629            4.7e-05              2e-06                  0                  0                  0                  0                  0    
+    i18_r0_95_w0_46       0.013481          0.038151          0.079456           0.10146          0.079456          0.038151          0.011223           0.00202          0.000222           1.5e-05              1e-06                  0                  0                  0                  0           0.023592           0.066764            0.13905            0.17755            0.13905           0.066764            0.01964           0.003536           0.000389            2.6e-05              1e-06                  0                  0                  0                  0    
+    i19_r0_95_w0_53       0.003348          0.014908          0.045945          0.086766           0.10047          0.071352          0.031064          0.008284          0.001352          0.000135              8e-06                  0                  0                  0                  0            0.00586            0.02609           0.080404            0.15184            0.17583            0.12487           0.054363           0.014497           0.002365           0.000236            1.4e-05              1e-06                  0                  0                  0    
+    i20_r0_95_w0_62       0.000619          0.004255          0.019419          0.054258          0.092913          0.097568          0.062833          0.024803          0.005996          0.000886              8e-05              4e-06                  0                  0                  0           0.001083           0.007447           0.033983           0.094952             0.1626            0.17075            0.10996           0.043405           0.010493           0.001551            0.00014              8e-06                  0                  0                  0    
+    i21_r0_95_w0_71        8.5e-05          0.000886          0.005996          0.024803          0.062833          0.097568          0.092913          0.054258          0.019419          0.004255            0.00057            4.7e-05              2e-06                  0                  0           0.000148           0.001551           0.010493           0.043405            0.10996            0.17075             0.1626           0.094952           0.033983           0.007447           0.000998            8.2e-05              4e-06                  0                  0    
+    i22_r0_95_w0_82          8e-06          0.000135          0.001352          0.008284          0.031064          0.071352           0.10047          0.086766          0.045945          0.014908           0.002961           0.000359            2.7e-05              1e-06                  0            1.5e-05           0.000236           0.002365           0.014497           0.054363            0.12487            0.17583            0.15184           0.080404            0.02609           0.005182           0.000629            4.7e-05              2e-06                  0    
+    i23_r0_95_w0_94          1e-06           1.5e-05          0.000222           0.00202          0.011223          0.038151          0.079456           0.10146          0.079456          0.038151           0.011223            0.00202           0.000222            1.5e-05              1e-06              1e-06            2.6e-05           0.000389           0.003536            0.01964           0.066764            0.13905            0.17755            0.13905           0.066764            0.01964           0.003536           0.000389            2.6e-05              1e-06    
+    i24_r0_95_w1_09              0             1e-06           2.7e-05          0.000359          0.002961          0.014908          0.045945          0.086766           0.10047          0.071352           0.031064           0.008284           0.001352           0.000135              8e-06                  0              2e-06            4.7e-05           0.000629           0.005182            0.02609           0.080404            0.15184            0.17583            0.12487           0.054363           0.014497           0.002365           0.000236            1.5e-05    
+    i25_r0_95_w1_26              0                 0             2e-06           4.7e-05           0.00057          0.004255          0.019419          0.054258          0.092913          0.097568           0.062833           0.024803           0.005996           0.000886            8.5e-05                  0                  0              4e-06            8.2e-05           0.000998           0.007447           0.033983           0.094952             0.1626            0.17075            0.10996           0.043405           0.010493           0.001551           0.000148    
+    i26_r0_95_w1_45              0                 0                 0             4e-06             8e-05          0.000886          0.005996          0.024803          0.062833          0.097568           0.092913           0.054258           0.019419           0.004255           0.000619                  0                  0                  0              8e-06            0.00014           0.001551           0.010493           0.043405            0.10996            0.17075             0.1626           0.094952           0.033983           0.007447           0.001083    
+    i27_r0_95_w1_67              0                 0                 0                 0             8e-06          0.000135          0.001352          0.008284          0.031064          0.071352            0.10047           0.086766           0.045945           0.014908           0.003348                  0                  0                  0              1e-06            1.4e-05           0.000236           0.002365           0.014497           0.054363            0.12487            0.17583            0.15184           0.080404            0.02609            0.00586    
+    i28_r0_95_w1_93              0                 0                 0                 0             1e-06           1.5e-05          0.000222           0.00202          0.011223          0.038151           0.079456            0.10146           0.079456           0.038151           0.013481                  0                  0                  0                  0              1e-06            2.6e-05           0.000389           0.003536            0.01964           0.066764            0.13905            0.17755            0.13905           0.066764           0.023592    
+    i29_r0_95_w2_23              0                 0                 0                 0                 0             1e-06           2.7e-05          0.000359          0.002961          0.014908           0.045945           0.086766            0.10047           0.071352           0.040843                  0                  0                  0                  0                  0              2e-06            4.7e-05           0.000629           0.005182            0.02609           0.080404            0.15184            0.17583            0.12487           0.071476    
+    i30_r0_95_w2_57              0                 0                 0                 0                 0                 0             2e-06           4.7e-05           0.00057          0.004255           0.019419           0.054258           0.092913           0.097568           0.094603                  0                  0                  0                  0                  0                  0              4e-06            8.2e-05           0.000998           0.007447           0.033983           0.094952             0.1626            0.17075            0.16556    
+
+</pre><h2 id="12">Get Equations</h2><pre class="codeinput">[f_util_log, f_util_crra, f_util_standin, f_util_standin_coh, f_prod, f_inc, f_coh, f_cons] = <span class="keyword">...</span>
     ffs_ipwkbz_set_functions(fl_crra, fl_c_min, fl_b_bd, fl_Amean, fl_alpha, fl_delta, fl_r_save, fl_w);
-</pre><h2 id="13">Generate Cash-on-Hand/State Matrix</h2><p>The endogenous state variable is cash-on-hand, it has it_z_n*it_a_n number of points, covering all reachable points when ar_a is the choice vector and ar_z is the shock vector. requires inputs from get Asset and choice grids, get shock grids, and get equations above.</p><div><ol><li>mt_coh_wkb_full: this is the (I^k x I^w) by (M^r x M^z) matrix, where rows = it_w_interp_n*it_ak_perc_n, and cols = fl_z_r_borr_n*it_z_wage_n.</li><li>mt_coh_wkb_full: this is the (I^k x I^w x M^r) by (M^z) matrix, where rows = it_w_interp_n*it_ak_perc_n*fl_z_r_borr_n, and cols = it_z_wage_n.</li></ol></div><pre class="codeinput">mt_coh_wkb_full = f_coh(ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr, <span class="keyword">...</span>
+</pre><h2 id="13">Generate Cash-on-Hand/State Matrix</h2><p>The endogenous state variable is cash-on-hand, it has it_z_n*it_a_n number of points, covering all reachable points when ar_a is the choice vector and ar_z is the shock vector. requires inputs from get Asset and choice grids, get shock grids, and get equations above.</p><div><ol><li>mt_coh_wkb_full: this is the (I^k x I^w) by (M^r x M^z) matrix, where rows = it_w_interp_n*it_ak_perc_n, and cols = fl_z_r_borr_n*it_z_wage_n.</li><li>mt_coh_wkb_full: this is the (I^k x I^w x M^r) by (M^z) matrix, where rows = it_w_interp_n*it_ak_perc_n*fl_z_r_borr_n, and cols = it_z_wage_n.</li></ol></div><pre class="codeinput">mt_coh_wkb_full = f_coh(ar_z_r_borr_mesh_wage_r1w2, ar_z_wage_mesh_r_borr_r1w2, <span class="keyword">...</span>
                         ar_a_meshk_full, ar_k_mesha_full);
 
 it_coh_wkb_reshape_rows = it_w_interp_n*it_ak_perc_n*fl_z_r_borr_n;
 it_coh_wkb_reshape_cols = it_z_wage_n;
 mt_coh_wkb_full = reshape(mt_coh_wkb_full, [it_coh_wkb_reshape_rows, it_coh_wkb_reshape_cols]);
 
-<span class="keyword">if</span> (bl_display_funcgrids || bl_graph_funcgrids)
+<span class="comment">% Generate Aggregate Variables</span>
+ar_aplusk_mesh = ar_a_meshk_full + ar_k_mesha_full;
 
-    <span class="comment">% Generate Aggregate Variables</span>
-    ar_aplusk_mesh = ar_a_meshk_full + ar_k_mesha_full;
+<span class="keyword">if</span> (bl_display_funcgrids || bl_graph_funcgrids)
 
     <span class="comment">% Genereate Table</span>
     tab_ak_choices = array2table([ar_aplusk_mesh, ar_k_mesha_full, ar_a_meshk_full]);
@@ -355,16 +657,16 @@ mt_coh_wkb_full = reshape(mt_coh_wkb_full, [it_coh_wkb_reshape_rows, it_coh_wkb_
     disp(tail(array2table(tab_ak_choices), it_rows_toshow));
 
     <span class="comment">% Generate Shock Full Mat to See coh_wkb_full zr and zw</span>
-    mt_z_r_borr_mwge_makfull = zeros([length(ar_a_meshk_full), length(ar_z_r_borr_mesh_wage)]) + ar_z_r_borr_mesh_wage;
-    mt_z_wage_mesh_r_makfull = zeros([length(ar_a_meshk_full), length(ar_z_r_borr_mesh_wage)]) + ar_z_wage_mesh_r_borr;
+    mt_z_r_borr_mwge_makfull = zeros([length(ar_a_meshk_full), it_z_n]) + ar_z_r_borr_mesh_wage_r1w2;
+    mt_z_wage_mesh_r_makfull = zeros([length(ar_a_meshk_full), it_z_n]) + ar_z_wage_mesh_r_borr_r1w2;
     <span class="comment">% use the same reshape command as above</span>
     mt_z_r_borr_mwge_makfull = reshape(mt_z_r_borr_mwge_makfull, [it_coh_wkb_reshape_rows, it_coh_wkb_reshape_cols]);
     mt_z_wage_mesh_r_makfull = reshape(mt_z_wage_mesh_r_makfull, [it_coh_wkb_reshape_rows, it_coh_wkb_reshape_cols]);
 
     <span class="comment">% Generate W and K Choices Full Mat to see which w and k</span>
-    mt_aplusk_mesh = zeros([length(ar_a_meshk_full), length(ar_z_r_borr_mesh_wage)]) + ar_aplusk_mesh;
-    mt_a_meshk_full = zeros([length(ar_a_meshk_full), length(ar_z_r_borr_mesh_wage)]) + ar_a_meshk_full;
-    mt_k_mesha_full = zeros([length(ar_a_meshk_full), length(ar_z_r_borr_mesh_wage)]) + ar_k_mesha_full;
+    mt_aplusk_mesh = zeros([length(ar_a_meshk_full), it_z_n]) + ar_aplusk_mesh;
+    mt_a_meshk_full = zeros([length(ar_a_meshk_full), it_z_n]) + ar_a_meshk_full;
+    mt_k_mesha_full = zeros([length(ar_a_meshk_full), it_z_n]) + ar_k_mesha_full;
     <span class="comment">% use the same reshape command as above</span>
     mt_aplusk_mesh = reshape(mt_aplusk_mesh, [it_coh_wkb_reshape_rows, it_coh_wkb_reshape_cols]);
     mt_a_meshk_full = reshape(mt_a_meshk_full, [it_coh_wkb_reshape_rows, it_coh_wkb_reshape_cols]);
@@ -578,7 +880,7 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 mt_coh_wkb_full
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-        4725          15
+        3150          15
 
     mt_coh_wkb_full1    mt_coh_wkb_full2    mt_coh_wkb_full3    mt_coh_wkb_full4    mt_coh_wkb_full5    mt_coh_wkb_full6    mt_coh_wkb_full7    mt_coh_wkb_full8    mt_coh_wkb_full9    mt_coh_wkb_full10    mt_coh_wkb_full11    mt_coh_wkb_full12    mt_coh_wkb_full13    mt_coh_wkb_full14    mt_coh_wkb_full15
     ________________    ________________    ________________    ________________    ________________    ________________    ________________    ________________    ________________    _________________    _________________    _________________    _________________    _________________    _________________
@@ -732,7 +1034,7 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Shock Borrow R: mt_z_r_borr_mwge_makfull
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-        4725          15
+        3150          15
 
     mt_z_r_borr_mwge_makfull1    mt_z_r_borr_mwge_makfull2    mt_z_r_borr_mwge_makfull3    mt_z_r_borr_mwge_makfull4    mt_z_r_borr_mwge_makfull5    mt_z_r_borr_mwge_makfull6    mt_z_r_borr_mwge_makfull7    mt_z_r_borr_mwge_makfull8    mt_z_r_borr_mwge_makfull9    mt_z_r_borr_mwge_makfull10    mt_z_r_borr_mwge_makfull11    mt_z_r_borr_mwge_makfull12    mt_z_r_borr_mwge_makfull13    mt_z_r_borr_mwge_makfull14    mt_z_r_borr_mwge_makfull15
     _________________________    _________________________    _________________________    _________________________    _________________________    _________________________    _________________________    _________________________    _________________________    __________________________    __________________________    __________________________    __________________________    __________________________    __________________________
@@ -886,7 +1188,7 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Shock Productivity: mt_z_wage_mesh_r_makfull
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-        4725          15
+        3150          15
 
     mt_z_wage_mesh_r_makfull1    mt_z_wage_mesh_r_makfull2    mt_z_wage_mesh_r_makfull3    mt_z_wage_mesh_r_makfull4    mt_z_wage_mesh_r_makfull5    mt_z_wage_mesh_r_makfull6    mt_z_wage_mesh_r_makfull7    mt_z_wage_mesh_r_makfull8    mt_z_wage_mesh_r_makfull9    mt_z_wage_mesh_r_makfull10    mt_z_wage_mesh_r_makfull11    mt_z_wage_mesh_r_makfull12    mt_z_wage_mesh_r_makfull13    mt_z_wage_mesh_r_makfull14    mt_z_wage_mesh_r_makfull15
     _________________________    _________________________    _________________________    _________________________    _________________________    _________________________    _________________________    _________________________    _________________________    __________________________    __________________________    __________________________    __________________________    __________________________    __________________________
@@ -1040,7 +1342,7 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 W = Aprime + Kprime; mt_aplusk_mesh
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-        4725          15
+        3150          15
 
     mt_aplusk_mesh1    mt_aplusk_mesh2    mt_aplusk_mesh3    mt_aplusk_mesh4    mt_aplusk_mesh5    mt_aplusk_mesh6    mt_aplusk_mesh7    mt_aplusk_mesh8    mt_aplusk_mesh9    mt_aplusk_mesh10    mt_aplusk_mesh11    mt_aplusk_mesh12    mt_aplusk_mesh13    mt_aplusk_mesh14    mt_aplusk_mesh15
     _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    _______________    ________________    ________________    ________________    ________________    ________________    ________________
@@ -1194,7 +1496,7 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Kprime: mt_k_mesha_full
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-        4725          15
+        3150          15
 
     mt_k_mesha_full1    mt_k_mesha_full2    mt_k_mesha_full3    mt_k_mesha_full4    mt_k_mesha_full5    mt_k_mesha_full6    mt_k_mesha_full7    mt_k_mesha_full8    mt_k_mesha_full9    mt_k_mesha_full10    mt_k_mesha_full11    mt_k_mesha_full12    mt_k_mesha_full13    mt_k_mesha_full14    mt_k_mesha_full15
     ________________    ________________    ________________    ________________    ________________    ________________    ________________    ________________    ________________    _________________    _________________    _________________    _________________    _________________    _________________
@@ -1348,7 +1650,7 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Aprime: mt_a_meshk_full
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-        4725          15
+        3150          15
 
     mt_a_meshk_full1    mt_a_meshk_full2    mt_a_meshk_full3    mt_a_meshk_full4    mt_a_meshk_full5    mt_a_meshk_full6    mt_a_meshk_full7    mt_a_meshk_full8    mt_a_meshk_full9    mt_a_meshk_full10    mt_a_meshk_full11    mt_a_meshk_full12    mt_a_meshk_full13    mt_a_meshk_full14    mt_a_meshk_full15
     ________________    ________________    ________________    ________________    ________________    ________________    ________________    ________________    ________________    _________________    _________________    _________________    _________________    _________________    _________________
@@ -1517,8 +1819,8 @@ ar_w_level_full_dup = repmat(ar_w_level_full, [1,fl_z_r_borr_n]);
 fl_w_level_min_valid = min(ar_w_level_full_dup(~ar_bl_w_level_invalid));
 </pre><h2 id="15">Update Valid 2nd stage choice matrix</h2><p>ar_w_level = linspace(fl_w_level_min_valid, fl_w_max, it_w_interp_n); ar_k_max = ar_w_level - fl_b_bd; mt_k = (ar_k_max'*ar_ak_perc)'; mt_a = (ar_w_level - mt_k); ar_a_meshk = mt_a(:); ar_k_mesha = mt_k(:);</p><h2 id="16">Select only Valid (k(w), a) choices</h2><pre class="codeinput"><span class="comment">% mt_coh_wkb = mt_coh_wkb_full(~ar_bl_wkb_invalid, :);</span>
 mt_coh_wkb = mt_coh_wkb_full;
-mt_z_r_borr_mesh_coh_wkb = repmat(ar_z_r_borr_mesh_wage, [size(mt_coh_wkb,1),1]);
-mt_z_wage_mesh_coh_wkb = repmat(ar_z_wage_mesh_r_borr, [size(mt_coh_wkb,1),1]);
+mt_z_r_borr_mesh_coh_wkb = repmat(ar_z_r_borr_mesh_wage_w1r2, [size(mt_coh_wkb,1),1]);
+mt_z_wage_mesh_coh_wkb = repmat(ar_z_wage_mesh_r_borr_w1r2, [size(mt_coh_wkb,1),1]);
 </pre><h2 id="17">Generate 1st Stage States: Interpolation Cash-on-hand Interpolation Grid</h2><p>For the iwkz problems, we solve the problem along a grid of cash-on-hand values, the interpolate to find v(k',b',z) at (k',b') choices. Crucially, we have to coh matrxies</p><pre class="codeinput">fl_max_mt_coh = max(max(mt_coh_wkb));
 
 <span class="comment">% This is savings only condition</span>
@@ -1534,8 +1836,8 @@ it_coh_interp_n = (fl_max_mt_coh-fl_min_mt_coh)/(fl_coh_interp_grid_gap);
 ar_interp_coh_grid = fft_array_add_zero(linspace(fl_min_mt_coh, fl_max_mt_coh, it_coh_interp_n), true);
 mt_interp_coh_grid_mesh_w_perc = repmat(ar_interp_coh_grid, [it_w_perc_n, 1]);
 
-[mt_interp_coh_grid_mesh_z_r_borr, mt_z_r_borr_mesh_coh_interp_grid] = ndgrid(ar_interp_coh_grid, ar_z_r_borr_mesh_wage);
-[mt_interp_coh_grid_mesh_z_wage, mt_z_wage_mesh_coh_interp_grid] = ndgrid(ar_interp_coh_grid, ar_z_wage_mesh_r_borr);
+[mt_interp_coh_grid_mesh_z_r_borr, mt_z_r_borr_mesh_coh_interp_grid] = ndgrid(ar_interp_coh_grid, ar_z_r_borr_mesh_wage_w1r2);
+[mt_interp_coh_grid_mesh_z_wage, mt_z_wage_mesh_coh_interp_grid] = ndgrid(ar_interp_coh_grid, ar_z_wage_mesh_r_borr_w1r2);
 </pre><h2 id="18">Generate 1st Stage Choices: Interpolation Cash-on-hand Interpolation Grid</h2><p>previously, our ar_w was the first stage choice grid, the grid was the same for all coh levels. Now, for each coh level, there is a different ar_w. ar_interp_coh_grid is (1 by ar_interp_coh_grid) and ar_w_perc is ( 1 by it_w_perc_n). Conditional on z, each choice matrix is (it_w_perc_n by ar_interp_coh_grid). Here we are pre-computing the choice matrix. This could be a large matrix if the choice grid is large. This is the matrix of aggregate savings choices</p><pre class="codeinput"><span class="keyword">if</span> (fl_min_mt_coh &lt; 0)
     <span class="comment">% borrowing bound is below zero</span>
     mt_w_by_interp_coh_interp_grid = ((ar_interp_coh_grid-fl_min_mt_coh)'*ar_w_perc)' + fl_min_mt_coh;
@@ -1549,17 +1851,16 @@ ar_interp_c_grid = linspace(fl_c_min, fl_c_max, it_interp_c_grid_n);
 </pre><h2 id="20">Initialize armt_map to store, state, choice, shock matrixes</h2><pre class="codeinput">armt_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
 armtdesc_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
 </pre><h2 id="21">Store armt_map (1): 2nd Stage Problem Arrays and Matrixes</h2><pre class="codeinput">armt_map(<span class="string">'ar_ak_perc'</span>) = ar_ak_perc;
+armt_map(<span class="string">'ar_w_level'</span>) = ar_w_level;
 armt_map(<span class="string">'mt_k'</span>) = mt_k;
 armt_map(<span class="string">'ar_a_meshk'</span>) = ar_a_meshk;
 armt_map(<span class="string">'ar_k_mesha'</span>) = ar_k_mesha;
+armt_map(<span class="string">'ar_aplusk_mesh'</span>) = ar_aplusk_mesh;
 armt_map(<span class="string">'it_ameshk_n'</span>) = length(ar_a_meshk);
 armt_map(<span class="string">'mt_coh_wkb'</span>) = mt_coh_wkb_full;
 armt_map(<span class="string">'mt_z_r_borr_mesh_coh_wkb'</span>) = mt_z_r_borr_mesh_coh_wkb;
 armt_map(<span class="string">'mt_z_wage_mesh_coh_wkb'</span>) = mt_z_wage_mesh_coh_wkb;
-armt_map(<span class="string">'ar_z_r_borr_mesh_wage'</span>) = ar_z_r_borr_mesh_wage;
-armt_map(<span class="string">'ar_z_wage_mesh_r_borr'</span>) = ar_z_wage_mesh_r_borr;
 </pre><h2 id="22">Store armt_map (2): First Stage Aggregate Savings</h2><p>w = k' + b', w is aggregate Savings%</p><div><ol><li><b>ar_w_perc</b> 1st stage, percentage w choice given coh, at each coh level the number of choice points is the same for this problem with percentage grid points.</li><li><b>ar_w_level</b> 2nd stage, level of w over which we solve the optimal percentage k' choices. Need to generate interpolant based on this so that we know optimal k* given ar_w_perc(coh) in the 1st stage</li><li><b>mt_w_by_interp_coh_interp_grid</b> 1st stage, generate w(coh, percent), meaning the level of w given coh and the percentage grid of ar_w_perc. Mesh this with the coh grid, Rows here correspond to percentage of w choices, columns correspond to cash-on-hand. The columns of cash-on-hand is determined by ar_interp_coh_grid, because we solve the 1st stage problem at that coh grid.</li></ol></div><pre class="codeinput">armt_map(<span class="string">'ar_w_perc'</span>) = ar_w_perc;
-armt_map(<span class="string">'ar_w_level'</span>) = ar_w_level;
 armt_map(<span class="string">'mt_w_by_interp_coh_interp_grid'</span>) = mt_w_by_interp_coh_interp_grid;
 armt_map(<span class="string">'mt_interp_coh_grid_mesh_w_perc'</span>) = mt_interp_coh_grid_mesh_w_perc;
 armt_map(<span class="string">'mt_z_r_borr_mesh_coh_interp_grid'</span>) = mt_z_r_borr_mesh_coh_interp_grid;
@@ -1569,8 +1870,10 @@ armt_map(<span class="string">'ar_interp_coh_grid'</span>) = ar_interp_coh_grid;
 armt_map(<span class="string">'mt_interp_coh_grid_mesh_z'</span>) = mt_interp_coh_grid_mesh_z_wage;
 armt_map(<span class="string">'mt_z_mesh_coh_interp_grid'</span>) = mt_z_wage_mesh_coh_interp_grid;
 </pre><h2 id="24">Store armt_map (4): Shock Grids</h2><pre class="codeinput">armt_map(<span class="string">'mt_z_trans'</span>) = mt_z_trans;
-armt_map(<span class="string">'ar_z_r_borr_mesh_wage'</span>) = ar_z_r_borr_mesh_wage;
-armt_map(<span class="string">'ar_z_wage_mesh_r_borr'</span>) = ar_z_wage_mesh_r_borr;
+armt_map(<span class="string">'ar_z_r_borr_mesh_wage_w1r2'</span>) = ar_z_r_borr_mesh_wage_w1r2;
+armt_map(<span class="string">'ar_z_wage_mesh_r_borr_w1r2'</span>) = ar_z_wage_mesh_r_borr_w1r2;
+armt_map(<span class="string">'ar_z_r_borr_mesh_wage_r1w2'</span>) = ar_z_r_borr_mesh_wage_r1w2;
+armt_map(<span class="string">'ar_z_wage_mesh_r_borr_r1w2'</span>) = ar_z_wage_mesh_r_borr_r1w2;
 
 armt_map(<span class="string">'ar_z_r_borr'</span>) = ar_z_r_borr;
 armt_map(<span class="string">'ar_z_r_borr_prob'</span>) = ar_z_r_borr_prob;
@@ -1581,6 +1884,7 @@ armt_map(<span class="string">'ar_z_wage_prob'</span>) = ar_z_wage_prob;
 func_map(<span class="string">'f_util_log'</span>) = f_util_log;
 func_map(<span class="string">'f_util_crra'</span>) = f_util_crra;
 func_map(<span class="string">'f_util_standin'</span>) = f_util_standin;
+func_map(<span class="string">'f_util_standin_coh'</span>) = f_util_standin_coh;
 func_map(<span class="string">'f_prod'</span>) = f_prod;
 func_map(<span class="string">'f_inc'</span>) = f_inc;
 func_map(<span class="string">'f_coh'</span>) = f_coh;
@@ -1595,8 +1899,8 @@ func_map(<span class="string">'f_cons'</span>) = f_cons;
     ar_it_z_graph_zwage = ([1 round((it_z_wage_n)/4) 2*round((it_z_wage_n)/4) 3*round((it_z_wage_n)/4) (it_z_wage_n)]);
 
     <span class="comment">% legends index final</span>
-    cl_st_legendCell = cellstr([num2str(ar_z_r_borr_mesh_wage', <span class="string">'zr=%3.2f;'</span>), <span class="keyword">...</span>
-                                num2str(ar_z_wage_mesh_r_borr', <span class="string">'zw=%3.2f'</span>)]);
+    cl_st_legendCell = cellstr([num2str(ar_z_r_borr_mesh_wage_w1r2', <span class="string">'zr=%3.2f;'</span>), <span class="keyword">...</span>
+                                num2str(ar_z_wage_mesh_r_borr_w1r2', <span class="string">'zw=%3.2f'</span>)]);
 
     <span class="comment">% legends index final full mat wage only</span>
     cl_st_legendCell_zwage = cellstr([num2str(ar_z_wage', <span class="string">'zw=%3.2f'</span>)]);
@@ -1902,35 +2206,35 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 mt_z_trans
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    45    45
+    30    30
 
-    mt_z_trans1    mt_z_trans2    mt_z_trans3    mt_z_trans4    mt_z_trans5    mt_z_trans6    mt_z_trans7    mt_z_trans8    mt_z_trans9    mt_z_trans10    mt_z_trans11    mt_z_trans12    mt_z_trans13    mt_z_trans14    mt_z_trans15    mt_z_trans16    mt_z_trans17    mt_z_trans18    mt_z_trans19    mt_z_trans20    mt_z_trans21    mt_z_trans22    mt_z_trans23    mt_z_trans24    mt_z_trans25    mt_z_trans26    mt_z_trans27    mt_z_trans28    mt_z_trans29    mt_z_trans30    mt_z_trans31    mt_z_trans32    mt_z_trans33    mt_z_trans34    mt_z_trans35    mt_z_trans36    mt_z_trans37    mt_z_trans38    mt_z_trans39    mt_z_trans40    mt_z_trans41    mt_z_trans42    mt_z_trans43    mt_z_trans44    mt_z_trans45
-    ___________    ___________    ___________    ___________    ___________    ___________    ___________    ___________    ___________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________
+    mt_z_trans1    mt_z_trans2    mt_z_trans3    mt_z_trans4    mt_z_trans5    mt_z_trans6    mt_z_trans7    mt_z_trans8    mt_z_trans9    mt_z_trans10    mt_z_trans11    mt_z_trans12    mt_z_trans13    mt_z_trans14    mt_z_trans15    mt_z_trans16    mt_z_trans17    mt_z_trans18    mt_z_trans19    mt_z_trans20    mt_z_trans21    mt_z_trans22    mt_z_trans23    mt_z_trans24    mt_z_trans25    mt_z_trans26    mt_z_trans27    mt_z_trans28    mt_z_trans29    mt_z_trans30
+    ___________    ___________    ___________    ___________    ___________    ___________    ___________    ___________    ___________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________
 
-      0.060767       0.062672       0.059681       0.034852       0.012474      0.0027333      0.0003662     2.9951e-05     1.4928e-06      4.5269e-08      8.3389e-10      9.3171e-12      6.3067e-14      2.5932e-16               0         0.10634         0.10968         0.10444        0.060991        0.021829      0.0047833       0.00064085      5.2413e-05      2.6124e-06      7.9222e-08      1.4593e-09      1.6305e-11      1.1037e-13      4.5381e-16               0        0.093049        0.095966        0.091387        0.053367          0.0191      0.0041854       0.00056075      4.5862e-05      2.2859e-06      6.9319e-08      1.2769e-09      1.4267e-11      9.6572e-14      3.9709e-16               0 
-      0.026235       0.045832       0.064537       0.055733       0.029512      0.0095762       0.001902      0.0002309     1.7106e-05      7.7207e-07      2.1194e-08      3.5329e-10      3.5712e-12      2.1861e-14      7.7797e-17        0.045912        0.080206         0.11294        0.097533        0.051646       0.016758        0.0033285      0.00040408      2.9936e-05      1.3511e-06      3.7089e-08      6.1826e-10      6.2496e-12      3.8257e-14      1.3614e-16        0.040173         0.07018        0.098823        0.085341        0.045191       0.014664        0.0029124      0.00035357      2.6194e-05      1.1822e-06      3.2453e-08      5.4098e-10      5.4684e-12      3.3474e-14      1.1913e-16 
-     0.0086593       0.024506       0.051037       0.065171       0.051037       0.024506      0.0072089      0.0012977     0.00014274      9.5785e-06      3.9144e-07      9.7262e-09      1.4671e-10      1.3416e-12      7.4425e-15        0.015154        0.042885        0.089316         0.11405        0.089316       0.042885         0.012616        0.002271       0.0002498      1.6762e-05      6.8502e-07      1.7021e-08      2.5675e-10      2.3479e-12      1.3024e-14         0.01326        0.037525        0.078151        0.099794        0.078151       0.037525         0.011039       0.0019871      0.00021858      1.4667e-05      5.9939e-07      1.4893e-08      2.2465e-10      2.0544e-12      1.1396e-14 
-     0.0021508      0.0095762       0.029512       0.055733       0.064537       0.045832       0.019954      0.0053212     0.00086814      8.6517e-05       5.258e-06      1.9455e-07      4.3753e-09      5.9718e-11      4.9647e-13       0.0037639        0.016758        0.051646        0.097533         0.11294       0.080206         0.034919       0.0093122       0.0015192       0.0001514      9.2016e-06      3.4046e-07      7.6568e-09      1.0451e-10      8.6883e-13       0.0032934        0.014664        0.045191        0.085341        0.098823        0.07018         0.030554       0.0081481       0.0013293      0.00013248      8.0514e-06       2.979e-07      6.6997e-09      9.1443e-11      7.6022e-13 
-    0.00039769      0.0027333       0.012474       0.034852       0.059681       0.062672        0.04036       0.015932      0.0038514      0.00056943       5.141e-05      2.8296e-06      9.4786e-08      1.9293e-09      2.4005e-11      0.00069596       0.0047833        0.021829        0.060991         0.10444        0.10968          0.07063        0.027881         0.00674       0.0009965      8.9968e-05      4.9518e-06      1.6588e-07      3.3763e-09      4.2008e-11      0.00060897       0.0041854          0.0191        0.053367        0.091387       0.095966         0.061801        0.024396       0.0058975      0.00087194      7.8722e-05      4.3329e-06      1.4514e-07      2.9542e-09      3.6757e-11 
-    5.4337e-05     0.00056943      0.0038514       0.015932        0.04036       0.062672       0.059681       0.034852       0.012474       0.0027333       0.0003662      2.9951e-05      1.4928e-06      4.5269e-08      8.4327e-10      9.5089e-05       0.0009965         0.00674        0.027881         0.07063        0.10968          0.10444        0.060991        0.021829       0.0047833      0.00064085      5.2413e-05      2.6124e-06      7.9222e-08      1.4757e-09      8.3203e-05      0.00087194       0.0058975        0.024396        0.061801       0.095966         0.091387        0.053367          0.0191       0.0041854      0.00056075      4.5862e-05      2.2859e-06      6.9319e-08      1.2913e-09 
-     5.457e-06     8.6517e-05     0.00086814      0.0053212       0.019954       0.045832       0.064537       0.055733       0.029512       0.0095762        0.001902       0.0002309      1.7106e-05      7.7207e-07      2.1551e-08      9.5498e-06       0.0001514       0.0015192       0.0093122        0.034919       0.080206          0.11294        0.097533        0.051646        0.016758       0.0033285      0.00040408      2.9936e-05      1.3511e-06      3.7714e-08      8.3561e-06      0.00013248       0.0013293       0.0081481        0.030554        0.07018         0.098823        0.085341        0.045191        0.014664       0.0029124      0.00035357      2.6194e-05      1.1822e-06      3.2999e-08 
-    4.0131e-07     9.5785e-06     0.00014274      0.0012977      0.0072089       0.024506       0.051037       0.065171       0.051037        0.024506       0.0072089       0.0012977      0.00014274      9.5785e-06      4.0131e-07       7.023e-07      1.6762e-05       0.0002498        0.002271        0.012616       0.042885         0.089316         0.11405        0.089316        0.042885        0.012616        0.002271       0.0002498      1.6762e-05       7.023e-07      6.1451e-07      1.4667e-05      0.00021858       0.0019871        0.011039       0.037525         0.078151        0.099794        0.078151        0.037525        0.011039       0.0019871      0.00021858      1.4667e-05      6.1451e-07 
-    2.1551e-08     7.7207e-07     1.7106e-05      0.0002309       0.001902      0.0095762       0.029512       0.055733       0.064537        0.045832        0.019954       0.0053212      0.00086814      8.6517e-05       5.457e-06      3.7714e-08      1.3511e-06      2.9936e-05      0.00040408       0.0033285       0.016758         0.051646        0.097533         0.11294        0.080206        0.034919       0.0093122       0.0015192       0.0001514      9.5498e-06      3.2999e-08      1.1822e-06      2.6194e-05      0.00035357       0.0029124       0.014664         0.045191        0.085341        0.098823         0.07018        0.030554       0.0081481       0.0013293      0.00013248      8.3561e-06 
-    8.4327e-10     4.5269e-08     1.4928e-06     2.9951e-05      0.0003662      0.0027333       0.012474       0.034852       0.059681        0.062672         0.04036        0.015932       0.0038514      0.00056943      5.4337e-05      1.4757e-09      7.9222e-08      2.6124e-06      5.2413e-05      0.00064085      0.0047833         0.021829        0.060991         0.10444         0.10968         0.07063        0.027881         0.00674       0.0009965      9.5089e-05      1.2913e-09      6.9319e-08      2.2859e-06      4.5862e-05      0.00056075      0.0041854           0.0191        0.053367        0.091387        0.095966        0.061801        0.024396       0.0058975      0.00087194      8.3203e-05 
+      0.094603       0.097568       0.092913       0.054258       0.019419      0.0042553     0.00057011     4.6628e-05     2.3241e-06      7.0476e-08      1.2982e-09      1.4505e-11      9.8184e-14      4.0372e-16               0         0.16556         0.17074          0.1626        0.094952        0.033983      0.0074467       0.00099769      8.1598e-05      4.0671e-06      1.2333e-07      2.2719e-09      2.5384e-11      1.7182e-13      7.0651e-16               0 
+      0.040843       0.071352        0.10047       0.086766       0.045945       0.014908      0.0029611     0.00035947     2.6631e-05       1.202e-06      3.2995e-08      5.5001e-10      5.5597e-12      3.4033e-14      1.2112e-16        0.071476         0.12487         0.17583         0.15184        0.080404        0.02609        0.0051818      0.00062908      4.6605e-05      2.1034e-06      5.7741e-08      9.6252e-10      9.7294e-12      5.9558e-14      2.1195e-16 
+      0.013481       0.038151       0.079456        0.10146       0.079456       0.038151       0.011223      0.0020203     0.00022223      1.4912e-05       6.094e-07      1.5142e-08       2.284e-10      2.0887e-12      1.1587e-14        0.023592        0.066764         0.13905         0.17756         0.13905       0.066764          0.01964       0.0035355       0.0003889      2.6096e-05      1.0664e-06      2.6498e-08      3.9971e-10      3.6552e-12      2.0277e-14 
+     0.0033484       0.014908       0.045945       0.086766        0.10047       0.071352       0.031064      0.0082842      0.0013515      0.00013469      8.1858e-06      3.0288e-07      6.8116e-09       9.297e-11      7.7292e-13       0.0058597         0.02609        0.080404         0.15184         0.17583        0.12487         0.054363        0.014497       0.0023652      0.00023571      1.4325e-05      5.3003e-07       1.192e-08       1.627e-10      1.3526e-12 
+    0.00061913      0.0042553       0.019419       0.054258       0.092913       0.097568       0.062833       0.024803       0.005996       0.0008865      8.0037e-05      4.4052e-06      1.4756e-07      3.0036e-09      3.7371e-11       0.0010835       0.0074467        0.033983        0.094952          0.1626        0.17074          0.10996        0.043405        0.010493       0.0015514      0.00014006      7.7091e-06      2.5824e-07      5.2562e-09      6.5399e-11 
+    8.4592e-05      0.0008865       0.005996       0.024803       0.062833       0.097568       0.092913       0.054258       0.019419       0.0042553      0.00057011      4.6628e-05      2.3241e-06      7.0476e-08      1.3128e-09      0.00014804       0.0015514        0.010493        0.043405         0.10996        0.17074           0.1626        0.094952        0.033983       0.0074467      0.00099769      8.1598e-05      4.0671e-06      1.2333e-07      2.2974e-09 
+    8.4956e-06     0.00013469      0.0013515      0.0082842       0.031064       0.071352        0.10047       0.086766       0.045945        0.014908       0.0029611      0.00035947      2.6631e-05       1.202e-06       3.355e-08      1.4867e-05      0.00023571       0.0023652        0.014497        0.054363        0.12487          0.17583         0.15184        0.080404         0.02609       0.0051818      0.00062908      4.6605e-05      2.1034e-06      5.8713e-08 
+    6.2477e-07     1.4912e-05     0.00022223      0.0020203       0.011223       0.038151       0.079456        0.10146       0.079456        0.038151        0.011223       0.0020203      0.00022223      1.4912e-05      6.2477e-07      1.0933e-06      2.6096e-05       0.0003889       0.0035355         0.01964       0.066764          0.13905         0.17756         0.13905        0.066764         0.01964       0.0035355       0.0003889      2.6096e-05      1.0933e-06 
+     3.355e-08      1.202e-06     2.6631e-05     0.00035947      0.0029611       0.014908       0.045945       0.086766        0.10047        0.071352        0.031064       0.0082842       0.0013515      0.00013469      8.4956e-06      5.8713e-08      2.1034e-06      4.6605e-05      0.00062908       0.0051818        0.02609         0.080404         0.15184         0.17583         0.12487        0.054363        0.014497       0.0023652      0.00023571      1.4867e-05 
+    1.3128e-09     7.0476e-08     2.3241e-06     4.6628e-05     0.00057011      0.0042553       0.019419       0.054258       0.092913        0.097568        0.062833        0.024803        0.005996       0.0008865      8.4592e-05      2.2974e-09      1.2333e-07      4.0671e-06      8.1598e-05      0.00099769      0.0074467         0.033983        0.094952          0.1626         0.17074         0.10996        0.043405        0.010493       0.0015514      0.00014804 
 
-    mt_z_trans1    mt_z_trans2    mt_z_trans3    mt_z_trans4    mt_z_trans5    mt_z_trans6    mt_z_trans7    mt_z_trans8    mt_z_trans9    mt_z_trans10    mt_z_trans11    mt_z_trans12    mt_z_trans13    mt_z_trans14    mt_z_trans15    mt_z_trans16    mt_z_trans17    mt_z_trans18    mt_z_trans19    mt_z_trans20    mt_z_trans21    mt_z_trans22    mt_z_trans23    mt_z_trans24    mt_z_trans25    mt_z_trans26    mt_z_trans27    mt_z_trans28    mt_z_trans29    mt_z_trans30    mt_z_trans31    mt_z_trans32    mt_z_trans33    mt_z_trans34    mt_z_trans35    mt_z_trans36    mt_z_trans37    mt_z_trans38    mt_z_trans39    mt_z_trans40    mt_z_trans41    mt_z_trans42    mt_z_trans43    mt_z_trans44    mt_z_trans45
-    ___________    ___________    ___________    ___________    ___________    ___________    ___________    ___________    ___________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________
+    mt_z_trans1    mt_z_trans2    mt_z_trans3    mt_z_trans4    mt_z_trans5    mt_z_trans6    mt_z_trans7    mt_z_trans8    mt_z_trans9    mt_z_trans10    mt_z_trans11    mt_z_trans12    mt_z_trans13    mt_z_trans14    mt_z_trans15    mt_z_trans16    mt_z_trans17    mt_z_trans18    mt_z_trans19    mt_z_trans20    mt_z_trans21    mt_z_trans22    mt_z_trans23    mt_z_trans24    mt_z_trans25    mt_z_trans26    mt_z_trans27    mt_z_trans28    mt_z_trans29    mt_z_trans30
+    ___________    ___________    ___________    ___________    ___________    ___________    ___________    ___________    ___________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________    ____________
 
-    5.4337e-05     0.00056943      0.0038514       0.015932        0.04036       0.062672       0.059681       0.034852       0.012474      0.0027333       0.0003662       2.9951e-05      1.4928e-06      4.5269e-08      8.4327e-10      9.5089e-05       0.0009965         0.00674        0.027881         0.07063         0.10968         0.10444        0.060991        0.021829      0.0047833       0.00064085      5.2413e-05      2.6124e-06      7.9222e-08      1.4757e-09      8.3203e-05      0.00087194       0.0058975        0.024396        0.061801        0.095966        0.091387        0.053367          0.0191      0.0041854       0.00056075      4.5862e-05      2.2859e-06      6.9319e-08      1.2913e-09 
-     5.457e-06     8.6517e-05     0.00086814      0.0053212       0.019954       0.045832       0.064537       0.055733       0.029512      0.0095762        0.001902        0.0002309      1.7106e-05      7.7207e-07      2.1551e-08      9.5498e-06       0.0001514       0.0015192       0.0093122        0.034919        0.080206         0.11294        0.097533        0.051646       0.016758        0.0033285      0.00040408      2.9936e-05      1.3511e-06      3.7714e-08      8.3561e-06      0.00013248       0.0013293       0.0081481        0.030554         0.07018        0.098823        0.085341        0.045191       0.014664        0.0029124      0.00035357      2.6194e-05      1.1822e-06      3.2999e-08 
-    4.0131e-07     9.5785e-06     0.00014274      0.0012977      0.0072089       0.024506       0.051037       0.065171       0.051037       0.024506       0.0072089        0.0012977      0.00014274      9.5785e-06      4.0131e-07       7.023e-07      1.6762e-05       0.0002498        0.002271        0.012616        0.042885        0.089316         0.11405        0.089316       0.042885         0.012616        0.002271       0.0002498      1.6762e-05       7.023e-07      6.1451e-07      1.4667e-05      0.00021858       0.0019871        0.011039        0.037525        0.078151        0.099794        0.078151       0.037525         0.011039       0.0019871      0.00021858      1.4667e-05      6.1451e-07 
-    2.1551e-08     7.7207e-07     1.7106e-05      0.0002309       0.001902      0.0095762       0.029512       0.055733       0.064537       0.045832        0.019954        0.0053212      0.00086814      8.6517e-05       5.457e-06      3.7714e-08      1.3511e-06      2.9936e-05      0.00040408       0.0033285        0.016758        0.051646        0.097533         0.11294       0.080206         0.034919       0.0093122       0.0015192       0.0001514      9.5498e-06      3.2999e-08      1.1822e-06      2.6194e-05      0.00035357       0.0029124        0.014664        0.045191        0.085341        0.098823        0.07018         0.030554       0.0081481       0.0013293      0.00013248      8.3561e-06 
-    8.4327e-10     4.5269e-08     1.4928e-06     2.9951e-05      0.0003662      0.0027333       0.012474       0.034852       0.059681       0.062672         0.04036         0.015932       0.0038514      0.00056943      5.4337e-05      1.4757e-09      7.9222e-08      2.6124e-06      5.2413e-05      0.00064085       0.0047833        0.021829        0.060991         0.10444        0.10968          0.07063        0.027881         0.00674       0.0009965      9.5089e-05      1.2913e-09      6.9319e-08      2.2859e-06      4.5862e-05      0.00056075       0.0041854          0.0191        0.053367        0.091387       0.095966         0.061801        0.024396       0.0058975      0.00087194      8.3203e-05 
-    2.4005e-11     1.9293e-09     9.4786e-08     2.8296e-06      5.141e-05     0.00056943      0.0038514       0.015932        0.04036       0.062672        0.059681         0.034852        0.012474       0.0027333      0.00039769      4.2008e-11      3.3763e-09      1.6588e-07      4.9518e-06      8.9968e-05       0.0009965         0.00674        0.027881         0.07063        0.10968          0.10444        0.060991        0.021829       0.0047833      0.00069596      3.6757e-11      2.9542e-09      1.4514e-07      4.3329e-06      7.8722e-05      0.00087194       0.0058975        0.024396        0.061801       0.095966         0.091387        0.053367          0.0191       0.0041854      0.00060897 
-    4.9648e-13     5.9718e-11     4.3753e-09     1.9455e-07      5.258e-06     8.6517e-05     0.00086814      0.0053212       0.019954       0.045832        0.064537         0.055733        0.029512       0.0095762       0.0021508      8.6884e-13      1.0451e-10      7.6568e-09      3.4046e-07      9.2016e-06       0.0001514       0.0015192       0.0093122        0.034919       0.080206          0.11294        0.097533        0.051646        0.016758       0.0037639      7.6024e-13      9.1443e-11      6.6997e-09       2.979e-07      8.0514e-06      0.00013248       0.0013293       0.0081481        0.030554        0.07018         0.098823        0.085341        0.045191        0.014664       0.0032934 
-    7.4532e-15     1.3416e-12     1.4671e-10     9.7262e-09     3.9144e-07     9.5785e-06     0.00014274      0.0012977      0.0072089       0.024506        0.051037         0.065171        0.051037        0.024506       0.0086593      1.3043e-14      2.3478e-12      2.5675e-10      1.7021e-08      6.8502e-07      1.6762e-05       0.0002498        0.002271        0.012616       0.042885         0.089316         0.11405        0.089316        0.042885        0.015154      1.1413e-14      2.0543e-12      2.2465e-10      1.4893e-08      5.9939e-07      1.4667e-05      0.00021858       0.0019871        0.011039       0.037525         0.078151        0.099794        0.078151        0.037525         0.01326 
-    8.1145e-17     2.1862e-14     3.5712e-12     3.5329e-10     2.1194e-08     7.7207e-07     1.7106e-05      0.0002309       0.001902      0.0095762        0.029512         0.055733        0.064537        0.045832        0.026235        1.42e-16      3.8259e-14      6.2495e-12      6.1826e-10      3.7089e-08      1.3511e-06      2.9936e-05      0.00040408       0.0033285       0.016758         0.051646        0.097533         0.11294        0.080206        0.045912      1.2425e-16      3.3476e-14      5.4683e-12      5.4098e-10      3.2453e-08      1.1822e-06      2.6194e-05      0.00035357       0.0029124       0.014664         0.045191        0.085341        0.098823         0.07018        0.040173 
-    6.4029e-19     2.5826e-16     6.3061e-14     9.3171e-12     8.3389e-10     4.5269e-08     1.4928e-06     2.9951e-05      0.0003662      0.0027333        0.012474         0.034852        0.059681        0.062672        0.060767      1.1205e-18      4.5195e-16      1.1036e-13      1.6305e-11      1.4593e-09      7.9222e-08      2.6124e-06      5.2413e-05      0.00064085      0.0047833         0.021829        0.060991         0.10444         0.10968         0.10634      9.8044e-19      3.9546e-16      9.6562e-14      1.4267e-11      1.2769e-09      6.9319e-08      2.2859e-06      4.5862e-05      0.00056075      0.0041854           0.0191        0.053367        0.091387        0.095966        0.093049 
+    8.4592e-05      0.0008865       0.005996       0.024803       0.062833       0.097568       0.092913       0.054258       0.019419      0.0042553       0.00057011      4.6628e-05      2.3241e-06      7.0476e-08      1.3128e-09      0.00014804       0.0015514        0.010493        0.043405         0.10996         0.17074          0.1626        0.094952        0.033983      0.0074467       0.00099769      8.1598e-05      4.0671e-06      1.2333e-07      2.2974e-09 
+    8.4956e-06     0.00013469      0.0013515      0.0082842       0.031064       0.071352        0.10047       0.086766       0.045945       0.014908        0.0029611      0.00035947      2.6631e-05       1.202e-06       3.355e-08      1.4867e-05      0.00023571       0.0023652        0.014497        0.054363         0.12487         0.17583         0.15184        0.080404        0.02609        0.0051818      0.00062908      4.6605e-05      2.1034e-06      5.8713e-08 
+    6.2477e-07     1.4912e-05     0.00022223      0.0020203       0.011223       0.038151       0.079456        0.10146       0.079456       0.038151         0.011223       0.0020203      0.00022223      1.4912e-05      6.2477e-07      1.0933e-06      2.6096e-05       0.0003889       0.0035355         0.01964        0.066764         0.13905         0.17756         0.13905       0.066764          0.01964       0.0035355       0.0003889      2.6096e-05      1.0933e-06 
+     3.355e-08      1.202e-06     2.6631e-05     0.00035947      0.0029611       0.014908       0.045945       0.086766        0.10047       0.071352         0.031064       0.0082842       0.0013515      0.00013469      8.4956e-06      5.8713e-08      2.1034e-06      4.6605e-05      0.00062908       0.0051818         0.02609        0.080404         0.15184         0.17583        0.12487         0.054363        0.014497       0.0023652      0.00023571      1.4867e-05 
+    1.3128e-09     7.0476e-08     2.3241e-06     4.6628e-05     0.00057011      0.0042553       0.019419       0.054258       0.092913       0.097568         0.062833        0.024803        0.005996       0.0008865      8.4592e-05      2.2974e-09      1.2333e-07      4.0671e-06      8.1598e-05      0.00099769       0.0074467        0.033983        0.094952          0.1626        0.17074          0.10996        0.043405        0.010493       0.0015514      0.00014804 
+    3.7371e-11     3.0036e-09     1.4756e-07     4.4052e-06     8.0037e-05      0.0008865       0.005996       0.024803       0.062833       0.097568         0.092913        0.054258        0.019419       0.0042553      0.00061913      6.5399e-11      5.2562e-09      2.5824e-07      7.7091e-06      0.00014006       0.0015514        0.010493        0.043405         0.10996        0.17074           0.1626        0.094952        0.033983       0.0074467       0.0010835 
+    7.7293e-13      9.297e-11     6.8116e-09     3.0288e-07     8.1858e-06     0.00013469      0.0013515      0.0082842       0.031064       0.071352          0.10047        0.086766        0.045945        0.014908       0.0033484      1.3526e-12       1.627e-10       1.192e-08      5.3003e-07      1.4325e-05      0.00023571       0.0023652        0.014497        0.054363        0.12487          0.17583         0.15184        0.080404         0.02609       0.0058597 
+    1.1603e-14     2.0886e-12      2.284e-10     1.5142e-08      6.094e-07     1.4912e-05     0.00022223      0.0020203       0.011223       0.038151         0.079456         0.10146        0.079456        0.038151        0.013481      2.0306e-14      3.6551e-12      3.9971e-10      2.6498e-08      1.0664e-06      2.6096e-05       0.0003889       0.0035355         0.01964       0.066764          0.13905         0.17756         0.13905        0.066764        0.023592 
+    1.2633e-16     3.4035e-14     5.5597e-12     5.5001e-10     3.2995e-08      1.202e-06     2.6631e-05     0.00035947      0.0029611       0.014908         0.045945        0.086766         0.10047        0.071352        0.040843      2.2107e-16      5.9562e-14      9.7294e-12      9.6252e-10      5.7741e-08      2.1034e-06      4.6605e-05      0.00062908       0.0051818        0.02609         0.080404         0.15184         0.17583         0.12487        0.071476 
+    9.9681e-19     4.0206e-16     9.8175e-14     1.4505e-11     1.2982e-09     7.0476e-08     2.3241e-06     4.6628e-05     0.00057011      0.0042553         0.019419        0.054258        0.092913        0.097568        0.094603      1.7444e-18       7.036e-16      1.7181e-13      2.5384e-11      2.2719e-09      1.2333e-07      4.0671e-06      8.1598e-05      0.00099769      0.0074467         0.033983        0.094952          0.1626         0.17074         0.16556 
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -1966,35 +2270,35 @@ Variables:
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 mt_interp_coh_grid_mesh_z
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    38    45
+    38    30
 
-    mt_interp_coh_grid_mesh_z_wage1    mt_interp_coh_grid_mesh_z_wage2    mt_interp_coh_grid_mesh_z_wage3    mt_interp_coh_grid_mesh_z_wage4    mt_interp_coh_grid_mesh_z_wage5    mt_interp_coh_grid_mesh_z_wage6    mt_interp_coh_grid_mesh_z_wage7    mt_interp_coh_grid_mesh_z_wage8    mt_interp_coh_grid_mesh_z_wage9    mt_interp_coh_grid_mesh_z_wage10    mt_interp_coh_grid_mesh_z_wage11    mt_interp_coh_grid_mesh_z_wage12    mt_interp_coh_grid_mesh_z_wage13    mt_interp_coh_grid_mesh_z_wage14    mt_interp_coh_grid_mesh_z_wage15    mt_interp_coh_grid_mesh_z_wage16    mt_interp_coh_grid_mesh_z_wage17    mt_interp_coh_grid_mesh_z_wage18    mt_interp_coh_grid_mesh_z_wage19    mt_interp_coh_grid_mesh_z_wage20    mt_interp_coh_grid_mesh_z_wage21    mt_interp_coh_grid_mesh_z_wage22    mt_interp_coh_grid_mesh_z_wage23    mt_interp_coh_grid_mesh_z_wage24    mt_interp_coh_grid_mesh_z_wage25    mt_interp_coh_grid_mesh_z_wage26    mt_interp_coh_grid_mesh_z_wage27    mt_interp_coh_grid_mesh_z_wage28    mt_interp_coh_grid_mesh_z_wage29    mt_interp_coh_grid_mesh_z_wage30    mt_interp_coh_grid_mesh_z_wage31    mt_interp_coh_grid_mesh_z_wage32    mt_interp_coh_grid_mesh_z_wage33    mt_interp_coh_grid_mesh_z_wage34    mt_interp_coh_grid_mesh_z_wage35    mt_interp_coh_grid_mesh_z_wage36    mt_interp_coh_grid_mesh_z_wage37    mt_interp_coh_grid_mesh_z_wage38    mt_interp_coh_grid_mesh_z_wage39    mt_interp_coh_grid_mesh_z_wage40    mt_interp_coh_grid_mesh_z_wage41    mt_interp_coh_grid_mesh_z_wage42    mt_interp_coh_grid_mesh_z_wage43    mt_interp_coh_grid_mesh_z_wage44    mt_interp_coh_grid_mesh_z_wage45
-    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________
+    mt_interp_coh_grid_mesh_z_wage1    mt_interp_coh_grid_mesh_z_wage2    mt_interp_coh_grid_mesh_z_wage3    mt_interp_coh_grid_mesh_z_wage4    mt_interp_coh_grid_mesh_z_wage5    mt_interp_coh_grid_mesh_z_wage6    mt_interp_coh_grid_mesh_z_wage7    mt_interp_coh_grid_mesh_z_wage8    mt_interp_coh_grid_mesh_z_wage9    mt_interp_coh_grid_mesh_z_wage10    mt_interp_coh_grid_mesh_z_wage11    mt_interp_coh_grid_mesh_z_wage12    mt_interp_coh_grid_mesh_z_wage13    mt_interp_coh_grid_mesh_z_wage14    mt_interp_coh_grid_mesh_z_wage15    mt_interp_coh_grid_mesh_z_wage16    mt_interp_coh_grid_mesh_z_wage17    mt_interp_coh_grid_mesh_z_wage18    mt_interp_coh_grid_mesh_z_wage19    mt_interp_coh_grid_mesh_z_wage20    mt_interp_coh_grid_mesh_z_wage21    mt_interp_coh_grid_mesh_z_wage22    mt_interp_coh_grid_mesh_z_wage23    mt_interp_coh_grid_mesh_z_wage24    mt_interp_coh_grid_mesh_z_wage25    mt_interp_coh_grid_mesh_z_wage26    mt_interp_coh_grid_mesh_z_wage27    mt_interp_coh_grid_mesh_z_wage28    mt_interp_coh_grid_mesh_z_wage29    mt_interp_coh_grid_mesh_z_wage30
+    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________
 
-                    -20                                -20                                -20                                -20                                -20                                -20                                -20                                -20                                -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20            
-                -17.853                            -17.853                            -17.853                            -17.853                            -17.853                            -17.853                            -17.853                            -17.853                            -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853            
-                -15.707                            -15.707                            -15.707                            -15.707                            -15.707                            -15.707                            -15.707                            -15.707                            -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707            
-                 -13.56                             -13.56                             -13.56                             -13.56                             -13.56                             -13.56                             -13.56                             -13.56                             -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56            
-                -11.414                            -11.414                            -11.414                            -11.414                            -11.414                            -11.414                            -11.414                            -11.414                            -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414            
-                -9.2671                            -9.2671                            -9.2671                            -9.2671                            -9.2671                            -9.2671                            -9.2671                            -9.2671                            -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671            
-                -7.1205                            -7.1205                            -7.1205                            -7.1205                            -7.1205                            -7.1205                            -7.1205                            -7.1205                            -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205            
-                -4.9739                            -4.9739                            -4.9739                            -4.9739                            -4.9739                            -4.9739                            -4.9739                            -4.9739                            -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739            
-                -2.8273                            -2.8273                            -2.8273                            -2.8273                            -2.8273                            -2.8273                            -2.8273                            -2.8273                            -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273            
-               -0.68071                           -0.68071                           -0.68071                           -0.68071                           -0.68071                           -0.68071                           -0.68071                           -0.68071                           -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071            
+                    -20                                -20                                -20                                -20                                -20                                -20                                -20                                -20                                -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20            
+                -17.853                            -17.853                            -17.853                            -17.853                            -17.853                            -17.853                            -17.853                            -17.853                            -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853            
+                -15.707                            -15.707                            -15.707                            -15.707                            -15.707                            -15.707                            -15.707                            -15.707                            -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707            
+                 -13.56                             -13.56                             -13.56                             -13.56                             -13.56                             -13.56                             -13.56                             -13.56                             -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56            
+                -11.414                            -11.414                            -11.414                            -11.414                            -11.414                            -11.414                            -11.414                            -11.414                            -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414            
+                -9.2671                            -9.2671                            -9.2671                            -9.2671                            -9.2671                            -9.2671                            -9.2671                            -9.2671                            -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671            
+                -7.1205                            -7.1205                            -7.1205                            -7.1205                            -7.1205                            -7.1205                            -7.1205                            -7.1205                            -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205            
+                -4.9739                            -4.9739                            -4.9739                            -4.9739                            -4.9739                            -4.9739                            -4.9739                            -4.9739                            -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739            
+                -2.8273                            -2.8273                            -2.8273                            -2.8273                            -2.8273                            -2.8273                            -2.8273                            -2.8273                            -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273            
+               -0.68071                           -0.68071                           -0.68071                           -0.68071                           -0.68071                           -0.68071                           -0.68071                           -0.68071                           -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071            
 
-    mt_interp_coh_grid_mesh_z_wage1    mt_interp_coh_grid_mesh_z_wage2    mt_interp_coh_grid_mesh_z_wage3    mt_interp_coh_grid_mesh_z_wage4    mt_interp_coh_grid_mesh_z_wage5    mt_interp_coh_grid_mesh_z_wage6    mt_interp_coh_grid_mesh_z_wage7    mt_interp_coh_grid_mesh_z_wage8    mt_interp_coh_grid_mesh_z_wage9    mt_interp_coh_grid_mesh_z_wage10    mt_interp_coh_grid_mesh_z_wage11    mt_interp_coh_grid_mesh_z_wage12    mt_interp_coh_grid_mesh_z_wage13    mt_interp_coh_grid_mesh_z_wage14    mt_interp_coh_grid_mesh_z_wage15    mt_interp_coh_grid_mesh_z_wage16    mt_interp_coh_grid_mesh_z_wage17    mt_interp_coh_grid_mesh_z_wage18    mt_interp_coh_grid_mesh_z_wage19    mt_interp_coh_grid_mesh_z_wage20    mt_interp_coh_grid_mesh_z_wage21    mt_interp_coh_grid_mesh_z_wage22    mt_interp_coh_grid_mesh_z_wage23    mt_interp_coh_grid_mesh_z_wage24    mt_interp_coh_grid_mesh_z_wage25    mt_interp_coh_grid_mesh_z_wage26    mt_interp_coh_grid_mesh_z_wage27    mt_interp_coh_grid_mesh_z_wage28    mt_interp_coh_grid_mesh_z_wage29    mt_interp_coh_grid_mesh_z_wage30    mt_interp_coh_grid_mesh_z_wage31    mt_interp_coh_grid_mesh_z_wage32    mt_interp_coh_grid_mesh_z_wage33    mt_interp_coh_grid_mesh_z_wage34    mt_interp_coh_grid_mesh_z_wage35    mt_interp_coh_grid_mesh_z_wage36    mt_interp_coh_grid_mesh_z_wage37    mt_interp_coh_grid_mesh_z_wage38    mt_interp_coh_grid_mesh_z_wage39    mt_interp_coh_grid_mesh_z_wage40    mt_interp_coh_grid_mesh_z_wage41    mt_interp_coh_grid_mesh_z_wage42    mt_interp_coh_grid_mesh_z_wage43    mt_interp_coh_grid_mesh_z_wage44    mt_interp_coh_grid_mesh_z_wage45
-    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________
+    mt_interp_coh_grid_mesh_z_wage1    mt_interp_coh_grid_mesh_z_wage2    mt_interp_coh_grid_mesh_z_wage3    mt_interp_coh_grid_mesh_z_wage4    mt_interp_coh_grid_mesh_z_wage5    mt_interp_coh_grid_mesh_z_wage6    mt_interp_coh_grid_mesh_z_wage7    mt_interp_coh_grid_mesh_z_wage8    mt_interp_coh_grid_mesh_z_wage9    mt_interp_coh_grid_mesh_z_wage10    mt_interp_coh_grid_mesh_z_wage11    mt_interp_coh_grid_mesh_z_wage12    mt_interp_coh_grid_mesh_z_wage13    mt_interp_coh_grid_mesh_z_wage14    mt_interp_coh_grid_mesh_z_wage15    mt_interp_coh_grid_mesh_z_wage16    mt_interp_coh_grid_mesh_z_wage17    mt_interp_coh_grid_mesh_z_wage18    mt_interp_coh_grid_mesh_z_wage19    mt_interp_coh_grid_mesh_z_wage20    mt_interp_coh_grid_mesh_z_wage21    mt_interp_coh_grid_mesh_z_wage22    mt_interp_coh_grid_mesh_z_wage23    mt_interp_coh_grid_mesh_z_wage24    mt_interp_coh_grid_mesh_z_wage25    mt_interp_coh_grid_mesh_z_wage26    mt_interp_coh_grid_mesh_z_wage27    mt_interp_coh_grid_mesh_z_wage28    mt_interp_coh_grid_mesh_z_wage29    mt_interp_coh_grid_mesh_z_wage30
+    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________
 
-                37.958                             37.958                             37.958                             37.958                             37.958                             37.958                             37.958                             37.958                             37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958             
-                40.104                             40.104                             40.104                             40.104                             40.104                             40.104                             40.104                             40.104                             40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104             
-                42.251                             42.251                             42.251                             42.251                             42.251                             42.251                             42.251                             42.251                             42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251             
-                44.398                             44.398                             44.398                             44.398                             44.398                             44.398                             44.398                             44.398                             44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398             
-                46.544                             46.544                             46.544                             46.544                             46.544                             46.544                             46.544                             46.544                             46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544             
-                48.691                             48.691                             48.691                             48.691                             48.691                             48.691                             48.691                             48.691                             48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691             
-                50.837                             50.837                             50.837                             50.837                             50.837                             50.837                             50.837                             50.837                             50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837             
-                52.984                             52.984                             52.984                             52.984                             52.984                             52.984                             52.984                             52.984                             52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984             
-                55.131                             55.131                             55.131                             55.131                             55.131                             55.131                             55.131                             55.131                             55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131             
-                57.277                             57.277                             57.277                             57.277                             57.277                             57.277                             57.277                             57.277                             57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277             
+                37.958                             37.958                             37.958                             37.958                             37.958                             37.958                             37.958                             37.958                             37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958             
+                40.104                             40.104                             40.104                             40.104                             40.104                             40.104                             40.104                             40.104                             40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104             
+                42.251                             42.251                             42.251                             42.251                             42.251                             42.251                             42.251                             42.251                             42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251             
+                44.398                             44.398                             44.398                             44.398                             44.398                             44.398                             44.398                             44.398                             44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398             
+                46.544                             46.544                             46.544                             46.544                             46.544                             46.544                             46.544                             46.544                             46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544             
+                48.691                             48.691                             48.691                             48.691                             48.691                             48.691                             48.691                             48.691                             48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691             
+                50.837                             50.837                             50.837                             50.837                             50.837                             50.837                             50.837                             50.837                             50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837             
+                52.984                             52.984                             52.984                             52.984                             52.984                             52.984                             52.984                             52.984                             52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984             
+                55.131                             55.131                             55.131                             55.131                             55.131                             55.131                             55.131                             55.131                             55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131             
+                57.277                             57.277                             57.277                             57.277                             57.277                             57.277                             57.277                             57.277                             57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277             
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -2101,13 +2405,14 @@ pos = 4 ; key = f_prod ; val = @(z,k)((fl_Amean.*(z)).*(k.^(fl_alpha)))
 pos = 5 ; key = f_util_crra ; val = @(c)(((c).^(1-fl_crra)-1)./(1-fl_crra))
 pos = 6 ; key = f_util_log ; val = @(c)log(c)
 pos = 7 ; key = f_util_standin ; val = @(fl_r_borr,z,b,k)f_util_log((f_coh(fl_r_borr,z,b,k)-fl_b_bd).*((f_coh(fl_r_borr,z,b,k)-fl_b_bd)&gt;fl_c_min)+fl_c_min.*((f_coh(fl_r_borr,z,b,k)-fl_b_bd)&lt;=fl_c_min))
+pos = 8 ; key = f_util_standin_coh ; val = @(coh,fl_r_borr)f_util_log((coh-fl_b_bd).*((coh&gt;0)&amp;(((coh-fl_b_bd)./(1+fl_r_borr))&gt;fl_c_min))+((coh-fl_b_bd)./(1+fl_r_borr)).*((coh&lt;=0)&amp;(((coh-fl_b_bd)./(1+fl_r_borr))&gt;fl_c_min))+fl_c_min.*((((coh-fl_b_bd)./(1+fl_r_borr))&lt;=fl_c_min)))
 </pre><pre class="codeinput"><span class="keyword">end</span>
 </pre><pre class="codeoutput">
 ans = 
 
   Map with properties:
 
-        Count: 25
+        Count: 28
       KeyType: char
     ValueType: any
 
@@ -2204,15 +2509,20 @@ else
     close all;
     
     % default internal run
-    [param_map, support_map] = ffs_ipwkbz_set_default_param();
+    [param_map, support_map] = ffs_ipwkbz_set_default_param(4);
     
     support_map('bl_graph_funcgrids') = true;
     support_map('bl_graph_funcgrids_detail') = true;
-    support_map('bl_display_funcgrids') = true;
+    bl_display_funcgrids = true;
+    support_map('bl_display_funcgrids') = bl_display_funcgrids;
 
-    st_param_which = 'default';
-
+    st_param_which = 'medium';
+    
     if (ismember(st_param_which, ['default']))
+        
+        param_map('it_ak_perc_n') = 250;
+        
+    elseif (ismember(st_param_which, ['medium']))
 
         % to be able to visually see choice grid points
         param_map('fl_b_bd') = -20; % borrow bound, = 0 if save only
@@ -2226,9 +2536,13 @@ else
         param_map('fl_w_interp_grid_gap') = 2;
         param_map('fl_coh_interp_grid_gap') = 2;
 
+%         param_map('fl_z_r_borr_min') = 0.025;
+%         param_map('fl_z_r_borr_max') = 0.95;
+%         param_map('fl_z_r_borr_n') = 3;
+
         param_map('fl_z_r_borr_min') = 0.025;
         param_map('fl_z_r_borr_max') = 0.95;
-        param_map('fl_z_r_borr_n') = 3;
+        param_map('fl_z_r_borr_n') = 2;
         
     elseif (strcmp(st_param_which, 'small'))
 
@@ -2251,7 +2565,9 @@ else
         param_map('fl_z_r_borr_max') = 0.95;
         param_map('fl_z_r_borr_n') = 3;
         
-    end    
+    end
+    
+    param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
     
     default_maps = {param_map, support_map};
 
@@ -2259,6 +2575,13 @@ else
     [default_maps{1:length(varargin)}] = varargin{:};
     param_map = [param_map; default_maps{1}];
     support_map = [support_map; default_maps{2}];
+    
+    % Display Parameters
+    if (bl_display_funcgrids)
+        fft_container_map_display(param_map);
+        fft_container_map_display(support_map);
+    end
+    
 end
 
 %% Parse Parameters 1a
@@ -2294,6 +2617,10 @@ params_group = values(param_map, {'st_z_r_borr_drv_ele_type', 'st_z_r_borr_drv_p
     'fl_z_r_borr_max', 'fl_z_r_borr_min', 'fl_z_r_borr_n'});
 [st_z_r_borr_drv_ele_type, st_z_r_borr_drv_prb_type, fl_z_r_borr_poiss_mean, ...
     fl_z_r_borr_max, fl_z_r_borr_min, fl_z_r_borr_n] = params_group{:};
+
+% param_map shock income
+params_group = values(param_map, {'it_z_n'});
+[it_z_n] = params_group{:};
 
 %% Parse Parameters 3
 
@@ -2362,18 +2689,123 @@ param_dsv_map('fl_n') = fl_z_r_borr_n;
 mt_z_r_borr_prob_trans = repmat(ar_z_r_borr_prob, [length(ar_z_r_borr_prob), 1]);
 
 %% Get Shock: Mesh Shocks Together
+% R is outter, W is Inner
 
 % Kronecker product to get full transition matrix for the two shocks
 mt_z_trans = kron(mt_z_r_borr_prob_trans, mt_z_wage_trans);
 
 % mesh the shock vectors
-[mt_z_r_borr_mesh_wage, mt_z_wage_mesh_r_borr] = ndgrid(ar_z_r_borr, ar_z_wage);
-ar_z_r_borr_mesh_wage = mt_z_r_borr_mesh_wage(:)';
-ar_z_wage_mesh_r_borr = mt_z_wage_mesh_r_borr(:)';
+[mt_z_wage_mesh_r_borr_w1r2, mt_z_r_borr_mesh_wage_w1r2] = ndgrid(ar_z_wage, ar_z_r_borr);
+ar_z_wage_mesh_r_borr_w1r2 = mt_z_wage_mesh_r_borr_w1r2(:)';
+ar_z_r_borr_mesh_wage_w1r2 = mt_z_r_borr_mesh_wage_w1r2(:)';
+
+% mesh the shock vectors
+[mt_z_r_borr_mesh_wage_r1w2, mt_z_wage_mesh_r_borr_r1w2] = ndgrid(ar_z_r_borr, ar_z_wage);
+ar_z_wage_mesh_r_borr_r1w2 = mt_z_wage_mesh_r_borr_r1w2(:)';
+ar_z_r_borr_mesh_wage_r1w2 = mt_z_r_borr_mesh_wage_r1w2(:)';
+
+if (bl_display_funcgrids)
+    
+    disp('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('Borrow R Shock: ar_z_r_borr_mesh_wage_w1r2');
+    disp('Prod/Wage Shock: ar_z_wage_mesh_r_borr_w1r2');
+    disp('show which shock is inner and which is outter');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    
+    tb_two_shocks = array2table([ar_z_r_borr_mesh_wage_w1r2;...
+                                 ar_z_wage_mesh_r_borr_w1r2]');
+    cl_col_names = ["Borrow R Shock (Meshed)", "Wage R Shock (Meshed)"];
+    cl_row_names = strcat('zi=', string((1:it_z_n)));
+    tb_two_shocks.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_two_shocks.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
+    
+    it_row_display = it_z_wage_n*2;
+    
+    disp(size(tb_two_shocks));
+    disp(head(tb_two_shocks, it_row_display));
+    disp(tail(tb_two_shocks, it_row_display));
+    
+    disp('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('Borrow R Shock: ar_z_wage_mesh_r_borr_r1w2');
+    disp('Prod/Wage Shock: ar_z_r_borr_mesh_wage_r1w2');
+    disp('show which shock is inner and which is outter');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    
+    tb_two_shocks = array2table([ar_z_wage_mesh_r_borr_r1w2;...
+                                 ar_z_r_borr_mesh_wage_r1w2]');
+    cl_col_names = ["Borrow R Shock (Meshed)", "Wage R Shock (Meshed)"];
+    cl_row_names = strcat('zi=', string((1:length(ar_z_r_borr_mesh_wage_r1w2))));
+    tb_two_shocks.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_two_shocks.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
+    
+    it_row_display = fl_z_r_borr_n*2;
+    
+    disp(size(tb_two_shocks));
+    disp(head(tb_two_shocks, it_row_display));
+    disp(tail(tb_two_shocks, it_row_display));        
+    
+    disp('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('Borrow Rate Transition Matrix: mt_z_r_borr_prob_trans');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    it_col_n_keep = 15;
+    it_row_n_keep = 15;    
+    [it_row_n, it_col_n] = size(mt_z_r_borr_prob_trans);
+    [ar_it_cols, ar_it_rows] = fft_row_col_subset(it_col_n, it_col_n_keep, it_row_n, it_row_n_keep);    
+    cl_st_full_rowscols = cellstr([num2str(ar_z_r_borr', 'r%3.2f')]);
+    tb_z_r_borr_prob_trans = array2table(round(mt_z_r_borr_prob_trans(ar_it_rows, ar_it_cols), 6));
+    cl_col_names = strcat('zi=', num2str(ar_it_cols'), ':', cl_st_full_rowscols(ar_it_cols));
+    cl_row_names = strcat('zi=', num2str(ar_it_rows'), ':', cl_st_full_rowscols(ar_it_rows));
+    tb_z_r_borr_prob_trans.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_z_r_borr_prob_trans.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
+       
+    disp(size(tb_z_r_borr_prob_trans));
+    disp(tb_z_r_borr_prob_trans);    
+    
+    disp('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('Wage Prod Shock Transition Matrix: mt_z_r_borr_prob_trans');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    it_col_n_keep = 15;
+    it_row_n_keep = 15;    
+    [it_row_n, it_col_n] = size(mt_z_wage_trans);
+    [ar_it_cols, ar_it_rows] = fft_row_col_subset(it_col_n, it_col_n_keep, it_row_n, it_row_n_keep);    
+    cl_st_full_rowscols = cellstr([num2str(ar_z_wage', 'w%3.2f')]);
+    tb_z_wage_trans = array2table(round(mt_z_wage_trans(ar_it_rows, ar_it_cols),6));    
+    cl_col_names = strcat('zi=', num2str(ar_it_cols'), ':', cl_st_full_rowscols(ar_it_cols));
+    cl_row_names = strcat('zi=', num2str(ar_it_rows'), ':', cl_st_full_rowscols(ar_it_rows));
+    tb_z_wage_trans.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_z_wage_trans.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
+       
+    disp(size(tb_z_wage_trans));
+    disp(tb_z_wage_trans);
+        
+    disp('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('Full Transition Matrix: mt_z_trans');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    it_col_n_keep = it_z_wage_n*3;
+    it_row_n_keep = it_z_wage_n*3;
+    [it_row_n, it_col_n] = size(mt_z_trans);
+    [ar_it_cols, ar_it_rows] = fft_row_col_subset(it_col_n, it_col_n_keep, it_row_n, it_row_n_keep);    
+    cl_st_full_rowscols = cellstr([num2str(ar_z_r_borr_mesh_wage_w1r2', 'r%3.2f;'), ...
+                                   num2str(ar_z_wage_mesh_r_borr_w1r2', 'w%3.2f')]);
+    tb_mt_z_trans = array2table(round(mt_z_trans(ar_it_rows, ar_it_cols),6));
+    cl_col_names = strcat('i', num2str(ar_it_cols'), ':', cl_st_full_rowscols(ar_it_cols));
+    cl_row_names = strcat('i', num2str(ar_it_rows'), ':', cl_st_full_rowscols(ar_it_rows));
+    tb_mt_z_trans.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_mt_z_trans.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
+       
+    disp(size(tb_mt_z_trans));
+    disp(tb_mt_z_trans);
+    
+end
 
 %% Get Equations
 
-[f_util_log, f_util_crra, f_util_standin, f_prod, f_inc, f_coh, f_cons] = ...
+[f_util_log, f_util_crra, f_util_standin, f_util_standin_coh, f_prod, f_inc, f_coh, f_cons] = ...
     ffs_ipwkbz_set_functions(fl_crra, fl_c_min, fl_b_bd, fl_Amean, fl_alpha, fl_delta, fl_r_save, fl_w);
 
 %% Generate Cash-on-Hand/State Matrix
@@ -2388,18 +2820,18 @@ ar_z_wage_mesh_r_borr = mt_z_wage_mesh_r_borr(:)';
 % rows = it_w_interp_n*it_ak_perc_n*fl_z_r_borr_n, and cols = it_z_wage_n.
 %
 
-mt_coh_wkb_full = f_coh(ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr, ...
+mt_coh_wkb_full = f_coh(ar_z_r_borr_mesh_wage_r1w2, ar_z_wage_mesh_r_borr_r1w2, ...
                         ar_a_meshk_full, ar_k_mesha_full);
-
+                    
 it_coh_wkb_reshape_rows = it_w_interp_n*it_ak_perc_n*fl_z_r_borr_n;
 it_coh_wkb_reshape_cols = it_z_wage_n;
 mt_coh_wkb_full = reshape(mt_coh_wkb_full, [it_coh_wkb_reshape_rows, it_coh_wkb_reshape_cols]);
 
+% Generate Aggregate Variables
+ar_aplusk_mesh = ar_a_meshk_full + ar_k_mesha_full;
+
 if (bl_display_funcgrids || bl_graph_funcgrids)
-    
-    % Generate Aggregate Variables
-    ar_aplusk_mesh = ar_a_meshk_full + ar_k_mesha_full;
-    
+        
     % Genereate Table
     tab_ak_choices = array2table([ar_aplusk_mesh, ar_k_mesha_full, ar_a_meshk_full]);
     cl_col_names = {'ar_aplusk_mesh', 'ar_k_mesha_full', 'ar_a_meshk_full'};
@@ -2428,16 +2860,16 @@ if (bl_display_funcgrids || bl_graph_funcgrids)
     disp(tail(array2table(tab_ak_choices), it_rows_toshow));
 
     % Generate Shock Full Mat to See coh_wkb_full zr and zw
-    mt_z_r_borr_mwge_makfull = zeros([length(ar_a_meshk_full), length(ar_z_r_borr_mesh_wage)]) + ar_z_r_borr_mesh_wage;
-    mt_z_wage_mesh_r_makfull = zeros([length(ar_a_meshk_full), length(ar_z_r_borr_mesh_wage)]) + ar_z_wage_mesh_r_borr;
+    mt_z_r_borr_mwge_makfull = zeros([length(ar_a_meshk_full), it_z_n]) + ar_z_r_borr_mesh_wage_r1w2;
+    mt_z_wage_mesh_r_makfull = zeros([length(ar_a_meshk_full), it_z_n]) + ar_z_wage_mesh_r_borr_r1w2;
     % use the same reshape command as above
     mt_z_r_borr_mwge_makfull = reshape(mt_z_r_borr_mwge_makfull, [it_coh_wkb_reshape_rows, it_coh_wkb_reshape_cols]);
     mt_z_wage_mesh_r_makfull = reshape(mt_z_wage_mesh_r_makfull, [it_coh_wkb_reshape_rows, it_coh_wkb_reshape_cols]);
 
     % Generate W and K Choices Full Mat to see which w and k
-    mt_aplusk_mesh = zeros([length(ar_a_meshk_full), length(ar_z_r_borr_mesh_wage)]) + ar_aplusk_mesh;
-    mt_a_meshk_full = zeros([length(ar_a_meshk_full), length(ar_z_r_borr_mesh_wage)]) + ar_a_meshk_full;
-    mt_k_mesha_full = zeros([length(ar_a_meshk_full), length(ar_z_r_borr_mesh_wage)]) + ar_k_mesha_full;
+    mt_aplusk_mesh = zeros([length(ar_a_meshk_full), it_z_n]) + ar_aplusk_mesh;
+    mt_a_meshk_full = zeros([length(ar_a_meshk_full), it_z_n]) + ar_a_meshk_full;
+    mt_k_mesha_full = zeros([length(ar_a_meshk_full), it_z_n]) + ar_k_mesha_full;
     % use the same reshape command as above
     mt_aplusk_mesh = reshape(mt_aplusk_mesh, [it_coh_wkb_reshape_rows, it_coh_wkb_reshape_cols]);
     mt_a_meshk_full = reshape(mt_a_meshk_full, [it_coh_wkb_reshape_rows, it_coh_wkb_reshape_cols]);
@@ -2523,8 +2955,8 @@ fl_w_level_min_valid = min(ar_w_level_full_dup(~ar_bl_w_level_invalid));
 
 % mt_coh_wkb = mt_coh_wkb_full(~ar_bl_wkb_invalid, :);
 mt_coh_wkb = mt_coh_wkb_full;
-mt_z_r_borr_mesh_coh_wkb = repmat(ar_z_r_borr_mesh_wage, [size(mt_coh_wkb,1),1]);
-mt_z_wage_mesh_coh_wkb = repmat(ar_z_wage_mesh_r_borr, [size(mt_coh_wkb,1),1]);
+mt_z_r_borr_mesh_coh_wkb = repmat(ar_z_r_borr_mesh_wage_w1r2, [size(mt_coh_wkb,1),1]);
+mt_z_wage_mesh_coh_wkb = repmat(ar_z_wage_mesh_r_borr_w1r2, [size(mt_coh_wkb,1),1]);
 
 %% Generate 1st Stage States: Interpolation Cash-on-hand Interpolation Grid
 % For the iwkz problems, we solve the problem along a grid of cash-on-hand
@@ -2546,8 +2978,8 @@ it_coh_interp_n = (fl_max_mt_coh-fl_min_mt_coh)/(fl_coh_interp_grid_gap);
 ar_interp_coh_grid = fft_array_add_zero(linspace(fl_min_mt_coh, fl_max_mt_coh, it_coh_interp_n), true);
 mt_interp_coh_grid_mesh_w_perc = repmat(ar_interp_coh_grid, [it_w_perc_n, 1]);
 
-[mt_interp_coh_grid_mesh_z_r_borr, mt_z_r_borr_mesh_coh_interp_grid] = ndgrid(ar_interp_coh_grid, ar_z_r_borr_mesh_wage);
-[mt_interp_coh_grid_mesh_z_wage, mt_z_wage_mesh_coh_interp_grid] = ndgrid(ar_interp_coh_grid, ar_z_wage_mesh_r_borr);
+[mt_interp_coh_grid_mesh_z_r_borr, mt_z_r_borr_mesh_coh_interp_grid] = ndgrid(ar_interp_coh_grid, ar_z_r_borr_mesh_wage_w1r2);
+[mt_interp_coh_grid_mesh_z_wage, mt_z_wage_mesh_coh_interp_grid] = ndgrid(ar_interp_coh_grid, ar_z_wage_mesh_r_borr_w1r2);
 
 %% Generate 1st Stage Choices: Interpolation Cash-on-hand Interpolation Grid
 % previously, our ar_w was the first stage choice grid, the grid was the
@@ -2584,15 +3016,15 @@ armtdesc_map = containers.Map('KeyType','char', 'ValueType','any');
 
 %% Store armt_map (1): 2nd Stage Problem Arrays and Matrixes
 armt_map('ar_ak_perc') = ar_ak_perc;
+armt_map('ar_w_level') = ar_w_level;
 armt_map('mt_k') = mt_k;
 armt_map('ar_a_meshk') = ar_a_meshk;
 armt_map('ar_k_mesha') = ar_k_mesha;
+armt_map('ar_aplusk_mesh') = ar_aplusk_mesh;
 armt_map('it_ameshk_n') = length(ar_a_meshk);
 armt_map('mt_coh_wkb') = mt_coh_wkb_full;
 armt_map('mt_z_r_borr_mesh_coh_wkb') = mt_z_r_borr_mesh_coh_wkb;
 armt_map('mt_z_wage_mesh_coh_wkb') = mt_z_wage_mesh_coh_wkb;
-armt_map('ar_z_r_borr_mesh_wage') = ar_z_r_borr_mesh_wage;
-armt_map('ar_z_wage_mesh_r_borr') = ar_z_wage_mesh_r_borr;
 
 %% Store armt_map (2): First Stage Aggregate Savings
 % w = k' + b', w is aggregate Savings%
@@ -2612,7 +3044,6 @@ armt_map('ar_z_wage_mesh_r_borr') = ar_z_wage_mesh_r_borr;
 %
 
 armt_map('ar_w_perc') = ar_w_perc;
-armt_map('ar_w_level') = ar_w_level;
 armt_map('mt_w_by_interp_coh_interp_grid') = mt_w_by_interp_coh_interp_grid;
 armt_map('mt_interp_coh_grid_mesh_w_perc') = mt_interp_coh_grid_mesh_w_perc;
 armt_map('mt_z_r_borr_mesh_coh_interp_grid') = mt_z_r_borr_mesh_coh_interp_grid;
@@ -2627,8 +3058,10 @@ armt_map('mt_z_mesh_coh_interp_grid') = mt_z_wage_mesh_coh_interp_grid;
 
 %% Store armt_map (4): Shock Grids
 armt_map('mt_z_trans') = mt_z_trans;
-armt_map('ar_z_r_borr_mesh_wage') = ar_z_r_borr_mesh_wage;
-armt_map('ar_z_wage_mesh_r_borr') = ar_z_wage_mesh_r_borr;
+armt_map('ar_z_r_borr_mesh_wage_w1r2') = ar_z_r_borr_mesh_wage_w1r2;
+armt_map('ar_z_wage_mesh_r_borr_w1r2') = ar_z_wage_mesh_r_borr_w1r2;
+armt_map('ar_z_r_borr_mesh_wage_r1w2') = ar_z_r_borr_mesh_wage_r1w2;
+armt_map('ar_z_wage_mesh_r_borr_r1w2') = ar_z_wage_mesh_r_borr_r1w2;
 
 armt_map('ar_z_r_borr') = ar_z_r_borr;
 armt_map('ar_z_r_borr_prob') = ar_z_r_borr_prob;
@@ -2641,6 +3074,7 @@ func_map = containers.Map('KeyType','char', 'ValueType','any');
 func_map('f_util_log') = f_util_log;
 func_map('f_util_crra') = f_util_crra;
 func_map('f_util_standin') = f_util_standin;
+func_map('f_util_standin_coh') = f_util_standin_coh;
 func_map('f_prod') = f_prod;
 func_map('f_inc') = f_inc;
 func_map('f_coh') = f_coh;
@@ -2661,8 +3095,8 @@ if (bl_graph_funcgrids)
     ar_it_z_graph_zwage = ([1 round((it_z_wage_n)/4) 2*round((it_z_wage_n)/4) 3*round((it_z_wage_n)/4) (it_z_wage_n)]);
 
     % legends index final
-    cl_st_legendCell = cellstr([num2str(ar_z_r_borr_mesh_wage', 'zr=%3.2f;'), ...
-                                num2str(ar_z_wage_mesh_r_borr', 'zw=%3.2f')]);
+    cl_st_legendCell = cellstr([num2str(ar_z_r_borr_mesh_wage_w1r2', 'zr=%3.2f;'), ...
+                                num2str(ar_z_wage_mesh_r_borr_w1r2', 'zw=%3.2f')]);
 
     % legends index final full mat wage only
     cl_st_legendCell_zwage = cellstr([num2str(ar_z_wage', 'zw=%3.2f')]);

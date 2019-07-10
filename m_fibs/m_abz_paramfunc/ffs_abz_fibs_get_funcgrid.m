@@ -116,10 +116,10 @@ param_dsv_map('fl_poiss_mean') = fl_z_r_borr_poiss_mean;
 param_dsv_map('fl_max') = fl_z_r_borr_max;
 param_dsv_map('fl_min') = fl_z_r_borr_min;
 param_dsv_map('fl_n') = fl_z_r_borr_n;
-[ar_z_r_inf, ar_z_r_borr_prob] = fft_gen_discrete_var(param_dsv_map, true);
+[ar_z_r_inf, ar_z_r_inf_prob] = fft_gen_discrete_var(param_dsv_map, true);
 
 % iid transition matrix
-mt_z_r_borr_prob_trans = repmat(ar_z_r_borr_prob, [length(ar_z_r_borr_prob), 1]);
+mt_z_r_borr_prob_trans = repmat(ar_z_r_inf_prob, [length(ar_z_r_inf_prob), 1]);
 
 %% Get Shock: Mesh Shocks Together
 
@@ -130,6 +130,88 @@ mt_z_trans = kron(mt_z_r_borr_prob_trans, mt_z_wage_trans);
 [mt_z_wage_mesh_r_borr, mt_z_r_inf_mesh_wage] = ndgrid(ar_z_wage, ar_z_r_inf);
 ar_z_r_inf_mesh_wage = mt_z_r_inf_mesh_wage(:)';
 ar_z_wage_mesh_r_borr = mt_z_wage_mesh_r_borr(:)';
+
+if (bl_display_funcgrids)
+    
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('Borrow R Shock: ar_z_r_inf_mesh_wage');
+    disp('Prod/Wage Shock: mt_z_wage_mesh_r_borr');
+    disp('show which shock is inner and which is outter');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    
+    tb_two_shocks = array2table([ar_z_r_inf_mesh_wage;...
+        ar_z_wage_mesh_r_borr]');
+    cl_col_names = ["Borrow R Shock (Meshed)", "Wage R Shock (Meshed)"];
+    cl_row_names = strcat('zi=', string((1:length(ar_z_r_inf_mesh_wage))));
+    tb_two_shocks.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_two_shocks.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
+    
+    it_row_display = it_z_wage_n*2;
+    
+    disp(size(tb_two_shocks));
+    disp(head(tb_two_shocks, it_row_display));
+    disp(tail(tb_two_shocks, it_row_display));
+    
+    
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('Borrow Rate Transition Matrix: mt_z_r_borr_prob_trans');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    it_col_n_keep = 15;
+    it_row_n_keep = 15;    
+    [it_row_n, it_col_n] = size(mt_z_r_borr_prob_trans);
+    [ar_it_cols, ar_it_rows] = fft_row_col_subset(it_col_n, it_col_n_keep, it_row_n, it_row_n_keep);    
+    cl_st_full_rowscols = cellstr([num2str(ar_z_r_inf', 'r%3.2f')]);
+    tb_z_r_borr_prob_trans = array2table(round(mt_z_r_borr_prob_trans(ar_it_rows, ar_it_cols), 6));
+    cl_col_names = strcat('zi=', num2str(ar_it_cols'), ':', cl_st_full_rowscols(ar_it_cols));
+    cl_row_names = strcat('zi=', num2str(ar_it_rows'), ':', cl_st_full_rowscols(ar_it_cols));
+    tb_z_r_borr_prob_trans.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_z_r_borr_prob_trans.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
+       
+    disp(size(tb_z_r_borr_prob_trans));
+    disp(tb_z_r_borr_prob_trans);
+    
+    
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('Wage Prod Shock Transition Matrix: mt_z_r_borr_prob_trans');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    it_col_n_keep = 15;
+    it_row_n_keep = 15;    
+    [it_row_n, it_col_n] = size(mt_z_wage_trans);
+    [ar_it_cols, ar_it_rows] = fft_row_col_subset(it_col_n, it_col_n_keep, it_row_n, it_row_n_keep);    
+    cl_st_full_rowscols = cellstr([num2str(ar_z_wage', 'w%3.2f')]);
+    tb_z_wage_trans = array2table(round(mt_z_wage_trans(ar_it_rows, ar_it_cols),6));    
+    cl_col_names = strcat('zi=', num2str(ar_it_cols'), ':', cl_st_full_rowscols(ar_it_cols));
+    cl_row_names = strcat('zi=', num2str(ar_it_rows'), ':', cl_st_full_rowscols(ar_it_cols));
+    tb_z_wage_trans.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_z_wage_trans.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
+       
+    disp(size(tb_z_wage_trans));
+    disp(tb_z_wage_trans);
+    
+    
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('Full Transition Matrix: mt_z_trans');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    it_col_n_keep = it_z_wage_n*3;
+    it_row_n_keep = it_z_wage_n*3;
+    [it_row_n, it_col_n] = size(mt_z_trans);
+    [ar_it_cols, ar_it_rows] = fft_row_col_subset(it_col_n, it_col_n_keep, it_row_n, it_row_n_keep);    
+    cl_st_full_rowscols = cellstr([num2str(ar_z_r_inf_mesh_wage', 'r%3.2f;'), ...
+                                   num2str(ar_z_wage_mesh_r_borr', 'w%3.2f')]);
+    tb_mt_z_trans = array2table(round(mt_z_trans(ar_it_rows, ar_it_cols),6));
+    cl_col_names = strcat('i', num2str(ar_it_cols'), ':', cl_st_full_rowscols(ar_it_cols));
+    cl_row_names = strcat('i', num2str(ar_it_rows'), ':', cl_st_full_rowscols(ar_it_cols));
+    tb_mt_z_trans.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_mt_z_trans.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
+       
+    disp(size(tb_mt_z_trans));
+    disp(tb_mt_z_trans);
+    
+end
 
 %% Get Equations
 
@@ -176,7 +258,7 @@ end
 armt_map = containers.Map('KeyType','char', 'ValueType','any');
 armt_map('ar_a') = ar_a;
 armt_map('mt_z_trans') = mt_z_trans;
-armt_map('ar_z_r_borr_mesh_wage') = ar_z_r_inf_mesh_wage;
+armt_map('ar_z_r_inf_mesh_wage') = ar_z_r_inf_mesh_wage;
 armt_map('ar_z_wage_mesh_r_borr') = ar_z_wage_mesh_r_borr;
 armt_map('ar_forbrblk') = ar_forbrblk;
 armt_map('ar_forbrblk_r') = ar_forbrblk_r;

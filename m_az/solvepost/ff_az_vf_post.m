@@ -158,7 +158,7 @@ end
 %% Display Val Pol Iter Table
 
 if (bl_display_final)
-    
+        
     % Columns to Display
     if (it_z_n >= it_display_final_colmax)
         ar_it_cols = (1:1:round(it_display_final_colmax/2));

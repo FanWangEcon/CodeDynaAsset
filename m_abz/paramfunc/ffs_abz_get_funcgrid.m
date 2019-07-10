@@ -136,6 +136,88 @@ mt_z_trans = kron(mt_z_r_borr_prob_trans, mt_z_wage_trans);
 ar_z_r_borr_mesh_wage = mt_z_r_borr_mesh_wage(:)';
 ar_z_wage_mesh_r_borr = mt_z_wage_mesh_r_borr(:)';
 
+if (bl_display_funcgrids)
+    
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('Borrow R Shock: ar_z_r_borr_mesh_wage');
+    disp('Prod/Wage Shock: mt_z_wage_mesh_r_borr');
+    disp('show which shock is inner and which is outter');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    
+    tb_two_shocks = array2table([ar_z_r_borr_mesh_wage;...
+        ar_z_wage_mesh_r_borr]');
+    cl_col_names = ["Borrow R Shock (Meshed)", "Wage R Shock (Meshed)"];
+    cl_row_names = strcat('zi=', string((1:length(ar_z_r_borr_mesh_wage))));
+    tb_two_shocks.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_two_shocks.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
+    
+    it_row_display = it_z_wage_n*2;
+    
+    disp(size(tb_two_shocks));
+    disp(head(tb_two_shocks, it_row_display));
+    disp(tail(tb_two_shocks, it_row_display));
+    
+    
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('Borrow Rate Transition Matrix: mt_z_r_borr_prob_trans');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    it_col_n_keep = 15;
+    it_row_n_keep = 15;    
+    [it_row_n, it_col_n] = size(mt_z_r_borr_prob_trans);
+    [ar_it_cols, ar_it_rows] = fft_row_col_subset(it_col_n, it_col_n_keep, it_row_n, it_row_n_keep);    
+    cl_st_full_rowscols = cellstr([num2str(ar_z_r_borr', 'r%3.2f')]);
+    tb_z_r_borr_prob_trans = array2table(round(mt_z_r_borr_prob_trans(ar_it_rows, ar_it_cols), 6));
+    cl_col_names = strcat('zi=', num2str(ar_it_cols'), ':', cl_st_full_rowscols(ar_it_cols));
+    cl_row_names = strcat('zi=', num2str(ar_it_rows'), ':', cl_st_full_rowscols(ar_it_cols));
+    tb_z_r_borr_prob_trans.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_z_r_borr_prob_trans.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
+       
+    disp(size(tb_z_r_borr_prob_trans));
+    disp(tb_z_r_borr_prob_trans);
+    
+    
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('Wage Prod Shock Transition Matrix: mt_z_r_borr_prob_trans');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    it_col_n_keep = 15;
+    it_row_n_keep = 15;    
+    [it_row_n, it_col_n] = size(mt_z_wage_trans);
+    [ar_it_cols, ar_it_rows] = fft_row_col_subset(it_col_n, it_col_n_keep, it_row_n, it_row_n_keep);    
+    cl_st_full_rowscols = cellstr([num2str(ar_z_wage', 'w%3.2f')]);
+    tb_z_wage_trans = array2table(round(mt_z_wage_trans(ar_it_rows, ar_it_cols),6));    
+    cl_col_names = strcat('zi=', num2str(ar_it_cols'), ':', cl_st_full_rowscols(ar_it_cols));
+    cl_row_names = strcat('zi=', num2str(ar_it_rows'), ':', cl_st_full_rowscols(ar_it_cols));
+    tb_z_wage_trans.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_z_wage_trans.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
+       
+    disp(size(tb_z_wage_trans));
+    disp(tb_z_wage_trans);
+    
+    
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('Full Transition Matrix: mt_z_trans');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    it_col_n_keep = it_z_wage_n*3;
+    it_row_n_keep = it_z_wage_n*3;
+    [it_row_n, it_col_n] = size(mt_z_trans);
+    [ar_it_cols, ar_it_rows] = fft_row_col_subset(it_col_n, it_col_n_keep, it_row_n, it_row_n_keep);    
+    cl_st_full_rowscols = cellstr([num2str(ar_z_r_borr_mesh_wage', 'r%3.2f;'), ...
+                                   num2str(ar_z_wage_mesh_r_borr', 'w%3.2f')]);
+    tb_mt_z_trans = array2table(round(mt_z_trans(ar_it_rows, ar_it_cols),6));
+    cl_col_names = strcat('i', num2str(ar_it_cols'), ':', cl_st_full_rowscols(ar_it_cols));
+    cl_row_names = strcat('i', num2str(ar_it_rows'), ':', cl_st_full_rowscols(ar_it_cols));
+    tb_mt_z_trans.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_mt_z_trans.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
+       
+    disp(size(tb_mt_z_trans));
+    disp(tb_mt_z_trans);
+    
+end
+
 %% Get Equations
 
 [f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons_coh, f_cons, f_cons_checkcmin] = ...
@@ -250,7 +332,7 @@ if (bl_graph_funcgrids)
         ylabel(st_ylabel)
         
         grid on;
-        grid minor; 
+        grid minor;
         
         legend2plot = fliplr([1 round(numel(chart)/3) round((2*numel(chart))/4)  numel(chart)]);
         legendCell = cellstr(num2str(ar_z_wage', 'z=%3.2f'));
@@ -260,9 +342,9 @@ if (bl_graph_funcgrids)
         
         % if borrow plot additional borrowing bound lines
         if (fl_b_bd >= 0 )
-            ar_legend_ele = [legend2plot];            
-            xlabel({st_xlabel})            
-        else            
+            ar_legend_ele = [legend2plot];
+            xlabel({st_xlabel})
+        else
             % add fl_b_bd exo borrow line
             if (fl_b_bd >= min(ar_a))
                 xline_borrbound = xline(fl_b_bd_graph);
@@ -270,12 +352,12 @@ if (bl_graph_funcgrids)
                 xline_borrbound.LineStyle = '-';
                 xline_borrbound.Color = 'black';
                 xline_borrbound.LineWidth = 2.5;
-
+                
                 yline_borrbound = yline(fl_b_bd_graph);
                 yline_borrbound.HandleVisibility = 'off';
                 yline_borrbound.LineStyle = '-';
                 yline_borrbound.Color = 'black';
-                yline_borrbound.LineWidth = 1;               
+                yline_borrbound.LineWidth = 1;
             end
             
             xline_yminbd = xline(fl_borr_yminbd_graph);
@@ -283,7 +365,7 @@ if (bl_graph_funcgrids)
             xline_yminbd.LineStyle = '--';
             xline_yminbd.Color = 'red';
             xline_yminbd.LineWidth = 2.5;
-
+            
             yline_yminbd = yline(fl_borr_yminbd_graph);
             yline_yminbd.HandleVisibility = 'off';
             yline_yminbd.LineStyle = '--';
@@ -326,11 +408,11 @@ if (bl_graph_funcgrids)
             
             % draw legend
             ar_legend_ele = [legend2plot length(legendCell)-it_addlines_cn:1:length(legendCell)];
-            xlabel({st_xlabel 'if coh(a,z) < a, then a''(a,z)<a'})            
+            xlabel({st_xlabel 'if coh(a,z) < a, then a''(a,z)<a'})
         end
         
         % draw legends
-        legend(chart(unique(ar_legend_ele)), legendCell(unique(ar_legend_ele)), 'Location', 'northwest');            
+        legend(chart(unique(ar_legend_ele)), legendCell(unique(ar_legend_ele)), 'Location', 'northwest');
         
     end
     
@@ -343,10 +425,10 @@ if (bl_display_funcgrids)
     disp('ar_z_wage');
     disp(size(ar_z_wage));
     disp(ar_z_wage);
-    
-    disp('mt_z_trans');
-    disp(size(mt_z_trans));
-    disp(mt_z_trans);
+
+    disp('ar_z_r_borr');
+    disp(size(ar_z_r_borr));
+    disp(ar_z_r_borr);
     
     param_map_keys = keys(func_map);
     param_map_vals = values(func_map);

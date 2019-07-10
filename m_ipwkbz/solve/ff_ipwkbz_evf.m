@@ -72,47 +72,91 @@ else
     [param_map, support_map] = ffs_ipwkbz_set_default_param(it_param_set);
     
     support_map('bl_graph_evf') = true;
-    support_map('bl_display_evf') = true;
+    bl_display_evf = true;
+    support_map('bl_display_evf') = bl_display_evf;        
+    
+    st_param_which = 'default';
+
+    if (ismember(st_param_which, ['default']))
+
+        param_map('it_ak_perc_n') = 250;
         
-    param_map('it_ak_perc_n') = 250;
+%         param_map('fl_z_r_borr_min') = 0.035;
+%         param_map('fl_z_r_borr_max') = 0.095;
+%         param_map('fl_z_r_borr_n') = 1;        
+%         param_map('fl_z_r_borr_n') = 3;
+%         param_map('it_z_wage_n') = 3;
+        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+        
+    elseif (strcmp(st_param_which, 'small'))
+
+        param_map('fl_z_r_borr_n') = 2;
+        param_map('it_z_wage_n') = 3;
+        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+
+        param_map('fl_b_bd') = -20; % borrow bound, = 0 if save only
+        param_map('fl_default_aprime') = 0;
+        param_map('bl_default') = 0; % if borrowing is default allowed
+
+        param_map('fl_w_min') = param_map('fl_b_bd');
+        param_map('it_w_perc_n') = 10;
+        param_map('it_ak_perc_n') = 10;
+
+        param_map('fl_w_interp_grid_gap') = 2;
+        param_map('fl_coh_interp_grid_gap') = 2;
+
+        param_map('fl_z_r_borr_min') = 0.025;
+        param_map('fl_z_r_borr_max') = 0.95;
+        param_map('fl_z_r_borr_n') = 3;
+        
+    end
+    
+    param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');    
+    
     param_map('fl_w_interp_grid_gap') = (param_map('fl_w_max')-param_map('fl_b_bd'))/param_map('it_ak_perc_n');    
 
     [armt_map, func_map] = ffs_ipwkbz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
     
     % Generating Defaults
-    params_group = values(param_map, {'fl_z_r_borr_n', 'it_z_wage_n', 'ar_z_r_borr'});
-    [fl_z_r_borr_n, it_z_wage_n, ar_z_r_borr] = params_group{:};
+    params_group = values(param_map, {'it_z_n'});
+    [it_z_n] = params_group{:};
+    
     % Generating Defaults
-    params_group = values(armt_map, {'mt_coh_wkb'});
-    [mt_coh_wkb] = params_group{:};
+    params_group = values(armt_map, {'mt_coh_wkb', 'ar_z_r_borr'});
+    [mt_coh_wkb, ar_z_r_borr] = params_group{:};
     params_group = values(func_map, {'f_util_standin_coh'});
     [f_util_standin_coh] = params_group{:};
     
-    % # mt_val first: this is the (I^k x I^w) by (M^r x M^z) matrix, where
-    % rows = it_w_interp_n*it_ak_perc_n, and cols = fl_z_r_borr_n*it_z_wage_n.
-    mt_val = f_util_standin(ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr, ar_a_meshk, ar_k_mesha);
-    % # mt_val reshape: this is the (I^k x I^w x M^r) by (M^z) matrix, where
-    % rows = it_w_interp_n*it_ak_perc_n*fl_z_r_borr_n, and cols = it_z_wage_n.
-    it_coh_wkb_reshape_rows = length(ar_a_meshk)*fl_z_r_borr_n;
-    it_coh_wkb_reshape_cols = it_z_wage_n;
-    mt_val = reshape(mt_val, [it_coh_wkb_reshape_rows, it_coh_wkb_reshape_cols]);
-    % # mt_val expand: this is the (I^k x I^w x M^r) by (M^z) matrix, where
-    % rows = it_w_interp_n*it_ak_perc_n*fl_z_r_borr_n, and cols = it_z_wage_n.    
-    mt_val = repmat(mt_val, [1, fl_z_r_borr_n]);
-
+    % Note that for the testing function below, ar_z_r_borr does not need
+    % to matter for testing, meaning V(coh, zw, zr_j) = V(coh, zw, zr_i).
+    % With integration it matters. This is an important point, for just
+    % last period debt, if no new borrowing choices are made, it does not
+    % matter what new zr shocks are, just what last period rates are. But
+    % once the problem is dynamic. But the object of interest here is:
+    % EV(k', b', zw, zr), conditionally on the same k'/b', will zr have an
+    % impact? yes it will, even just through interest rate on b'.
+    mt_val = f_util_standin_coh(mt_coh_wkb(:), ar_z_r_borr);
+    mt_val = reshape(mt_val, [size(mt_coh_wkb, 1), it_z_n]);
+        
+    % Display Parameters
+    if (bl_display_evf)
+        fft_container_map_display(param_map);
+        fft_container_map_display(support_map);
+    end
     
 end
 
-
-
-
 %% Parse Parameters
-params_group = values(armt_map, {'mt_z_trans', 'ar_z',...
-    'ar_w_level', 'ar_k_mesha', 'ar_a_meshk', 'mt_k'});
-[mt_z_trans, ar_z, ar_w_level, ...
-    ar_k_mesha, ar_a_meshk, mt_k] = params_group{:};
-params_group = values(param_map, {'it_z_n', 'fl_nan_replace', 'fl_b_bd'});
-[it_z_n, fl_nan_replace, fl_b_bd] = params_group{:};
+params_group = values(armt_map, {'ar_z_r_borr_mesh_wage_w1r2', 'ar_z_wage_mesh_r_borr_w1r2'});
+[ar_z_r_borr_mesh_wage_w1r2, ar_z_wage_mesh_r_borr_w1r2] = params_group{:};
+
+params_group = values(armt_map, {'mt_z_trans', 'ar_ak_perc', 'ar_w_level', 'ar_k_mesha', 'ar_a_meshk', 'ar_aplusk_mesh', 'mt_k'});
+[mt_z_trans, ar_ak_perc, ar_w_level, ar_k_mesha, ar_a_meshk, ar_aplusk_mesh, mt_k] = params_group{:};
+params_group = values(param_map, {'it_z_n', 'fl_z_r_borr_n', 'it_z_wage_n'});
+[it_z_n, fl_z_r_borr_n, it_z_wage_n] = params_group{:};
+params_group = values(param_map, {'fl_nan_replace', 'fl_b_bd'});
+[fl_nan_replace, fl_b_bd] = params_group{:};
+
 params_group = values(support_map, {'bl_graph_onebyones','bl_display_evf', 'bl_graph_evf'});
 [bl_graph_onebyones, bl_display_evf, bl_graph_evf] = params_group{:};
 params_group = values(support_map, {'bl_img_save', 'st_img_path', 'st_img_prefix', 'st_img_name_main', 'st_img_suffix'});
@@ -122,31 +166,87 @@ params_group = values(support_map, {'bl_img_save', 'st_img_path', 'st_img_prefix
 st_func_name = 'ff_ipwkbz_evf';
 st_img_name_main = [st_func_name st_img_name_main];
 
-%% Integrate *E(V(coh(k',b'), z')|z, w)*
-% Each column for a different state z, each value *E(V(coh,z')|z)* integrated already
-% Here, each column is a current z, more to right higher EV
-% dim(mt_ev_condi_z): *Q by M*
-% Note that: mt_ev_condi_z = mt_val*mt_z_trans' is a mistake, that would be
-% what we do in the
-% <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_set_functions.html
-% ffs_ipwkbz_set_functions> code where we loop over current z, and for each
-% current z, grab out a particular row from the mt_z_trans that corresponds
-% to a current shock's transition into all future states.
+%% Integrate *E(V(coh(k',b',zr'),zw',zr')|zw,zr)*
+% Each column for a different state z, to integrate:
+% *E(V(coh(k',b',zr'),zw',zr')|zw,zr)*. Each column is a different shock,
+% from the combinations of zw and zr shocks. Each row is a different unique
+% level of reacheable cash-on-hand level, which is determined by the choice
+% grid for w = k' + b', k' and b', as well as the borrowing shock vector
+% zr. 
 %
-% here, each column of mt_val corresponds to a state z, think of that as
-% future state z. The input mt_val is *V(coh, z)*, we need to integrate to
-% get *E(V(coh,z')|z)*.
+% The issue here is, unlike the productivity shock, where only the z'
+% matters tomorrow, and z matters via conditional probability of p(z'|z),
+% for the interest rate shock, both r and r' matter. For the z case, z'
+% impacts the cash-on-hand, and z''. For r case, r impacts cash-on-hand
+% tomorrow, since interest is known at the time when the loan is taken out,
+% and r' also matters because it is the rate that decision maker next
+% period faces when making b'' borrowing choices. 
+%
+% With the structure below, the interest rate r draw that households face
+% today will impact the cash-on-hand tomorrow; the r' draw will impact
+% tomorrow's value function through its effect on b'' choice; r impacts r'
+% through conditional probability.
+%
+% Note that: mt_ev_condi_z = mt_val*mt_z_trans' work if we did not have the
+% interest rate shock. With the interest rate shock, we have to proceed
+% differently. 
 %
 
-mt_ev_condi_z = mt_val*mt_z_trans';
+% 1. Number of W/B/K Choice Combinations
+it_ak_perc_n = length(ar_ak_perc);
+it_w_interp_n = length(ar_w_level);
+it_wak_n = it_w_interp_n*it_ak_perc_n;
+
+% 2. Initialize mt_ev_condi_z = E(V(coh(k',b',zr'),zw',zr')|zw,zr)
+% rows = it_wak_n
+% cols = it_z_n
+mt_ev_condi_z = zeros([it_wak_n, it_z_n]);
+
+for it_z_r_borr_ctr = 1:1:fl_z_r_borr_n
+    
+    % Transition Row Subset: ((M^z) by (M^z x M^r))' for one m^r
+    it_mt_z_trans_row_start = it_z_wage_n*(it_z_r_borr_ctr-1) + 1;
+    it_mt_z_trans_row_end = it_mt_z_trans_row_start + it_z_wage_n - 1;    
+    mt_z_trans_cur_z_r_borr = mt_z_trans(it_mt_z_trans_row_start:it_mt_z_trans_row_end, :);
+
+    % Val Segment : ((M^z) by (M^z x M^r))' for one m^r
+    it_mt_val_row_start = it_wak_n*(it_z_r_borr_ctr-1) + 1;
+    it_mt_val_row_end = it_mt_val_row_start + it_wak_n - 1;
+    mt_val_cur_z_r_borr = mt_val(it_mt_val_row_start:it_mt_val_row_end, :);
+    
+    % E(V(coh(k',b',zr'),zw',zr')|zw,zr) for one zr and all zw
+    mt_ev_condi_z(:, it_mt_z_trans_row_start:it_mt_z_trans_row_end) = ...
+        mt_val_cur_z_r_borr*mt_z_trans_cur_z_r_borr';
+    
+end
+
 if(bl_display_evf)
+    
     disp('----------------------------------------');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp('mt_ev_condi_z: Q by M');
+    disp('Expected Value: mt_ev_condi_z');
+    disp("EV(k', b', zw, zr) = (V(coh(k',b',zr'),zw',zr')|zw,zr)");       
+    disp("rows = k'/b' combos, cols = zw/zr combos");
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    it_col_n_keep = it_z_wage_n*2;
+    it_row_n_keep = it_ak_perc_n*3;
+    [it_row_n, it_col_n] = size(mt_ev_condi_z);
+    [ar_it_cols, ar_it_rows] = fft_row_col_subset(it_col_n, it_col_n_keep, it_row_n, it_row_n_keep);    
+    cl_st_full_cols = cellstr([num2str(ar_z_r_borr_mesh_wage_w1r2', 'r%3.2f;'), ...
+                               num2str(ar_z_wage_mesh_r_borr_w1r2', 'w%3.2f')]);
+    cl_st_full_rows = cellstr([num2str(ar_aplusk_mesh, 'w%3.2f'), ...
+                               num2str(ar_k_mesha, 'k%3.2f'),...
+                               num2str(ar_a_meshk, 'a%3.2f')]);
+    tb_mt_exp_val = array2table(round(mt_ev_condi_z(ar_it_rows, ar_it_cols),6));
+    cl_col_names = strcat('i', num2str(ar_it_cols'), ':', cl_st_full_cols(ar_it_cols));
+    cl_row_names = strcat('i', num2str(ar_it_rows'), ':', cl_st_full_rows(ar_it_rows));
+    tb_mt_exp_val.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_mt_exp_val.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
+       
     disp(size(mt_ev_condi_z));
-    disp(head(array2table(mt_ev_condi_z), 20));
-    disp(tail(array2table(mt_ev_condi_z), 20));
+    disp(tb_mt_exp_val(1:round(it_row_n_keep/2), :));
+    disp(tb_mt_exp_val((round(it_row_n_keep/2)+1):it_row_n_keep, :));
+
 end
 
 %% Reshape *E(V(coh,z'|z,w))* to allow for maxing
@@ -176,18 +276,32 @@ if(bl_display_evf)
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_ev_condi_z_max: I by M');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    it_col_n_keep = it_z_wage_n*2;    
+    it_row_n_keep = round(it_w_interp_n);
+    [it_row_n, it_col_n] = size(mt_ev_condi_z_max);
+    [ar_it_cols, ar_it_rows] = fft_row_col_subset(it_col_n, it_col_n_keep, it_row_n, it_row_n_keep);    
+    cl_st_full_cols = cellstr([num2str(ar_z_r_borr_mesh_wage_w1r2', 'r%3.2f;'), ...
+                               num2str(ar_z_wage_mesh_r_borr_w1r2', 'w%3.2f')]);
+    cl_st_full_rows = cellstr([num2str(ar_w_level', 'w%3.2f')]);
+    tb_mt_ev_condi_z_max = array2table(round(mt_ev_condi_z_max(ar_it_rows, ar_it_cols), 6));
+    cl_col_names = strcat('i', num2str(ar_it_cols'), ':', cl_st_full_cols(ar_it_cols));
+    cl_row_names = strcat('i', num2str(ar_it_rows'), ':', cl_st_full_rows(ar_it_rows));
+    tb_mt_ev_condi_z_max.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_mt_ev_condi_z_max.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);    
     disp(size(mt_ev_condi_z_max));
-    disp(head(array2table(mt_ev_condi_z_max), 20));
-    disp(tail(array2table(mt_ev_condi_z_max), 20));
-    
+    disp(tb_mt_ev_condi_z_max(1:round(it_row_n_keep/2), :));
+    disp(tb_mt_ev_condi_z_max((round(it_row_n_keep/2)+1):it_row_n_keep, :));
 
     disp('----------------------------------------');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_ev_condi_z_max_idx: I by M');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    tb_mt_ev_condi_z_max_idx = array2table(mt_ev_condi_z_max_idx(ar_it_rows, ar_it_cols));
+    tb_mt_ev_condi_z_max_idx.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_mt_ev_condi_z_max_idx.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);    
     disp(size(mt_ev_condi_z_max_idx));
-    disp(head(array2table(mt_ev_condi_z_max_idx), 20));
-    disp(tail(array2table(mt_ev_condi_z_max_idx), 20));
+    disp(tb_mt_ev_condi_z_max_idx(1:round(it_row_n_keep/2), :));
+    disp(tb_mt_ev_condi_z_max_idx((round(it_row_n_keep/2)+1):it_row_n_keep, :));
     
 end
 
@@ -197,40 +311,53 @@ end
 ar_add_grid = linspace(0, it_mt_bp_rown*(it_mt_bp_coln-1), it_mt_bp_coln);
 mt_ev_condi_z_max_idx = mt_ev_condi_z_max_idx + ar_add_grid';
 
-if(bl_display_evf)
-    disp('----------------------------------------');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp('mt_ev_condi_z_max_idx: I by M');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp(size(mt_ev_condi_z_max_idx));
-    disp(head(array2table(mt_ev_condi_z_max_idx), 20));
-    disp(tail(array2table(mt_ev_condi_z_max_idx), 20));    
-end
-
 mt_ev_condi_z_max_kp = reshape(ar_k_mesha(mt_ev_condi_z_max_idx), [it_mt_bp_coln, it_z_n]);
 mt_ev_condi_z_max_bp = reshape(ar_a_meshk(mt_ev_condi_z_max_idx), [it_mt_bp_coln, it_z_n]);
 
 if(bl_display_evf)
+    
     disp('----------------------------------------');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_ev_condi_z_max_kp: I by M');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    tb_ev_condi_z_max_kp = array2table(mt_ev_condi_z_max_kp(ar_it_rows, ar_it_cols));
+    tb_ev_condi_z_max_kp.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_ev_condi_z_max_kp.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);    
     disp(size(mt_ev_condi_z_max_kp));
-    disp(head(array2table(mt_ev_condi_z_max_kp), 20));
-    disp(tail(array2table(mt_ev_condi_z_max_kp), 20));        
+    disp(tb_ev_condi_z_max_kp(1:round(it_row_n_keep/2), :));
+    disp(tb_ev_condi_z_max_kp((round(it_row_n_keep/2)+1):it_row_n_keep, :));
     
     disp('----------------------------------------');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_ev_condi_z_max_bp: I by M');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp(size(mt_ev_condi_z_max_bp));
-    disp(head(array2table(mt_ev_condi_z_max_bp), 20));
-    disp(tail(array2table(mt_ev_condi_z_max_bp), 20));    
+    tb_ev_condi_z_max_bp = array2table(mt_ev_condi_z_max_bp(ar_it_rows, ar_it_cols));
+    tb_ev_condi_z_max_bp.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_ev_condi_z_max_bp.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);    
+    disp(size(mt_ev_condi_z_max_kp));
+    disp(tb_ev_condi_z_max_bp(1:round(it_row_n_keep/2), :));
+    disp(tb_ev_condi_z_max_bp((round(it_row_n_keep/2)+1):it_row_n_keep, :));
+
+    
 end
 
 %% Graph
 
 if (bl_graph_evf)
+    
+    %% Generate Limited Legends
+    % 8 graph points, 2 levels of borrow rates, and 4 levels of rbr rates
+    ar_it_z_r_borr = ([1 round((fl_z_r_borr_n)/2) (fl_z_r_borr_n)]);
+    ar_it_z_wage = ([1 round((it_z_wage_n)/2) (it_z_wage_n)]);
+
+    % combine by index
+    mt_it_z_graph = ar_it_z_wage' + it_z_wage_n*(ar_it_z_r_borr-1);
+    ar_it_z_graph = mt_it_z_graph(:)';
+
+    % legends index final
+    cl_st_legendCell = cellstr([num2str(ar_z_r_borr_mesh_wage_w1r2', 'zr=%3.2f;'), ...
+                                num2str(ar_z_wage_mesh_r_borr_w1r2', 'zw=%3.2f')]);
+
     
     %% Graph 1, V and EV
     if (~bl_graph_onebyones)
@@ -259,9 +386,7 @@ if (bl_graph_evf)
             set(chart(m),'Color',clr(m,:))
         end
         
-        legend2plot = fliplr([1 round(numel(chart)/3) round((2*numel(chart))/3)  numel(chart)]);
-        legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
-        legend(chart(legend2plot), legendCell(legend2plot), 'Location','southeast');
+        legend(chart(ar_it_z_graph), cl_st_legendCell(ar_it_z_graph), 'Location','southeast');
         
         if (subplot_j==1)
             title('V(coh,zp); w(k+b),k,z');
@@ -310,7 +435,6 @@ if (bl_graph_evf)
         end
         hold on;
         
-        ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)) (it_z_n)]);
         clr = jet(length(ar_it_z_graph));
         i_ctr = 0;
         for i = ar_it_z_graph
@@ -327,10 +451,10 @@ if (bl_graph_evf)
         title(['2nd Stage Exp Value at Optimal K given W=K''+B'''])
         ylabel(st_y_label)
         xlabel({'Aggregate Savings'})
-        
-        legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
-        legendCell{length(legendCell) + 1} = 'max-agg-save';
-        legend(legendCell([ar_it_z_graph length(legendCell)]), 'Location','southeast');
+                
+        legendCell_here = cl_st_legendCell;
+        legendCell_here{length(legendCell_here) + 1} = 'max-agg-save';
+        legend(legendCell_here([ar_it_z_graph length(legendCell_here)]), 'Location','southeast');
         
         xline0 = xline(0);
         xline0.HandleVisibility = 'off';
@@ -349,7 +473,7 @@ if (bl_graph_evf)
     %% Graph 3, at max(EV) optimal choice category, color regions, borrow save
     
     % Borrow Vs Save
-    [ar_z_mw, ar_w_mz] = meshgrid(ar_z, ar_w_level);
+    [ar_z_mw, ar_w_mz] = meshgrid(ar_z_wage_mesh_r_borr_w1r2, ar_w_level);
     mt_it_borr_idx = (mt_ev_condi_z_max_bp < 0);
     mt_it_riskyhalf_idx = ((mt_ev_condi_z_max_kp./mt_ev_condi_z_max_bp) > 0.5);
     mt_it_kzero_idx = (mt_ev_condi_z_max_kp == 0);
@@ -391,7 +515,7 @@ if (bl_graph_evf)
     
     %% Graph 4, Optimal K' and B' Levels
     
-    [~, ar_w_mz] = meshgrid(ar_z, ar_w_level);
+    [~, ar_w_mz] = meshgrid(ar_z_wage_mesh_r_borr_w1r2, ar_w_level);
     for sub_j=1:1:4
         
         if (bl_graph_onebyones)
@@ -440,8 +564,9 @@ if (bl_graph_evf)
         for m = 1:numel(chart)
             set(chart(m),'Color',clr(m,:))
         end
-        legend2plot = fliplr([1 round(numel(chart)/3) round((2*numel(chart))/3)  numel(chart)]);
-        legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
+        
+        legend2plot = fliplr(ar_it_z_graph);
+        legendCell = cl_st_legendCell;
         
         xline0 = xline(0);
         xline0.HandleVisibility = 'off';
