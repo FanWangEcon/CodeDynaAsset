@@ -64,14 +64,14 @@ function [armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(varargin)
 % st_param_which = 'ffs_ipwkbz_get_funcgrid';
 %
 
-bl_input_override = 0;
-if (length(varargin) == 3)
-    bl_input_override = varargin{3};
-end
-if (bl_input_override)
+if (~isempty(varargin))
+    
     % override when called from outside
-    [param_map, support_map, ~] = varargin{:};
+    [param_map, support_map] = varargin{:};
+    
 else
+    
+    close all;
     % default internal run
     [param_map, support_map] = ffs_ipwkbz_fibs_set_default_param();
     support_map('bl_graph_funcgrids') = true;

@@ -54,21 +54,17 @@ function [mt_ev_condi_z_max, mt_ev_condi_z_max_idx, mt_ev_condi_z_max_kp, mt_ev_
 
 %% Default
 
-params_len = length(varargin);
-bl_input_override = 0;
-if (params_len == 5)
-    bl_input_override = varargin{5};
-end
-if (bl_input_override)
+if (~isempty(varargin))
+    
     % override when called from outside
-    [mt_val, param_map, support_map, armt_map, ~] = varargin{:};
+    [mt_val, param_map, support_map, armt_map] = varargin{:};
+    
 else
-    clear all;
+    
     close all;
     
     % Not default parameters, but parameters that generate defaults
     it_param_set = 4;
-    bl_input_override = true;
     [param_map, support_map] = ffs_ipwkbz_set_default_param(it_param_set);
     
     support_map('bl_graph_evf') = true;
@@ -79,16 +75,9 @@ else
 
     if (ismember(st_param_which, ['default']))
 
-        param_map('it_ak_perc_n') = 250;
+        param_map('it_ak_perc_n') = 250;        
         
-%         param_map('fl_z_r_borr_min') = 0.035;
-%         param_map('fl_z_r_borr_max') = 0.095;
-%         param_map('fl_z_r_borr_n') = 1;        
-%         param_map('fl_z_r_borr_n') = 3;
-%         param_map('it_z_wage_n') = 3;
-        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
-        
-    elseif (strcmp(st_param_which, 'small'))
+    elseif ismember(st_param_which, ['small'])
 
         param_map('fl_z_r_borr_n') = 2;
         param_map('it_z_wage_n') = 3;
@@ -99,8 +88,8 @@ else
         param_map('bl_default') = 0; % if borrowing is default allowed
 
         param_map('fl_w_min') = param_map('fl_b_bd');
-        param_map('it_w_perc_n') = 10;
-        param_map('it_ak_perc_n') = 10;
+        param_map('it_w_perc_n') = 7;
+        param_map('it_ak_perc_n') = 7;
 
         param_map('fl_w_interp_grid_gap') = 2;
         param_map('fl_coh_interp_grid_gap') = 2;
@@ -109,19 +98,28 @@ else
         param_map('fl_z_r_borr_max') = 0.95;
         param_map('fl_z_r_borr_n') = 3;
         
+    elseif ismember(st_param_which, ['ff_ipwkbz_evf'])
+        
+        % ff_ipwkbz_evf default
+        param_map('fl_z_r_borr_min') = 0.025;
+        param_map('fl_z_r_borr_max') = 0.025;
+        param_map('fl_z_r_borr_n') = 1;
+        param_map('it_ak_perc_n') = 250;
+        
+        param_map('fl_r_save') = 0.025;
+        
     end
     
-    param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');    
-    
+    % Dimension Adjustments
+    param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');       
     param_map('fl_w_interp_grid_gap') = (param_map('fl_w_max')-param_map('fl_b_bd'))/param_map('it_ak_perc_n');    
 
-    [armt_map, func_map] = ffs_ipwkbz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
+    % Generate Grids
+    [armt_map, func_map] = ffs_ipwkbz_get_funcgrid(param_map, support_map);
     
-    % Generating Defaults
+    % Get Defaults
     params_group = values(param_map, {'it_z_n'});
-    [it_z_n] = params_group{:};
-    
-    % Generating Defaults
+    [it_z_n] = params_group{:};    
     params_group = values(armt_map, {'mt_coh_wkb', 'ar_z_r_borr'});
     [mt_coh_wkb, ar_z_r_borr] = params_group{:};
     params_group = values(func_map, {'f_util_standin_coh'});
@@ -136,9 +134,9 @@ else
     % EV(k', b', zw, zr), conditionally on the same k'/b', will zr have an
     % impact? yes it will, even just through interest rate on b'.
     
-    % mt_col_wkb is: (I^k x I^w x M^r) by (M^z)
-    % mt_coh_wkb(:) is: (I^k x I^w x M^r x M^z)
-    % ar_z_r_borr is: (1 x M^z)
+    % mt_coh_wkb is: (I^k x I^w x M^r) by (M^z)
+    % mt_coh_wkb(:) is: (I^k x I^w x M^r x M^z) by 1
+    % ar_z_r_borr is: 1 by M^r
     % mt_val is: (I^k x I^w x M^r x M^z) by (M^r)
     mt_val = f_util_standin_coh(mt_coh_wkb(:), ar_z_r_borr);
     % mt_val is: (I^k x I^w x M^r) by (M^z x M^r)
@@ -153,16 +151,20 @@ else
 end
 
 %% Parse Parameters
+
+% armt_map
 params_group = values(armt_map, {'ar_z_r_borr_mesh_wage_w1r2', 'ar_z_wage_mesh_r_borr_w1r2'});
 [ar_z_r_borr_mesh_wage_w1r2, ar_z_wage_mesh_r_borr_w1r2] = params_group{:};
+params_group = values(armt_map, {'mt_z_trans', 'ar_ak_perc', 'ar_w_level', 'ar_k_mesha', 'ar_a_meshk', 'ar_aplusk_mesh'});
+[mt_z_trans, ar_ak_perc, ar_w_level, ar_k_mesha, ar_a_meshk, ar_aplusk_mesh] = params_group{:};
 
-params_group = values(armt_map, {'mt_z_trans', 'ar_ak_perc', 'ar_w_level', 'ar_k_mesha', 'ar_a_meshk', 'ar_aplusk_mesh', 'mt_k'});
-[mt_z_trans, ar_ak_perc, ar_w_level, ar_k_mesha, ar_a_meshk, ar_aplusk_mesh, mt_k] = params_group{:};
+% param_map
 params_group = values(param_map, {'it_z_n', 'fl_z_r_borr_n', 'it_z_wage_n'});
 [it_z_n, fl_z_r_borr_n, it_z_wage_n] = params_group{:};
 params_group = values(param_map, {'fl_nan_replace', 'fl_b_bd'});
 [fl_nan_replace, fl_b_bd] = params_group{:};
 
+% support_map
 params_group = values(support_map, {'bl_graph_onebyones','bl_display_evf', 'bl_graph_evf'});
 [bl_graph_onebyones, bl_display_evf, bl_graph_evf] = params_group{:};
 params_group = values(support_map, {'bl_img_save', 'st_img_path', 'st_img_prefix', 'st_img_name_main', 'st_img_suffix'});
@@ -172,9 +174,12 @@ params_group = values(support_map, {'bl_img_save', 'st_img_path', 'st_img_prefix
 st_func_name = 'ff_ipwkbz_evf';
 st_img_name_main = [st_func_name st_img_name_main];
 
-%% Integrate *E(V(coh(k',b',zr'),zw',zr')|zw,zr)*
+%% Integrate *E(V(coh(k',b',zr),zw',zr')|zw,zr)*
+% start with E(V(coh(k',b',zr),zw',zr')|zw,zr), integrate to find
+% EV(k',b';zw,zr).
+%
 % Each column for a different state z, to integrate:
-% *E(V(coh(k',b',zr'),zw',zr')|zw,zr)*. Each column is a different shock,
+% *E(V(coh(k',b',zr),zw',zr')|zw,zr)*. Each column is a different shock,
 % from the combinations of zw and zr shocks. Each row is a different unique
 % level of reacheable cash-on-hand level, which is determined by the choice
 % grid for w = k' + b', k' and b', as well as the borrowing shock vector
@@ -196,6 +201,11 @@ st_img_name_main = [st_func_name st_img_name_main];
 % Note that: mt_ev_condi_z = mt_val*mt_z_trans' work if we did not have the
 % interest rate shock. With the interest rate shock, we have to proceed
 % differently. 
+%
+% Note that mt_ev_condi_z rows are less by length of r rate shock times.
+%
+% # mt_val = (it_w_interp_n*it_ak_perc_n*length(fl_z_r_borr_n)) by (it_z_wage_n*length(fl_z_r_borr_n))
+% # mt_ev_condi_z = (it_w_interp_n*it_ak_perc_n) by (it_z_wage_n*length(fl_z_r_borr_n))
 %
 
 % 1. Number of W/B/K Choice Combinations
@@ -220,7 +230,7 @@ for it_z_r_borr_ctr = 1:1:fl_z_r_borr_n
     it_mt_val_row_end = it_mt_val_row_start + it_wak_n - 1;
     mt_val_cur_z_r_borr = mt_val(it_mt_val_row_start:it_mt_val_row_end, :);
     
-    % E(V(coh(k',b',zr'),zw',zr')|zw,zr) for one zr and all zw
+    % EV(k',b';zw,zr) = E(V(coh(k',b',zr),zw',zr')|zw,zr) for one zr and all zw
     mt_ev_condi_z(:, it_mt_z_trans_row_start:it_mt_z_trans_row_end) = ...
         mt_val_cur_z_r_borr*mt_z_trans_cur_z_r_borr';
     
@@ -258,15 +268,14 @@ end
 %% Reshape *E(V(coh,z'|z,w))* to allow for maxing
 % dim(mt_ev_condi_z): *IxJ by M*
 
-[it_mt_bp_rown, it_mt_bp_coln] = size(mt_k);
-mt_ev_condi_z_full = reshape(mt_ev_condi_z, [it_mt_bp_rown, it_mt_bp_coln*it_z_n]);
+mt_ev_condi_z_full = reshape(mt_ev_condi_z, [it_ak_perc_n, it_w_interp_n*it_z_n]);
 
 %% Maximize *max_{k'}(E(V(coh(k',b'=w-k'),z'|z,w))* optimal value and index
 % Maximization, find optimal k'/b' combination given z and w=k'+b'
 
 [ar_ev_condi_z_max, ar_ev_condi_z_max_idx] = max(mt_ev_condi_z_full);
-mt_ev_condi_z_max = reshape(ar_ev_condi_z_max, [it_mt_bp_coln, it_z_n]);
-mt_ev_condi_z_max_idx = reshape(ar_ev_condi_z_max_idx, [it_mt_bp_coln, it_z_n]);
+mt_ev_condi_z_max = reshape(ar_ev_condi_z_max, [it_w_interp_n, it_z_n]);
+mt_ev_condi_z_max_idx = reshape(ar_ev_condi_z_max_idx, [it_w_interp_n, it_z_n]);
 
 if(bl_display_evf)
 
@@ -314,11 +323,11 @@ end
 %% Reindex K' and B' Choices for each State at the Optimal *w'=k'+b'* choice
 % The K' and B' Optimal Choices Associated with EV opti
 % dim(mt_ev_condi_z_max_kp): *I by M*
-ar_add_grid = linspace(0, it_mt_bp_rown*(it_mt_bp_coln-1), it_mt_bp_coln);
+ar_add_grid = linspace(0, it_ak_perc_n*(it_w_interp_n-1), it_w_interp_n);
 mt_ev_condi_z_max_idx = mt_ev_condi_z_max_idx + ar_add_grid';
 
-mt_ev_condi_z_max_kp = reshape(ar_k_mesha(mt_ev_condi_z_max_idx), [it_mt_bp_coln, it_z_n]);
-mt_ev_condi_z_max_bp = reshape(ar_a_meshk(mt_ev_condi_z_max_idx), [it_mt_bp_coln, it_z_n]);
+mt_ev_condi_z_max_kp = reshape(ar_k_mesha(mt_ev_condi_z_max_idx), [it_w_interp_n, it_z_n]);
+mt_ev_condi_z_max_bp = reshape(ar_a_meshk(mt_ev_condi_z_max_idx), [it_w_interp_n, it_z_n]);
 
 if(bl_display_evf)
     
