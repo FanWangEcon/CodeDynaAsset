@@ -4,7 +4,7 @@
 % Table of Content.*
 
 %%
-function [f_util_log, f_util_crra, f_util_standin, ...
+function [f_util_log, f_util_crra, f_util_standin, f_util_standin_coh, ...
     f_prod, f_inc, f_coh, f_coh_fbis, f_coh_save, f_cons] = ffs_ipwkbz_fibs_set_functions(varargin)
 %% FFS_IPWKZ_FIBS_SET_FUNCTIONS setting model functions
 
@@ -79,8 +79,13 @@ f_cons = @(coh, bprime, kprime) (coh - kprime - bprime);
 % Utility for graphing with random data, note that when we graph with coh
 % as the state variable using this equation here, there is no effect of
 % shock on utility, it is fully captured by the coh.
+
 f_util_standin = @(z, b, k) f_util_log((f_coh(z,b,k)-fl_b_bd).*((f_coh(z,b,k) - fl_b_bd) > fl_c_min) + ...
                                         fl_c_min.*((f_coh(z,b,k) - fl_b_bd) <= fl_c_min));
+
+f_util_standin_coh = @(coh, fl_r_borr) f_util_log((coh-fl_b_bd).*( (coh > 0) & (((coh - fl_b_bd)./(1)) > fl_c_min)) + ...
+                                                  ((coh-fl_b_bd)./(1)).*( (coh <= 0) & (((coh - fl_b_bd)./(1)) > fl_c_min)) + ...
+                                                  (fl_c_min./(1+fl_r_borr)).*( (((coh - fl_b_bd)./(1)) <= fl_c_min)));
 
 
 end

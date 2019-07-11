@@ -161,13 +161,12 @@ else
 
         param_map('fl_z_r_borr_min') = 0.025;
         param_map('fl_z_r_borr_max') = 0.95;
-        param_map('fl_z_r_borr_n') = 2;
+        param_map('fl_z_r_borr_n') = 3;
 
     elseif (strcmp(st_param_which, 'small'))
 
         param_map('fl_z_r_borr_n') = 2;
         param_map('it_z_wage_n') = 3;
-        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
 
         param_map('fl_b_bd') = -20; % borrow bound, = 0 if save only
         param_map('fl_default_aprime') = 0;
@@ -246,7 +245,7 @@ params_group = values(param_map, {'it_z_n'});
 params_group = values(support_map, {'bl_graph_funcgrids', 'bl_graph_funcgrids_detail', 'bl_display_funcgrids'});
 [bl_graph_funcgrids, bl_graph_funcgrids_detail, bl_display_funcgrids] = params_group{:};
 
-%% Generate Asset and Choice Grid for 2nd stage Problem
+%% G: Generate Asset and Choice Grid for 2nd stage Problem
 % This generate triangular choice structure. Household choose total
 % aggregate savings, and within that how much to put into risky capital and
 % how much to put into safe assets, in percentages. See
@@ -289,11 +288,11 @@ ar_k_mesha_full = mt_k(:);
 ar_a_meshk = ar_a_meshk_full;
 ar_k_mesha = ar_k_mesha_full;
 
-%% Get Shock: Income Shock (ar1)
+%% F1: Get Shock: Income Shock (ar1)
 
 [~, mt_z_wage_trans, ar_z_wage_prob, ar_z_wage] = ffto_gen_tauchen_jhl(fl_z_wage_mu,fl_z_wage_rho,fl_z_wage_sig,it_z_wage_n);
 
-%% Get Shock: Interest Rate Shock (iid)
+%% F2: Get Shock: Interest Rate Shock (iid)
 
 % get borrowing grid and probabilities
 param_dsv_map = containers.Map('KeyType','char', 'ValueType','any');
@@ -308,7 +307,7 @@ param_dsv_map('fl_n') = fl_z_r_borr_n;
 % iid transition matrix
 mt_z_r_borr_prob_trans = repmat(ar_z_r_borr_prob, [length(ar_z_r_borr_prob), 1]);
 
-%% Get Shock: Mesh Shocks Together
+%% F3: Get Shock: Mesh Shocks Together
 % R is outter, W is Inner
 
 % Kronecker product to get full transition matrix for the two shocks
@@ -439,6 +438,7 @@ end
 % # mt_coh_wkb_full: this is the (I^k x I^w x M^r) by (M^z) matrix, where
 % rows = it_w_interp_n*it_ak_perc_n*fl_z_r_borr_n, and cols = it_z_wage_n.
 %
+
 mt_coh_wkb_full = f_coh(ar_z_r_borr_mesh_wage_r1w2, ar_z_wage_mesh_r_borr_r1w2, ...
                         ar_a_meshk_full, ar_k_mesha_full);
 
