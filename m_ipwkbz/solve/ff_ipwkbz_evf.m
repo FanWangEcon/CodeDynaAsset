@@ -112,7 +112,7 @@ else
     
     % Dimension Adjustments
     param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');       
-    param_map('fl_w_interp_grid_gap') = (param_map('fl_w_max')-param_map('fl_b_bd'))/param_map('it_ak_perc_n');    
+    param_map('fl_w_interp_grid_gap') = (param_map('fl_w_max')-param_map('fl_b_bd'))/param_map('it_ak_perc_n');
 
     % Generate Grids
     [armt_map, func_map] = ffs_ipwkbz_get_funcgrid(param_map, support_map);

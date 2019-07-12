@@ -54,7 +54,7 @@ else
     close all;
 
     % internal invoke for testing
-    it_param_set = 4;
+    it_param_set = 1;
     bl_input_override = true;
 
     % Get Parameters
@@ -105,7 +105,7 @@ params_group = values(support_map, {'st_title_prefix'});
 % armt_map
 params_group = values(armt_map, {'mt_coh_wkb', 'ar_a_meshk'});
 [mt_coh_wkb, ar_a_meshk] = params_group{:};
-if (strcmp(st_model, 'ipwkbzr'))
+if (ismember(st_model, ['ipwkbzr', 'ipwkbzr_fibs']))
     params_group = values(armt_map, {'ar_z_r_borr_mesh_wage_w1r2', 'ar_z_wage_mesh_r_borr_w1r2'});
     [ar_z_r_borr_mesh_wage_w1r2, ar_z_wage_mesh_r_borr_w1r2] = params_group{:};
     params_group = values(param_map, {'it_z_wage_n', 'fl_z_r_borr_n'});
@@ -126,7 +126,7 @@ params_group = values(result_map, {'mt_val', 'cl_mt_cons', 'cl_mt_coh', 'cl_mt_p
 
 %% Generate Limited Legends
 
-if (strcmp(st_model, 'ipwkbzr'))
+if (ismember(st_model, ['ipwkbzr', 'ipwkbzr_fibs']))
 
     % 8 graph points, 2 levels of borrow rates, and 4 levels of rbr rates
     ar_it_z_r_borr = ([1 round((fl_z_r_borr_n)/2) (fl_z_r_borr_n)]);
@@ -195,8 +195,11 @@ if (bl_graph_coh_t_coh)
 
     % 2. COH Next Period
     % 2. COH Next Period
-    if (strcmp(st_model, 'ipwkbzr'))
+    if (ismember(st_model, ['ipwkbzr']))
         mt_coh_next = f_coh(ar_z_r_borr_mesh_wage_w1r2, ar_z_wage_mesh_r_borr_w1r2, ...
+                            ar_pol_a_full, ar_pol_k_full);
+    elseif (ismember(st_model, ['ipwkbzr_fibs']))
+        mt_coh_next = f_coh(ar_z_wage_mesh_r_borr_w1r2, ...
                             ar_pol_a_full, ar_pol_k_full);
     else
         mt_coh_next = f_coh(ar_z, ar_pol_a_full, ar_pol_k_full);
@@ -464,8 +467,8 @@ if (bl_graph_pol_lvl)
 
             end
 
-            ar_x = ar_a_curz_use;
-            ar_y = ar_opti_curz_use;
+            ar_x = real(ar_a_curz_use);
+            ar_y = real(ar_opti_curz_use);
 
             scatter(ar_x, ar_y, 5, ...
                 'MarkerEdgeColor', clr(i_ctr,:), ...
@@ -514,7 +517,7 @@ if (bl_graph_pol_lvl)
 
         cl_st_legendCell_here = cl_st_legendCell;
         cl_st_legendCell_here{length(cl_st_legendCell_here) + 1} = 'max-agg-save';
-        legend(cl_st_legendCell_here([ar_it_legend2plot_lth length(cl_st_legendCell_here)]), 'Location','southeast');
+        legend(cl_st_legendCell_here([ar_it_legend2plot_lth length(cl_st_legendCell_here)]), 'Location','northwest');
 
         hline = refline([1 0]);
         hline.Color = 'k';

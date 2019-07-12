@@ -155,8 +155,16 @@ end
 
 %% Parse Parameter
 
+% Model Name
+params_group = values(param_map, {'st_model'});
+[st_model] = params_group{:};
+
 % armt_map standards
-params_group = values(armt_map, {'ar_z_r_borr_mesh_wage', 'ar_z_wage_mesh_r_borr'});
+if (ismember(st_model, ['ipwkbzr_fibs']))
+    params_group = values(armt_map, {'ar_z_r_borr_mesh_wage_w1r2', 'ar_z_wage_mesh_r_borr_w1r2'});
+else
+    params_group = values(armt_map, {'ar_z_r_borr_mesh_wage', 'ar_z_wage_mesh_r_borr'});
+end
 [ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
 params_group = values(param_map, {'fl_z_r_borr_n'});
 [fl_z_r_borr_n] = params_group{:};        

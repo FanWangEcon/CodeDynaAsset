@@ -1,3 +1,8 @@
+# To do 2019-07-11
+
+- [] 2019-07-11 14:24
+  + wkz model, when defaulting what are next period asset levels, now w = 0, what about a' and b', Now a' and b' differs depending on informal interest rate because at w=0, optimal choices differs depending on the informal interest rate as well as the productivity shock.
+
 # To do 2019-07-10
 
 - [] 2019-07-10 11:54

@@ -54,7 +54,7 @@ function result_map = ff_ipwkbz_vf_vecsv(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 4;
+it_param_set = 1;
 bl_input_override = true;
 [param_map, support_map] = ffs_ipwkbz_set_default_param(it_param_set);
 
@@ -72,6 +72,25 @@ bl_input_override = true;
 % param_map('fl_coh_interp_grid_gap') = 0.1;
 % param_map('it_c_interp_grid_gap') = 10^-4;
 % param_map('fl_w_interp_grid_gap') = 0.1;
+
+st_param_which = 'ff_ipwkbz_vf_vecsv';
+
+if (ismember(st_param_which, ['default']))
+    
+    % default
+
+elseif ismember(st_param_which, ['ff_ipwkbz_vf_vecsv'])
+
+    % ff_ipwkbz_evf default
+    param_map('fl_z_r_borr_min') = 0.025;
+    param_map('fl_z_r_borr_max') = 0.025;
+    param_map('fl_z_r_borr_n') = 1;
+
+    param_map('fl_r_save') = 0.025;
+
+    param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');       
+    
+end
 
 % get armt and func map
 [armt_map, func_map] = ffs_ipwkbz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
@@ -174,10 +193,17 @@ params_group = values(param_map, {'it_z_n', 'fl_z_r_borr_n', 'it_z_wage_n'});
 % support_map
 params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
     'st_profile_prefix', 'st_profile_name_main', 'st_profile_suffix',...
-    'bl_time', 'bl_graph_evf', 'bl_display', 'it_display_every', 'bl_post'});
+    'bl_time', 'bl_display_defparam', 'bl_graph_evf', 'bl_display', 'it_display_every', 'bl_post'});
 [bl_profile, st_profile_path, ...
     st_profile_prefix, st_profile_name_main, st_profile_suffix, ...
-    bl_time, bl_graph_evf, bl_display, it_display_every, bl_post] = params_group{:};
+    bl_time, bl_display_defparam, bl_graph_evf, bl_display, it_display_every, bl_post] = params_group{:};
+
+%% Display Parameters
+
+if (bl_display_defparam)
+    fft_container_map_display(param_map);
+    fft_container_map_display(support_map);
+end
 
 %% Initialize Output Matrixes
 
@@ -251,7 +277,7 @@ end
 while bl_vfi_continue
     it_iter = it_iter + 1;
     
-    %% Interpolate (1) Loop over Borrow Rate Shockss
+    %% Interpolate reacahble V(coh(k'(w),b'(w),zr,zw'),zw',zr')) given v(coh, z)
     
     % 1. Number of W/B/K Choice Combinations
     it_ak_perc_n = length(ar_ak_perc);
@@ -297,19 +323,6 @@ while bl_vfi_continue
         mt_val_wkb_interpolated(:, it_mt_val_col_start:it_mt_val_col_end) = mt_val_wkb_interpolated_seg;
         
     end
-    
-    %     %% Interpolate (1) reacahble v(coh(k(w,z),b(w,z),z),z) given v(coh, z)
-    %     % v(coh,z) solved on ar_interp_coh_grid, ar_z grids, see
-    %     % ffs_ipwkbz_get_funcgrid.m. Generate interpolant based on that, Then
-    %     % interpolate for the coh reachable levels given the k(w,z) percentage
-    %     % choice grids in the second stage of the problem
-    %
-    %     % Generate Interpolant for v(coh,z)
-    %     f_grid_interpolant_value = griddedInterpolant(...
-    %         mt_z_mesh_coh_interp_grid', mt_interp_coh_grid_mesh_z', mt_val_cur', 'linear', 'nearest');
-    %
-    %     % Interpolate for v(coh(k(w,z),b(w,z),z),z)
-    %     mt_val_wkb_interpolated = f_grid_interpolant_value(mt_z_mesh_coh_wkb, mt_coh_wkb);
     
     %% Solve Second Stage Problem k*(w,z)
     % This is the key difference between this function and

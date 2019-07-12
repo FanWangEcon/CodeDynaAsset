@@ -71,7 +71,7 @@ param_map('bl_default') = true; % if borrowing is default allowed
 % resetting invalid choice grid values. fl_nan_replace reset invalid k
 % choice given w. fl_c_min resets invalid consumption levels due to w
 % choices that are invalid. But this is the case when fl_w > 0.
-param_map('fl_c_min') = 0.001;
+param_map('fl_c_min') = 0.02;
 
 %% 2b. Set Asset Grid Parameters
 
@@ -237,13 +237,36 @@ support_map('bl_display_evf') = false;
 % # it_subset = 4 is matlab publish.
 %
 
-if (ismember(it_subset, [1,2,3,4]))
+% close figures
+close all;
+
+if (ismember(it_subset, [3]))
+    % Profile run
+    support_map('bl_profile') = true;
+    support_map('bl_display') = false; % don't print
+    support_map('bl_time') = true;
+
+elseif (ismember(it_subset, [1,2,4]))
+
+    % Main Run
+    support_map('bl_time') = true;
+    support_map('bl_display_defparam') = true;
+    support_map('bl_display') = true;
+    support_map('it_display_every') = 5;
+
+    support_map('bl_post') = true;
+    support_map('bl_display_final') = true;
+    support_map('bl_mat') = false;
+    support_map('bl_graph') = true;
+    support_map('bl_graph_onebyones') = false;
+    support_map('bl_img_save') = true;
+
     if (ismember(it_subset, [1]))
         % TEST quick
         param_map('it_w_perc_n') = 20;
         param_map('it_ak_perc_n') = param_map('it_w_perc_n');
-        param_map('it_z_wage_n') = 3;
-        param_map('fl_z_r_borr_n') = 2;
+        param_map('it_z_wage_n') = 5;
+        param_map('fl_z_r_borr_n') = 3;
         param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
 
         param_map('fl_coh_interp_grid_gap') = 0.25;
@@ -254,35 +277,17 @@ if (ismember(it_subset, [1,2,3,4]))
         param_map('it_tol_pol_nochange') = 1000;
         support_map('bl_display') = true;
         support_map('it_display_every') = 1;
-    end
-    if (ismember(it_subset, [2, 4]))
-        % close figures
-        close all;
-        % Main Run
-        support_map('bl_time') = true;
-        support_map('bl_display_defparam') = true;
-        support_map('bl_display') = true;
-        support_map('it_display_every') = 5;
 
-        support_map('bl_post') = true;
-        support_map('bl_display_final') = true;
-        support_map('bl_mat') = false;
-        support_map('bl_graph') = true;
-        support_map('bl_graph_onebyones') = false;
-        support_map('bl_img_save') = true;
-        if (ismember(it_subset, [4]))
-            support_map('bl_time') = false;
-            support_map('bl_display') = false;
-            support_map('bl_graph_onebyones') = true;
-            support_map('bl_img_save') = false;
-        end
+        support_map('bl_graph') = false;
     end
-    if (ismember(it_subset, [3]))
-        % Profile run
-        support_map('bl_profile') = true;
-        support_map('bl_display') = false; % don't print
-        support_map('bl_time') = true;
+
+    if (ismember(it_subset, [4]))
+        support_map('bl_time') = false;
+        support_map('bl_display') = false;
+        support_map('bl_graph_onebyones') = true;
+        support_map('bl_img_save') = false;
     end
+
 end
 
 %% Subset Options for Distribution solutions
@@ -294,14 +299,44 @@ end
 % # it_subset = 9 is invoke operational (only final stats) and coh graph
 %
 
-if (ismember(it_subset, [5,6,7,8,9]))
+if (ismember(it_subset, [7]))
+    % Profile run
+    support_map('bl_profile_dist') = true;
+    support_map('bl_display') = false; % don't print
+    support_map('bl_display_dist') = false; % don't print
+    support_map('bl_time') = true;
+
+elseif (ismember(it_subset, [5,6,8,9]))
+    % close all
+    close all;
+
+    % Main Run
+    support_map('bl_time') = true;
+    support_map('bl_display_defparam') = true;
+    support_map('bl_display') = true;
+    support_map('bl_display_dist') = true;
+    support_map('it_display_every') = 20;
+
+    support_map('bl_post') = true;
+    support_map('bl_display_final_dist') = true;
+    support_map('bl_mat') = false;
+    support_map('bl_graph') = true;
+    support_map('bl_graph_onebyones') = false;
+    support_map('bl_img_save') = true;
+
+    % do not generate all graphs when solving for distribution
+    support_map('bl_graph_val') = false;
+    support_map('bl_graph_pol_lvl') = false;
+    support_map('bl_graph_pol_pct') = false;
+    support_map('bl_graph_coh_t_coh') = true;
+
     if (ismember(it_subset, [5]))
         % TEST quick (need to enough to have distribution)
         param_map('it_w_perc_n') = 40;
         param_map('it_ak_perc_n') = param_map('it_w_perc_n');
-        
-        param_map('it_z_wage_n') = 3;
-        param_map('fl_z_r_borr_n') = 2;
+
+        param_map('it_z_wage_n') = 5;
+        param_map('fl_z_r_borr_n') = 3;
         param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
 
         param_map('fl_coh_interp_grid_gap') = 0.25;
@@ -314,75 +349,34 @@ if (ismember(it_subset, [5,6,7,8,9]))
         support_map('it_display_every') = 1;
 
         support_map('bl_display_dist') = true;
+        support_map('bl_graph') = false;
     end
-    if (ismember(it_subset, [6, 8, 9]))
-        % close all
-        close all;
-        % Main Run
-        support_map('bl_time') = true;
-        support_map('bl_display_defparam') = true;
-        support_map('bl_display') = true;
-        support_map('bl_display_dist') = true;
-        support_map('it_display_every') = 20;
 
-        support_map('bl_post') = true;
-        support_map('bl_display_final_dist') = true;
-        support_map('bl_mat') = false;
-        support_map('bl_graph') = true;
-        support_map('bl_graph_onebyones') = false;
-        support_map('bl_img_save') = true;
+    if (ismember(it_subset, [8, 9]))
 
-        % do not generate all graphs when solving for distribution
-        support_map('bl_graph_val') = false;
-        support_map('bl_graph_pol_lvl') = false;
-        support_map('bl_graph_pol_pct') = false;
-        support_map('bl_graph_coh_t_coh') = true;
+        support_map('bl_time') = false;
+        support_map('bl_display') = false;
+        support_map('bl_display_dist') = false;
+        support_map('bl_display_final_dist_detail') = true;
+        support_map('bl_graph_onebyones') = true;
+        support_map('bl_img_save') = false;
 
-        if (ismember(it_subset, [8, 9]))
-            support_map('bl_time') = false;
-            support_map('bl_display') = false;
-            support_map('bl_display_dist') = false;
-            support_map('bl_display_final_dist_detail') = true;
-            support_map('bl_graph_onebyones') = true;
-            support_map('bl_img_save') = false;
-            if (ismember(it_subset, [9]))
-                % quietly turn off all graphs, only tables
-                support_map('bl_display_defparam') = false;
-                support_map('bl_display_final_dist_detail') = false;
-                support_map('bl_graph_coh_t_coh') = false;
-            end
+        if (ismember(it_subset, [9]))
+            % quietly turn off all graphs, only tables
+            support_map('bl_display_defparam') = false;
+            support_map('bl_display_final_dist_detail') = false;
+            support_map('bl_graph_coh_t_coh') = false;
         end
 
     end
-    if (ismember(it_subset, [7]))
-        % Profile run
-        support_map('bl_profile_dist') = true;
-        support_map('bl_display') = false; % don't print
-        support_map('bl_display_dist') = false; % don't print
-        support_map('bl_time') = true;
-    end
+
 end
 
 %% Display
 
 if (bl_display_defparam)
-    disp('param_map');
-    disp(param_map);
-    param_map_keys = keys(param_map);
-    param_map_vals = values(param_map);
-    for i = 1:length(param_map)
-        st_display = strjoin(['pos =' num2str(i) '; key =' string(param_map_keys{i}) '; val =' string(param_map_vals{i})]);
-        disp(st_display);
-    end
-
-    disp('support_map')
-    disp(support_map);
-    param_map_keys = keys(support_map);
-    param_map_vals = values(support_map);
-    for i = 1:length(support_map)
-        st_display = strjoin(['pos =' num2str(i) '; key =' string(param_map_keys{i}) '; val =' string(param_map_vals{i})]);
-        disp(st_display);
-    end
+    fft_container_map_display(param_map);
+    fft_container_map_display(support_map);
 end
 
 end

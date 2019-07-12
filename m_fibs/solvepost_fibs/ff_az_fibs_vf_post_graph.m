@@ -160,6 +160,10 @@ end
 
 %% Parse Parameters
 
+% Model Name
+params_group = values(param_map, {'st_model'});
+[st_model] = params_group{:};
+
 % param_map
 params_group = values(param_map, {'it_z_n'});
 [it_z_n] = params_group{:};
@@ -175,7 +179,11 @@ params_group = values(support_map, {'st_title_prefix'});
 % armt_map
 params_group = values(armt_map, {'ar_a'});
 [ar_a] = params_group{:};
-params_group = values(armt_map, {'ar_z_r_borr_mesh_wage', 'ar_z_wage_mesh_r_borr'});
+if (ismember(st_model, ['ipwkbzr_fibs']))
+    params_group = values(armt_map, {'ar_z_r_borr_mesh_wage_w1r2', 'ar_z_wage_mesh_r_borr_w1r2'});
+else
+    params_group = values(armt_map, {'ar_z_r_borr_mesh_wage', 'ar_z_wage_mesh_r_borr'});
+end
 [ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
 params_group = values(param_map, {'it_z_wage_n', 'fl_z_r_borr_n'});
 [it_z_wage_n, fl_z_r_borr_n] = params_group{:};    
@@ -342,7 +350,7 @@ if (bl_graph_forinf_discrete)
         
     % save file
     if (bl_img_save)
-        mkdir(support_map('st_img_path'));
+        if ~exist(support_map('st_img_path'),'dir'); mkdir(support_map('st_img_path')); end;
         st_file_name = [st_img_prefix st_img_name_main '_fibs5' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
@@ -505,7 +513,7 @@ if (bl_graph_forinf_pol_lvl)
 
     % save file
     if (bl_img_save)
-        mkdir(support_map('st_img_path'));
+        if ~exist(support_map('st_img_path'),'dir'); mkdir(support_map('st_img_path')); end;
         st_file_name = [st_img_prefix st_img_name_main '_pol_lvl' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
@@ -574,7 +582,7 @@ if (bl_graph_forinf_pol_pct)
                 end
             end
                         
-            scatter(ar_a_curz_use, ar_opti_curz_use, 5, ...
+            scatter(real(ar_a_curz_use), real(ar_opti_curz_use), 5, ...
                     'MarkerEdgeColor', clr(i_ctr,:), ...
                     'MarkerFaceColor', clr(i_ctr,:));
         end
@@ -686,7 +694,7 @@ if (bl_graph_forinf_pol_pct)
 
     % save file
     if (bl_img_save)
-        mkdir(support_map('st_img_path'));
+        if ~exist(support_map('st_img_path'),'dir'); mkdir(support_map('st_img_path')); end;
         st_file_name = [st_img_prefix st_img_name_main '_pol_pct' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end

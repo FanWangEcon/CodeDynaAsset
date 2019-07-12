@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Risky + Safe Asset (Save + Borr) Interpolated-Percentage (Optimized-Vectorized)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-10"><meta name="DC.source" content="ff_ipwkbz_vf_vecsv.m"><style type="text/css">
+      --><title>Risky + Safe Asset (Save + Borr) Interpolated-Percentage (Optimized-Vectorized)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-11"><meta name="DC.source" content="ff_ipwkbz_vf_vecsv.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Risky + Safe Asset (Save + Borr) Interpolated-Percentage (Optimized-Vectorized)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_IPWKBZ_VF_VECSV solve infinite horizon exo shock + endo asset problem</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1</a></li><li><a href="#5">Parse Parameters 2, Asset Arrays</a></li><li><a href="#6">Parse Parameters 2, interp_coh related matrixes</a></li><li><a href="#7">Parse Parameters 3, reachable cash-on-hand</a></li><li><a href="#8">Parse Parameters 4, other asset arrays</a></li><li><a href="#9">Parse Parameters 5, Others</a></li><li><a href="#10">Initialize Output Matrixes</a></li><li><a href="#11">Initialize Convergence Conditions</a></li><li><a href="#12">Pre-calculate u(c)</a></li><li><a href="#13">Iterate Value Function</a></li><li><a href="#15">Interpolate (1) Loop over Borrow Rate Shockss</a></li><li><a href="#16">Solve Second Stage Problem k*(w,z)</a></li><li><a href="#17">Solve First Stage Problem w*(z) given k*(w,z)</a></li><li><a href="#19">A. Interpolate FULL to get k*(w_perc, z), b*(k,w) based on k*(w_level, z)</a></li><li><a href="#20">B. Calculate UPDATE u(c): u(c(coh_level, w_perc)) given k*_interp, b*_interp</a></li><li><a href="#21">C. Interpolate FULL EV(k*(coh_level, w_perc, z), w - b*|z) based on EV(k*(w_level, z))</a></li><li><a href="#22">D. Compute FULL U(coh_level, w_perc, z) over all w_perc</a></li><li><a href="#23">E. Optimize Over Choices: max_{w_perc} U(coh_level, w_perc, z)</a></li><li><a href="#24">F. Store Results</a></li><li><a href="#26">Check Tolerance and Continuation</a></li><li><a href="#28">Process Optimal Choices</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> result_map = ff_ipwkbz_vf_vecsv(varargin)
+  </style></head><body><div class="content"><h1>Risky + Safe Asset (Save + Borr) Interpolated-Percentage (Optimized-Vectorized)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_IPWKBZ_VF_VECSV solve infinite horizon exo shock + endo asset problem</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1</a></li><li><a href="#5">Parse Parameters 2, Asset Arrays</a></li><li><a href="#6">Parse Parameters 2, interp_coh related matrixes</a></li><li><a href="#7">Parse Parameters 3, reachable cash-on-hand</a></li><li><a href="#8">Parse Parameters 4, other asset arrays</a></li><li><a href="#9">Parse Parameters 5, Others</a></li><li><a href="#10">Initialize Output Matrixes</a></li><li><a href="#11">Initialize Convergence Conditions</a></li><li><a href="#12">Pre-calculate u(c)</a></li><li><a href="#13">Iterate Value Function</a></li><li><a href="#15">Interpolate reacahble V(coh(k'(w),b'(w),zr,zw'),zw',zr')) given v(coh, z)</a></li><li><a href="#16">Solve Second Stage Problem k*(w,z)</a></li><li><a href="#17">Solve First Stage Problem w*(z) given k*(w,z)</a></li><li><a href="#19">A. Interpolate FULL to get k*(w_perc, z), b*(k,w) based on k*(w_level, z)</a></li><li><a href="#20">B. Calculate UPDATE u(c): u(c(coh_level, w_perc)) given k*_interp, b*_interp</a></li><li><a href="#21">C. Interpolate FULL EV(k*(coh_level, w_perc, z), w - b*|z) based on EV(k*(w_level, z))</a></li><li><a href="#22">D. Compute FULL U(coh_level, w_perc, z) over all w_perc</a></li><li><a href="#23">E. Optimize Over Choices: max_{w_perc} U(coh_level, w_perc, z)</a></li><li><a href="#24">F. Store Results</a></li><li><a href="#26">Check Tolerance and Continuation</a></li><li><a href="#28">Process Optimal Choices</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> result_map = ff_ipwkbz_vf_vecsv(varargin)
 </pre><h2 id="2">FF_IPWKBZ_VF_VECSV solve infinite horizon exo shock + endo asset problem</h2><p>This program solves the infinite horizon dynamic savings and risky capital asset problem with some ar1 shock. This is the two step solution with interpolation and with percentage asset grids version of <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf_vecsv.html">ff_iwkz_vf_vecsv</a>. See that file for more descriptions.</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@param func_map container container with function handles for consumption cash-on-hand etc.</p><p>@return result_map container contains policy function matrix, value function matrix, iteration results, and policy function, value function and iteration results tables.</p><p>keys included in result_map:</p><div><ul><li>mt_val matrix states_n by shock_n matrix of converged value function grid</li><li>mt_pol_a matrix states_n by shock_n matrix of converged policy function grid</li><li>ar_val_diff_norm array if bl_post = true it_iter_last by 1 val function difference between iteration</li><li>ar_pol_diff_norm array if bl_post = true it_iter_last by 1 policy function difference between iterations</li><li>mt_pol_perc_change matrix if bl_post = true it_iter_last by shock_n the proportion of grid points at which policy function changed between current and last iteration for each element of shock</li></ul></div><p>@example</p><p>@include</p><div><ul><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/paramfunc/ff_ipwkbz_evf.m">ff_ipwkbz_evf</a></li><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/paramfunc/ffs_ipwkbz_set_default_param.m">ffs_ipwkbz_set_default_param</a></li><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/paramfunc/ffs_ipwkbz_get_funcgrid.m">ffs_ipwkbz_get_funcgrid</a></li><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solvepost/ff_akz_vf_post.m">ff_akz_vf_post</a></li></ul></div><h2 id="3">Default</h2><div><ul><li>it_param_set = 1: quick test</li><li>it_param_set = 2: benchmark run</li><li>it_param_set = 3: benchmark profile</li><li>it_param_set = 4: press publish button</li></ul></div><pre class="codeinput">it_param_set = 4;
 bl_input_override = true;
 [param_map, support_map] = ffs_ipwkbz_set_default_param(it_param_set);
@@ -200,7 +200,7 @@ f_grid_interpolant_spln = griddedInterpolant(ar_interp_c_grid, ar_interp_u_of_c_
 <span class="comment">% Value Function Iteration</span>
 <span class="keyword">while</span> bl_vfi_continue
 </pre><pre class="codeinput">    it_iter = it_iter + 1;
-</pre><h2 id="15">Interpolate (1) Loop over Borrow Rate Shockss</h2><pre class="codeinput">    <span class="comment">% 1. Number of W/B/K Choice Combinations</span>
+</pre><h2 id="15">Interpolate reacahble V(coh(k'(w),b'(w),zr,zw'),zw',zr')) given v(coh, z)</h2><pre class="codeinput">    <span class="comment">% 1. Number of W/B/K Choice Combinations</span>
     it_ak_perc_n = length(ar_ak_perc);
     it_w_interp_n = length(ar_w_level);
     it_wak_n = it_w_interp_n*it_ak_perc_n;
@@ -240,23 +240,10 @@ f_grid_interpolant_spln = griddedInterpolant(ar_interp_c_grid, ar_interp_u_of_c_
 
         <span class="comment">% Interpolate V(coh(k',b',z',r),z',r') for a specific r'</span>
         <span class="comment">% mt_z_wage_mesh_coh_wkb and mt_coh_wkb are: (I^k x I^w x M^r) by (M^z)</span>
-        mt_val_wkb_interpolated(:, it_mt_val_col_start:it_mt_val_col_end) = <span class="keyword">...</span>
-            f_grid_interpolant_value(mt_z_wage_mesh_coh_wkb, mt_coh_wkb);
+        mt_val_wkb_interpolated_seg = f_grid_interpolant_value(mt_z_wage_mesh_coh_wkb, mt_coh_wkb);
+        mt_val_wkb_interpolated(:, it_mt_val_col_start:it_mt_val_col_end) = mt_val_wkb_interpolated_seg;
 
     <span class="keyword">end</span>
-
-    <span class="comment">%     %% Interpolate (1) reacahble v(coh(k(w,z),b(w,z),z),z) given v(coh, z)</span>
-    <span class="comment">%     % v(coh,z) solved on ar_interp_coh_grid, ar_z grids, see</span>
-    <span class="comment">%     % ffs_ipwkbz_get_funcgrid.m. Generate interpolant based on that, Then</span>
-    <span class="comment">%     % interpolate for the coh reachable levels given the k(w,z) percentage</span>
-    <span class="comment">%     % choice grids in the second stage of the problem</span>
-    <span class="comment">%</span>
-    <span class="comment">%     % Generate Interpolant for v(coh,z)</span>
-    <span class="comment">%     f_grid_interpolant_value = griddedInterpolant(...</span>
-    <span class="comment">%         mt_z_mesh_coh_interp_grid', mt_interp_coh_grid_mesh_z', mt_val_cur', 'linear', 'nearest');</span>
-    <span class="comment">%</span>
-    <span class="comment">%     % Interpolate for v(coh(k(w,z),b(w,z),z),z)</span>
-    <span class="comment">%     mt_val_wkb_interpolated = f_grid_interpolant_value(mt_z_mesh_coh_wkb, mt_coh_wkb);</span>
 </pre><h2 id="16">Solve Second Stage Problem k*(w,z)</h2><p>This is the key difference between this function and <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html">ffs_akz_set_functions</a> which solves the two stages jointly Interpolation first, because solution coh grid is not the same as all points reachable by k and b choices given w.</p><pre class="codeinput">    support_map(<span class="string">'bl_graph_evf'</span>) = false;
     <span class="keyword">if</span> (it_iter == (it_maxiter_val + 1))
         support_map(<span class="string">'bl_graph_evf'</span>) = bl_graph_evf;
@@ -430,37 +417,7 @@ result_map(<span class="string">'ar_st_pol_names'</span>) = [<span class="string
 
     result_map = ff_akz_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
 <span class="keyword">end</span>
-</pre><pre class="codeoutput">Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
-valgap = norm(mt_val - mt_val_cur): value function difference across iterations
+</pre><pre class="codeoutput">valgap = norm(mt_val - mt_val_cur): value function difference across iterations
 polgap = norm(mt_pol_a - mt_pol_a_cur): policy function difference across iterations
 z1 = z1 perc change: (sum((mt_pol_a ~= mt_pol_a_cur))+sum((mt_pol_k ~= mt_pol_k_cur)))/(2*it_ameshk_n):percentage of state space points conditional on shock where the policy function is changing across iterations
                   valgap        polgap         z1           z2           z3           z4           z5           z6           z7           z8           z9           z10          z11          z12          z13          z14          z15          z16          z17          z18          z19          z20          z21          z22          z23          z24          z25          z26          z27          z28          z29          z30          z31          z32          z33          z34          z35          z36          z37          z38          z39          z40          z41          z42          z43          z44          z45          z46          z47          z48          z49          z50          z51          z52          z53          z54          z55          z56          z57         z58          z59          z60          z61          z62          z63          z64          z65          z66          z67          z68          z69          z70          z71          z72         z73          z74          z75   
@@ -1252,7 +1209,7 @@ end
 while bl_vfi_continue
     it_iter = it_iter + 1;
     
-    %% Interpolate (1) Loop over Borrow Rate Shockss
+    %% Interpolate reacahble V(coh(k'(w),b'(w),zr,zw'),zw',zr')) given v(coh, z)
     
     % 1. Number of W/B/K Choice Combinations
     it_ak_perc_n = length(ar_ak_perc);
@@ -1294,23 +1251,10 @@ while bl_vfi_continue
         
         % Interpolate V(coh(k',b',z',r),z',r') for a specific r'
         % mt_z_wage_mesh_coh_wkb and mt_coh_wkb are: (I^k x I^w x M^r) by (M^z)
-        mt_val_wkb_interpolated(:, it_mt_val_col_start:it_mt_val_col_end) = ...
-            f_grid_interpolant_value(mt_z_wage_mesh_coh_wkb, mt_coh_wkb);
+        mt_val_wkb_interpolated_seg = f_grid_interpolant_value(mt_z_wage_mesh_coh_wkb, mt_coh_wkb);
+        mt_val_wkb_interpolated(:, it_mt_val_col_start:it_mt_val_col_end) = mt_val_wkb_interpolated_seg;
         
     end
-    
-    %     %% Interpolate (1) reacahble v(coh(k(w,z),b(w,z),z),z) given v(coh, z)
-    %     % v(coh,z) solved on ar_interp_coh_grid, ar_z grids, see
-    %     % ffs_ipwkbz_get_funcgrid.m. Generate interpolant based on that, Then
-    %     % interpolate for the coh reachable levels given the k(w,z) percentage
-    %     % choice grids in the second stage of the problem
-    %
-    %     % Generate Interpolant for v(coh,z)
-    %     f_grid_interpolant_value = griddedInterpolant(...
-    %         mt_z_mesh_coh_interp_grid', mt_interp_coh_grid_mesh_z', mt_val_cur', 'linear', 'nearest');
-    %
-    %     % Interpolate for v(coh(k(w,z),b(w,z),z),z)
-    %     mt_val_wkb_interpolated = f_grid_interpolant_value(mt_z_mesh_coh_wkb, mt_coh_wkb);
     
     %% Solve Second Stage Problem k*(w,z)
     % This is the key difference between this function and

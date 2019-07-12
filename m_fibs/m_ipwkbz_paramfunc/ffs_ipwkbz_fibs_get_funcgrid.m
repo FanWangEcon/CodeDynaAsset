@@ -669,8 +669,8 @@ fl_w_level_min_valid = min(ar_w_level_full_dup(~ar_bl_w_level_invalid));
 
 % mt_coh_wkb = mt_coh_wkb_full(~ar_bl_wkb_invalid, :);
 mt_coh_wkb = mt_coh_wkb_full;
-% mt_z_mesh_coh_wkb = repmat(ar_z, [size(mt_coh_wkb,1),1]);
-mt_z_r_borr_mesh_coh_wkb = repmat(ar_z_r_borr, [size(mt_coh_wkb,1),1]);
+% mt_z_wage_mesh_coh_wkb = repmat(ar_z, [size(mt_coh_wkb,1),1]);
+% mt_z_r_borr_mesh_coh_wkb = repmat(ar_z_r_borr, [size(mt_coh_wkb,1),1]);
 mt_z_wage_mesh_coh_wkb = repmat(ar_z_wage, [size(mt_coh_wkb,1),1]);
 
 %% Generate 1st Stage States: Interpolation Cash-on-hand Interpolation Grid
@@ -719,9 +719,9 @@ end
 % Need to interplate in ff_ipwkbz_fibs_vecsv differently for w < 0 because
 % there both w as well as coh matters, if coh < 0 and w < 0, a fraction of
 % w goes to getting informal bridge loans.
-mt_bl_w_by_interp_coh_interp_grid_wneg = (mt_w_perc_mesh_interp_coh_grid < 0);
-mt_w_by_interp_coh_interp_grid_wneg = mt_w_perc_mesh_interp_coh_grid(mt_bl_w_by_interp_coh_interp_grid_wneg);
-mt_w_by_interp_coh_interp_grid_wpos = mt_w_perc_mesh_interp_coh_grid(~mt_bl_w_by_interp_coh_interp_grid_wneg);
+mt_bl_w_perc_mesh_interp_coh_grid_wneg = (mt_w_perc_mesh_interp_coh_grid < 0);
+mt_w_perc_mesh_interp_coh_grid_wneg = mt_w_perc_mesh_interp_coh_grid(mt_bl_w_perc_mesh_interp_coh_grid_wneg);
+mt_w_perc_mesh_interp_coh_grid_wpos = mt_w_perc_mesh_interp_coh_grid(~mt_bl_w_perc_mesh_interp_coh_grid_wneg);
 
 %% Generate 1st Stage Choices: Percent of W for Covering Bridge Loans
 % If bridge loan does not matter, do not need to cover bridge loan. Then
@@ -738,7 +738,7 @@ mt_coh_w_perc_ratio = (1-(mt_interp_coh_grid_mesh_w_perc./mt_w_perc_mesh_interp_
 % ratio we want is: ar_coh_bridge_perc, which is percent of w NOT going to
 % bridge.
 mt_coh_w_perc_ratio(mt_interp_coh_grid_mesh_w_perc >= 0) = 1;
-mt_coh_w_perc_ratio_wneg = mt_coh_w_perc_ratio(mt_bl_w_by_interp_coh_interp_grid_wneg);
+mt_coh_w_perc_ratio_wneg = mt_coh_w_perc_ratio(mt_bl_w_perc_mesh_interp_coh_grid_wneg);
 
 %% Generate Interpolation Consumption Grid
 % We also interpolate over consumption to speed the program up. We only
@@ -891,11 +891,15 @@ armt_map('ar_ameshk_tnext_with_r') = mt_ameshk_tnext_with_r;
 armt_map('mt_w_level_neg_mesh_coh_bridge_perc') = mt_w_level_neg_mesh_coh_bridge_perc;
 armt_map('mt_coh_bridge_perc_mesh_w_level_neg') = mt_coh_bridge_perc_mesh_w_level_neg;
 
-armt_map('mt_bl_w_by_interp_coh_interp_grid_wneg') = mt_bl_w_by_interp_coh_interp_grid_wneg;
-armt_map('mt_w_by_interp_coh_interp_grid_wneg') = mt_w_by_interp_coh_interp_grid_wneg;
-armt_map('mt_w_by_interp_coh_interp_grid_wpos') = mt_w_by_interp_coh_interp_grid_wpos;
+armt_map('mt_bl_w_perc_mesh_interp_coh_grid_wneg') = mt_bl_w_perc_mesh_interp_coh_grid_wneg;
+armt_map('mt_w_perc_mesh_interp_coh_grid_wneg') = mt_w_perc_mesh_interp_coh_grid_wneg;
+armt_map('mt_w_perc_mesh_interp_coh_grid_wpos') = mt_w_perc_mesh_interp_coh_grid_wpos;
 armt_map('mt_coh_w_perc_ratio_wneg') = mt_coh_w_perc_ratio_wneg;
 
+%% Store armt_map (7): Formal Informal Arrays
+
+armt_map('ar_forbrblk') = ar_forbrblk;
+armt_map('ar_forbrblk_r') = ar_forbrblk_r;
 
 %% Store Function Map
 
@@ -907,6 +911,8 @@ func_map('f_util_standin_coh') = f_util_standin_coh;
 func_map('f_prod') = f_prod;
 func_map('f_inc') = f_inc;
 func_map('f_coh') = f_coh;
+func_map('f_coh_fbis') = f_coh_fbis;
+func_map('f_coh_save') = f_coh_save;
 func_map('f_cons') = f_cons;
 
 %% Graph

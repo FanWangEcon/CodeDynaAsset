@@ -115,7 +115,7 @@ params_group = values(param_map, {'st_model'});
 [st_model] = params_group{:};
 
 % armt_map
-if (strcmp(st_model, 'ipwkbzr'))
+if (ismember(st_model, ['ipwkbzr', 'ipwkbzr_fibs']))
     params_group = values(armt_map, {'ar_z_r_borr_mesh_wage_w1r2', 'ar_z_wage_mesh_r_borr_w1r2'});
     [ar_z_r_borr_mesh_wage_w1r2, ar_z_wage_mesh_r_borr_w1r2] = params_group{:};
     params_group = values(param_map, {'fl_z_r_borr_n'});
@@ -174,7 +174,7 @@ if (bl_display_final)
     ar_it_cols = unique(ar_it_cols);    
 
     % Column Z Names
-    if (strcmp(st_model, 'ipwkbzr'))
+    if (ismember(st_model, ['ipwkbzr', 'ipwkbzr_fibs']))
         if (fl_z_r_borr_n == 1)
             ar_st_col_zs = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z_wage_mesh_r_borr_w1r2(ar_it_cols))));
         else

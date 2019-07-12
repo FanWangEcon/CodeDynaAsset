@@ -15,11 +15,35 @@ function [result_map] = ff_ipwkbz_ds_wrapper(varargin)
 % # it_subset = 8 is matlab publish
 % # it_subset = 9 is invoke operational (only final stats) and coh graph
 
-it_param_set = 6;
+it_param_set = 5;
 bl_input_override = true;
 [param_map, support_map] = ffs_ipwkbz_set_default_param(it_param_set);
 
-% parameters can be set inside ffs_ipwkz_set_default_param or updated here
+%% Change Parameter to Main Options
+
+st_param_which = 'default';
+
+if (ismember(st_param_which, ["default"]))
+    
+    % default
+
+elseif ismember(st_param_which, ["ff_ipwkbz_ds_wrapper"])
+
+    % ff_ipwkbz_evf default
+    param_map('fl_z_r_borr_min') = 0.025;
+    param_map('fl_z_r_borr_max') = 0.025;
+    param_map('fl_z_r_borr_n') = 1;
+
+    param_map('fl_r_save') = 0.025;
+
+    
+    param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');    
+    
+end
+
+%% Adjust Parametesr
+
+% Note: param_map and support_map can be adjusted here or outside to override defaults
 % param_map('it_w_perc_n') = 50;
 % param_map('it_ak_perc_n') = param_map('it_w_perc_n');
 % param_map('it_z_n') = 15;
@@ -36,17 +60,13 @@ bl_input_override = true;
 % param_map('fl_r_save') = 0.025;
 % param_map('fl_c_min') = 0.02;
 
-% These parameters below for comparison with abz_fibs model
-% param_map('fl_c_min') = 0.02;
-param_map('fl_z_r_borr_poiss_mean') = 7;
-% param_map('fl_z_r_borr_max') = 0.095;
-% param_map('fl_z_r_borr_min') = 0.025;
-% param_map('fl_z_r_borr_n') = 5;
+%% Set Distribution Derivation Types
 
 % param_map('st_analytical_stationary_type') = 'loop';
 % param_map('st_analytical_stationary_type') = 'vector';
 param_map('st_analytical_stationary_type') = 'eigenvector';
 
+%% Generate Grids
 % get armt and func map 
 [armt_map, func_map] = ffs_ipwkbz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 default_params = {param_map support_map armt_map func_map};
@@ -61,8 +81,7 @@ support_map = [support_map; default_params{2}];
 if params_len >= 1 && params_len <= 2
     % If override param_map, re-generate armt and func if they are not
     % provided
-    bl_input_override = true;
-    [armt_map, func_map] = ffs_ipwkbz_get_funcgrid(param_map, support_map, bl_input_override);
+    [armt_map, func_map] = ffs_ipwkbz_get_funcgrid(param_map, support_map);
 else
     % Override all
     armt_map = [armt_map; default_params{3}];
