@@ -54,7 +54,7 @@ function result_map = ff_ipwkbz_vf_vecsv(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 1;
+it_param_set = 3;
 bl_input_override = true;
 [param_map, support_map] = ffs_ipwkbz_set_default_param(it_param_set);
 
@@ -73,12 +73,20 @@ bl_input_override = true;
 % param_map('it_c_interp_grid_gap') = 10^-4;
 % param_map('fl_w_interp_grid_gap') = 0.1;
 
-st_param_which = 'ff_ipwkbz_vf_vecsv';
+st_param_which = 'small';
 
 if (ismember(st_param_which, ['default']))
     
     % default
+    
+elseif (ismember(st_param_which, ['small']))
 
+    param_map('it_w_perc_n') = 20;
+    param_map('it_ak_perc_n') = param_map('it_w_perc_n');
+    param_map('it_z_wage_n') = 4;
+    param_map('fl_z_r_borr_n') = 4;
+    param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+    
 elseif ismember(st_param_which, ['ff_ipwkbz_vf_vecsv'])
 
     % ff_ipwkbz_evf default
