@@ -69,14 +69,12 @@ function [fl_max_c, fl_b_bridge, fl_inf_borr_nobridge, fl_for_borr, fl_for_save]
 
 %% Default 
 
-bl_input_override = 0;
-if (length(varargin) == 7)
-    bl_input_override = varargin{7};
-end
-if (bl_input_override)
+if (~isempty(varargin))
+    
     % override when called from outside
-    [fl_ap, fl_coh, param_map, support_map, armt_map, func_map, ~] = varargin{:};
+    [fl_ap, fl_coh, param_map, support_map, armt_map, func_map] = varargin{:};
     bl_display_minccost_bridge = false;
+    
 else
     
     close all

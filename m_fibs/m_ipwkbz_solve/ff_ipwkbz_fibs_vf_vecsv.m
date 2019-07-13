@@ -68,9 +68,9 @@ bl_input_override = true;
 % param_map('fl_w_interp_grid_gap') = 0.25;
 % param_map('it_w_perc_n') = 100;
 % param_map('it_ak_perc_n') = param_map('it_w_perc_n');
-% param_map('fl_z_r_borr_n') = 5;
+% param_map('fl_z_r_infbr_n') = 5;
 % param_map('it_z_wage_n') = 15;
-% param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+% param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_infbr_n');
 % param_map('fl_coh_interp_grid_gap') = 0.1;
 % param_map('it_c_interp_grid_gap') = 10^-4;
 % param_map('fl_w_interp_grid_gap') = 0.1;
@@ -91,15 +91,15 @@ elseif ismember(st_param_which, ['ff_ipwkbz_vf_vecsv', 'ff_ipwkbzr_vf_vecsv'])
     if ismember(st_param_which, ['ff_ipwkbz_vf_vecsv'])
 
         % ff_ipwkbz_evf default
-        param_map('fl_z_r_borr_min') = 0.025;
-        param_map('fl_z_r_borr_max') = 0.025;
-        param_map('fl_z_r_borr_n') = 1;
+        param_map('fl_z_r_infbr_min') = 0.025;
+        param_map('fl_z_r_infbr_max') = 0.025;
+        param_map('fl_z_r_infbr_n') = 1;
 
         param_map('fl_r_save') = 0.025;
 
     end
     
-    param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');    
+    param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_infbr_n');    
     
 end
 
@@ -217,8 +217,8 @@ params_group = values(armt_map, {
 
 %% Parse Parameters 6, other asset arrays
 
-params_group = values(armt_map, {'ar_z_r_borr_mesh_wage_w1r2'});
-[ar_z_r_borr_mesh_wage_w1r2] = params_group{:};
+params_group = values(armt_map, {'ar_z_r_infbr_mesh_wage_w1r2'});
+[ar_z_r_infbr_mesh_wage_w1r2] = params_group{:};
 
 params_group = values(armt_map, {'ar_a_meshk', 'ar_k_mesha'});
 [ar_a_meshk, ar_k_mesha] = params_group{:};
@@ -235,8 +235,8 @@ params_group = values(param_map, {'fl_crra', 'fl_beta', ...
 [fl_crra, fl_beta, fl_nan_replace, fl_c_min, bl_bridge, bl_default, fl_default_wprime] = params_group{:};
 params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol', 'it_tol_pol_nochange'});
 [it_maxiter_val, fl_tol_val, fl_tol_pol, it_tol_pol_nochange] = params_group{:};
-params_group = values(param_map, {'it_z_n', 'fl_z_r_borr_n', 'it_z_wage_n'});
-[it_z_n, fl_z_r_borr_n, it_z_wage_n] = params_group{:};
+params_group = values(param_map, {'it_z_n', 'fl_z_r_infbr_n', 'it_z_wage_n'});
+[it_z_n, fl_z_r_infbr_n, it_z_wage_n] = params_group{:};
 
 % support_map
 params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
@@ -350,10 +350,10 @@ while bl_vfi_continue
     % mt_val_wkb_interpolated is: (I^k x I^w x M^r) by (M^z x M^r)
     % reachable cash-on-hand (as rows) and shocks next period given choices
     % and shocks next period.
-    mt_val_wkb_interpolated = zeros([it_wak_n*fl_z_r_borr_n, it_z_n]);
+    mt_val_wkb_interpolated = zeros([it_wak_n*fl_z_r_infbr_n, it_z_n]);
     
     % 3. Loop over possible shocks over interest rate
-    for it_z_r_borr_ctr = 1:1:fl_z_r_borr_n
+    for it_z_r_infbr_ctr = 1:1:fl_z_r_infbr_n
         
         % 4. Interpolate V(coh(k',b',z',r),z',r') for a specific r'
         % v(coh,z) solved on ar_interp_coh_grid, ar_z grids, see
@@ -368,8 +368,8 @@ while bl_vfi_continue
         % ffs_ipwkbz_get_funcgrid> for details on how the shock grids are
         % formed.
         
-        % Get current z_r_borr from mt_val
-        it_mt_val_col_start = it_z_wage_n*(it_z_r_borr_ctr-1) + 1;
+        % Get current z_r_infbr from mt_val
+        it_mt_val_col_start = it_z_wage_n*(it_z_r_infbr_ctr-1) + 1;
         it_mt_val_col_end   = it_mt_val_col_start + it_z_wage_n - 1;
         mt_val_cur_rcolseg =  mt_val_cur(:, it_mt_val_col_start:it_mt_val_col_end);
         
@@ -656,8 +656,8 @@ for it_z_i = 1:it_z_n
         fl_coh = mt_interp_coh_grid_mesh_z(it_coh_interp_j, it_z_i);
         fl_a_opti = mt_pol_a(it_coh_interp_j, it_z_i);
         
-        fl_z_r_borr = ar_z_r_borr_mesh_wage_w1r2(it_z_i);        
-        param_map('fl_r_inf') = fl_z_r_borr;
+        fl_z_r_infbr = ar_z_r_infbr_mesh_wage_w1r2(it_z_i);        
+        param_map('fl_r_inf') = fl_z_r_infbr;
         
         % call formal and informal function.
         [fl_max_c, fl_opti_b_bridge, fl_opti_inf_borr_nobridge, fl_opti_for_borr, fl_opti_for_save] = ...

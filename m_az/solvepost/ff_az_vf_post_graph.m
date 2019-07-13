@@ -99,10 +99,15 @@ params_group = values(armt_map, {'ar_a'});
 if (strcmp(st_model, 'az'))
     params_group = values(armt_map, {'ar_z'});
     [ar_z] = params_group{:};
-elseif (ismember(st_model, ['abz', 'abz_fibs']))
+elseif (ismember(st_model, ["abz"]))
     params_group = values(armt_map, {'ar_z_r_borr_mesh_wage', 'ar_z_wage_mesh_r_borr'});
     [ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
     params_group = values(param_map, {'it_z_wage_n', 'fl_z_r_borr_n'});
+    [it_z_wage_n, fl_z_r_borr_n] = params_group{:};    
+elseif (ismember(st_model, ["abz_fibs"]))
+    params_group = values(armt_map, {'ar_z_r_infbr_mesh_wage', 'ar_z_wage_mesh_r_infbr'});
+    [ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
+    params_group = values(param_map, {'it_z_wage_n', 'fl_z_r_infbr_n'});
     [it_z_wage_n, fl_z_r_borr_n] = params_group{:};    
 end
 

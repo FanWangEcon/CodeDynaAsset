@@ -106,14 +106,11 @@ function [mt_max_c_nobridge, mt_inf_borr_nobridge, mt_for_borr, mt_for_save] = f
 
 %% Default and Parse Parameters
 
-bl_input_override = 0;
-if (length(varargin) == 8)
-    bl_input_override = varargin{8};
-end
-if (bl_input_override)
+if (~isempty(varargin))
+    
     % override when called from outside
     [bl_b_is_principle, ar_r_inf, fl_r_fsv, ...
-        ar_forbrblk_r, ar_forbrblk, ar_aprime_nobridge, bl_display_minccost, ~] = varargin{:};
+        ar_forbrblk_r, ar_forbrblk, ar_aprime_nobridge, bl_display_minccost] = varargin{:};
     
 else
     

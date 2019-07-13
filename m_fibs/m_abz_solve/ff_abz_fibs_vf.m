@@ -64,16 +64,15 @@ function result_map = ff_abz_fibs_vf(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 4;
-bl_input_override = true;
+it_param_set = 1;
 [param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
 
 % Note: param_map and support_map can be adjusted here or outside to override defaults
 % To generate results as if formal informal do not matter
-param_map('it_a_n') = 75;
-param_map('fl_z_r_borr_n') = 3;
-param_map('it_z_wage_n') = 5;
-param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+% param_map('it_a_n') = 75;
+% param_map('fl_z_r_borr_n') = 3;
+% param_map('it_z_wage_n') = 5;
+% param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
 % param_map('fl_r_fsv') = 0.025;
 % param_map('fl_r_fbr') = 0.035;
 % param_map('bl_b_is_principle') = false;
@@ -113,8 +112,8 @@ support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')]
 %% Parse Parameters 2
 
 % armt_map
-params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z_r_borr_mesh_wage', 'ar_z_wage_mesh_r_borr'});
-[ar_a, mt_z_trans, ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
+params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z_r_inf_mesh_wage', 'ar_z_wage_mesh_r_inf'});
+[ar_a, mt_z_trans, ar_z_r_inf_mesh_wage, ar_z_wage_mesh_r_inf] = params_group{:};
 
 % Formal choice Menu/Grid and Interest Rate Menu/Grid
 params_group = values(armt_map, {'ar_forbrblk_r', 'ar_forbrblk'});
@@ -214,8 +213,8 @@ while bl_vfi_continue
     % loop 1: over exogenous states
     for it_z_i = 1:it_z_n
         
-        fl_z_r_borr = ar_z_r_borr_mesh_wage(it_z_i);
-        fl_z_wage = ar_z_wage_mesh_r_borr(it_z_i);
+        fl_z_r_borr = ar_z_r_inf_mesh_wage(it_z_i);
+        fl_z_wage = ar_z_wage_mesh_r_inf(it_z_i);
 
         % loop 2: over endogenous states
         for it_a_j = 1:it_a_n
@@ -478,7 +477,7 @@ result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
 
 result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
-result_map('cl_mt_coh') = {f_coh(ar_z_r_borr_mesh_wage, ar_a'), zeros(1)};
+result_map('cl_mt_coh') = {f_coh(ar_z_r_inf_mesh_wage, ar_a'), zeros(1)};
 
 result_map('cl_mt_pol_c') = {mt_pol_cons, zeros(1)};
 result_map('cl_mt_pol_b_bridge') = {mt_pol_b_bridge, zeros(1)};

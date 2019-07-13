@@ -46,15 +46,9 @@ function [result_map] = ff_az_vf_post(varargin)
 
 %% Default
 
-params_len = length(varargin);
-bl_input_override = 0;
-if (params_len == 6)
-    bl_input_override = varargin{6};
-end
-
-if (bl_input_override)
+if (~isempty(varargin))
     % if invoked from outside overrid fully
-    [param_map, support_map, armt_map, func_map, result_map, ~] = varargin{:};
+    [param_map, support_map, armt_map, func_map, result_map] = varargin{:};
 
     params_group = values(result_map, {'mt_val', 'cl_mt_pol_a'});
     [mt_val, cl_mt_pol_a] = params_group{:};
@@ -112,11 +106,16 @@ params_group = values(param_map, {'st_model'});
 if (strcmp(st_model, 'az'))
     params_group = values(armt_map, {'ar_z'});
     [ar_z] = params_group{:};
-elseif (ismember(st_model, ['abz', 'abz_fibs']))
+elseif (ismember(st_model, ["abz"]))
     params_group = values(armt_map, {'ar_z_r_borr_mesh_wage', 'ar_z_wage_mesh_r_borr'});
     [ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
     params_group = values(param_map, {'fl_z_r_borr_n'});
-    [fl_z_r_borr_n] = params_group{:};        
+    [fl_z_r_borr_n] = params_group{:};    
+elseif (ismember(st_model, ["abz_fibs"]))
+    params_group = values(armt_map, {'ar_z_r_infbr_mesh_wage', 'ar_z_wage_mesh_r_infbr'});
+    [ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
+    params_group = values(param_map, {'fl_z_r_infbr_n'});
+    [fl_z_r_borr_n] = params_group{:};
 end
 
 % support_map

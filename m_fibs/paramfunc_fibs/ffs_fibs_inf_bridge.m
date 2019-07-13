@@ -64,14 +64,11 @@ function [ar_aprime_nobridge, ar_b_bridge, ar_c_bridge] = ffs_fibs_inf_bridge(va
 
 %% Default and Parse Parameters
 
-bl_input_override = 0;
-if (length(varargin) == 6)
-    bl_input_override = varargin{6};
-end
-
-if (bl_input_override)
+if (~isempty(varargin))
+    
     % override when called from outside
-    [bl_b_is_principle, fl_r_bridge, ar_aprime, ar_coh_today, bl_display_infbridge, ~] = varargin{:};
+    [bl_b_is_principle, fl_r_bridge, ar_aprime, ar_coh_today, bl_display_infbridge] = varargin{:};
+    
 else
     close all
 

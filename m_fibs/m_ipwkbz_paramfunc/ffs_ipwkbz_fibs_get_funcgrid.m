@@ -78,8 +78,12 @@ else
     support_map('bl_graph_funcgrids_detail') = true;
     support_map('bl_display_funcgrids') = true;
 
-    st_param_which = 'small';
+    st_param_which = 'default';
 
+    param_map('fl_z_r_infbr_min') = 0.025;
+    param_map('fl_z_r_infbr_max') = 0.95;
+    param_map('fl_z_r_infbr_n') = 3;
+    
     if (ismember(st_param_which, ['default', 'ffs_ipwkbz_get_funcgrid']))
 
         % to be able to visually see choice grid points
@@ -98,30 +102,19 @@ else
         if (strcmp(st_param_which, 'default'))
 
             param_map('it_coh_bridge_perc_n') = 3;
-
-            % Adjust interest rates
-            param_map('fl_r_inf') = 0.30;
-            param_map('fl_r_inf_bridge') = 0.30;
             param_map('bl_bridge') = true;
 
         elseif (strcmp(st_param_which, 'ffs_ipwkbz_get_funcgrid'))
 
-
-            param_map('fl_r_inf') = 0.025;
-            param_map('fl_r_inf_bridge') = 0.025;
-            param_map('bl_bridge') = false;
             % when bl_bridge = false, it_coh_bridge_perc_n = 1
+            param_map('bl_bridge') = false;
 
         end
 
     elseif (strcmp(st_param_which, 'small'))
 
         param_map('bl_bridge') = true;
-
-        % Adjust interest rates
-        param_map('fl_r_inf') = 0.30;
-        param_map('fl_r_inf_bridge') = 0.30;
-
+        
         % to be able to visually see choice grid points
         param_map('fl_b_bd') = -20; % borrow bound, = 0 if save only
         param_map('fl_default_aprime') = 0;
@@ -137,10 +130,7 @@ else
 
     end
 
-    param_map('fl_z_r_borr_min') = 0.025;
-    param_map('fl_z_r_borr_max') = 0.95;
-    param_map('fl_z_r_borr_n') = 3;
-    param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+    param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_infbr_n');
 
     default_maps = {param_map, support_map};
 
@@ -179,10 +169,10 @@ params_group = values(param_map, {'it_z_wage_n', 'fl_z_wage_mu', 'fl_z_wage_rho'
 [it_z_wage_n, fl_z_wage_mu, fl_z_wage_rho, fl_z_wage_sig] = params_group{:};
 
 % param_map shock borrowing interest
-params_group = values(param_map, {'st_z_r_borr_drv_ele_type', 'st_z_r_borr_drv_prb_type', 'fl_z_r_borr_poiss_mean', ...
-    'fl_z_r_borr_max', 'fl_z_r_borr_min', 'fl_z_r_borr_n'});
-[st_z_r_borr_drv_ele_type, st_z_r_borr_drv_prb_type, fl_z_r_borr_poiss_mean, ...
-    fl_z_r_borr_max, fl_z_r_borr_min, fl_z_r_borr_n] = params_group{:};
+params_group = values(param_map, {'st_z_r_infbr_drv_ele_type', 'st_z_r_infbr_drv_prb_type', 'fl_z_r_infbr_poiss_mean', ...
+    'fl_z_r_infbr_max', 'fl_z_r_infbr_min', 'fl_z_r_infbr_n'});
+[st_z_r_infbr_drv_ele_type, st_z_r_infbr_drv_prb_type, fl_z_r_infbr_poiss_mean, ...
+    fl_z_r_infbr_max, fl_z_r_infbr_min, fl_z_r_infbr_n] = params_group{:};
 
 % param_map formal menu
 params_group = values(param_map, {'st_forbrblk_type', 'fl_forbrblk_brmost', 'fl_forbrblk_brleast', 'fl_forbrblk_gap'});
@@ -370,44 +360,44 @@ ar_bridge_a = ar_bridge_a_full;
 
 % get borrowing grid and probabilities
 param_dsv_map = containers.Map('KeyType','char', 'ValueType','any');
-param_dsv_map('st_drv_ele_type') = st_z_r_borr_drv_ele_type;
-param_dsv_map('st_drv_prb_type') = st_z_r_borr_drv_prb_type;
-param_dsv_map('fl_poiss_mean') = fl_z_r_borr_poiss_mean;
-param_dsv_map('fl_max') = fl_z_r_borr_max;
-param_dsv_map('fl_min') = fl_z_r_borr_min;
-param_dsv_map('fl_n') = fl_z_r_borr_n;
-[ar_z_r_borr, ar_z_r_borr_prob] = fft_gen_discrete_var(param_dsv_map, true);
+param_dsv_map('st_drv_ele_type') = st_z_r_infbr_drv_ele_type;
+param_dsv_map('st_drv_prb_type') = st_z_r_infbr_drv_prb_type;
+param_dsv_map('fl_poiss_mean') = fl_z_r_infbr_poiss_mean;
+param_dsv_map('fl_max') = fl_z_r_infbr_max;
+param_dsv_map('fl_min') = fl_z_r_infbr_min;
+param_dsv_map('fl_n') = fl_z_r_infbr_n;
+[ar_z_r_infbr, ar_z_r_infbr_prob] = fft_gen_discrete_var(param_dsv_map, true);
 
 % iid transition matrix
-mt_z_r_borr_prob_trans = repmat(ar_z_r_borr_prob, [length(ar_z_r_borr_prob), 1]);
+mt_z_r_infbr_prob_trans = repmat(ar_z_r_infbr_prob, [length(ar_z_r_infbr_prob), 1]);
 
 %% F3: Get Shock: Mesh Shocks Together
 
 % Kronecker product to get full transition matrix for the two shocks
-mt_z_trans = kron(mt_z_r_borr_prob_trans, mt_z_wage_trans);
+mt_z_trans = kron(mt_z_r_infbr_prob_trans, mt_z_wage_trans);
 
 % mesh the shock vectors
-[mt_z_wage_mesh_r_borr_w1r2, mt_z_r_borr_mesh_wage_w1r2] = ndgrid(ar_z_wage, ar_z_r_borr);
-ar_z_r_borr_mesh_wage_w1r2 = mt_z_r_borr_mesh_wage_w1r2(:)';
-ar_z_wage_mesh_r_borr_w1r2 = mt_z_wage_mesh_r_borr_w1r2(:)';
+[mt_z_wage_mesh_r_infbr_w1r2, mt_z_r_infbr_mesh_wage_w1r2] = ndgrid(ar_z_wage, ar_z_r_infbr);
+ar_z_r_infbr_mesh_wage_w1r2 = mt_z_r_infbr_mesh_wage_w1r2(:)';
+ar_z_wage_mesh_r_infbr_w1r2 = mt_z_wage_mesh_r_infbr_w1r2(:)';
 
 % mesh the shock vectors
-[mt_z_r_borr_mesh_wage_r1w2, mt_z_wage_mesh_r_borr_r1w2] = ndgrid(ar_z_r_borr, ar_z_wage);
-ar_z_wage_mesh_r_borr_r1w2 = mt_z_wage_mesh_r_borr_r1w2(:)';
-ar_z_r_borr_mesh_wage_r1w2 = mt_z_r_borr_mesh_wage_r1w2(:)';
+[mt_z_r_infbr_mesh_wage_r1w2, mt_z_wage_mesh_r_infbr_r1w2] = ndgrid(ar_z_r_infbr, ar_z_wage);
+ar_z_wage_mesh_r_infbr_r1w2 = mt_z_wage_mesh_r_infbr_r1w2(:)';
+ar_z_r_infbr_mesh_wage_r1w2 = mt_z_r_infbr_mesh_wage_r1w2(:)';
 
 
 if (bl_display_funcgrids)
 
     disp('----------------------------------------');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp('Borrow R Shock: ar_z_r_borr_mesh_wage_w1r2');
-    disp('Prod/Wage Shock: ar_z_wage_mesh_r_borr_w1r2');
+    disp('Borrow R Shock: ar_z_r_infbr_mesh_wage_w1r2');
+    disp('Prod/Wage Shock: ar_z_wage_mesh_r_infbr_w1r2');
     disp('show which shock is inner and which is outter');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
 
-    tb_two_shocks = array2table([ar_z_r_borr_mesh_wage_w1r2;...
-                                 ar_z_wage_mesh_r_borr_w1r2]');
+    tb_two_shocks = array2table([ar_z_r_infbr_mesh_wage_w1r2;...
+                                 ar_z_wage_mesh_r_infbr_w1r2]');
     cl_col_names = ["Borrow R Shock (Meshed)", "Wage R Shock (Meshed)"];
     cl_row_names = strcat('zi=', string((1:it_z_n)));
     tb_two_shocks.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
@@ -421,19 +411,19 @@ if (bl_display_funcgrids)
 
     disp('----------------------------------------');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp('Borrow R Shock: ar_z_wage_mesh_r_borr_r1w2');
-    disp('Prod/Wage Shock: ar_z_r_borr_mesh_wage_r1w2');
+    disp('Borrow R Shock: ar_z_wage_mesh_r_infbr_r1w2');
+    disp('Prod/Wage Shock: ar_z_r_infbr_mesh_wage_r1w2');
     disp('show which shock is inner and which is outter');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
 
-    tb_two_shocks = array2table([ar_z_wage_mesh_r_borr_r1w2;...
-                                 ar_z_r_borr_mesh_wage_r1w2]');
+    tb_two_shocks = array2table([ar_z_wage_mesh_r_infbr_r1w2;...
+                                 ar_z_r_infbr_mesh_wage_r1w2]');
     cl_col_names = ["Borrow R Shock (Meshed)", "Wage R Shock (Meshed)"];
-    cl_row_names = strcat('zi=', string((1:length(ar_z_r_borr_mesh_wage_r1w2))));
+    cl_row_names = strcat('zi=', string((1:length(ar_z_r_infbr_mesh_wage_r1w2))));
     tb_two_shocks.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
     tb_two_shocks.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
 
-    it_row_display = fl_z_r_borr_n*2;
+    it_row_display = fl_z_r_infbr_n*2;
 
     disp(size(tb_two_shocks));
     disp(head(tb_two_shocks, it_row_display));
@@ -441,25 +431,25 @@ if (bl_display_funcgrids)
 
     disp('----------------------------------------');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp('Borrow Rate Transition Matrix: mt_z_r_borr_prob_trans');
+    disp('Borrow Rate Transition Matrix: mt_z_r_infbr_prob_trans');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     it_col_n_keep = 15;
     it_row_n_keep = 15;
-    [it_row_n, it_col_n] = size(mt_z_r_borr_prob_trans);
+    [it_row_n, it_col_n] = size(mt_z_r_infbr_prob_trans);
     [ar_it_cols, ar_it_rows] = fft_row_col_subset(it_col_n, it_col_n_keep, it_row_n, it_row_n_keep);
-    cl_st_full_rowscols = cellstr([num2str(ar_z_r_borr', 'r%3.2f')]);
-    tb_z_r_borr_prob_trans = array2table(round(mt_z_r_borr_prob_trans(ar_it_rows, ar_it_cols), 6));
+    cl_st_full_rowscols = cellstr([num2str(ar_z_r_infbr', 'r%3.2f')]);
+    tb_z_r_infbr_prob_trans = array2table(round(mt_z_r_infbr_prob_trans(ar_it_rows, ar_it_cols), 6));
     cl_col_names = strcat('zi=', num2str(ar_it_cols'), ':', cl_st_full_rowscols(ar_it_cols));
     cl_row_names = strcat('zi=', num2str(ar_it_rows'), ':', cl_st_full_rowscols(ar_it_rows));
-    tb_z_r_borr_prob_trans.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
-    tb_z_r_borr_prob_trans.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
+    tb_z_r_infbr_prob_trans.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_z_r_infbr_prob_trans.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
 
-    disp(size(tb_z_r_borr_prob_trans));
-    disp(tb_z_r_borr_prob_trans);
+    disp(size(tb_z_r_infbr_prob_trans));
+    disp(tb_z_r_infbr_prob_trans);
 
     disp('----------------------------------------');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp('Wage Prod Shock Transition Matrix: mt_z_r_borr_prob_trans');
+    disp('Wage Prod Shock Transition Matrix: mt_z_r_infbr_prob_trans');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     it_col_n_keep = 15;
     it_row_n_keep = 15;
@@ -483,8 +473,8 @@ if (bl_display_funcgrids)
     it_row_n_keep = it_z_wage_n*3;
     [it_row_n, it_col_n] = size(mt_z_trans);
     [ar_it_cols, ar_it_rows] = fft_row_col_subset(it_col_n, it_col_n_keep, it_row_n, it_row_n_keep);
-    cl_st_full_rowscols = cellstr([num2str(ar_z_r_borr_mesh_wage_w1r2', 'r%3.2f;'), ...
-                                   num2str(ar_z_wage_mesh_r_borr_w1r2', 'w%3.2f')]);
+    cl_st_full_rowscols = cellstr([num2str(ar_z_r_infbr_mesh_wage_w1r2', 'r%3.2f;'), ...
+                                   num2str(ar_z_wage_mesh_r_infbr_w1r2', 'w%3.2f')]);
     tb_mt_z_trans = array2table(round(mt_z_trans(ar_it_rows, ar_it_cols),6));
     cl_col_names = strcat('i', num2str(ar_it_cols'), ':', cl_st_full_rowscols(ar_it_cols));
     cl_row_names = strcat('i', num2str(ar_it_rows'), ':', cl_st_full_rowscols(ar_it_rows));
@@ -523,8 +513,8 @@ ar_a_meshk_nobridge_aneg = ar_a_nobridge_meshk(ar_bl_ameshk_neg_idx);
 
 % Given b, solve for optimal formal and informal choices.
 bl_input_override = true;
-[~, ar_inf_borr_nobridge_aneg, ar_for_borr_aneg, ar_for_save_aneg] = ...
-   ffs_fibs_min_c_cost(bl_b_is_principle, ar_z_r_borr, fl_r_fsv, ...
+[~, ar_inf_borr_nobridge_aneg, ar_for_infbr_aneg, ar_for_save_aneg] = ...
+   ffs_fibs_min_c_cost(bl_b_is_principle, ar_z_r_infbr, fl_r_fsv, ...
                          ar_forbrblk_r, ar_forbrblk, ...
                          ar_a_meshk_nobridge_aneg, bl_display_minccost, bl_input_override);
 
@@ -548,8 +538,8 @@ bl_input_override = true;
 % points for A x N points for K x N points for Bridge.
 %
 
-ar_coh_fbis_aneg = f_coh_fbis(ar_z_r_borr, ...
-                                ar_for_borr_aneg, ...
+ar_coh_fbis_aneg = f_coh_fbis(ar_z_r_infbr, ...
+                                ar_for_infbr_aneg, ...
                                 ar_inf_borr_nobridge_aneg + ar_bridge_a(ar_bl_ameshk_neg_idx), ...
                                 ar_for_save_aneg);
 
@@ -563,21 +553,21 @@ ar_coh_save_apos = f_coh_save(ar_a_meshk_apos);
 % ROWS: N_neg*N^2 + N_pos*N rows total row count, and N_z shock column count.
 % These are the cash-on-hand points reachable given percentage grid choice
 % structure and the possibility of bridge loans.
-% COLUMNS: determined by length(ar_z_r_borr), each column a different
+% COLUMNS: determined by length(ar_z_r_infbr), each column a different
 % informal borrowing interest rate.
 %
 % # mt_coh_wkb_full: this is the (P^k x I^w x M^r) by (M^z) matrix, where
-% rows = it_w_interp_n*it_ak_perc_n*fl_z_r_borr_n, and cols = it_z_wage_n.
+% rows = it_w_interp_n*it_ak_perc_n*fl_z_r_infbr_n, and cols = it_z_wage_n.
 %
 
-mt_ameshk_tnext_with_r = zeros(length(ar_k_mesha), fl_z_r_borr_n);
+mt_ameshk_tnext_with_r = zeros(length(ar_k_mesha), fl_z_r_infbr_n);
 mt_ameshk_tnext_with_r(ar_bl_ameshk_neg_idx, :) = ar_coh_fbis_aneg;
-mt_ameshk_tnext_with_r(~ar_bl_ameshk_neg_idx, :) = zeros(1, fl_z_r_borr_n) + ar_coh_save_apos;
+mt_ameshk_tnext_with_r(~ar_bl_ameshk_neg_idx, :) = zeros(1, fl_z_r_infbr_n) + ar_coh_save_apos;
 
 % # mt_ameshk_tnext_with_r: ((P^{k}_{a>=0} + P^{k}_{a<0} x P^{w frac bridge} ) x I^w ) by (M^r) matrix
 % # mt_coh_wkb_full: ((P^{k}_{a>=0} + P^{k}_{a<0} x P^{w frac bridge} ) x I^w x M^r) by (M^z) matrix
 
-mt_k_mesha_mesh_z_wage = ar_k_mesha + zeros(1, fl_z_r_borr_n);
+mt_k_mesha_mesh_z_wage = ar_k_mesha + zeros(1, fl_z_r_infbr_n);
 mt_coh_wkb_full = f_coh(ar_z_wage, mt_ameshk_tnext_with_r(:), mt_k_mesha_mesh_z_wage(:));
 
 % Generate Aggregate Variables
@@ -591,9 +581,9 @@ if (bl_display_funcgrids || bl_graph_funcgrids)
     % Genereate Table
     tab_ak_choices = array2table([mt_bwithrplusk_mesh, ar_aplusk_mesh, ...
                                   ar_k_mesha, mt_ameshk_tnext_with_r, ar_a_meshk, ar_a_nobridge_meshk, ar_bridge_a]);
-    cl_col_names = [strcat('mt_bwthrplusk', string((1:length(ar_z_r_borr)))), ...
+    cl_col_names = [strcat('mt_bwthrplusk', string((1:length(ar_z_r_infbr)))), ...
                     'ar_aplusk_mesha', 'ar_k_mesha', ...
-                    strcat('mt_a_wth_r_borr', string((1:length(ar_z_r_borr)))), ...
+                    strcat('mt_a_wth_r_infbr', string((1:length(ar_z_r_infbr)))), ...
                     'ar_a_meshk', 'ar_a_nobridge_meshk', 'ar_bridge_a'];
     tab_ak_choices.Properties.VariableNames = cl_col_names;
 
@@ -642,7 +632,7 @@ mt_bl_coh_wkb_invalid = (mt_coh_wkb_full < fl_b_bd);
 % (k,a) invalid if coh(k,a,z) < bd for any z
 ar_bl_wkb_invalid = max(mt_bl_coh_wkb_invalid,[], 2);
 % mt_bl_wkb_invalid = reshape(ar_bl_wkb_invalid, size(mt_a));
-mt_bl_wkb_invalid = reshape(ar_bl_wkb_invalid, [it_ak_perc_n, length(ar_w_level_full)*fl_z_r_borr_n]);
+mt_bl_wkb_invalid = reshape(ar_bl_wkb_invalid, [it_ak_perc_n, length(ar_w_level_full)*fl_z_r_infbr_n]);
 
 % find the first w_level choice where some k(w) percent choices are valid?
 ar_bl_w_level_invalid =  min(mt_bl_wkb_invalid, [], 1);
@@ -654,7 +644,7 @@ ar_bl_w_level_invalid =  min(mt_bl_wkb_invalid, [], 1);
 % the future when the household when making this choice will be unable to
 % borrow sufficiently to maintain positive consumption.
 
-ar_w_level_full_dup = repmat(ar_w_level_full, [1,fl_z_r_borr_n]);
+ar_w_level_full_dup = repmat(ar_w_level_full, [1,fl_z_r_infbr_n]);
 fl_w_level_min_valid = min(ar_w_level_full_dup(~ar_bl_w_level_invalid));
 
 %% COH3: Update Valid 2nd stage choice matrix
@@ -670,7 +660,7 @@ fl_w_level_min_valid = min(ar_w_level_full_dup(~ar_bl_w_level_invalid));
 % mt_coh_wkb = mt_coh_wkb_full(~ar_bl_wkb_invalid, :);
 mt_coh_wkb = mt_coh_wkb_full;
 % mt_z_wage_mesh_coh_wkb = repmat(ar_z, [size(mt_coh_wkb,1),1]);
-% mt_z_r_borr_mesh_coh_wkb = repmat(ar_z_r_borr, [size(mt_coh_wkb,1),1]);
+% mt_z_r_infbr_mesh_coh_wkb = repmat(ar_z_r_infbr, [size(mt_coh_wkb,1),1]);
 mt_z_wage_mesh_coh_wkb = repmat(ar_z_wage, [size(mt_coh_wkb,1),1]);
 
 %% Generate 1st Stage States: Interpolation Cash-on-hand Interpolation Grid
@@ -845,26 +835,26 @@ armt_map('it_ameshk_n') = length(ar_a_meshk);
 % Dimensions of Various Grids: I for level grid, M for shock grid, P for
 % percent grid. These are grids for 1st stage solution
 %
-% # ar_z_r_borr: 1 by (M^r)
-% # ar_z_r_borr_prob: 1 by (M^r)
+% # ar_z_r_infbr: 1 by (M^r)
+% # ar_z_r_infbr_prob: 1 by (M^r)
 % # ar_z_wage: 1 by (M^z)
 % # ar_z_wage_prob: 1 by (M^z)
-% # ar_z_r_borr_mesh_wage_w1r2: 1 by (M^z x M^r)
-% # ar_z_wage_mesh_r_borr_w1r2: 1 by (M^z x M^r)
-% # ar_z_r_borr_mesh_wage_r1w2: 1 by (M^r x M^z)
-% # ar_z_wage_mesh_r_borr_r1w2: 1 by (M^r x M^z)
+% # ar_z_r_infbr_mesh_wage_w1r2: 1 by (M^z x M^r)
+% # ar_z_wage_mesh_r_infbr_w1r2: 1 by (M^z x M^r)
+% # ar_z_r_infbr_mesh_wage_r1w2: 1 by (M^r x M^z)
+% # ar_z_wage_mesh_r_infbr_r1w2: 1 by (M^r x M^z)
 %
 
-armt_map('ar_z_r_borr') = ar_z_r_borr;
-armt_map('ar_z_r_borr_prob') = ar_z_r_borr_prob;
+armt_map('ar_z_r_infbr') = ar_z_r_infbr;
+armt_map('ar_z_r_infbr_prob') = ar_z_r_infbr_prob;
 
 armt_map('ar_z_wage') = ar_z_wage;
 armt_map('ar_z_wage_prob') = ar_z_wage_prob;
 
-armt_map('ar_z_r_borr_mesh_wage_w1r2') = ar_z_r_borr_mesh_wage_w1r2;
-armt_map('ar_z_wage_mesh_r_borr_w1r2') = ar_z_wage_mesh_r_borr_w1r2;
-armt_map('ar_z_r_borr_mesh_wage_r1w2') = ar_z_r_borr_mesh_wage_r1w2;
-armt_map('ar_z_wage_mesh_r_borr_r1w2') = ar_z_wage_mesh_r_borr_r1w2;
+armt_map('ar_z_r_infbr_mesh_wage_w1r2') = ar_z_r_infbr_mesh_wage_w1r2;
+armt_map('ar_z_wage_mesh_r_infbr_w1r2') = ar_z_wage_mesh_r_infbr_w1r2;
+armt_map('ar_z_r_infbr_mesh_wage_r1w2') = ar_z_r_infbr_mesh_wage_r1w2;
+armt_map('ar_z_wage_mesh_r_infbr_r1w2') = ar_z_wage_mesh_r_infbr_r1w2;
 
 armt_map('mt_z_trans') = mt_z_trans;
 
@@ -921,17 +911,17 @@ if (bl_graph_funcgrids)
 
     %% Generate Limited Legends
     % 8 graph points, 2 levels of borrow rates, and 4 levels of rbr rates
-    ar_it_z_r_borr = ([1 round((fl_z_r_borr_n)/2) (fl_z_r_borr_n)]);
+    ar_it_z_r_infbr = ([1 round((fl_z_r_infbr_n)/2) (fl_z_r_infbr_n)]);
     ar_it_z_wage = ([1 round((it_z_wage_n)/2) (it_z_wage_n)]);
 
     % combine by index
-    mt_it_z_graph = ar_it_z_wage' + it_z_wage_n*(ar_it_z_r_borr-1);
+    mt_it_z_graph = ar_it_z_wage' + it_z_wage_n*(ar_it_z_r_infbr-1);
     ar_it_z_graph = mt_it_z_graph(:)';
     ar_it_z_graph_zwage = ([1 round((it_z_wage_n)/4) 2*round((it_z_wage_n)/4) 3*round((it_z_wage_n)/4) (it_z_wage_n)]);
 
     % legends index final
-    cl_st_legendCell = cellstr([num2str(ar_z_r_borr_mesh_wage_w1r2', 'zr=%3.2f;'), ...
-                                num2str(ar_z_wage_mesh_r_borr_w1r2', 'zw=%3.2f')]);
+    cl_st_legendCell = cellstr([num2str(ar_z_r_infbr_mesh_wage_w1r2', 'zr=%3.2f;'), ...
+                                num2str(ar_z_wage_mesh_r_infbr_w1r2', 'zw=%3.2f')]);
 
     % legends index final full mat wage only
     cl_st_legendCell_zwage = cellstr([num2str(ar_z_wage', 'zw=%3.2f')]);

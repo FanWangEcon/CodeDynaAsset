@@ -97,7 +97,7 @@ function result_map = ff_abz_fibs_vf_vec(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 4;
+it_param_set = 1;
 bl_input_override = true;
 [param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
 
@@ -117,7 +117,7 @@ bl_input_override = true;
 % param_map('it_z_wage_n') = 15;
 % param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
 
-[armt_map, func_map] = ffs_abz_fibs_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
+[armt_map, func_map] = ffs_abz_fibs_get_funcgrid(param_map, support_map); % 1 for override
 default_params = {param_map support_map armt_map func_map};
 
 %% Parse Parameters 1
@@ -130,8 +130,7 @@ support_map = [support_map; default_params{2}];
 if params_len >= 1 && params_len <= 2
     % If override param_map, re-generate armt and func if they are not
     % provided
-    bl_input_override = true;
-    [armt_map, func_map] = ffs_abz_fibs_get_funcgrid(param_map, support_map, bl_input_override);
+    [armt_map, func_map] = ffs_abz_fibs_get_funcgrid(param_map, support_map);
 else
     % Override all
     armt_map = [armt_map; default_params{3}];
@@ -147,8 +146,8 @@ support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')]
 %% Parse Parameters 2
 
 % armt_map
-params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z_r_borr_mesh_wage', 'ar_z_wage_mesh_r_borr'});
-[ar_a, mt_z_trans, ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
+params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z_r_inf_mesh_wage', 'ar_z_wage_mesh_r_inf'});
+[ar_a, mt_z_trans, ar_z_r_inf_mesh_wage, ar_z_wage_mesh_r_inf] = params_group{:};
 
 % Formal choice Menu/Grid and Interest Rate Menu/Grid
 params_group = values(armt_map, {'ar_forbrblk_r', 'ar_forbrblk'});
@@ -261,8 +260,8 @@ while bl_vfi_continue
         %
 
         % 1. Current Shock
-        fl_z_r_borr = ar_z_r_borr_mesh_wage(it_z_i);
-        fl_z_wage = ar_z_wage_mesh_r_borr(it_z_i);
+        fl_z_r_borr = ar_z_r_inf_mesh_wage(it_z_i);
+        fl_z_wage = ar_z_wage_mesh_r_inf(it_z_i);
 
         % 2. cash-on-hand
         ar_coh = f_coh(fl_z_wage, ar_a);
@@ -514,8 +513,8 @@ result_map('mt_pol_idx') = mt_pol_idx;
 % wasteful of resources
 for it_z_i = 1:it_z_n
     for it_a_j = 1:it_a_n
-        fl_z_r_borr = ar_z_r_borr_mesh_wage(it_z_i);
-        fl_z_wage = ar_z_wage_mesh_r_borr(it_z_i);        
+        fl_z_r_borr = ar_z_r_inf_mesh_wage(it_z_i);
+        fl_z_wage = ar_z_wage_mesh_r_inf(it_z_i);        
 
         fl_a = ar_a(it_a_j);
         fl_coh = f_coh(fl_z_wage, fl_a);
@@ -538,7 +537,7 @@ for it_z_i = 1:it_z_n
 end
 
 result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
-result_map('cl_mt_coh') = {f_coh(ar_z_r_borr_mesh_wage, ar_a'), zeros(1)};
+result_map('cl_mt_coh') = {f_coh(ar_z_r_inf_mesh_wage, ar_a'), zeros(1)};
 
 result_map('cl_mt_pol_c') = {mt_pol_cons, zeros(1)};
 result_map('cl_mt_pol_b_bridge') = {mt_pol_b_bridge, zeros(1)};
@@ -582,16 +581,15 @@ result_map = ffs_fibs_identify_discrete(result_map, bl_input_override);
 % consumption.
 
 if (bl_post)
-    bl_input_override = true;
     result_map('ar_val_diff_norm') = ar_val_diff_norm(1:it_iter_last);
     result_map('ar_pol_diff_norm') = ar_pol_diff_norm(1:it_iter_last);
     result_map('mt_pol_perc_change') = mt_pol_perc_change(1:it_iter_last, :);
 
     % Standard AZ graphs
-    result_map = ff_az_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    result_map = ff_az_vf_post(param_map, support_map, armt_map, func_map, result_map);
 
     % Graphs for results_map with FIBS contents
-    result_map = ff_az_fibs_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    result_map = ff_az_fibs_vf_post(param_map, support_map, armt_map, func_map, result_map);
 end
 
 end

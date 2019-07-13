@@ -25,7 +25,7 @@ default_params = {it_subset bl_display_defparam};
 param_map = containers.Map('KeyType','char', 'ValueType','any');
 
 % model name
-param_map('st_model') = 'ipwkbzr_fibs';
+param_map('st_model') = 'ipwkbz_fibs';
 
 % Preferences
 param_map('fl_crra') = 1.5;
@@ -122,8 +122,6 @@ param_map('fl_w_interp_grid_gap') = 0.1;
 % formal informal parameters
 % fl_for_br_block are the formal borrowing grid block sizes.
 param_map('fl_r_fsv') = 0.025;
-% param_map('fl_r_inf') = 0.095;
-% param_map('fl_r_inf_bridge') = 0.095;
 param_map('fl_r_fbr') = 0.065;
 % see: ffs_for_br_block.m
 param_map('st_forbrblk_type') = 'seg3';
@@ -137,15 +135,15 @@ param_map('fl_forbrblk_gap') = -1.5;
 % fft_gen_discrete_var> for how these parameters will be used to generate a
 % discrete random variable for the interest rate.
 
-param_map('st_z_r_borr_drv_ele_type') = 'unif';
-param_map('st_z_r_borr_drv_prb_type') = 'poiss';
-param_map('fl_z_r_borr_poiss_mean') = 1.75;
-param_map('fl_z_r_borr_max') = 0.095;
-param_map('fl_z_r_borr_min') = 0.025;
-param_map('fl_z_r_borr_n') = 5;
-% param_map('fl_z_r_borr_max') = 0.095;
-% param_map('fl_z_r_borr_min') = 0.095;
-% param_map('fl_z_r_borr_n') = 1;
+param_map('st_z_r_infbr_drv_ele_type') = 'unif';
+param_map('st_z_r_infbr_drv_prb_type') = 'poiss';
+param_map('fl_z_r_infbr_poiss_mean') = 1.75;
+param_map('fl_z_r_infbr_max') = 0.095;
+param_map('fl_z_r_infbr_min') = 0.025;
+param_map('fl_z_r_infbr_n') = 5;
+% param_map('fl_z_r_infbr_max') = 0.095;
+% param_map('fl_z_r_infbr_min') = 0.095;
+% param_map('fl_z_r_infbr_n') = 1;
 
 %% 4b. Set Shock 2 Productivity Shock Parameters
 
@@ -158,7 +156,7 @@ param_map('fl_z_wage_sig') = 0.2;
 
 %% 4c. Set Overall Shock Grid Count
 
-param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_infbr_n');
 
 %% 5. Set Solution Control Parameters
 
@@ -257,6 +255,7 @@ support_map('bl_display_infbridge') = false;
 close all;
 
 if (ismember(it_subset, [3]))
+
     % Profile run
     support_map('bl_profile') = true;
     support_map('bl_display') = false; % don't print
@@ -278,22 +277,21 @@ elseif (ismember(it_subset, [1,2,4]))
     support_map('bl_img_save') = true;
 
     if (ismember(it_subset, [1]))
+
         % TEST quick
         param_map('it_w_perc_n') = 20;
         param_map('it_ak_perc_n') = param_map('it_w_perc_n');
         param_map('it_coh_bridge_perc_n') = param_map('it_w_perc_n');
 
         param_map('it_z_wage_n') = 5;
-        param_map('fl_z_r_borr_n') = 3;
-        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+        param_map('fl_z_r_infbr_n') = 3;
+        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_infbr_n');
 
         param_map('fl_coh_interp_grid_gap') = 0.25;
         param_map('it_c_interp_grid_gap') = 0.001;
         param_map('fl_w_interp_grid_gap') = 1;
 
         param_map('it_maxiter_val') = 50;
-        param_map('it_tol_pol_nochange') = 1000;
-        support_map('bl_display') = true;
         support_map('it_display_every') = 1;
 
         support_map('bl_graph') = false;
@@ -353,28 +351,31 @@ elseif (ismember(it_subset, [5,6,8,9]))
     support_map('bl_graph_forinf_pol_pct') = true;
 
     if (it_subset == 5)
+
         param_map('it_w_perc_n') = 40;
         param_map('it_ak_perc_n') = param_map('it_w_perc_n');
         param_map('it_coh_bridge_perc_n') = param_map('it_w_perc_n');
 
         param_map('it_z_wage_n') = 5;
-        param_map('fl_z_r_borr_n') = 3;
-        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+        param_map('fl_z_r_infbr_n') = 3;
+        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_infbr_n');
 
         param_map('fl_coh_interp_grid_gap') = 0.25;
         param_map('it_c_interp_grid_gap') = 0.001;
         param_map('fl_w_interp_grid_gap') = 1;
 
         param_map('it_maxiter_val') = 50;
-        param_map('it_tol_pol_nochange') = 1000;
+
         support_map('bl_display') = true;
         support_map('it_display_every') = 1;
 
         support_map('bl_display_dist') = true;
         support_map('bl_graph') = false;
+
     end
 
     if (ismember(it_subset, [8, 9]))
+
         support_map('bl_time') = false;
         support_map('bl_display') = false;
         support_map('bl_display_dist') = false;
@@ -392,7 +393,6 @@ elseif (ismember(it_subset, [5,6,8,9]))
     end
 
 end
-
 
 %% Display
 
