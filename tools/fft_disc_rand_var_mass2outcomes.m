@@ -88,7 +88,7 @@ else
     it_shocks = 5;
     fl_binom_n = it_states-1;
     ar_binom_p = (1:(it_shocks))./(it_shocks+2);
-    ar_binom_x = 0:1:(it_states-1);
+    ar_binom_x = (0:1:(it_states-1));
     
     % a
     ar_choice_unique_sorted_byY = ar_binom_x;
@@ -107,6 +107,7 @@ else
     
     % y(a,z), some non-smooth structure
     rng(123);
+    ar_binom_x = ar_binom_x   
     mt_choice_bystates = ar_binom_x' - 0.01*ar_binom_x'.^2  + ar_binom_p - 0.5*ar_binom_p.^2 + rand([it_states, it_shocks]);
     mt_choice_bystates = round(mt_choice_bystates*2);
     

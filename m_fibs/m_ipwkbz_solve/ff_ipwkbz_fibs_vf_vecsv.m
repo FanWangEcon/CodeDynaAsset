@@ -57,7 +57,6 @@ function result_map = ff_ipwkbz_fibs_vf_vecsv(varargin)
 % * it_param_set = 4: press publish button
 
 it_param_set = 4;
-bl_input_override = true;
 [param_map, support_map] = ffs_ipwkbz_fibs_set_default_param(it_param_set);
 
 % parameters can be set inside ffs_ipwkbz_set_default_param or updated here
@@ -75,7 +74,7 @@ bl_input_override = true;
 % param_map('fl_w_interp_grid_gap') = 0.1;
 
 % get armt and func map
-[armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
+[armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(param_map, support_map); % 1 for override
 default_params = {param_map support_map armt_map func_map};
 
 %% Parse Parameters 1
@@ -88,8 +87,7 @@ support_map = [support_map; default_params{2}];
 if params_len >= 1 && params_len <= 2
     % If override param_map, re-generate armt and func if they are not
     % provided
-    bl_input_override = true;
-    [armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(param_map, support_map, bl_input_override);
+    [armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(param_map, support_map);
 else
     % Override all
     armt_map = [armt_map; default_params{3}];
@@ -145,10 +143,12 @@ params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol', 
 % support_map
 params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
     'st_profile_prefix', 'st_profile_name_main', 'st_profile_suffix',...
-    'bl_time', 'bl_graph_evf', 'bl_display', 'it_display_every', 'bl_post'});
+    'bl_time', 'bl_display_defparam', 'bl_graph_evf', 'bl_display', 'it_display_every', 'bl_post'});
 [bl_profile, st_profile_path, ...
     st_profile_prefix, st_profile_name_main, st_profile_suffix, ...
-    bl_time, bl_graph_evf, bl_display, it_display_every, bl_post] = params_group{:};
+    bl_time, bl_display_defparam, bl_graph_evf, bl_display, it_display_every, bl_post] = params_group{:};
+params_group = values(support_map, {'it_display_summmat_rowmax', 'it_display_summmat_colmax'});
+[it_display_summmat_rowmax, it_display_summmat_colmax] = params_group{:};
 
 %% Initialize Output Matrixes
 
@@ -258,7 +258,7 @@ while bl_vfi_continue
     % 0 percent for w < 0, which then proceeds to w > 0. So the last
     % segment of _ar_w_level_full_ is the same as ar_w_level:
     % ar_w_level_full((end-length(ar_w_level)+1):end) = ar_w_level.
-    
+
     support_map('bl_graph_evf') = false;
     if (it_iter == (it_maxiter_val + 1))
         support_map('bl_graph_evf') = bl_graph_evf;
@@ -274,8 +274,8 @@ while bl_vfi_continue
     % informal choices that allow for bridge loans to see line by line how
     % code differ. Some of the comments from that file are not here to save
     % space. Comments here address differences and are specific to formal
-    % and informal choices. 
-    
+    % and informal choices.
+
     % loop 1: over exogenous states
     for it_z_i = 1:length(ar_z)
 
@@ -292,10 +292,10 @@ while bl_vfi_continue
         % # Interp STG1B: for $w < 0$, 2D interpolate over w level and coh
         % perceng, given z
         %
-        
-        % 1. Negative Elements of w grid expanded by w percentages for bridge        
+
+        % 1. Negative Elements of w grid expanded by w percentages for bridge
         ar_bl_w_level_full_neg = (ar_w_level_full < 0);
-        
+
         % 2. Current Positve w and negative w optimal k choices
         it_wneg_mt_row = sum(ar_bl_w_level_full_neg)/length(ar_coh_bridge_perc);
         % for mt_ev_condi_z_max_kp
@@ -306,18 +306,18 @@ while bl_vfi_continue
         ar_ev_condi_z_max_wpos = mt_ev_condi_z_max(~ar_bl_w_level_full_neg, it_z_i)';
         ar_ev_condi_z_max_wneg = mt_ev_condi_z_max(ar_bl_w_level_full_neg, it_z_i)';
         mt_ev_condi_z_max_wneg = reshape(ar_ev_condi_z_max_wneg, [it_wneg_mt_row, length(ar_coh_bridge_perc)]);
-        
-        % 2. Interp STG1A for w > 0        
+
+        % 2. Interp STG1A for w > 0
         ar_w_level_full_pos = ar_w_level_full(~ar_bl_w_level_full_neg);
-        % Interpolation for mt_ev_condi_z_max_kp 
-        f_interpolante_w_level_pos_kstar_z = griddedInterpolant(ar_w_level_full_pos, ar_ev_condi_z_max_kp_wpos, 'linear', 'nearest');       
+        % Interpolation for mt_ev_condi_z_max_kp
+        f_interpolante_w_level_pos_kstar_z = griddedInterpolant(ar_w_level_full_pos, ar_ev_condi_z_max_kp_wpos, 'linear', 'nearest');
         mt_w_kstar_interp_z_wpos = f_interpolante_w_level_pos_kstar_z(mt_w_by_interp_coh_interp_grid_wpos(:));
         mt_w_astar_interp_z_wpos = mt_w_by_interp_coh_interp_grid_wpos(:) - mt_w_kstar_interp_z_wpos;
         % Interpolation for mt_ev_condi_z_max
-        f_interpolante_w_level_pos_ev_z = griddedInterpolant(ar_w_level_full_pos, ar_ev_condi_z_max_wpos, 'linear', 'nearest');       
+        f_interpolante_w_level_pos_ev_z = griddedInterpolant(ar_w_level_full_pos, ar_ev_condi_z_max_wpos, 'linear', 'nearest');
         mt_w_ev_interp_z_wpos = f_interpolante_w_level_pos_ev_z(mt_w_by_interp_coh_interp_grid_wpos(:));
-                
-        % 3. Interp STG1B for w <= 0 
+
+        % 3. Interp STG1B for w <= 0
         if (bl_bridge)
             % Interpolation for mt_ev_condi_z_max_kp
             f_interpolante_w_level_neg_kstar_z = griddedInterpolant(...
@@ -332,15 +332,15 @@ while bl_vfi_continue
             mt_w_ev_interp_z_wneg = f_interpolante_w_level_neg_ev_z(mt_coh_w_perc_ratio_wneg(:), mt_w_by_interp_coh_interp_grid_wneg(:));
         else
             ar_w_level_full_neg = ar_w_level_full(ar_bl_w_level_full_neg);
-            % Interpolation for mt_ev_condi_z_max_kp 
-            f_interpolante_w_level_neg_kstar_z = griddedInterpolant(ar_w_level_full_neg, ar_ev_condi_z_max_kp_wneg, 'linear', 'nearest');       
+            % Interpolation for mt_ev_condi_z_max_kp
+            f_interpolante_w_level_neg_kstar_z = griddedInterpolant(ar_w_level_full_neg, ar_ev_condi_z_max_kp_wneg, 'linear', 'nearest');
             mt_w_kstar_interp_z_wneg = f_interpolante_w_level_neg_kstar_z(mt_w_by_interp_coh_interp_grid_wneg(:));
             mt_w_astar_interp_z_wneg = mt_w_by_interp_coh_interp_grid_wneg(:) - mt_w_kstar_interp_z_wneg;
             % Interpolation for mt_ev_condi_z_max
-            f_interpolante_w_level_neg_ev_z = griddedInterpolant(ar_w_level_full_neg, ar_ev_condi_z_max_wneg, 'linear', 'nearest');       
-            mt_w_ev_interp_z_wneg = f_interpolante_w_level_neg_ev_z(mt_w_by_interp_coh_interp_grid_wneg(:));            
+            f_interpolante_w_level_neg_ev_z = griddedInterpolant(ar_w_level_full_neg, ar_ev_condi_z_max_wneg, 'linear', 'nearest');
+            mt_w_ev_interp_z_wneg = f_interpolante_w_level_neg_ev_z(mt_w_by_interp_coh_interp_grid_wneg(:));
         end
-                
+
         % 4. Combine positive and negative aggregate savings matrix
         % check: mt_w_by_interp_coh_interp_grid vs mt_w_astar_interp_z + mt_w_kstar_interp_z
         % combine for mt_ev_condi_z_max_kp
@@ -349,12 +349,12 @@ while bl_vfi_continue
         mt_w_kstar_interp_z(mt_bl_w_by_interp_coh_interp_grid_wneg)  = mt_w_kstar_interp_z_wneg;
         mt_w_astar_interp_z = zeros(size(mt_bl_w_by_interp_coh_interp_grid_wneg));
         mt_w_astar_interp_z(~mt_bl_w_by_interp_coh_interp_grid_wneg) = mt_w_astar_interp_z_wpos;
-        mt_w_astar_interp_z(mt_bl_w_by_interp_coh_interp_grid_wneg)  = mt_w_astar_interp_z_wneg;                
+        mt_w_astar_interp_z(mt_bl_w_by_interp_coh_interp_grid_wneg)  = mt_w_astar_interp_z_wneg;
         % combine for mt_ev_condi_z_max
         mt_ev_condi_z_max_interp_z = zeros(size(mt_bl_w_by_interp_coh_interp_grid_wneg));
         mt_ev_condi_z_max_interp_z(~mt_bl_w_by_interp_coh_interp_grid_wneg) = mt_w_ev_interp_z_wpos;
         mt_ev_condi_z_max_interp_z(mt_bl_w_by_interp_coh_interp_grid_wneg)  = mt_w_ev_interp_z_wneg;
-        
+
         % 5. changes in w_perc kstar choices
         mt_w_kstar_diff_idx = (cl_w_kstar_interp_z{it_z_i} ~= mt_w_kstar_interp_z);
 
@@ -376,7 +376,7 @@ while bl_vfi_continue
             cl_c_valid_idx{it_z_i}(mt_w_kstar_diff_idx) = ar_it_c_valid_idx;
         end
         cl_w_kstar_interp_z{it_z_i} = mt_w_kstar_interp_z;
-        
+
         %% D. Compute FULL U(coh_level, w_perc, z) over all w_perc
         mt_utility = cl_u_c_store{it_z_i} + fl_beta*mt_ev_condi_z_max_interp_z;
 
@@ -393,7 +393,7 @@ while bl_vfi_continue
             % if default is not allowed: v = u(cmin)
             mt_utility = mt_utility.*(~mt_it_c_valid_idx) + fl_nan_replace*(mt_it_c_valid_idx);
         end
-        
+
         % percentage algorithm does not have invalid (check to make sure
         % min percent is not 0 in ffs_ipwkbz_fibs_get_funcgrid.m)
         % mt_utility = mt_utility.*(~mt_it_c_valid_idx) + fl_u_neg_c*(mt_it_c_valid_idx);
@@ -502,7 +502,7 @@ if (bl_profile)
     profsave(profile('info'), strcat(st_profile_path, st_file_name));
 end
 
-%% Process Optimal Choices 1: Formal and Informal Choices 
+%% Process Optimal Choices 1: Formal and Informal Choices
 
 result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
@@ -512,22 +512,21 @@ result_map('mt_pol_idx') = mt_pol_idx;
 % wasteful of resources
 for it_z_i = 1:length(ar_z)
     for it_coh_interp_j = 1:length(ar_interp_coh_grid)
-        
+
         fl_coh = mt_interp_coh_grid_mesh_z(it_coh_interp_j, it_z_i);
         fl_a_opti = mt_pol_a(it_coh_interp_j, it_z_i);
-        
+
         % call formal and informal function.
         [fl_max_c, fl_opti_b_bridge, fl_opti_inf_borr_nobridge, fl_opti_for_borr, fl_opti_for_save] = ...
-            ffs_fibs_min_c_cost_bridge(fl_a_opti, fl_coh, ...
-            param_map, support_map, armt_map, func_map, bl_input_override);
-        
+            ffs_fibs_min_c_cost_bridge(fl_a_opti, fl_coh, param_map, support_map, armt_map, func_map);
+
         % store savings and borrowing formal and inf optimal choices
         mt_pol_b_with_r(it_coh_interp_j,it_z_i) = fl_max_c;
         mt_pol_b_bridge(it_coh_interp_j,it_z_i) = fl_opti_b_bridge;
         mt_pol_inf_borr_nobridge(it_coh_interp_j,it_z_i) = fl_opti_inf_borr_nobridge;
         mt_pol_for_borr(it_coh_interp_j,it_z_i) = fl_opti_for_borr;
         mt_pol_for_save(it_coh_interp_j,it_z_i) = fl_opti_for_save;
-        
+
     end
 end
 
@@ -539,13 +538,13 @@ end
 % cl_mt_pol_a_principle only. This is a shortcut because we need to keep
 % cl_mt_pol_a for mt_pol_b_with_r for the _ds_ code.
 % # *cl_mt_pol_a*: stores _mt_pol_b_with_r_ which has principles and
-% interest rates, to be used with _ds_ code. 
+% interest rates, to be used with _ds_ code.
 % # *mt_pol_a*: Safe asset choice, principles only for ipwkbz_fibs
 % # *cl_mt_pol_k*: Risky asset choice, principles only for ipwkbz_fibs
 % # *cl_mt_pol_c*: Consumption in _t_ given choices.
 % # *cl_pol_b_with_r*: Consumption cost of _mt_pol_a_ in _t+1_, given the
 % formal and informal choices that are optimal to minimize this consumption
-% cost. 
+% cost.
 %
 
 result_map('cl_mt_coh') = {mt_interp_coh_grid_mesh_z, zeros(1)};
@@ -563,7 +562,7 @@ result_map('cl_mt_pol_for_save') = {mt_pol_for_save, zeros(1)};
 
 %% Process Optimal Choices 4: List of Variable Names to be processed by distributional codes
 % this list is needed for the ds codes to generate distribution,
-% distributional statistcs will be computed for elements in the list here. 
+% distributional statistcs will be computed for elements in the list here.
 
 result_map('ar_st_pol_names') = ...
     ["cl_mt_coh", "cl_mt_pol_a", "cl_mt_pol_k", "cl_mt_pol_c", "cl_mt_pol_a_principleonly", ...
@@ -579,20 +578,40 @@ if (bl_post)
     result_map('ar_val_diff_norm') = ar_val_diff_norm(1:it_iter_last);
     result_map('ar_pol_diff_norm') = ar_pol_diff_norm(1:it_iter_last);
     result_map('mt_pol_perc_change') = mt_pol_perc_change(1:it_iter_last, :);
-    
+
     armt_map('mt_coh_wkb') = mt_interp_coh_grid_mesh_z;
     armt_map('it_ameshk_n') = length(ar_interp_coh_grid);
     armt_map('ar_a_meshk') = mt_interp_coh_grid_mesh_z(:,1);
     armt_map('ar_k_mesha') = zeros(size(mt_interp_coh_grid_mesh_z(:,1)) + 0);
-    
+
     % Standard AZ graphs
-    result_map = ff_akz_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);    
-    
+    result_map = ff_akz_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+
     % Graphs for results_map with FIBS contents
-    armt_map('ar_a') = ar_interp_coh_grid;    
+    armt_map('ar_a') = ar_interp_coh_grid;
     result_map = ff_az_fibs_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
 
 end
 
+%% Display Various Containers
+
+if (bl_display_defparam)
+    
+    %% Display 1 support_map    
+    fft_container_map_display(support_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+        
+    %% Display 2 armt_map
+    fft_container_map_display(armt_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+
+    %% Display 3 param_map
+    fft_container_map_display(param_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+    
+    %% Display 4 func_map
+    fft_container_map_display(func_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+    
+    %% Display 5 result_map
+    fft_container_map_display(result_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+    
+end
 
 end

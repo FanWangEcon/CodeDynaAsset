@@ -64,13 +64,12 @@ function [armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(varargin)
 % st_param_which = 'ffs_ipwkbz_get_funcgrid';
 %
 
-bl_input_override = 0;
-if (length(varargin) == 3)
-    bl_input_override = varargin{3};
-end
-if (bl_input_override)
+%% Default
+if (~isempty(varargin))
+    
     % override when called from outside
-    [param_map, support_map, ~] = varargin{:};
+    [param_map, support_map] = varargin{:};
+    
 else
     % default internal run
     [param_map, support_map] = ffs_ipwkbz_fibs_set_default_param();
@@ -93,10 +92,10 @@ else
 
         param_map('fl_w_interp_grid_gap') = 2;
         param_map('fl_coh_interp_grid_gap') = 2;
-        
+
         % Note it_coh_bridge_perc is percentage NOT for BRIDGE
         if (strcmp(st_param_which, 'default'))
-            
+
             param_map('it_coh_bridge_perc_n') = 3;
 
             % Adjust interest rates
@@ -176,6 +175,9 @@ params_group = values(param_map, {'st_forbrblk_type', 'fl_forbrblk_brmost', 'fl_
 
 params_group = values(support_map, {'bl_display_minccost', 'bl_graph_funcgrids', 'bl_graph_funcgrids_detail', 'bl_display_funcgrids'});
 [bl_display_minccost, bl_graph_funcgrids, bl_graph_funcgrids_detail, bl_display_funcgrids] = params_group{:};
+
+params_group = values(support_map, {'it_display_summmat_rowmax', 'it_display_summmat_colmax'});
+[it_display_summmat_rowmax, it_display_summmat_colmax] = params_group{:};
 
 %% G1: Generate Asset and Choice Grid for 2nd stage Problem
 % This generate triangular choice structure. Household choose total
@@ -299,11 +301,11 @@ if (bl_bridge)
     ar_w_level_neg_rep = repmat(ar_w_level_neg, [1, length(ar_coh_bridge_perc)]);
     ar_w_level_full(1:1:size(mt_a_wneg_nobridge,2)) = ar_w_level_neg_rep;
     ar_w_level_full((size(mt_a_wneg_nobridge,2)+1):1:length(ar_w_level_full)) = ar_w_level(~ar_bl_w_neg);
-    
+
     % 10. Pre-generate Interpolation matrix for negative w levels
     [mt_w_level_neg_mesh_coh_bridge_perc, mt_coh_bridge_perc_mesh_w_level_neg] = ...
         ndgrid(ar_w_level_neg, ar_coh_bridge_perc);
-    
+
 else
 
     % If bridge loans are not needed, do not need to do expansions
@@ -314,7 +316,7 @@ else
 
     [mt_w_level_neg_mesh_coh_bridge_perc, mt_coh_bridge_perc_mesh_w_level_neg] = ...
         ndgrid(ar_w_level_neg, ar_coh_bridge_perc);
-    
+
 end
 
 %% G3: Flatten Choices to Arrays to be Combined with Shocks as Columns.
@@ -953,6 +955,13 @@ if (bl_display_funcgrids)
         disp(st_display);
     end
 
+end
+
+%% Display
+
+if (bl_display_funcgrids)
+    fft_container_map_display(armt_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+    fft_container_map_display(func_map, it_display_summmat_rowmax, it_display_summmat_colmax);
 end
 
 end

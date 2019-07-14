@@ -1,4 +1,4 @@
-%% Set Model Functions
+%% Set Model Functions One Asset Borrowing and Savings
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
@@ -33,8 +33,17 @@ function [f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons_coh, f_c
 %
 % @example
 %
-%   [f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons] = ...
-%        ffs_abz_set_functions(fl_crra, fl_c_min, fl_r_save, fl_r_borr, fl_w);
+%   [f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons_coh, f_cons, f_cons_checkcmin] = ...
+%        ffs_abz_set_functions(fl_crra, fl_c_min, fl_r_save, fl_w);
+%
+% @seealso
+%
+% * initialize parameters: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param>
+% * initialize functions: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_functions.html ffs_abz_set_functions>
+% * set asset grid: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_gen_borrsave_grid.html ffs_abz_gen_borrsave_grid>
+% * set shock borrow rate: <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_gen_discrete_var.html fft_gen_discrete_var>
+% * set shock wage: <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/ffto_gen_tauchen_jhl.m ffto_gen_tauchen_jhl>
+% * gateway function processing grid, paramters, functions: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
 %
 
 %% Default
@@ -67,8 +76,8 @@ f_cons = @(z, b, bprime) (f_coh(z, b) - bprime);
 % on cmin, so that consumption is not negative. If do not do this, for
 % defaulters, next period a'=0, would seem like they have large negative
 % consumption.
-f_cons_checkcmin = @(fl_r_borr, z, b, bprime) ((f_coh(fl_r_borr, z, b) - bprime).*(f_coh(fl_r_borr, z, b) - bprime >= fl_c_min) + ...
-                                               fl_c_min.*(f_coh(fl_r_borr, z, b) - bprime < fl_c_min));
+f_cons_checkcmin = @(fl_r_borr, z, b, bprime) ((f_coh(fl_r_borr, z, b) - bprime).*((f_coh(fl_r_borr, z, b) - bprime) >= fl_c_min) + ...
+                                               fl_c_min.*((f_coh(fl_r_borr, z, b) - bprime) < fl_c_min));
 % Simple Consumption b and k
 f_util_standin = @(fl_r_borr, z, b) f_util_log(f_coh(fl_r_borr,z,b).*(f_coh(fl_r_borr,z,b) > 0) + ...
                                     fl_c_min.*(f_coh(fl_r_borr,z,b) <= 0));

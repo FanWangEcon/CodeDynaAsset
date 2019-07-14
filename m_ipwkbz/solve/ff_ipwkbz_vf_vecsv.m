@@ -55,7 +55,7 @@ function result_map = ff_ipwkbz_vf_vecsv(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 3;
+it_param_set = 2;
 bl_input_override = true;
 [param_map, support_map] = ffs_ipwkbz_set_default_param(it_param_set);
 
@@ -132,10 +132,12 @@ params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol', 
 % support_map
 params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
     'st_profile_prefix', 'st_profile_name_main', 'st_profile_suffix',...
-    'bl_time', 'bl_graph_evf', 'bl_display', 'it_display_every', 'bl_post'});
+    'bl_time', 'bl_display_defparam', 'bl_graph_evf', 'bl_display', 'it_display_every', 'bl_post'});
 [bl_profile, st_profile_path, ...
     st_profile_prefix, st_profile_name_main, st_profile_suffix, ...
-    bl_time, bl_graph_evf, bl_display, it_display_every, bl_post] = params_group{:};
+    bl_time, bl_display_defparam, bl_graph_evf, bl_display, it_display_every, bl_post] = params_group{:};
+params_group = values(support_map, {'it_display_summmat_rowmax', 'it_display_summmat_colmax'});
+[it_display_summmat_rowmax, it_display_summmat_colmax] = params_group{:};
 
 %% Initialize Output Matrixes
 
@@ -223,7 +225,7 @@ while bl_vfi_continue
     mt_val_wkb_interpolated = f_grid_interpolant_value(mt_z_mesh_coh_wkb, mt_coh_wkb);
 %     ar_val_wkb_interpolated = f_grid_interpolant_value(mt_z_mesh_coh_wkb(:), mt_coh_wkb(:));
 %     mt_val_wkb_interpolated = reshape(ar_val_wkb_interpolated, size(mt_z_mesh_coh_wkb));
-    
+
     %% Solve Second Stage Problem k*(w,z)
     % This is the key difference between this function and
     % <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html
@@ -288,7 +290,7 @@ while bl_vfi_continue
         f_interpolante_ev_condi_z_max_z = griddedInterpolant(ar_w_level, mt_ev_condi_z_max(:, it_z_i)', 'linear', 'nearest');
         % Interpolate (3), EVAL add on future utility, N by N + N by N
         mt_ev_condi_z_max_interp_z = f_interpolante_ev_condi_z_max_z(mt_w_by_interp_coh_interp_grid);
-        
+
         %% D. Compute FULL U(coh_level, w_perc, z) over all w_perc
         mt_utility = cl_u_c_store{it_z_i} + fl_beta*mt_ev_condi_z_max_interp_z;
 
@@ -310,7 +312,7 @@ while bl_vfi_continue
         % min percent is not 0 in ffs_ipwkbz_get_funcgrid.m)
         % mt_utility = mt_utility.*(~mt_it_c_valid_idx) + fl_u_neg_c*(mt_it_c_valid_idx);
 
-        %% E. Optimize Over Choices: max_{w_perc} U(coh_level, w_perc, z)        
+        %% E. Optimize Over Choices: max_{w_perc} U(coh_level, w_perc, z)
         % Optimization: remember matlab is column major, rows must be
         % choices, columns must be states
         % <https://en.wikipedia.org/wiki/Row-_and_column-major_order COLUMN-MAJOR>
@@ -340,7 +342,7 @@ while bl_vfi_continue
             ar_opti_kprime_z(ar_opti_c_z <= fl_c_min) = min(ar_k_mesha);
         end
 
-        %% F. Store Results        
+        %% F. Store Results
         mt_val(:,it_z_i) = ar_opti_val_z;
         mt_pol_a(:,it_z_i) = ar_opti_aprime_z;
         mt_pol_k(:,it_z_i) = ar_opti_kprime_z;
@@ -441,6 +443,27 @@ if (bl_post)
     armt_map('ar_k_mesha') = zeros(size(mt_interp_coh_grid_mesh_z(:,1)) + 0);
 
     result_map = ff_akz_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+end
+
+%% Display Various Containers
+
+if (bl_display_defparam)
+
+    %% Display 1 support_map
+    fft_container_map_display(support_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+
+    %% Display 2 armt_map
+    fft_container_map_display(armt_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+
+    %% Display 3 param_map
+    fft_container_map_display(param_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+
+    %% Display 4 func_map
+    fft_container_map_display(func_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+
+    %% Display 5 result_map
+    fft_container_map_display(result_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+
 end
 
 end

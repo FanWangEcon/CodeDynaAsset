@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Solve For+Inf+Borr+Save Dynamic Programming Problem (Optimized-Vectorized)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-05"><meta name="DC.source" content="ff_abz_fibs_vf_vecsv.m"><style type="text/css">
+      --><title>Solve For+Inf+Borr+Save Dynamic Programming Problem (Optimized-Vectorized)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-14"><meta name="DC.source" content="ff_abz_fibs_vf_vecsv.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Solve For+Inf+Borr+Save Dynamic Programming Problem (Optimized-Vectorized)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_ABZ_FIBS_VF_VECSV solve infinite horizon exo shock + endo asset problem</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1</a></li><li><a href="#5">Parse Parameters 2</a></li><li><a href="#6">Initialize Output Matrixes</a></li><li><a href="#7">Initialize Convergence Conditions</a></li><li><a href="#8">Iterate Value Function</a></li><li><a href="#10">Solve Optimization Problem Current Iteration</a></li><li><a href="#12">Solve the Formal Informal Problem for each a' and coh: c_forinf(a')</a></li><li><a href="#14">Update Consumption Matrix <b>CASE A + B + C</b> Consumptions</a></li><li><a href="#15">Evaluate u(c) and store</a></li><li><a href="#17">Solve Optimization Problem: max_{a'} (u(c_forinf(a')) + EV(a',z'))</a></li><li><a href="#19">Check Tolerance and Continuation</a></li><li><a href="#21">Process Optimal Choices</a></li><li><a href="#22">Post Solution Graph and Table Generation</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> result_map = ff_abz_fibs_vf_vecsv(varargin)
+  </style></head><body><div class="content"><h1>Solve For+Inf+Borr+Save Dynamic Programming Problem (Optimized-Vectorized)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_ABZ_FIBS_VF_VECSV solve infinite horizon exo shock + endo asset problem</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1</a></li><li><a href="#5">Parse Parameters 2</a></li><li><a href="#6">Initialize Output Matrixes</a></li><li><a href="#7">Initialize Convergence Conditions</a></li><li><a href="#8">Iterate Value Function</a></li><li><a href="#10">Solve Optimization Problem Current Iteration</a></li><li><a href="#12">Solve the Formal Informal Problem for each a' and coh: c_forinf(a')</a></li><li><a href="#14">Update Consumption Matrix <b>CASE A + B + C</b> Consumptions</a></li><li><a href="#15">Evaluate u(c) and store</a></li><li><a href="#17">Solve Optimization Problem: max_{a'} (u(c_forinf(a')) + EV(a',z'))</a></li><li><a href="#19">Check Tolerance and Continuation</a></li><li><a href="#21">Process Optimal Choices</a></li><li><a href="#22">Post Solution Graph and Table Generation</a></li><li><a href="#23">Display Various Containers</a></li><li><a href="#25">Display 1 support_map</a></li><li><a href="#26">Display 2 armt_map</a></li><li><a href="#27">Display 3 param_map</a></li><li><a href="#28">Display 4 func_map</a></li><li><a href="#29">Display 5 result_map</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> result_map = ff_abz_fibs_vf_vecsv(varargin)
 </pre><h2 id="2">FF_ABZ_FIBS_VF_VECSV solve infinite horizon exo shock + endo asset problem</h2><p>This program solves the infinite horizon dynamic single asset and single shock problem with vectorized codes. <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_fibs_vf.html">ff_abz_fibs_vf</a> shows looped codes. The solution is the same.</p><p>The model could be invoked mainly in sveral ways:</p><div><ol><li>param_map('bl_default') = true;  param_map('bl_bridge') = false; param_map('bl_rollover') = true; Given these, default is possible, bridge loans are not needed because rollover is allowed for formal loans (or informal loans)</li><li>we change param_map('bl_bridge') = true, that means rollover is still allowed, but only allowed using informal sources, formal loans no longer allow for roll-over. Furthermore, if both bl_bridge and bl_rollover are false, that means we are not allowing for rollover at all, so households can not borrow such that they end up with negative cash-on-hand.</li></ol></div><p>Default simulation bl_bridge = false.</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@param func_map container container with function handles for consumption cash-on-hand etc.</p><p>@return result_map container contains policy function matrix, value function matrix, iteration results, and policy function, value function and iteration results tables.</p><p>@example</p><pre>  % Get Default Parameters
   it_param_set = 4;
   [param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
@@ -471,7 +471,7 @@ result_map(<span class="string">'mt_pol_idx'</span>) = mt_pol_idx;
 <span class="keyword">end</span>
 
 result_map(<span class="string">'cl_mt_pol_a'</span>) = {mt_pol_a, zeros(1)};
-result_map(<span class="string">'cl_mt_pol_coh'</span>) = {f_coh(ar_z, ar_a'), zeros(1)};
+result_map(<span class="string">'cl_mt_coh'</span>) = {f_coh(ar_z, ar_a'), zeros(1)};
 
 result_map(<span class="string">'cl_mt_pol_c'</span>) = {mt_pol_cons, zeros(1)};
 result_map(<span class="string">'cl_mt_pol_b_bridge'</span>) = {mt_pol_b_bridge, zeros(1)};
@@ -479,7 +479,7 @@ result_map(<span class="string">'cl_mt_pol_inf_borr_nobridge'</span>) = {mt_pol_
 result_map(<span class="string">'cl_mt_pol_for_borr'</span>) = {mt_pol_for_borr, zeros(1)};
 result_map(<span class="string">'cl_mt_pol_for_save'</span>) = {mt_pol_for_save, zeros(1)};
 
-result_map(<span class="string">'ar_st_pol_names'</span>) = [<span class="string">"cl_mt_pol_a"</span>, <span class="string">"cl_mt_pol_coh"</span>, <span class="string">"cl_mt_pol_c"</span>, <span class="keyword">...</span>
+result_map(<span class="string">'ar_st_pol_names'</span>) = [<span class="string">"cl_mt_pol_a"</span>, <span class="string">"cl_mt_coh"</span>, <span class="string">"cl_mt_pol_c"</span>, <span class="keyword">...</span>
     <span class="string">"cl_mt_pol_b_bridge"</span>, <span class="string">"cl_mt_pol_inf_borr_nobridge"</span>, <span class="string">"cl_mt_pol_for_borr"</span>, <span class="string">"cl_mt_pol_for_save"</span>];
 
 <span class="comment">% Get Discrete Choice Outcomes</span>
@@ -499,109 +499,109 @@ result_map = ffs_fibs_identify_discrete(result_map, bl_input_override);
 </pre><pre class="codeoutput">valgap = norm(mt_val - mt_val_cur): value function difference across iterations
 polgap = norm(mt_pol_a - mt_pol_a_cur): policy function difference across iterations
 z1 = z1 perc change: sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n): percentage of state space points conditional on shock where the policy function is changing across iterations
-                 valgap      polgap        z1           z2           z3           z4           z5           z6           z7           z8           z9           z10          z11          z12          z13          z14          z15   
-                ________    ________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________
+                 valgap      polgap     z1_0_34741    z2_0_40076    z3_0_4623    z4_0_5333    z5_0_61519    z6_0_70966    z10_1_2567    z11_1_4496    z12_1_6723    z13_1_9291    z14_2_2253    z15_2_567
+                ________    ________    __________    __________    _________    _________    __________    __________    __________    __________    __________    __________    __________    _________
 
-    iter=1        193.16        2002            1            1            1            1            1            1            1            1            1            1            1            1            1            1            1
-    iter=2        147.46      2189.9         0.98      0.98133      0.98267        0.984      0.98533      0.98667      0.98933        0.992      0.99467      0.99733      0.99867            1            1            1            1
-    iter=3        119.38      721.95      0.96267      0.96533      0.96667      0.96933        0.972      0.97467      0.97867      0.98133      0.98667        0.992      0.99467            1            1            1            1
-    iter=4        98.645      364.17      0.94933      0.95333        0.956         0.96        0.964        0.968        0.972        0.972      0.97867      0.98267      0.99467      0.99467      0.99467            1            1
-    iter=5        83.341      214.04        0.932      0.93467      0.93733      0.94133      0.94667        0.948      0.95333        0.964      0.97067      0.97333        0.988      0.99067      0.99067      0.99867      0.99733
-    iter=6        71.328      142.53        0.916      0.91733         0.92      0.92533      0.92933      0.93467      0.94267      0.94533      0.95733      0.96667      0.97733      0.98133      0.99333      0.98933      0.98533
-    iter=7        61.306      103.17      0.90133      0.90533        0.912      0.91467      0.92533      0.92933        0.932      0.93733      0.94533        0.956        0.968      0.96933      0.98267      0.98933      0.98533
-    iter=8        53.057      77.485        0.884      0.89067      0.89733        0.896        0.904      0.91733      0.92533      0.93867         0.94      0.94667      0.95333      0.96533      0.97467        0.996      0.99467
-    iter=9        46.053      59.056      0.87867      0.88133      0.88667        0.892      0.89867        0.904        0.916         0.92        0.932      0.94133      0.94933      0.96533      0.97733         0.98      0.98267
-    iter=10       40.105      47.942      0.85867      0.86267      0.87467      0.87867      0.88267      0.89467          0.9        0.912      0.92267      0.93733        0.948      0.94533      0.96667        0.968      0.96533
-    iter=11       34.971      39.556      0.85867      0.86267         0.86      0.86533      0.87467      0.88533        0.896      0.90667      0.91333      0.91867      0.92667        0.952         0.96        0.972      0.98667
-    iter=12       30.532      32.316      0.83467        0.848      0.85467         0.86        0.864      0.86933      0.87467         0.88      0.90933      0.91333        0.932         0.92      0.93733        0.952         0.96
-    iter=13       26.721      27.698      0.82267        0.828      0.82667        0.852         0.84      0.86267      0.87067      0.89333      0.87333      0.89467      0.90533        0.932      0.93867         0.94         0.96
-    iter=14       23.418      24.581      0.80133      0.80667      0.82533        0.808         0.84      0.85733      0.85333      0.85067      0.88933        0.888      0.89733      0.88933        0.908      0.91867      0.92667
-    iter=15       20.561      21.804      0.77733        0.772      0.78267      0.81333      0.81733      0.80933      0.82533      0.84933        0.832      0.85067        0.852      0.87467      0.88267        0.904         0.92
-    iter=16       18.084      22.136         0.74        0.796        0.776      0.78933      0.77733        0.804      0.80133      0.79333        0.836      0.82533      0.84267        0.832      0.85467      0.85333      0.86667
-    iter=17        15.95          21        0.752        0.724      0.75733      0.75733      0.74933      0.77067      0.77333        0.788         0.78        0.796      0.79333      0.80533      0.81067      0.84933      0.86667
-    iter=18       14.109      12.329        0.692      0.74133      0.70267         0.72         0.76        0.748      0.74933      0.75733        0.752      0.75333         0.76      0.78667        0.792        0.792      0.81067
-    iter=19       12.519      10.837      0.68667        0.668      0.71733      0.68267        0.676        0.704        0.696      0.69333      0.72667      0.73467      0.74133      0.72667      0.75067      0.75333      0.76133
-    iter=20       11.152      20.229         0.64      0.65467        0.636      0.67733        0.668      0.65333        0.668        0.692      0.66933      0.69067      0.68533      0.71467      0.69333      0.74533        0.764
-    iter=21       9.9781      20.201      0.60667      0.59333      0.60533      0.60267        0.612        0.636        0.632      0.62933        0.648      0.62267      0.63067        0.668      0.70133      0.66933      0.68933
-    iter=22        8.973      7.6088      0.55067      0.56667      0.55867        0.568      0.56667        0.568      0.57733      0.56933      0.59467      0.61733        0.644        0.608      0.62533      0.63467        0.644
-    iter=23       8.1119      6.8177      0.51867      0.50533      0.52133      0.51867      0.52933        0.524      0.53067        0.556      0.53867      0.56133      0.55867        0.568      0.58133      0.61333      0.63467
-    iter=24       7.3741      6.1377      0.46533         0.46      0.46533      0.47333      0.47733      0.47867      0.49867      0.48933      0.49867      0.49733      0.51067         0.54      0.53333      0.55867      0.57733
-    iter=25        6.739       5.548        0.408         0.42        0.424      0.41467        0.424      0.42933      0.43867      0.43867         0.44        0.452        0.472        0.492      0.51067      0.50667         0.52
-    iter=26       6.1882      5.0877      0.36133      0.37467      0.37067      0.37867      0.37467      0.38533        0.388      0.39867      0.42667      0.41467      0.41867      0.43333      0.44667      0.45867      0.47733
-    iter=27       5.7054      4.6636      0.32667      0.32667        0.336      0.34267      0.34267      0.34267      0.34533        0.352        0.368        0.368      0.37333        0.388      0.40667      0.41333        0.424
-    iter=28       5.2784       4.273        0.304      0.29867      0.30267        0.292      0.30267      0.31733         0.32      0.31867        0.332      0.32933        0.348      0.35333      0.36133      0.37067      0.38667
-    iter=29       4.8977      3.8881      0.26133      0.26267        0.272         0.28      0.27733      0.28133      0.28667      0.29467      0.29467      0.30267      0.31467        0.316      0.32667        0.336        0.344
-    iter=30        4.557      3.5318      0.22667        0.236        0.248        0.244      0.24667        0.248      0.25733      0.26667      0.26533        0.284         0.28      0.28133        0.304      0.30133         0.32
-    iter=31       4.2503      3.1787        0.216      0.21333        0.212        0.216      0.22667        0.228      0.22933      0.22933      0.24133      0.23867        0.252      0.26267      0.26267      0.28667      0.29067
-    iter=32       3.9739      2.8897      0.18533        0.204      0.19333        0.204      0.19467      0.20533      0.20133      0.21733      0.21733      0.22533      0.23333      0.23733        0.248      0.24933      0.26267
-    iter=33       3.7244       2.664      0.17867        0.176        0.184      0.17333      0.18667      0.19067      0.20133        0.188      0.19733      0.20267        0.212      0.21867      0.22267      0.23067      0.24533
-    iter=34       3.4987      2.4205      0.14933      0.15467      0.15333      0.16133      0.15467      0.15867      0.17067      0.17333        0.184        0.192      0.18933        0.192          0.2      0.20267        0.216
-    iter=35       3.2939      2.2838      0.13733      0.13867      0.13867        0.144      0.15333        0.152        0.148      0.15733      0.16267      0.15733      0.16933      0.18267      0.18133      0.19467      0.20133
-    iter=36       3.1074      2.1165        0.128      0.13067      0.13467      0.13067        0.128      0.13467      0.13867      0.14133      0.14933      0.14933      0.15867      0.16533      0.16933        0.172         0.18
-    iter=37       2.9368      1.9272      0.10533      0.11333      0.11733      0.12133      0.12133      0.12133      0.12533        0.132      0.13067         0.14      0.14667      0.13867      0.14667         0.16         0.16
-    iter=38       2.7802      1.8469      0.10267      0.10267      0.10933     0.098667      0.11333      0.11867      0.12133      0.11733      0.11867         0.12      0.12533        0.136      0.14133      0.14133      0.15067
-    iter=39       2.6359      1.6291     0.090667        0.092     0.089333     0.093333        0.092     0.097333          0.1        0.104      0.11067      0.11333      0.12133      0.11733        0.128      0.12533      0.13333
-    iter=40       2.5024      1.5268     0.082667        0.084     0.085333        0.092     0.090667        0.084     0.089333     0.094667     0.098667      0.10667      0.10667      0.10933      0.11867        0.124        0.124
-    iter=41       2.3784      1.4197     0.074667         0.08        0.076     0.082667     0.077333     0.085333     0.089333     0.090667     0.089333     0.085333     0.090667        0.096          0.1        0.108      0.11733
-    iter=42       2.2626      1.3113     0.065333        0.068     0.069333     0.062667     0.077333     0.077333     0.077333        0.076         0.08     0.086667        0.088        0.096     0.098667     0.094667      0.10267
-    iter=43       2.1541      1.2028        0.064     0.062667     0.062667     0.066667     0.065333     0.066667        0.064     0.070667     0.082667        0.076     0.078667     0.077333     0.081333     0.089333     0.089333
-    iter=44       2.0521      1.1451         0.06        0.052        0.064     0.058667     0.057333     0.058667         0.06        0.064        0.064     0.070667     0.073333         0.08     0.077333        0.088     0.090667
-    iter=45       1.9556      1.0413     0.042667        0.052     0.050667     0.049333        0.052     0.050667     0.061333         0.06     0.057333     0.062667         0.06     0.066667     0.065333     0.070667        0.076
-    iter=46       1.8643     0.99246     0.042667        0.048     0.038667     0.054667     0.049333     0.053333     0.050667     0.057333     0.053333        0.056     0.058667     0.065333        0.068     0.066667     0.069333
-    iter=47       1.7774     0.92978     0.037333         0.04        0.044     0.042667     0.045333     0.042667     0.050667     0.041333     0.050667     0.049333        0.052        0.056         0.06     0.057333     0.062667
-    iter=48       1.6945     0.86419        0.036     0.038667     0.038667     0.034667     0.041333     0.042667     0.042667     0.046667     0.045333        0.044     0.050667     0.050667        0.056     0.058667     0.058667
-    iter=49       1.6154     0.78442        0.032     0.030667     0.030667        0.036     0.034667     0.041333     0.037333        0.036     0.041333     0.049333        0.044     0.041333        0.044     0.049333        0.052
-    iter=50       1.5396     0.76102     0.029333     0.026667     0.033333        0.028        0.032        0.028     0.029333     0.037333     0.038667        0.036     0.042667        0.044        0.044     0.045333        0.048
-    iter=69      0.56255     0.23338            0    0.0013333            0            0    0.0026667        0.004            0    0.0026667    0.0026667        0.004    0.0053333    0.0026667    0.0026667    0.0066667    0.0053333
-    iter=70      0.53064     0.20898    0.0013333    0.0013333    0.0013333    0.0026667    0.0026667    0.0013333        0.004        0.004    0.0026667    0.0026667            0    0.0013333        0.004        0.004    0.0066667
-    iter=71      0.50032     0.20898    0.0066667    0.0013333    0.0026667    0.0013333            0    0.0013333    0.0013333            0    0.0013333    0.0026667    0.0013333    0.0053333            0        0.004    0.0026667
-    iter=72      0.47154     0.16187            0            0    0.0013333            0            0    0.0026667            0    0.0013333    0.0013333            0        0.004            0        0.004        0.004    0.0026667
-    iter=73      0.44427     0.13217            0            0            0            0    0.0013333            0    0.0013333            0    0.0026667            0    0.0013333    0.0013333    0.0026667    0.0013333    0.0026667
-    iter=74      0.41843     0.16187            0            0            0            0            0            0            0    0.0013333            0    0.0026667            0    0.0026667            0        0.004    0.0013333
-    iter=75      0.39399     0.13217    0.0013333            0            0    0.0013333            0    0.0026667            0    0.0013333    0.0013333    0.0013333    0.0013333    0.0026667    0.0026667            0            0
-    iter=76      0.37088     0.13217            0    0.0013333    0.0013333    0.0013333            0            0    0.0013333            0            0            0    0.0013333            0            0    0.0013333    0.0026667
-    iter=77      0.34905    0.093458            0            0            0            0            0            0            0    0.0013333    0.0013333    0.0013333            0            0    0.0013333    0.0013333    0.0013333
-    iter=78      0.32844    0.093458            0    0.0013333            0            0    0.0013333            0            0            0    0.0013333    0.0013333            0            0    0.0013333            0            0
-    iter=79      0.30901     0.16187            0    0.0013333            0    0.0013333            0    0.0013333            0            0            0            0            0            0        0.004    0.0013333            0
-    iter=80      0.29068     0.13217            0            0            0            0            0            0    0.0013333            0            0            0            0    0.0013333            0    0.0013333    0.0026667
-    iter=81      0.27341    0.093458            0            0            0            0            0            0            0            0            0    0.0013333            0            0            0            0            0
-    iter=82      0.25715    0.093458            0            0            0            0            0            0            0            0            0            0            0            0            0            0    0.0013333
-    iter=83      0.24183    0.093458            0            0            0            0            0    0.0013333            0            0            0            0            0            0            0            0            0
-    iter=84      0.22742    0.093458    0.0013333            0            0            0            0            0            0            0            0            0            0            0    0.0013333            0            0
-    iter=85      0.21385    0.093458            0            0            0            0            0            0            0            0            0            0            0    0.0013333            0            0            0
-    iter=86      0.20109           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=87      0.18908    0.093458            0    0.0013333            0            0    0.0013333            0            0            0            0            0            0            0            0            0            0
-    iter=88      0.17778    0.093458            0            0            0            0            0            0            0            0            0            0            0            0            0            0    0.0013333
-    iter=89      0.16716           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=90      0.15717           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=91      0.14777    0.093458            0            0            0    0.0013333            0            0            0            0            0            0            0            0            0            0            0
-    iter=92      0.13893    0.093458            0            0            0            0            0            0            0            0            0            0            0            0    0.0013333            0            0
-    iter=93      0.13062           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=94       0.1228           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=95      0.11545           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=96      0.10854           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=97      0.10204           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=98      0.09593           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=99     0.090183           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=100     0.08478           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=101      0.0797           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=102    0.074923           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=103    0.070433           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=104     0.06621           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=105    0.062241           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=106    0.058509           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=107       0.055           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=108    0.051702           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=109    0.048601           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=110    0.045686           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=111    0.042946           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=112     0.04037           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=113    0.037949           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=114    0.035672           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=115    0.033532           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=116    0.031521           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=117     0.02963           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=118    0.027852           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
+    iter=1        193.16        2002            1             1             1            1            1             1             1             1             1             1             1             1
+    iter=2        147.46      2189.9         0.98       0.98133       0.98267        0.984      0.98533       0.98667       0.99733       0.99867             1             1             1             1
+    iter=3        119.38      721.95      0.96267       0.96533       0.96667      0.96933        0.972       0.97467         0.992       0.99467             1             1             1             1
+    iter=4        98.645      364.17      0.94933       0.95333         0.956         0.96        0.964         0.968       0.98267       0.99467       0.99467       0.99467             1             1
+    iter=5        83.341      214.04        0.932       0.93467       0.93733      0.94133      0.94667         0.948       0.97333         0.988       0.99067       0.99067       0.99867       0.99733
+    iter=6        71.328      142.53        0.916       0.91733          0.92      0.92533      0.92933       0.93467       0.96667       0.97733       0.98133       0.99333       0.98933       0.98533
+    iter=7        61.306      103.17      0.90133       0.90533         0.912      0.91467      0.92533       0.92933         0.956         0.968       0.96933       0.98267       0.98933       0.98533
+    iter=8        53.057      77.485        0.884       0.89067       0.89733        0.896        0.904       0.91733       0.94667       0.95333       0.96533       0.97467         0.996       0.99467
+    iter=9        46.053      59.056      0.87867       0.88133       0.88667        0.892      0.89867         0.904       0.94133       0.94933       0.96533       0.97733          0.98       0.98267
+    iter=10       40.105      47.942      0.85867       0.86267       0.87467      0.87867      0.88267       0.89467       0.93733         0.948       0.94533       0.96667         0.968       0.96533
+    iter=11       34.971      39.556      0.85867       0.86267          0.86      0.86533      0.87467       0.88533       0.91867       0.92667         0.952          0.96         0.972       0.98667
+    iter=12       30.532      32.316      0.83467         0.848       0.85467         0.86        0.864       0.86933       0.91333         0.932          0.92       0.93733         0.952          0.96
+    iter=13       26.721      27.698      0.82267         0.828       0.82667        0.852         0.84       0.86267       0.89467       0.90533         0.932       0.93867          0.94          0.96
+    iter=14       23.418      24.581      0.80133       0.80667       0.82533        0.808         0.84       0.85733         0.888       0.89733       0.88933         0.908       0.91867       0.92667
+    iter=15       20.561      21.804      0.77733         0.772       0.78267      0.81333      0.81733       0.80933       0.85067         0.852       0.87467       0.88267         0.904          0.92
+    iter=16       18.084      22.136         0.74         0.796         0.776      0.78933      0.77733         0.804       0.82533       0.84267         0.832       0.85467       0.85333       0.86667
+    iter=17        15.95          21        0.752         0.724       0.75733      0.75733      0.74933       0.77067         0.796       0.79333       0.80533       0.81067       0.84933       0.86667
+    iter=18       14.109      12.329        0.692       0.74133       0.70267         0.72         0.76         0.748       0.75333          0.76       0.78667         0.792         0.792       0.81067
+    iter=19       12.519      10.837      0.68667         0.668       0.71733      0.68267        0.676         0.704       0.73467       0.74133       0.72667       0.75067       0.75333       0.76133
+    iter=20       11.152      20.229         0.64       0.65467         0.636      0.67733        0.668       0.65333       0.69067       0.68533       0.71467       0.69333       0.74533         0.764
+    iter=21       9.9781      20.201      0.60667       0.59333       0.60533      0.60267        0.612         0.636       0.62267       0.63067         0.668       0.70133       0.66933       0.68933
+    iter=22        8.973      7.6088      0.55067       0.56667       0.55867        0.568      0.56667         0.568       0.61733         0.644         0.608       0.62533       0.63467         0.644
+    iter=23       8.1119      6.8177      0.51867       0.50533       0.52133      0.51867      0.52933         0.524       0.56133       0.55867         0.568       0.58133       0.61333       0.63467
+    iter=24       7.3741      6.1377      0.46533          0.46       0.46533      0.47333      0.47733       0.47867       0.49733       0.51067          0.54       0.53333       0.55867       0.57733
+    iter=25        6.739       5.548        0.408          0.42         0.424      0.41467        0.424       0.42933         0.452         0.472         0.492       0.51067       0.50667          0.52
+    iter=26       6.1882      5.0877      0.36133       0.37467       0.37067      0.37867      0.37467       0.38533       0.41467       0.41867       0.43333       0.44667       0.45867       0.47733
+    iter=27       5.7054      4.6636      0.32667       0.32667         0.336      0.34267      0.34267       0.34267         0.368       0.37333         0.388       0.40667       0.41333         0.424
+    iter=28       5.2784       4.273        0.304       0.29867       0.30267        0.292      0.30267       0.31733       0.32933         0.348       0.35333       0.36133       0.37067       0.38667
+    iter=29       4.8977      3.8881      0.26133       0.26267         0.272         0.28      0.27733       0.28133       0.30267       0.31467         0.316       0.32667         0.336         0.344
+    iter=30        4.557      3.5318      0.22667         0.236         0.248        0.244      0.24667         0.248         0.284          0.28       0.28133         0.304       0.30133          0.32
+    iter=31       4.2503      3.1787        0.216       0.21333         0.212        0.216      0.22667         0.228       0.23867         0.252       0.26267       0.26267       0.28667       0.29067
+    iter=32       3.9739      2.8897      0.18533         0.204       0.19333        0.204      0.19467       0.20533       0.22533       0.23333       0.23733         0.248       0.24933       0.26267
+    iter=33       3.7244       2.664      0.17867         0.176         0.184      0.17333      0.18667       0.19067       0.20267         0.212       0.21867       0.22267       0.23067       0.24533
+    iter=34       3.4987      2.4205      0.14933       0.15467       0.15333      0.16133      0.15467       0.15867         0.192       0.18933         0.192           0.2       0.20267         0.216
+    iter=35       3.2939      2.2838      0.13733       0.13867       0.13867        0.144      0.15333         0.152       0.15733       0.16933       0.18267       0.18133       0.19467       0.20133
+    iter=36       3.1074      2.1165        0.128       0.13067       0.13467      0.13067        0.128       0.13467       0.14933       0.15867       0.16533       0.16933         0.172          0.18
+    iter=37       2.9368      1.9272      0.10533       0.11333       0.11733      0.12133      0.12133       0.12133          0.14       0.14667       0.13867       0.14667          0.16          0.16
+    iter=38       2.7802      1.8469      0.10267       0.10267       0.10933     0.098667      0.11333       0.11867          0.12       0.12533         0.136       0.14133       0.14133       0.15067
+    iter=39       2.6359      1.6291     0.090667         0.092      0.089333     0.093333        0.092      0.097333       0.11333       0.12133       0.11733         0.128       0.12533       0.13333
+    iter=40       2.5024      1.5268     0.082667         0.084      0.085333        0.092     0.090667         0.084       0.10667       0.10667       0.10933       0.11867         0.124         0.124
+    iter=41       2.3784      1.4197     0.074667          0.08         0.076     0.082667     0.077333      0.085333      0.085333      0.090667         0.096           0.1         0.108       0.11733
+    iter=42       2.2626      1.3113     0.065333         0.068      0.069333     0.062667     0.077333      0.077333      0.086667         0.088         0.096      0.098667      0.094667       0.10267
+    iter=43       2.1541      1.2028        0.064      0.062667      0.062667     0.066667     0.065333      0.066667         0.076      0.078667      0.077333      0.081333      0.089333      0.089333
+    iter=44       2.0521      1.1451         0.06         0.052         0.064     0.058667     0.057333      0.058667      0.070667      0.073333          0.08      0.077333         0.088      0.090667
+    iter=45       1.9556      1.0413     0.042667         0.052      0.050667     0.049333        0.052      0.050667      0.062667          0.06      0.066667      0.065333      0.070667         0.076
+    iter=46       1.8643     0.99246     0.042667         0.048      0.038667     0.054667     0.049333      0.053333         0.056      0.058667      0.065333         0.068      0.066667      0.069333
+    iter=47       1.7774     0.92978     0.037333          0.04         0.044     0.042667     0.045333      0.042667      0.049333         0.052         0.056          0.06      0.057333      0.062667
+    iter=48       1.6945     0.86419        0.036      0.038667      0.038667     0.034667     0.041333      0.042667         0.044      0.050667      0.050667         0.056      0.058667      0.058667
+    iter=49       1.6154     0.78442        0.032      0.030667      0.030667        0.036     0.034667      0.041333      0.049333         0.044      0.041333         0.044      0.049333         0.052
+    iter=50       1.5396     0.76102     0.029333      0.026667      0.033333        0.028        0.032         0.028         0.036      0.042667         0.044         0.044      0.045333         0.048
+    iter=69      0.56255     0.23338            0     0.0013333             0            0    0.0026667         0.004         0.004     0.0053333     0.0026667     0.0026667     0.0066667     0.0053333
+    iter=70      0.53064     0.20898    0.0013333     0.0013333     0.0013333    0.0026667    0.0026667     0.0013333     0.0026667             0     0.0013333         0.004         0.004     0.0066667
+    iter=71      0.50032     0.20898    0.0066667     0.0013333     0.0026667    0.0013333            0     0.0013333     0.0026667     0.0013333     0.0053333             0         0.004     0.0026667
+    iter=72      0.47154     0.16187            0             0     0.0013333            0            0     0.0026667             0         0.004             0         0.004         0.004     0.0026667
+    iter=73      0.44427     0.13217            0             0             0            0    0.0013333             0             0     0.0013333     0.0013333     0.0026667     0.0013333     0.0026667
+    iter=74      0.41843     0.16187            0             0             0            0            0             0     0.0026667             0     0.0026667             0         0.004     0.0013333
+    iter=75      0.39399     0.13217    0.0013333             0             0    0.0013333            0     0.0026667     0.0013333     0.0013333     0.0026667     0.0026667             0             0
+    iter=76      0.37088     0.13217            0     0.0013333     0.0013333    0.0013333            0             0             0     0.0013333             0             0     0.0013333     0.0026667
+    iter=77      0.34905    0.093458            0             0             0            0            0             0     0.0013333             0             0     0.0013333     0.0013333     0.0013333
+    iter=78      0.32844    0.093458            0     0.0013333             0            0    0.0013333             0     0.0013333             0             0     0.0013333             0             0
+    iter=79      0.30901     0.16187            0     0.0013333             0    0.0013333            0     0.0013333             0             0             0         0.004     0.0013333             0
+    iter=80      0.29068     0.13217            0             0             0            0            0             0             0             0     0.0013333             0     0.0013333     0.0026667
+    iter=81      0.27341    0.093458            0             0             0            0            0             0     0.0013333             0             0             0             0             0
+    iter=82      0.25715    0.093458            0             0             0            0            0             0             0             0             0             0             0     0.0013333
+    iter=83      0.24183    0.093458            0             0             0            0            0     0.0013333             0             0             0             0             0             0
+    iter=84      0.22742    0.093458    0.0013333             0             0            0            0             0             0             0             0     0.0013333             0             0
+    iter=85      0.21385    0.093458            0             0             0            0            0             0             0             0     0.0013333             0             0             0
+    iter=86      0.20109           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=87      0.18908    0.093458            0     0.0013333             0            0    0.0013333             0             0             0             0             0             0             0
+    iter=88      0.17778    0.093458            0             0             0            0            0             0             0             0             0             0             0     0.0013333
+    iter=89      0.16716           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=90      0.15717           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=91      0.14777    0.093458            0             0             0    0.0013333            0             0             0             0             0             0             0             0
+    iter=92      0.13893    0.093458            0             0             0            0            0             0             0             0             0     0.0013333             0             0
+    iter=93      0.13062           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=94       0.1228           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=95      0.11545           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=96      0.10854           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=97      0.10204           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=98      0.09593           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=99     0.090183           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=100     0.08478           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=101      0.0797           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=102    0.074923           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=103    0.070433           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=104     0.06621           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=105    0.062241           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=106    0.058509           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=107       0.055           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=108    0.051702           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=109    0.048601           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=110    0.045686           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=111    0.042946           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=112     0.04037           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=113    0.037949           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=114    0.035672           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=115    0.033532           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=116    0.031521           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=117     0.02963           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=118    0.027852           0            0             0             0            0            0             0             0             0             0             0             0             0
 
 tb_val: V(a,z) value at each state space point
                     z1_0_34741    z2_0_40076    z3_0_4623    z4_0_5333    z5_0_61519    z6_0_70966    z10_1_2567    z11_1_4496    z12_1_6723    z13_1_9291    z14_2_2253    z15_2_567
@@ -813,11 +813,6 @@ tb_pol_a: optimal asset choice for each state space point
     a749=49.9065      47.196         47.29         47.29       47.383       47.477         47.57        48.131        48.318        48.505        48.785        49.159        49.533 
     a750=50            47.29        47.383        47.383       47.477        47.57        47.664        48.131        48.411        48.598        48.879        49.252        49.626 
 
-Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
-Warning: Using only the real component of complex data. 
 mt_pol_b_bridge_print: bridge loans
                       z1_0_34741    z2_0_40076    z3_0_4623    z4_0_5333    z5_0_61519    z6_0_70966    z10_1_2567    z11_1_4496    z12_1_6723    z13_1_9291    z14_2_2253    z15_2_567
                       __________    __________    _________    _________    __________    __________    __________    __________    __________    __________    __________    _________
@@ -923,7 +918,7 @@ mt_pol_b_bridge_print: bridge loans
     coh749=50.3512           0             0             0            0            0             0             0             0             0             0             0             0 
     coh750=50.4447           0             0             0            0            0             0             0             0             0             0             0             0 
 
-mt_pol_inf_borr_nobridge_print: bridge loans
+mt_pol_inf_borr_nobridge_print: Informal loans that is not bridge loan
                       z1_0_34741    z2_0_40076    z3_0_4623    z4_0_5333    z5_0_61519    z6_0_70966    z10_1_2567    z11_1_4496    z12_1_6723    z13_1_9291    z14_2_2253    z15_2_567
                       __________    __________    _________    _________    __________    __________    __________    __________    __________    __________    __________    _________
 
@@ -1238,13 +1233,760 @@ mt_pol_for_save_print: formal savings
     coh749=50.3512       47.196         47.29        47.29       47.383        47.477         47.57        48.131        48.318        48.505        48.785       49.159       49.533  
     coh750=50.4447        47.29        47.383       47.383       47.477         47.57        47.664        48.131        48.411        48.598        48.879       49.252       49.626  
 
-</pre><img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_01.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_02.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_03.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_04.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_05.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_06.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_07.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_08.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_09.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_10.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_11.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_12.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_13.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_14.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_15.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_16.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_17.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_18.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_19.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_20.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_21.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_22.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_23.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_24.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_25.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_26.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_27.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_28.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_29.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_30.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_01.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_02.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_03.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_04.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_05.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_06.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_07.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_08.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_09.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_10.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_11.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_12.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_13.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_14.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_15.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_16.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_17.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_18.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_19.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_20.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_21.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_22.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_23.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_24.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_25.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_26.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_27.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_28.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_29.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_fibs_vf_vecsv_30.png" alt=""> <h2 id="23">Display Various Containers</h2><pre class="codeinput">bl_display_defparam = true;
+<span class="keyword">if</span> (bl_display_defparam)
+</pre><h2 id="25">Display 1 support_map</h2><pre class="codeinput">    fft_container_map_display(support_map);
+</pre><pre class="codeoutput">----------------------------------------
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Begin: Show all key and value pairs from container
+CONTAINER NAME: SUPPORT_MAP
+----------------------------------------
+  Map with properties:
+
+        Count: 42
+      KeyType: char
+    ValueType: any
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+----------------------------------------
+pos = 1 ; key = bl_display ; val = false
+pos = 2 ; key = bl_display_dist ; val = false
+pos = 3 ; key = bl_display_final ; val = true
+pos = 4 ; key = bl_display_final_dist ; val = false
+pos = 5 ; key = bl_display_final_dist_detail ; val = false
+pos = 6 ; key = bl_display_funcgrids ; val = false
+pos = 7 ; key = bl_display_infbridge ; val = false
+pos = 8 ; key = bl_display_minccost ; val = false
+pos = 9 ; key = bl_graph ; val = true
+pos = 10 ; key = bl_graph_coh_t_coh ; val = true
+pos = 11 ; key = bl_graph_discrete ; val = true
+pos = 12 ; key = bl_graph_forinf_discrete ; val = true
+pos = 13 ; key = bl_graph_forinf_pol_lvl ; val = true
+pos = 14 ; key = bl_graph_forinf_pol_pct ; val = true
+pos = 15 ; key = bl_graph_funcgrids ; val = false
+pos = 16 ; key = bl_graph_onebyones ; val = true
+pos = 17 ; key = bl_graph_pol_lvl ; val = true
+pos = 18 ; key = bl_graph_pol_pct ; val = true
+pos = 19 ; key = bl_graph_val ; val = true
+pos = 20 ; key = bl_img_save ; val = false
+pos = 21 ; key = bl_mat ; val = false
+pos = 22 ; key = bl_post ; val = true
+pos = 23 ; key = bl_profile ; val = false
+pos = 24 ; key = bl_profile_dist ; val = false
+pos = 25 ; key = bl_time ; val = false
+pos = 26 ; key = it_display_every ; val = 5
+pos = 27 ; key = it_display_final_colmax ; val = 12
+pos = 28 ; key = it_display_final_rowmax ; val = 100
+pos = 29 ; key = st_img_name_main ; val = ff_abz_fibs_vf_vecsv_default
+pos = 30 ; key = st_img_path ; val = C:/Users/fan/CodeDynaAsset//m_fibs//m_abz_solve/img/
+pos = 31 ; key = st_img_prefix ; val = 
+pos = 32 ; key = st_img_suffix ; val = _p4.png
+pos = 33 ; key = st_mat_name_main ; val = ff_abz_fibs_vf_vecsv_default
+pos = 34 ; key = st_mat_path ; val = C:/Users/fan/CodeDynaAsset//m_fibs//m_abz_solve/mat/
+pos = 35 ; key = st_mat_prefix ; val = 
+pos = 36 ; key = st_mat_suffix ; val = _p4
+pos = 37 ; key = st_matimg_path_root ; val = C:/Users/fan/CodeDynaAsset//m_fibs/
+pos = 38 ; key = st_profile_name_main ; val = ff_abz_fibs_vf_vecsv_default
+pos = 39 ; key = st_profile_path ; val = C:/Users/fan/CodeDynaAsset//m_fibs//m_abz_solve/profile/
+pos = 40 ; key = st_profile_prefix ; val = 
+pos = 41 ; key = st_profile_suffix ; val = _p4
+pos = 42 ; key = st_title_prefix ; val = 
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Scalars in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                                    i     idx    value
+                                    __    ___    _____
+
+    bl_display                       1     1       0  
+    bl_display_dist                  2     2       0  
+    bl_display_final                 3     3       1  
+    bl_display_final_dist            4     4       0  
+    bl_display_final_dist_detail     5     5       0  
+    bl_display_funcgrids             6     6       0  
+    bl_display_infbridge             7     7       0  
+    bl_display_minccost              8     8       0  
+    bl_graph                         9     9       1  
+    bl_graph_coh_t_coh              10    10       1  
+    bl_graph_discrete               11    11       1  
+    bl_graph_forinf_discrete        12    12       1  
+    bl_graph_forinf_pol_lvl         13    13       1  
+    bl_graph_forinf_pol_pct         14    14       1  
+    bl_graph_funcgrids              15    15       0  
+    bl_graph_onebyones              16    16       1  
+    bl_graph_pol_lvl                17    17       1  
+    bl_graph_pol_pct                18    18       1  
+    bl_graph_val                    19    19       1  
+    bl_img_save                     20    20       0  
+    bl_mat                          21    21       0  
+    bl_post                         22    22       1  
+    bl_profile                      23    23       0  
+    bl_profile_dist                 24    24       0  
+    bl_time                         25    25       0  
+    it_display_every                26    26       1  
+    it_display_final_colmax         27    27       1  
+    it_display_final_rowmax         28    28       1  
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Strings in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                            i     idx
+                            __    ___
+
+    st_img_name_main         1    29 
+    st_img_path              2    30 
+    st_img_prefix            3    31 
+    st_img_suffix            4    32 
+    st_mat_name_main         5    33 
+    st_mat_path              6    34 
+    st_mat_prefix            7    35 
+    st_mat_suffix            8    36 
+    st_matimg_path_root      9    37 
+    st_profile_name_main    10    38 
+    st_profile_path         11    39 
+    st_profile_prefix       12    40 
+    st_profile_suffix       13    41 
+    st_title_prefix         14    42 
+
+</pre><h2 id="26">Display 2 armt_map</h2><pre class="codeinput">    fft_container_map_display(armt_map);
+</pre><pre class="codeoutput">----------------------------------------
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Begin: Show all key and value pairs from container
+CONTAINER NAME: ARMT_MAP
+----------------------------------------
+  Map with properties:
+
+        Count: 6
+      KeyType: char
+    ValueType: any
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+----------------------------------------
+pos = 1 ; key = ar_a ;rown= 1 ,coln= 750
+ar_a :mu= 15 ,sd= 20.2477 ,min= -20 ,max= 50
+               zi_1_C1    zi_2_C2    zi_3_C3    zi_375_c375    zi_748_c748    zi_749_c749    zi_750_c750
+               _______    _______    _______    ___________    ___________    ___________    ___________
+
+    zi_1_r1      -20      -19.907    -19.813      14.953         49.813         49.907           50     
+
+pos = 2 ; key = ar_forbrblk ;rown= 1 ,coln= 9
+ar_forbrblk :mu= -7.0556 ,sd= 6.3809 ,min= -19 ,max= 0
+               zi_1_c1    zi_2_c2    zi_3_c3    zi_5_c5    zi_7_c7    zi_8_c8    zi_9_c9
+               _______    _______    _______    _______    _______    _______    _______
+
+    zi_1_r1      -19       -14.5       -10       -5.5       -2.5        -1          0   
+
+pos = 3 ; key = ar_forbrblk_r ;rown= 1 ,coln= 9
+ar_forbrblk_r :mu= 0.065 ,sd= 0 ,min= 0.065 ,max= 0.065
+               zi_1_c1    zi_2_c2    zi_3_c3    zi_5_c5    zi_7_c7    zi_8_c8    zi_9_c9
+               _______    _______    _______    _______    _______    _______    _______
+
+    zi_1_r1     0.065      0.065      0.065      0.065      0.065      0.065      0.065 
+
+pos = 4 ; key = ar_stationary ;rown= 1 ,coln= 15
+ar_stationary :mu= 0.066667 ,sd= 0.060897 ,min= 0.0027089 ,max= 0.16757
+                zi_1_C1      zi_2_C2     zi_3_C3     zi_8_C8    zi_13_c13    zi_14_c14    zi_15_c15
+               _________    _________    ________    _______    _________    _________    _________
+
+    zi_1_r1    0.0027089    0.0069499    0.018507    0.16757    0.018507     0.0069499    0.0027089
+
+pos = 5 ; key = ar_z ;rown= 1 ,coln= 15
+ar_z :mu= 1.1347 ,sd= 0.69878 ,min= 0.34741 ,max= 2.567
+               zi_1_C1    zi_2_C2    zi_3_C3    zi_8_C8    zi_13_c13    zi_14_c14    zi_15_c15
+               _______    _______    _______    _______    _________    _________    _________
+
+    zi_1_r1    0.34741    0.40076    0.4623     0.94436     1.9291       2.2253        2.567  
+
+pos = 6 ; key = mt_z_trans ;rown= 15 ,coln= 15
+mt_z_trans :mu= 0.066667 ,sd= 0.095337 ,min= 0 ,max= 0.27902
+                  zi_1_C1       zi_2_C2       zi_3_C3       zi_8_C8      zi_13_c13     zi_14_c14     zi_15_c15 
+                 __________    __________    __________    __________    __________    __________    __________
+
+    zi_1_R1         0.26016       0.26831       0.25551    0.00012823    2.7001e-13    1.1102e-15             0
+    zi_2_R2         0.11232       0.19622        0.2763    0.00098855    1.5289e-11    9.3592e-14    3.3307e-16
+    zi_3_R3        0.037073       0.10492        0.2185     0.0055558    6.2811e-10    5.7438e-12    3.1863e-14
+    zi_4_R4       0.0092081      0.040998       0.12635      0.022782    1.8732e-08    2.5567e-10    2.1255e-12
+    zi_5_R5       0.0017026      0.011702      0.053403      0.068209     4.058e-07    8.2598e-09    1.0277e-10
+    zi_11_r11    1.0277e-10    8.2598e-09     4.058e-07      0.068209      0.053403      0.011702     0.0017026
+    zi_12_r12    2.1256e-12    2.5567e-10    1.8732e-08      0.022782       0.12635      0.040998     0.0092081
+    zi_13_r13    3.1909e-14    5.7438e-12    6.2811e-10     0.0055558        0.2185       0.10492      0.037073
+    zi_14_r14     3.474e-16    9.3597e-14    1.5289e-11    0.00098855        0.2763       0.19622       0.11232
+    zi_15_r15    2.7412e-18    1.1057e-15    2.6998e-13    0.00012823       0.25551       0.26831       0.26016
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Matrix in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                     i    idx    rowN    colN      mean        std          min         max  
+                     _    ___    ____    ____    ________    ________    _________    _______
+
+    ar_a             1     1       1     750           15      20.248          -20         50
+    ar_forbrblk      2     2       1       9      -7.0556      6.3809          -19          0
+    ar_forbrblk_r    3     3       1       9        0.065           0        0.065      0.065
+    ar_stationary    4     4       1      15     0.066667    0.060897    0.0027089    0.16757
+    ar_z             5     5       1      15       1.1347     0.69878      0.34741      2.567
+    mt_z_trans       6     6      15      15     0.066667    0.095337            0    0.27902
+
+</pre><h2 id="27">Display 3 param_map</h2><pre class="codeinput">    fft_container_map_display(param_map);
+</pre><pre class="codeoutput">----------------------------------------
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Begin: Show all key and value pairs from container
+CONTAINER NAME: PARAM_MAP
+----------------------------------------
+  Map with properties:
+
+        Count: 37
+      KeyType: char
+    ValueType: any
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+----------------------------------------
+pos = 1 ; key = bl_b_is_principle ; val = false
+pos = 2 ; key = bl_bridge ; val = true
+pos = 3 ; key = bl_default ; val = true
+pos = 4 ; key = bl_loglin ; val = false
+pos = 5 ; key = bl_rollover ; val = true
+pos = 6 ; key = fl_a_max ; val = 50
+pos = 7 ; key = fl_a_min ; val = 0
+pos = 8 ; key = fl_b_bd ; val = -20
+pos = 9 ; key = fl_beta ; val = 0.94
+pos = 10 ; key = fl_c_min ; val = 0.02
+pos = 11 ; key = fl_crra ; val = 1.5
+pos = 12 ; key = fl_default_aprime ; val = 0
+pos = 13 ; key = fl_forbrblk_brleast ; val = -1
+pos = 14 ; key = fl_forbrblk_brmost ; val = -19
+pos = 15 ; key = fl_forbrblk_gap ; val = -1.5
+pos = 16 ; key = fl_loglin_threshold ; val = 1
+pos = 17 ; key = fl_nan_replace ; val = -99999
+pos = 18 ; key = fl_r_fbr ; val = 0.065
+pos = 19 ; key = fl_r_fsv ; val = 0.025
+pos = 20 ; key = fl_r_inf ; val = 0.095
+pos = 21 ; key = fl_r_inf_bridge ; val = 0.095
+pos = 22 ; key = fl_tol_dist ; val = 1e-05
+pos = 23 ; key = fl_tol_pol ; val = 1e-05
+pos = 24 ; key = fl_tol_val ; val = 1e-05
+pos = 25 ; key = fl_w ; val = 1.28
+pos = 26 ; key = fl_z_mu ; val = 0
+pos = 27 ; key = fl_z_rho ; val = 0.8
+pos = 28 ; key = fl_z_sig ; val = 0.2
+pos = 29 ; key = it_a_n ; val = 750
+pos = 30 ; key = it_maxiter_dist ; val = 1000
+pos = 31 ; key = it_maxiter_val ; val = 1000
+pos = 32 ; key = it_tol_pol_nochange ; val = 25
+pos = 33 ; key = it_trans_power_dist ; val = 1000
+pos = 34 ; key = it_z_n ; val = 15
+pos = 35 ; key = st_analytical_stationary_type ; val = eigenvector
+pos = 36 ; key = st_forbrblk_type ; val = seg3
+pos = 37 ; key = st_model ; val = abz_fibs
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Scalars in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                           i     idx    value
+                           __    ___    _____
+
+    bl_b_is_principle       1     1       0  
+    bl_bridge               2     2       1  
+    bl_default              3     3       1  
+    bl_loglin               4     4       0  
+    bl_rollover             5     5       1  
+    fl_a_max                6     6       1  
+    fl_a_min                7     7       0  
+    fl_b_bd                 8     8       1  
+    fl_beta                 9     9       1  
+    fl_c_min               10    10       1  
+    fl_crra                11    11       1  
+    fl_default_aprime      12    12       0  
+    fl_forbrblk_brleast    13    13       1  
+    fl_forbrblk_brmost     14    14       1  
+    fl_forbrblk_gap        15    15       1  
+    fl_loglin_threshold    16    16       1  
+    fl_nan_replace         17    17       1  
+    fl_r_fbr               18    18       1  
+    fl_r_fsv               19    19       1  
+    fl_r_inf               20    20       1  
+    fl_r_inf_bridge        21    21       1  
+    fl_tol_dist            22    22       1  
+    fl_tol_pol             23    23       1  
+    fl_tol_val             24    24       1  
+    fl_w                   25    25       1  
+    fl_z_mu                26    26       0  
+    fl_z_rho               27    27       1  
+    fl_z_sig               28    28       1  
+    it_a_n                 29    29       1  
+    it_maxiter_dist        30    30       1  
+    it_maxiter_val         31    31       1  
+    it_tol_pol_nochange    32    32       1  
+    it_trans_power_dist    33    33       1  
+    it_z_n                 34    34       1  
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Strings in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                                     i    idx
+                                     _    ___
+
+    st_analytical_stationary_type    1    35 
+    st_forbrblk_type                 2    36 
+    st_model                         3    37 
+
+</pre><h2 id="28">Display 4 func_map</h2><pre class="codeinput">    fft_container_map_display(func_map);
+</pre><pre class="codeoutput">----------------------------------------
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Begin: Show all key and value pairs from container
+CONTAINER NAME: FUNC_MAP
+----------------------------------------
+  Map with properties:
+
+        Count: 8
+      KeyType: char
+    ValueType: any
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+----------------------------------------
+pos = 1 ; key = f_bprime ; val = @(fl_r_inf,ar_for_borr,ar_inf_borr,ar_for_save)(ar_for_borr./(1+fl_r_fbr)+ar_inf_borr./(1+fl_r_inf)+ar_for_save./(1+fl_r_fsv))
+pos = 2 ; key = f_coh ; val = @(ar_z,ar_b)(ar_z*fl_w+ar_b)
+pos = 3 ; key = f_cons_coh_fbis ; val = @(coh,ar_bprime_in_c)(coh+ar_bprime_in_c)
+pos = 4 ; key = f_cons_coh_save ; val = @(coh,ar_for_save)(coh-ar_for_save./(1+fl_r_fsv))
+pos = 5 ; key = f_inc ; val = @(ar_z,fl_r_inf,ar_for_borr,ar_inf_borr,ar_for_save)(ar_z*fl_w+((ar_for_borr./(1+fl_r_fbr))*fl_r_fbr+(ar_inf_borr./(1+fl_r_inf))*fl_r_inf+(ar_for_save./(1+fl_r_fsv))*fl_r_fsv))
+pos = 6 ; key = f_util_crra ; val = @(c)(((c).^(1-fl_crra)-1)./(1-fl_crra))
+pos = 7 ; key = f_util_log ; val = @(c)log(c)
+pos = 8 ; key = f_util_standin ; val = @(z,b)f_util_log(f_coh_simple(z,b).*(f_coh_simple(z,b)&gt;0)+fl_c_min.*(f_coh_simple(z,b)&lt;=0))
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Scalars in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                       i    idx    xFunction
+                       _    ___    _________
+
+    f_bprime           1     1         1    
+    f_coh              2     2         2    
+    f_cons_coh_fbis    3     3         3    
+    f_cons_coh_save    4     4         4    
+    f_inc              5     5         5    
+    f_util_crra        6     6         6    
+    f_util_log         7     7         7    
+    f_util_standin     8     8         8    
+
+</pre><h2 id="29">Display 5 result_map</h2><pre class="codeinput">    fft_container_map_display(result_map);
+</pre><pre class="codeoutput">----------------------------------------
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Begin: Show all key and value pairs from container
+CONTAINER NAME: RESULT_MAP
+----------------------------------------
+  Map with properties:
+
+        Count: 22
+      KeyType: char
+    ValueType: any
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+----------------------------------------
+pos = 1 ; key = ar_pol_diff_norm ;rown= 118 ,coln= 1
+ar_pol_diff_norm :mu= 53.0996 ,sd= 280.7213 ,min= 0 ,max= 2189.8514
+                   zi_1_c1
+                   _______
+
+    zi_1_R1          2002 
+    zi_2_R2        2189.9 
+    zi_3_R3        721.95 
+    zi_4_R4        364.17 
+    zi_5_R5        214.04 
+    zi_114_r114         0 
+    zi_115_r115         0 
+    zi_116_r116         0 
+    zi_117_r117         0 
+    zi_118_r118         0 
+
+pos = 2 ; key = ar_st_pol_names ; val = cl_mt_pol_a cl_mt_coh cl_mt_pol_c cl_mt_pol_b_bridge cl_mt_pol_inf_borr_nobridge cl_mt_pol_for_borr cl_mt_pol_for_save
+pos = 3 ; key = ar_val_diff_norm ;rown= 118 ,coln= 1
+ar_val_diff_norm :mu= 10.7496 ,sd= 28.8376 ,min= 0.027852 ,max= 193.1614
+                   zi_1_c1 
+                   ________
+
+    zi_1_R1          193.16
+    zi_2_R2          147.46
+    zi_3_R3          119.38
+    zi_4_R4          98.645
+    zi_5_R5          83.341
+    zi_114_r114    0.035672
+    zi_115_r115    0.033532
+    zi_116_r116    0.031521
+    zi_117_r117     0.02963
+    zi_118_r118    0.027852
+
+pos = 4 ; key = cl_mt_coh ;rown= 750 ,coln= 15
+cl_mt_coh :mu= 16.4525 ,sd= 20.2536 ,min= -19.5553 ,max= 53.2858
+                   zi_1_C1    zi_2_C2    zi_3_C3    zi_8_C8    zi_13_c13    zi_14_c14    zi_15_c15
+                   _______    _______    _______    _______    _________    _________    _________
+
+    zi_1_R1        -19.555    -19.487    -19.408    -18.791     -17.531      -17.152      -16.714 
+    zi_2_R2        -19.462    -19.394    -19.315    -18.698     -17.437      -17.058      -16.621 
+    zi_3_R3        -19.368      -19.3    -19.221    -18.604     -17.344      -16.965      -16.527 
+    zi_4_R4        -19.275    -19.207    -19.128    -18.511      -17.25      -16.871      -16.434 
+    zi_5_R5        -19.181    -19.113    -19.034    -18.417     -17.157      -16.778       -16.34 
+    zi_746_r746     50.071     50.139     50.218     50.835      52.095       52.475       52.912 
+    zi_747_r747     50.164     50.233     50.311     50.928      52.189       52.568       53.005 
+    zi_748_r748     50.258     50.326     50.405     51.022      52.282       52.661       53.099 
+    zi_749_r749     50.351      50.42     50.498     51.115      52.376       52.755       53.192 
+    zi_750_r750     50.445     50.513     50.592     51.209      52.469       52.848       53.286 
+
+pos = 5 ; key = cl_mt_pol_a ;rown= 750 ,coln= 15
+cl_mt_pol_a :mu= 14.2841 ,sd= 19.5603 ,min= -20 ,max= 49.6262
+                   zi_1_C1    zi_2_C2    zi_3_C3    zi_8_C8    zi_13_c13    zi_14_c14    zi_15_c15
+                   _______    _______    _______    _______    _________    _________    _________
+
+    zi_1_R1             0          0          0          0           0          -20           -20 
+    zi_2_R2             0          0          0          0           0          -20           -20 
+    zi_3_R3             0          0          0          0         -20          -20       -19.533 
+    zi_4_R4             0          0          0          0         -20          -20       -19.439 
+    zi_5_R5             0          0          0          0         -20          -20       -19.346 
+    zi_746_r746    46.916     47.009     47.009     47.477      48.505       48.879        49.252 
+    zi_747_r747    47.009     47.103     47.103      47.57      48.598       48.972        49.346 
+    zi_748_r748    47.103     47.196     47.196     47.664      48.692       49.065        49.439 
+    zi_749_r749    47.196      47.29      47.29     47.757      48.785       49.159        49.533 
+    zi_750_r750     47.29     47.383     47.383      47.85      48.879       49.252        49.626 
+
+pos = 6 ; key = cl_mt_pol_b_bridge ;rown= 750 ,coln= 15
+cl_mt_pol_b_bridge :mu= -2.4126 ,sd= 5.0145 ,min= -19.4962 ,max= 0
+                   zi_1_C1    zi_2_C2    zi_3_C3    zi_8_C8    zi_13_c13    zi_14_c14    zi_15_c15
+                   _______    _______    _______    _______    _________    _________    _________
+
+    zi_1_R1           0          0          0          0              0      -18.781      -18.302 
+    zi_2_R2           0          0          0          0              0      -18.679        -18.2 
+    zi_3_R3           0          0          0          0        -18.992      -18.576      -18.097 
+    zi_4_R4           0          0          0          0        -18.889      -18.474      -17.995 
+    zi_5_R5           0          0          0          0        -18.787      -18.372      -17.893 
+    zi_746_r746       0          0          0          0              0            0            0 
+    zi_747_r747       0          0          0          0              0            0            0 
+    zi_748_r748       0          0          0          0              0            0            0 
+    zi_749_r749       0          0          0          0              0            0            0 
+    zi_750_r750       0          0          0          0              0            0            0 
+
+pos = 7 ; key = cl_mt_pol_c ;rown= 750 ,coln= 15
+cl_mt_pol_c :mu= 2.618 ,sd= 1.1332 ,min= 0.02 ,max= 4.87
+                   zi_1_C1    zi_2_C2    zi_3_C3    zi_8_C8    zi_13_c13    zi_14_c14    zi_15_c15
+                   _______    _______    _______    _______    _________    _________    _________
+
+    zi_1_R1          0.02       0.02       0.02       0.02         0.02      1.1406        1.578  
+    zi_2_R2          0.02       0.02       0.02       0.02         0.02      1.2341       1.6715  
+    zi_3_R3          0.02       0.02       0.02       0.02      0.94483      1.3275       1.3382  
+    zi_4_R4          0.02       0.02       0.02       0.02       1.0418       1.421       1.3463  
+    zi_5_R5          0.02       0.02       0.02       0.02       1.1353      1.5145       1.3544  
+    zi_746_r746    4.2993     4.2764     4.3551     4.5163       4.7737      4.7882       4.8609  
+    zi_747_r747    4.3015     4.2786     4.3574     4.5186        4.776      4.7905       4.8632  
+    zi_748_r748    4.3038     4.2809     4.3597     4.5208       4.7783      4.7928       4.8655  
+    zi_749_r749    4.3061     4.2832      4.362     4.5231       4.7806       4.795       4.8677  
+    zi_750_r750    4.3084     4.2855     4.3643     4.5254       4.7829      4.7973         4.87  
+
+pos = 8 ; key = cl_mt_pol_for_borr ;rown= 750 ,coln= 15
+cl_mt_pol_for_borr :mu= -0.30038 ,sd= 0.5387 ,min= -2.6625 ,max= 0
+                   zi_1_C1    zi_2_C2    zi_3_C3    zi_8_C8    zi_13_c13    zi_14_c14    zi_15_c15
+                   _______    _______    _______    _______    _________    _________    _________
+
+    zi_1_R1           0          0          0          0             0       -1.065       -1.065  
+    zi_2_R2           0          0          0          0             0       -1.065       -1.065  
+    zi_3_R3           0          0          0          0        -1.065       -1.065       -1.065  
+    zi_4_R4           0          0          0          0        -1.065       -1.065       -1.065  
+    zi_5_R5           0          0          0          0        -1.065       -1.065       -1.065  
+    zi_746_r746       0          0          0          0             0            0            0  
+    zi_747_r747       0          0          0          0             0            0            0  
+    zi_748_r748       0          0          0          0             0            0            0  
+    zi_749_r749       0          0          0          0             0            0            0  
+    zi_750_r750       0          0          0          0             0            0            0  
+
+pos = 9 ; key = cl_mt_pol_for_save ;rown= 750 ,coln= 15
+cl_mt_pol_for_save :mu= 17.0926 ,sd= 15.977 ,min= 0 ,max= 49.6262
+                   zi_1_C1    zi_2_C2    zi_3_C3    zi_8_C8    zi_13_c13    zi_14_c14    zi_15_c15
+                   _______    _______    _______    _______    _________    _________    _________
+
+    zi_1_R1             0          0          0          0            0           0            0  
+    zi_2_R2             0          0          0          0            0           0            0  
+    zi_3_R3             0          0          0          0     0.056554           0            0  
+    zi_4_R4             0          0          0          0            0           0            0  
+    zi_5_R5             0          0          0          0            0           0            0  
+    zi_746_r746    46.916     47.009     47.009     47.477       48.505      48.879       49.252  
+    zi_747_r747    47.009     47.103     47.103      47.57       48.598      48.972       49.346  
+    zi_748_r748    47.103     47.196     47.196     47.664       48.692      49.065       49.439  
+    zi_749_r749    47.196      47.29      47.29     47.757       48.785      49.159       49.533  
+    zi_750_r750     47.29     47.383     47.383      47.85       48.879      49.252       49.626  
+
+pos = 10 ; key = cl_mt_pol_inf_borr_nobridge ;rown= 750 ,coln= 15
+cl_mt_pol_inf_borr_nobridge :mu= -0.095582 ,sd= 0.19098 ,min= -0.92595 ,max= 0
+                   zi_1_C1    zi_2_C2    zi_3_C3    zi_8_C8    zi_13_c13    zi_14_c14    zi_15_c15
+                   _______    _______    _______    _______    _________    _________    _________
+
+    zi_1_R1           0          0          0          0               0    -0.15398     -0.63294 
+    zi_2_R2           0          0          0          0               0    -0.25631     -0.73528 
+    zi_3_R3           0          0          0          0               0    -0.35865     -0.37033 
+    zi_4_R4           0          0          0          0       -0.045783    -0.46099     -0.37921 
+    zi_5_R5           0          0          0          0        -0.14812    -0.56332     -0.38808 
+    zi_746_r746       0          0          0          0               0           0            0 
+    zi_747_r747       0          0          0          0               0           0            0 
+    zi_748_r748       0          0          0          0               0           0            0 
+    zi_749_r749       0          0          0          0               0           0            0 
+    zi_750_r750       0          0          0          0               0           0            0 
+
+pos = 11 ; key = mt_it_b_bridge_idx ;rown= 750 ,coln= 15
+mt_it_b_bridge_idx :mu= 0.25076 ,sd= 0.43347 ,min= 0 ,max= 1
+                   zi_1_C1    zi_2_C2    zi_3_C3    zi_8_C8    zi_13_c13    zi_14_c14    zi_15_c15
+                   _______    _______    _______    _______    _________    _________    _________
+
+    zi_1_R1         false      false      false      false       false        true         true   
+    zi_2_R2         false      false      false      false       false        true         true   
+    zi_3_R3         false      false      false      false       true         true         true   
+    zi_4_R4         false      false      false      false       true         true         true   
+    zi_5_R5         false      false      false      false       true         true         true   
+    zi_746_r746     false      false      false      false       false        false        false  
+    zi_747_r747     false      false      false      false       false        false        false  
+    zi_748_r748     false      false      false      false       false        false        false  
+    zi_749_r749     false      false      false      false       false        false        false  
+    zi_750_r750     false      false      false      false       false        false        false  
+
+pos = 12 ; key = mt_it_for_only_nbdg ;rown= 750 ,coln= 15
+mt_it_for_only_nbdg :mu= 0 ,sd= 0 ,min= 0 ,max= 0
+                   zi_1_C1    zi_2_C2    zi_3_C3    zi_8_C8    zi_13_c13    zi_14_c14    zi_15_c15
+                   _______    _______    _______    _______    _________    _________    _________
+
+    zi_1_R1         false      false      false      false       false        false        false  
+    zi_2_R2         false      false      false      false       false        false        false  
+    zi_3_R3         false      false      false      false       false        false        false  
+    zi_4_R4         false      false      false      false       false        false        false  
+    zi_5_R5         false      false      false      false       false        false        false  
+    zi_746_r746     false      false      false      false       false        false        false  
+    zi_747_r747     false      false      false      false       false        false        false  
+    zi_748_r748     false      false      false      false       false        false        false  
+    zi_749_r749     false      false      false      false       false        false        false  
+    zi_750_r750     false      false      false      false       false        false        false  
+
+pos = 13 ; key = mt_it_fr_brrsv_nbdg ;rown= 750 ,coln= 15
+mt_it_fr_brrsv_nbdg :mu= 0.022844 ,sd= 0.14941 ,min= 0 ,max= 1
+                   zi_1_C1    zi_2_C2    zi_3_C3    zi_8_C8    zi_13_c13    zi_14_c14    zi_15_c15
+                   _______    _______    _______    _______    _________    _________    _________
+
+    zi_1_R1         false      false      false      false       false        false        false  
+    zi_2_R2         false      false      false      false       false        false        false  
+    zi_3_R3         false      false      false      false       true         false        false  
+    zi_4_R4         false      false      false      false       false        false        false  
+    zi_5_R5         false      false      false      false       false        false        false  
+    zi_746_r746     false      false      false      false       false        false        false  
+    zi_747_r747     false      false      false      false       false        false        false  
+    zi_748_r748     false      false      false      false       false        false        false  
+    zi_749_r749     false      false      false      false       false        false        false  
+    zi_750_r750     false      false      false      false       false        false        false  
+
+pos = 14 ; key = mt_it_frin_brr_nbdg ;rown= 750 ,coln= 15
+mt_it_frin_brr_nbdg :mu= 0.23787 ,sd= 0.4258 ,min= 0 ,max= 1
+                   zi_1_C1    zi_2_C2    zi_3_C3    zi_8_C8    zi_13_c13    zi_14_c14    zi_15_c15
+                   _______    _______    _______    _______    _________    _________    _________
+
+    zi_1_R1         false      false      false      false       false        true         true   
+    zi_2_R2         false      false      false      false       false        true         true   
+    zi_3_R3         false      false      false      false       false        true         true   
+    zi_4_R4         false      false      false      false       true         true         true   
+    zi_5_R5         false      false      false      false       true         true         true   
+    zi_746_r746     false      false      false      false       false        false        false  
+    zi_747_r747     false      false      false      false       false        false        false  
+    zi_748_r748     false      false      false      false       false        false        false  
+    zi_749_r749     false      false      false      false       false        false        false  
+    zi_750_r750     false      false      false      false       false        false        false  
+
+pos = 15 ; key = mt_it_frmsavng_only ;rown= 750 ,coln= 15
+mt_it_frmsavng_only :mu= 0.71413 ,sd= 0.45185 ,min= 0 ,max= 1
+                   zi_1_C1    zi_2_C2    zi_3_C3    zi_8_C8    zi_13_c13    zi_14_c14    zi_15_c15
+                   _______    _______    _______    _______    _________    _________    _________
+
+    zi_1_R1         false      false      false      false       false        false        false  
+    zi_2_R2         false      false      false      false       false        false        false  
+    zi_3_R3         false      false      false      false       false        false        false  
+    zi_4_R4         false      false      false      false       false        false        false  
+    zi_5_R5         false      false      false      false       false        false        false  
+    zi_746_r746     true       true       true       true        true         true         true   
+    zi_747_r747     true       true       true       true        true         true         true   
+    zi_748_r748     true       true       true       true        true         true         true   
+    zi_749_r749     true       true       true       true        true         true         true   
+    zi_750_r750     true       true       true       true        true         true         true   
+
+pos = 16 ; key = mt_it_inf_only_nbdg ;rown= 750 ,coln= 15
+mt_it_inf_only_nbdg :mu= 0.0085333 ,sd= 0.091985 ,min= 0 ,max= 1
+                   zi_1_C1    zi_2_C2    zi_3_C3    zi_8_C8    zi_13_c13    zi_14_c14    zi_15_c15
+                   _______    _______    _______    _______    _________    _________    _________
+
+    zi_1_R1         false      false      false      false       false        false        false  
+    zi_2_R2         false      false      false      false       false        false        false  
+    zi_3_R3         false      false      false      false       false        false        false  
+    zi_4_R4         false      false      false      false       false        false        false  
+    zi_5_R5         false      false      false      false       false        false        false  
+    zi_746_r746     false      false      false      false       false        false        false  
+    zi_747_r747     false      false      false      false       false        false        false  
+    zi_748_r748     false      false      false      false       false        false        false  
+    zi_749_r749     false      false      false      false       false        false        false  
+    zi_750_r750     false      false      false      false       false        false        false  
+
+pos = 17 ; key = mt_pol_idx ;rown= 750 ,coln= 15
+mt_pol_idx :mu= 367.8396 ,sd= 209.2957 ,min= 1 ,max= 746
+                   zi_1_C1    zi_2_C2    zi_3_C3    zi_8_C8    zi_13_c13    zi_14_c14    zi_15_c15
+                   _______    _______    _______    _______    _________    _________    _________
+
+    zi_1_R1          215        215        215        215         215            1            1   
+    zi_2_R2          215        215        215        215         215            1            1   
+    zi_3_R3          215        215        215        215           1            1            6   
+    zi_4_R4          215        215        215        215           1            1            7   
+    zi_5_R5          215        215        215        215           1            1            8   
+    zi_746_r746      717        718        718        723         734          738          742   
+    zi_747_r747      718        719        719        724         735          739          743   
+    zi_748_r748      719        720        720        725         736          740          744   
+    zi_749_r749      720        721        721        726         737          741          745   
+    zi_750_r750      721        722        722        727         738          742          746   
+
+pos = 18 ; key = mt_pol_perc_change ;rown= 118 ,coln= 15
+mt_pol_perc_change :mu= 0.20847 ,sd= 0.33438 ,min= 0 ,max= 1
+                   zi_1_C1    zi_2_C2    zi_3_C3    zi_8_C8    zi_13_c13    zi_14_c14    zi_15_c15
+                   _______    _______    _______    _______    _________    _________    _________
+
+    zi_1_R1              1          1          1          1           1            1            1 
+    zi_2_R2           0.98    0.98133    0.98267      0.992           1            1            1 
+    zi_3_R3        0.96267    0.96533    0.96667    0.98133           1            1            1 
+    zi_4_R4        0.94933    0.95333      0.956      0.972     0.99467            1            1 
+    zi_5_R5          0.932    0.93467    0.93733      0.964     0.99067      0.99867      0.99733 
+    zi_114_r114          0          0          0          0           0            0            0 
+    zi_115_r115          0          0          0          0           0            0            0 
+    zi_116_r116          0          0          0          0           0            0            0 
+    zi_117_r117          0          0          0          0           0            0            0 
+    zi_118_r118          0          0          0          0           0            0            0 
+
+pos = 19 ; key = mt_val ;rown= 750 ,coln= 15
+mt_val :mu= 6.3492 ,sd= 7.0755 ,min= -11.4101 ,max= 14.9196
+                   zi_1_C1    zi_2_C2    zi_3_C3    zi_8_C8    zi_13_c13    zi_14_c14    zi_15_c15
+                   _______    _______    _______    _______    _________    _________    _________
+
+    zi_1_R1        -11.41     -11.157    -10.871    -9.1936      -7.378      -6.7979      -6.1925 
+    zi_2_R2        -11.41     -11.157    -10.871    -9.1936      -7.378      -6.7256      -6.1474 
+    zi_3_R3        -11.41     -11.157    -10.871    -9.1936     -7.2987      -6.6611      -6.0954 
+    zi_4_R4        -11.41     -11.157    -10.871    -9.1936     -7.2005       -6.603      -6.0336 
+    zi_5_R5        -11.41     -11.157    -10.871    -9.1936     -7.1182      -6.5504      -5.9757 
+    zi_746_r746    13.685      13.735     13.791     14.148      14.648       14.766       14.885 
+    zi_747_r747    13.696      13.746     13.802     14.157      14.657       14.775       14.894 
+    zi_748_r748    13.706      13.756     13.812     14.167      14.666       14.784       14.902 
+    zi_749_r749    13.717      13.766     13.823     14.177      14.675       14.792       14.911 
+    zi_750_r750    13.728      13.777     13.833     14.187      14.684       14.801        14.92 
+
+pos = 20 ; key = tb_pol_a ;rown= 100 ,coln= 12
+tb_pol_a :mu= 15.5562 ,sd= 30.8702 ,min= -20 ,max= 49.6262
+                   zi_1_C1    zi_2_C2    zi_3_C3    zi_6_C6    zi_10_c10    zi_11_c11    zi_12_c12
+                   _______    _______    _______    _______    _________    _________    _________
+
+    zi_1_R1             0          0          0          0           0          -20           -20 
+    zi_2_R2             0          0          0          0           0          -20           -20 
+    zi_3_R3             0          0          0          0         -20          -20       -19.533 
+    zi_4_R4             0          0          0          0         -20          -20       -19.439 
+    zi_5_R5             0          0          0          0         -20          -20       -19.346 
+    zi_96_R96      46.916     47.009     47.009      47.29      48.505       48.879        49.252 
+    zi_97_R97      47.009     47.103     47.103     47.383      48.598       48.972        49.346 
+    zi_98_R98      47.103     47.196     47.196     47.477      48.692       49.065        49.439 
+    zi_99_R99      47.196      47.29      47.29      47.57      48.785       49.159        49.533 
+    zi_100_r100     47.29     47.383     47.383     47.664      48.879       49.252        49.626 
+
+pos = 21 ; key = tb_val ;rown= 100 ,coln= 12
+tb_val :mu= 3.0056 ,sd= 11.1075 ,min= -11.4101 ,max= 14.9196
+                   zi_1_C1    zi_2_C2    zi_3_C3    zi_6_C6    zi_10_c10    zi_11_c11    zi_12_c12
+                   _______    _______    _______    _______    _________    _________    _________
+
+    zi_1_R1        -11.41     -11.157    -10.871    -9.8987      -7.378      -6.7979      -6.1925 
+    zi_2_R2        -11.41     -11.157    -10.871    -9.8987      -7.378      -6.7256      -6.1474 
+    zi_3_R3        -11.41     -11.157    -10.871    -9.8987     -7.2987      -6.6611      -6.0954 
+    zi_4_R4        -11.41     -11.157    -10.871    -9.8987     -7.2005       -6.603      -6.0336 
+    zi_5_R5        -11.41     -11.157    -10.871    -9.8987     -7.1182      -6.5504      -5.9757 
+    zi_96_R96      13.685      13.735     13.791      13.99      14.648       14.766       14.885 
+    zi_97_R97      13.696      13.746     13.802         14      14.657       14.775       14.894 
+    zi_98_R98      13.706      13.756     13.812      14.01      14.666       14.784       14.902 
+    zi_99_R99      13.717      13.766     13.823      14.02      14.675       14.792       14.911 
+    zi_100_r100    13.728      13.777     13.833      14.03      14.684       14.801        14.92 
+
+pos = 22 ; key = tb_valpol_alliter ;rown= 100 ,coln= 14
+tb_valpol_alliter :mu= 5.5725 ,sd= 82.9258 ,min= 0 ,max= 2189.8514
+                   zi_1_C1     zi_2_C2    zi_3_C3    zi_7_C7    zi_12_c12    zi_13_c13    zi_14_c14
+                   ________    _______    _______    _______    _________    _________    _________
+
+    zi_1_R1          193.16      2002           1          1           1            1            1 
+    zi_2_R2          147.46    2189.9        0.98    0.98533           1            1            1 
+    zi_3_R3          119.38    721.95     0.96267      0.972           1            1            1 
+    zi_4_R4          98.645    364.17     0.94933      0.964     0.99467            1            1 
+    zi_5_R5          83.341    214.04       0.932    0.94667     0.99067      0.99867      0.99733 
+    zi_96_R96      0.035672         0           0          0           0            0            0 
+    zi_97_R97      0.033532         0           0          0           0            0            0 
+    zi_98_R98      0.031521         0           0          0           0            0            0 
+    zi_99_R99       0.02963         0           0          0           0            0            0 
+    zi_100_r100    0.027852         0           0          0           0            0            0 
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Matrix in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                                   i     idx    rowN    colN      mean         std         min        max  
+                                   __    ___    ____    ____    _________    ________    ________    ______
+
+    ar_pol_diff_norm                1     1     118       1          53.1      280.72           0    2189.9
+    ar_val_diff_norm                2     3     118       1         10.75      28.838    0.027852    193.16
+    cl_mt_coh                       3     4     750      15        16.452      20.254     -19.555    53.286
+    cl_mt_pol_a                     4     5     750      15        14.284       19.56         -20    49.626
+    cl_mt_pol_b_bridge              5     6     750      15       -2.4126      5.0145     -19.496         0
+    cl_mt_pol_c                     6     7     750      15         2.618      1.1332        0.02      4.87
+    cl_mt_pol_for_borr              7     8     750      15      -0.30038      0.5387     -2.6625         0
+    cl_mt_pol_for_save              8     9     750      15        17.093      15.977           0    49.626
+    cl_mt_pol_inf_borr_nobridge     9    10     750      15     -0.095582     0.19098    -0.92595         0
+    mt_it_b_bridge_idx             10    11     750      15       0.25076     0.43347           0         1
+    mt_it_for_only_nbdg            11    12     750      15             0           0           0         0
+    mt_it_fr_brrsv_nbdg            12    13     750      15      0.022844     0.14941           0         1
+    mt_it_frin_brr_nbdg            13    14     750      15       0.23787      0.4258           0         1
+    mt_it_frmsavng_only            14    15     750      15       0.71413     0.45185           0         1
+    mt_it_inf_only_nbdg            15    16     750      15     0.0085333    0.091985           0         1
+    mt_pol_idx                     16    17     750      15        367.84       209.3           1       746
+    mt_pol_perc_change             17    18     118      15       0.20847     0.33438           0         1
+    mt_val                         18    19     750      15        6.3492      7.0755      -11.41     14.92
+    tb_pol_a                       19    20     100      12        15.556       30.87         -20    49.626
+    tb_val                         20    21     100      12        3.0056      11.108      -11.41     14.92
+    tb_valpol_alliter              21    22     100      14        5.5725      82.926           0    2189.9
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Strings in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                       i    idx
+                       _    ___
+
+    ar_st_pol_names    1     2 
+
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><pre class="codeinput"><span class="keyword">end</span>
 </pre><pre class="codeoutput">
 ans = 
 
   Map with properties:
 
-        Count: 23
+        Count: 22
       KeyType: char
     ValueType: any
 
@@ -1491,12 +2233,12 @@ end
 % Value Function Iteration
 while bl_vfi_continue
     it_iter = it_iter + 1;
-    
+
     %% Solve Optimization Problem Current Iteration
-    
+
     % loop 1: over exogenous states
     for it_z_i = 1:length(ar_z)
-        
+
         %% Solve the Formal Informal Problem for each a' and coh: c_forinf(a')
         % find the today's consumption maximizing formal and informal
         % choices given a' and coh. The formal and informal choices need to
@@ -1515,25 +2257,25 @@ while bl_vfi_continue
         % optimize over for+inf save, for+save+borr, inf+borr only, for
         % borrow only.
         %
-        
+
         % 1. Current Shock
         fl_z = ar_z(it_z_i);
-        
+
         % 2. cash-on-hand
         ar_coh = f_coh(fl_z, ar_a);
-        
+
         % Consumption and u(c) only need to be evaluated once
         if (it_iter == 1)
-            
+
             % 3. *CASE A* initiate consumption matrix as if all save
             mt_c = f_cons_coh_save(ar_coh, ar_a');
-            
+
             % 4. *CASE B+C* get negative coh index and get borrowing choices index
             ar_coh_neg_idx = (ar_coh <= 0);
             ar_a_neg_idx = (ar_a < 0);
             ar_coh_neg = ar_coh(ar_coh_neg_idx);
             ar_a_neg = ar_a(ar_a_neg_idx);
-            
+
             % 5. if coh > 0 and ap < 0, can allow same for+inf result to all coh.
             % The procedure below works regardless of how ar_coh is sorted. get
             % the index of all negative coh elements as well as first
@@ -1543,31 +2285,31 @@ while bl_vfi_continue
             ar_coh_first_pos_idx = (cumsum(ar_coh_neg_idx == 0) == 1);
             ar_coh_forinfsolve_idx = (ar_coh_first_pos_idx | ar_coh_neg_idx);
             ar_coh_forinfsolve_a_neg_idx = (ar_coh(ar_coh_forinfsolve_idx) <= 0);
-            
+
             % 6. *CASE B + C* Negative asset choices (borrowing), 1 col Case C
             % negp1: negative coh + 1, 1 meaning 1 positive coh, first positive
             % coh column index element grabbed.
             mt_coh_negp1_mesh_neg_aprime = zeros(size(ar_a_neg')) + ar_coh(ar_coh_forinfsolve_idx);
             mt_neg_aprime_mesh_coh_negp1 = zeros(size(mt_coh_negp1_mesh_neg_aprime)) + ar_a_neg';
-            
+
             if (bl_bridge)
                 %         mt_neg_aprime_mesh_coh_1col4poscoh = zeros([length(ar_a_neg), (length(ar_coh_neg)+1)]) + ar_a_neg';
                 %         ar_coh_neg_idx_1col4poscoh = ar_coh_neg_idx(1:(length(ar_coh_neg)+1));
-                
+
                 % 6. *CASE B* Solve for: if (fl_ap < 0) and if (fl_coh < 0)
                 [mt_aprime_nobridge_negcoh, ~, mt_c_bridge_negcoh] = ffs_fibs_inf_bridge(...
                     bl_b_is_principle, fl_r_inf, ...
                     mt_neg_aprime_mesh_coh_negp1(:,ar_coh_forinfsolve_a_neg_idx), ...
                     mt_coh_negp1_mesh_neg_aprime(:,ar_coh_forinfsolve_a_neg_idx), ...
                     bl_display_infbridge, bl_input_override);
-                
+
                 % generate mt_aprime_nobridge
                 mt_neg_aprime_mesh_coh_negp1(:, ar_coh_forinfsolve_a_neg_idx) = mt_aprime_nobridge_negcoh;
             else
                 % no bridge loan needed means roll over is allowed.
                 mt_neg_aprime_mesh_coh_negp1 = ar_a_neg';
             end
-            
+
             % 7. *CASE B + C* formal and informal joint choices, 1 col Case C
             bl_input_override = true;
             [ar_max_c_nobridge, ~, ~, ~] = ...
@@ -1576,7 +2318,7 @@ while bl_vfi_continue
                 ar_forbrblk_r, ar_forbrblk, ...
                 mt_neg_aprime_mesh_coh_negp1(:), ...
                 bl_display_minccost, bl_input_override);
-            
+
             %% Update Consumption Matrix *CASE A + B + C* Consumptions
             % Current mt_c is assuming all to be case A
             %
@@ -1586,19 +2328,19 @@ while bl_vfi_continue
             % * Update Columns for all case C: ~ar_coh_neg_idx using 1 column
             % result
             %
-            
+
             % 1. Initalize all Neg Aprime consumption cost of aprime inputs
             % Initialize
             mt_max_c_nobridge_a_neg = zeros([length(ar_a_neg), length(ar_coh)]) + 0;
             mt_c_bridge_coh_a_neg = zeros(size(mt_max_c_nobridge_a_neg)) + 0;
-            
+
             % 2. Fill in *Case B* and *Case C* (one column) Other C-cost
             mt_max_c_nobridge_negcohp1 = reshape(ar_max_c_nobridge, [size(mt_neg_aprime_mesh_coh_negp1)]);
-            
+
             if (bl_bridge)
                 % 2. Fill in *Case B* Bridge C-cost
                 mt_c_bridge_coh_a_neg(:, ar_coh_neg_idx) = mt_c_bridge_negcoh;
-                
+
                 % 2. Fill in *Case B* and *Case C* (one column) Other C-cost
                 mt_max_c_nobridge_a_neg(:, ar_coh_forinfsolve_idx) = mt_max_c_nobridge_negcohp1;
                 mt_max_c_nobridge_a_neg(:, ~ar_coh_forinfsolve_idx) = ...
@@ -1607,15 +2349,15 @@ while bl_vfi_continue
             else
                 mt_max_c_nobridge_a_neg = zeros([length(ar_a_neg), length(ar_coh)]) + mt_max_c_nobridge_negcohp1;
             end
-            
+
             % 3. Consumption for B + C Cases
             % note, the c cost of aprime is the same for all coh > 0, but mt_c
             % is different still for each coh and aprime.
             mt_c_forinfsolve = f_cons_coh_fbis(ar_coh, mt_c_bridge_coh_a_neg + mt_max_c_nobridge_a_neg);
-            
+
             % 4. Update with Case B and C
             mt_c(ar_a_neg_idx, :) = mt_c_forinfsolve;
-            
+
             %% Evaluate u(c) and store
             % 1. EVAL current utility: N by N, f_util defined earlier
             if (fl_crra == 1)
@@ -1625,40 +2367,40 @@ while bl_vfi_continue
                 mt_utility = f_util_crra(mt_c);
                 fl_u_cmin = f_util_crra(fl_c_min);
             end
-            
+
             % 2. Invliad consumption points
             mt_it_c_valid_idx = (mt_c <= fl_c_min);
             % Set below threshold c to c_min
             mt_c(mt_c < fl_c_min) = fl_c_min;
-            
+
             % 3. Invalid points if bridge not possible also no rollover
             if( ~bl_rollover && ~bl_bridge)
                 mt_it_c_valid_idx(:, ar_coh_neg_idx) = 1;
             end
-            
+
             % 4. Eliminate Complex Numbers
             mt_utility(mt_it_c_valid_idx) = fl_u_cmin;
-            
+
             % 5. Store in cells
             cl_c_store{it_z_i} = mt_c;
             cl_u_c_store{it_z_i} = mt_utility;
             cl_c_valid_idx{it_z_i} = mt_it_c_valid_idx;
-            
+
         end
-        
+
         %% Solve Optimization Problem: max_{a'} (u(c_forinf(a')) + EV(a',z'))
-        
+
         % 1. f(z'|z)
         ar_z_trans_condi = mt_z_trans(it_z_i,:);
-        
+
         % 2. EVAL EV((A',K'),Z'|Z) = V((A',K'),Z') x p(z'|z)', (N by Z) x (Z by 1) = N by 1
         % Note: transpose ar_z_trans_condi from 1 by Z to Z by 1
         % Note: matrix multiply not dot multiply
         mt_evzp_condi_z = mt_val_cur * ar_z_trans_condi';
-        
+
         % 3. EVAL add on future utility, N by N + N by 1, broadcast again
         mt_utility = cl_u_c_store{it_z_i} + fl_beta*mt_evzp_condi_z;
-        
+
         % 4. Index update
         % using the method below is much faster than index replace
         % see <https://fanwangecon.github.io/M4Econ/support/speed/index/fs_subscript.html fs_subscript>
@@ -1672,7 +2414,7 @@ while bl_vfi_continue
             % if default is not allowed: v = u(cmin)
             mt_utility = mt_utility.*(~mt_it_c_valid_idx) + fl_nan_replace*(mt_it_c_valid_idx);
         end
-        
+
         % Optimization: remember matlab is column major, rows must be
         % choices, columns must be states
         % <https://en.wikipedia.org/wiki/Row-_and_column-major_order COLUMN-MAJOR>
@@ -1683,7 +2425,7 @@ while bl_vfi_continue
         ar_opti_linear_idx_z = ar_opti_idx_z + ar_add_grid;
         ar_opti_aprime_z = ar_a(ar_opti_idx_z);
         ar_opti_c_z = cl_c_store{it_z_i}(ar_opti_linear_idx_z);
-        
+
         % Handle Default is optimal or not
         if (bl_default)
             % if defaulting is optimal choice, at these states, not required
@@ -1696,7 +2438,7 @@ while bl_vfi_continue
             % state space point, lowest a and lowest shock has this.
             ar_opti_aprime_z(ar_opti_c_z <= fl_c_min) = min(ar_a);
         end
-        
+
         % 6. no bridge and no rollover allowed
         if( ~bl_rollover && ~bl_bridge)
             if (bl_default)
@@ -1707,28 +2449,28 @@ while bl_vfi_continue
                 ar_opti_aprime_z(ar_coh_neg_idx) = ar_a(fl_nan_replace);
             end
         end
-        
+
         % store optimal values
         mt_val(:,it_z_i) = ar_opti_val_z;
         mt_pol_a(:,it_z_i) = ar_opti_aprime_z;
         mt_pol_cons(:,it_z_i) = ar_opti_c_z;
-        
+
         if (it_iter == (it_maxiter_val + 1))
             mt_pol_idx(:,it_z_i) = ar_opti_idx_z;
         end
     end
-    
+
     %% Check Tolerance and Continuation
-    
+
     % Difference across iterations
     ar_val_diff_norm(it_iter) = norm(mt_val - mt_val_cur);
     ar_pol_diff_norm(it_iter) = norm(mt_pol_a - mt_pol_a_cur);
     mt_pol_perc_change(it_iter, :) = sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n);
-    
+
     % Update
     mt_val_cur = mt_val;
     mt_pol_a_cur = mt_pol_a;
-    
+
     % Print Iteration Results
     if (bl_display && (rem(it_iter, it_display_every)==0))
         fprintf('VAL it_iter:%d, fl_diff:%d, fl_diff_pol:%d\n', ...
@@ -1743,7 +2485,7 @@ while bl_vfi_continue
         disp('Hap = mt_pol_a_cur(it_a_n,:), highest a state choice')
         disp(tb_valpol_iter);
     end
-    
+
     % Continuation Conditions:
     % 1. if value function convergence criteria reached
     % 2. if policy function variation over iterations is less than
@@ -1757,7 +2499,7 @@ while bl_vfi_continue
         it_iter_last = it_iter;
         it_iter = it_maxiter_val;
     end
-    
+
 end
 
 % End Timer
@@ -1787,23 +2529,23 @@ for it_z_i = 1:length(ar_z)
         fl_a = ar_a(it_a_j);
         fl_coh = f_coh(fl_z, fl_a);
         fl_a_opti = mt_pol_a(it_a_j, it_z_i);
-        
+
         % call formal and informal function.
         [~, fl_opti_b_bridge, fl_opti_inf_borr_nobridge, fl_opti_for_borr, fl_opti_for_save] = ...
             ffs_fibs_min_c_cost_bridge(fl_a_opti, fl_coh, ...
             param_map, support_map, armt_map, func_map, bl_input_override);
-        
+
         % store savings and borrowing formal and inf optimal choices
         mt_pol_b_bridge(it_a_j,it_z_i) = fl_opti_b_bridge;
         mt_pol_inf_borr_nobridge(it_a_j,it_z_i) = fl_opti_inf_borr_nobridge;
         mt_pol_for_borr(it_a_j,it_z_i) = fl_opti_for_borr;
         mt_pol_for_save(it_a_j,it_z_i) = fl_opti_for_save;
-        
+
     end
 end
 
 result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
-result_map('cl_mt_pol_coh') = {f_coh(ar_z, ar_a'), zeros(1)};
+result_map('cl_mt_coh') = {f_coh(ar_z, ar_a'), zeros(1)};
 
 result_map('cl_mt_pol_c') = {mt_pol_cons, zeros(1)};
 result_map('cl_mt_pol_b_bridge') = {mt_pol_b_bridge, zeros(1)};
@@ -1811,7 +2553,7 @@ result_map('cl_mt_pol_inf_borr_nobridge') = {mt_pol_inf_borr_nobridge, zeros(1)}
 result_map('cl_mt_pol_for_borr') = {mt_pol_for_borr, zeros(1)};
 result_map('cl_mt_pol_for_save') = {mt_pol_for_save, zeros(1)};
 
-result_map('ar_st_pol_names') = ["cl_mt_pol_a", "cl_mt_pol_coh", "cl_mt_pol_c", ...
+result_map('ar_st_pol_names') = ["cl_mt_pol_a", "cl_mt_coh", "cl_mt_pol_c", ...
     "cl_mt_pol_b_bridge", "cl_mt_pol_inf_borr_nobridge", "cl_mt_pol_for_borr", "cl_mt_pol_for_save"];
 
 % Get Discrete Choice Outcomes
@@ -1821,7 +2563,7 @@ result_map = ffs_fibs_identify_discrete(result_map, bl_input_override);
 % Note in comparison with *abz*, results here, even when using identical
 % parameters would differ because in *abz* solved where choices are
 % principle. Here choices are principle + interests in order to facilitate
-% using the informal choice functions. 
+% using the informal choice functions.
 %
 % Note that this means two things are
 % different, on the one hand, the value of asset for to coh is different
@@ -1851,14 +2593,36 @@ if (bl_post)
     result_map('ar_val_diff_norm') = ar_val_diff_norm(1:it_iter_last);
     result_map('ar_pol_diff_norm') = ar_pol_diff_norm(1:it_iter_last);
     result_map('mt_pol_perc_change') = mt_pol_perc_change(1:it_iter_last, :);
-    
+
     % Standard AZ graphs
     result_map = ff_az_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
-    
+
     % Graphs for results_map with FIBS contents
     result_map = ff_az_fibs_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
 end
 
+%% Display Various Containers
+bl_display_defparam = true;
+if (bl_display_defparam)
+    
+    %% Display 1 support_map    
+    fft_container_map_display(support_map);
+        
+    %% Display 2 armt_map
+    fft_container_map_display(armt_map);
+
+    %% Display 3 param_map
+    fft_container_map_display(param_map);
+    
+    %% Display 4 func_map
+    fft_container_map_display(func_map);
+    
+    %% Display 5 result_map
+    fft_container_map_display(result_map);
+    
 end
+
+end
+
 ##### SOURCE END #####
 --></body></html>

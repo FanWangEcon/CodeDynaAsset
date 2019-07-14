@@ -15,7 +15,7 @@ function [result_map] = ff_ipwkbz_ds_wrapper(varargin)
 % # it_subset = 8 is matlab publish
 % # it_subset = 9 is invoke operational (only final stats) and coh graph
 
-it_param_set = 8;
+it_param_set = 9;
 bl_input_override = true;
 [param_map, support_map] = ffs_ipwkbz_set_default_param(it_param_set);
 
@@ -37,15 +37,15 @@ bl_input_override = true;
 % param_map('fl_r_borr') = 0.025;
 
 % These parameters below for comparison with abz_fibs model
-param_map('fl_r_save') = 0.025;
-param_map('fl_r_borr') = 0.095;
-param_map('fl_c_min') = 0.02;
+% param_map('fl_r_save') = 0.025;
+% param_map('fl_r_borr') = 0.095;
+% param_map('fl_c_min') = 0.02;
 
 % param_map('st_analytical_stationary_type') = 'loop';
 % param_map('st_analytical_stationary_type') = 'vector';
 param_map('st_analytical_stationary_type') = 'eigenvector';
 
-% get armt and func map 
+% get armt and func map
 [armt_map, func_map] = ffs_ipwkbz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 default_params = {param_map support_map armt_map func_map};
 
@@ -108,17 +108,17 @@ result_map = ff_ipwkbz_vf_vecsv(param_map, support_map, armt_map, func_map);
 %% Derive Distribution
 
 if (strcmp(st_analytical_stationary_type, 'loop'))
-    
+
     result_map = ff_iwkz_ds(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
-    
+
 elseif (strcmp(st_analytical_stationary_type, 'vector'))
-    
+
     result_map = ff_iwkz_ds_vec(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
-    
+
 elseif (strcmp(st_analytical_stationary_type, 'eigenvector'))
-    
+
     result_map = ff_iwkz_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
-    
+
 end
 
 %% End Profiler and Timer

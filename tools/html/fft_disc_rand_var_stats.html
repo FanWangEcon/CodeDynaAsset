@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Compute Distributional Statistics from a Discrete Random Variable</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-03"><meta name="DC.source" content="fft_disc_rand_var_stats.m"><style type="text/css">
+      --><title>Compute Distributional Statistics from a Discrete Random Variable</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-07"><meta name="DC.source" content="fft_disc_rand_var_stats.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -81,10 +81,10 @@ ar_choice_perc_fracheld = ds_stats_map(<span class="string">'ar_choice_perc_frac
 fl_binom_p = 0.3;
 ar_binom_x = 0:1:fl_binom_n;
 
-<span class="comment">% x</span>
-ar_choice_unique_sorted = ar_binom_x;
 <span class="comment">% f(x)</span>
 ar_choice_prob = binopdf(ar_binom_x, fl_binom_n, fl_binom_p);
+<span class="comment">% x</span>
+ar_choice_unique_sorted = ar_binom_x - 10;
 <span class="comment">% percentiles of interest</span>
 ar_fl_percentiles = [0.1 1 5:5:25 35:15:65 75:5:95 99 99.9];
 
@@ -119,7 +119,7 @@ fl_choice_prob_above_zero = sum(ar_choice_prob(ar_choice_unique_sorted &gt; 0));
 <span class="comment">% prob(outcome=max(outcome)), fraction of people saving up to max of grid,</span>
 <span class="comment">% in principle if this is large, need to increase grid max value</span>
 fl_choice_prob_max = sum(ar_choice_prob(ar_choice_unique_sorted == max(ar_choice_unique_sorted)));
-</pre><h2 id="6"><b>f(y), f(c), f(a)</b>: Compute Distributional Statistics for outcomes</h2><p>Compute these outcomes:</p><div><ul><li>percentiles: <img src="fft_disc_rand_var_stats_eq09488738859326996168.png" alt="$min_{y} \left\{ P(Y \le y) - percentile \mid P(Y \le y) \ge percentile \right\}$" style="width:352px;height:15px;"></li><li>share of outcome (consumption/assets) held by households below this percentile: <img src="fft_disc_rand_var_stats_eq11722476300337688867.png" alt="$E(Y<y)/E(Y)$" style="width:103px;height:15px;"></li></ul></div><pre class="codeinput"><span class="comment">% cumulative share of total outcome held by up to this level for outcomes</span>
+</pre><h2 id="6"><b>f(y), f(c), f(a)</b>: Compute Distributional Statistics for outcomes</h2><p>Compute these outcomes:</p><div><ul><li>percentiles: <img src="fft_disc_rand_var_stats_eq09488738859326996168.png" alt="$min_{y} \left\{ P(Y \le y) - percentile \mid P(Y \le y) \ge percentile \right\}$" style="width:352px;height:15px;"></li><li>share of outcome (consumption/assets) held by households below this percentile: <img src="fft_disc_rand_var_stats_eq11722476300337688867.png" alt="$E(Y<y)/E(Y)$" style="width:103px;height:15px;">. Note that this statistics could exceed 1. Suppose the average level is negative, but there are both positive and negative <img src="fft_disc_rand_var_stats_eq08830444604280721118.png" alt="$y$" style="width:7px;height:10px;">, then the statistics will first be what fraction of overall debt is held by up to this percentile, then it will exceed 100 percent, as we move towards the final <img src="fft_disc_rand_var_stats_eq12271309118500750543.png" alt="$y<0$" style="width:34px;height:13px;"> values, then as it goes through the <img src="fft_disc_rand_var_stats_eq04135874951059227128.png" alt="$Y&gt;0$" style="width:38px;height:11px;"> values, we will move back to 100 percent.</li></ul></div><pre class="codeinput"><span class="comment">% cumulative share of total outcome held by up to this level for outcomes</span>
 <span class="comment">% like fraction of asset held by lowest highest fractions: E(X&lt;x)</span>
 ar_choice_unique_cumufrac = cumsum(ar_choice_prob.*ar_choice_unique_sorted)/fl_choice_mean;
 
@@ -198,22 +198,22 @@ Summary Statistics for: binom
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ----------------------------------------
 fl_choice_mean
-     9
+   -1.0000
 
 fl_choice_sd
     2.5100
 
 fl_choice_coefofvar
-    0.2789
+   -2.5100
 
 fl_choice_prob_zero
-   2.2539e-05
+    0.1416
 
 fl_choice_prob_below_zero
-     0
+    0.5888
 
 fl_choice_prob_above_zero
-    1.0000
+    0.2696
 
 fl_choice_prob_max
    2.0589e-16
@@ -222,23 +222,23 @@ tb_prob_drv
     percentiles    binomPercentileValues    fracOfSumHeldBelowThisPercentile
     ___________    _____________________    ________________________________
 
-        0.1                  2                         0.00043239           
-          1                  4                           0.012095           
-          5                  5                           0.037895           
-         10                  6                            0.09318           
-         15                  6                            0.09318           
-         20                  7                            0.18796           
-         25                  7                            0.18796           
-         35                  8                            0.32141           
-         50                  9                            0.47871           
-         65                 10                              0.636           
-         75                 11                            0.77082           
-         80                 11                            0.77082           
-         85                 12                            0.87062           
-         90                 12                            0.87062           
-         95                 13                            0.93478           
-         99                 15                            0.98835           
-       99.9                 17                            0.99872           
+        0.1                 -8                          0.01724             
+          1                 -6                          0.19269             
+          5                 -5                          0.42489             
+         10                 -4                          0.75661             
+         15                 -4                          0.75661             
+         20                 -3                           1.1222             
+         25                 -3                           1.1222             
+         35                 -2                           1.4224             
+         50                 -1                           1.5797             
+         65                  0                           1.5797             
+         75                  1                           1.4694             
+         80                  1                           1.4694             
+         85                  2                           1.3197             
+         90                  2                           1.3197             
+         95                  3                           1.1865             
+         99                  5                           1.0412             
+       99.9                  7                           1.0052             
 
 </pre><pre class="codeinput"><span class="keyword">end</span>
 </pre><pre class="codeoutput">
@@ -309,10 +309,10 @@ fl_binom_n = 30;
 fl_binom_p = 0.3;
 ar_binom_x = 0:1:fl_binom_n;
 
-% x
-ar_choice_unique_sorted = ar_binom_x;
 % f(x)
 ar_choice_prob = binopdf(ar_binom_x, fl_binom_n, fl_binom_p);
+% x
+ar_choice_unique_sorted = ar_binom_x - 10;
 % percentiles of interest
 ar_fl_percentiles = [0.1 1 5:5:25 35:15:65 75:5:95 99 99.9];
 
@@ -367,7 +367,12 @@ fl_choice_prob_max = sum(ar_choice_prob(ar_choice_unique_sorted == max(ar_choice
 %
 % * percentiles: $min_{y} \left\{ P(Y \le y) - percentile \mid P(Y \le y) \ge percentile \right\}$
 % * share of outcome (consumption/assets) held by households below this
-% percentile: $E(Y<y)/E(Y)$
+% percentile: $E(Y<y)/E(Y)$. Note that this statistics could exceed 1.
+% Suppose the average level is negative, but there are both positive and
+% negative $y$, then the statistics will first be what fraction of overall
+% debt is held by up to this percentile, then it will exceed 100 percent,
+% as we move towards the final $y<0$ values, then as it goes through the
+% $Y>0$ values, we will move back to 100 percent. 
 %
 
 % cumulative share of total outcome held by up to this level for outcomes

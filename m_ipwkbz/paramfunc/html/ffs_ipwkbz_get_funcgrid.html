@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Generate States/Choices/Shocks Grids, get Functions (Interpolated + Percentage + Risky + Safe Asset + Save + Borrow)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-04"><meta name="DC.source" content="ffs_ipwkbz_get_funcgrid.m"><style type="text/css">
+      --><title>Generate States/Choices/Shocks Grids, get Functions (Interpolated + Percentage + Risky + Safe Asset + Save + Borrow)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-13"><meta name="DC.source" content="ffs_ipwkbz_get_funcgrid.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,17 +66,15 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Generate States/Choices/Shocks Grids, get Functions (Interpolated + Percentage + Risky + Safe Asset + Save + Borrow)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FFS_IPWKBZ_GET_FUNCGRID get funcs, params, states choices shocks grids</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Generate Asset and Choice Grid for 2nd stage Problem</a></li><li><a href="#6">Get Shock Grids</a></li><li><a href="#7">Get Equations</a></li><li><a href="#8">Generate Cash-on-Hand/State Matrix</a></li><li><a href="#9">Check if COH is within Borrowing Bounds</a></li><li><a href="#10">Update Valid 2nd stage choice matrix</a></li><li><a href="#11">Select only Valid (k(w), a) choices</a></li><li><a href="#12">Generate 1st Stage States: Interpolation Cash-on-hand Interpolation Grid</a></li><li><a href="#13">Generate 1st Stage Choices: Interpolation Cash-on-hand Interpolation Grid</a></li><li><a href="#14">Generate Interpolation Consumption Grid</a></li><li><a href="#15">Initialize armt_map to store, state, choice, shock matrixes</a></li><li><a href="#16">Store armt_map (1): 2nd Stage Problem Arrays and Matrixes</a></li><li><a href="#17">Store armt_map (2): First Stage Aggregate Savings</a></li><li><a href="#18">Store armt_map (3): First Stage Consumption and Cash-on-Hand Grids</a></li><li><a href="#19">Store armt_map (4): Shock Grids</a></li><li><a href="#20">Store Function Map</a></li><li><a href="#21">Graph</a></li><li><a href="#23">Graph 1: a and k choice grid graphs</a></li><li><a href="#24">Graph 2: coh by shock</a></li><li><a href="#25">Graph 3: 1st State Aggregate Savings Choices by COH interpolation grids</a></li><li><a href="#27">Graph Details, Generally do Not Run</a></li><li><a href="#29">Graph 1: 2nd stage coh reached by k' b' choices by index</a></li><li><a href="#30">Graph 2: 2nd stage coh reached by k' b' choices  by coh</a></li><li><a href="#32">Display</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [armt_map, func_map] = ffs_ipwkbz_get_funcgrid(varargin)
+  </style></head><body><div class="content"><h1>Generate States/Choices/Shocks Grids, get Functions (Interpolated + Percentage + Risky + Safe Asset + Save + Borrow)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FFS_IPWKBZ_GET_FUNCGRID get funcs, params, states choices shocks grids</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Generate Asset and Choice Grid for 2nd stage Problem</a></li><li><a href="#6">Get Shock Grids</a></li><li><a href="#7">Get Equations</a></li><li><a href="#8">Generate Cash-on-Hand/State Matrix</a></li><li><a href="#9">Check if COH is within Borrowing Bounds</a></li><li><a href="#10">Update Valid 2nd stage choice matrix</a></li><li><a href="#11">Select only Valid (k(w), a) choices</a></li><li><a href="#12">Generate 1st Stage States: Interpolation Cash-on-hand Interpolation Grid</a></li><li><a href="#13">Generate 1st Stage Choices: Interpolation Cash-on-hand Interpolation Grid</a></li><li><a href="#14">Generate Interpolation Consumption Grid</a></li><li><a href="#15">Initialize armt_map to store, state, choice, shock matrixes</a></li><li><a href="#16">Store armt_map (1): 2nd Stage Problem Arrays and Matrixes</a></li><li><a href="#17">Store armt_map (2): First Stage Aggregate Savings</a></li><li><a href="#18">Store armt_map (3): First Stage Consumption and Cash-on-Hand Grids</a></li><li><a href="#19">Store armt_map (4): Shock Grids</a></li><li><a href="#20">Store Function Map</a></li><li><a href="#21">Graph</a></li><li><a href="#23">Graph 1: a and k choice grid graphs</a></li><li><a href="#24">Graph 2: coh by shock</a></li><li><a href="#25">Graph 3: 1st State Aggregate Savings Choices by COH interpolation grids</a></li><li><a href="#27">Graph Details, Generally do Not Run</a></li><li><a href="#29">Graph 1: 2nd stage coh reached by k' b' choices by index</a></li><li><a href="#30">Graph 2: 2nd stage coh reached by k' b' choices  by coh</a></li><li><a href="#32">Display</a></li><li><a href="#33">Display</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [armt_map, func_map] = ffs_ipwkbz_get_funcgrid(varargin)
 </pre><h2 id="2">FFS_IPWKBZ_GET_FUNCGRID get funcs, params, states choices shocks grids</h2><p>centralized gateway for retrieving parameters, and solution grids and functions. Similar to <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html">ffs_akz_get_funcgrid</a> function. This code deals with problems with savings and borrowing.</p><p>The graphs below show the difference between percentage choice grid and level choice grid. See comments by graphs below for explanations of differences between the choice grids here and choice grids in the ffs_akz_get_funcgrid function.</p><p>Note that for borrowing, we can not start at the min(coh(k,w-k,z)) reacheable given the w and k choice grids. That would be: min(coh(k,w-k,z)) &lt; min(w). At min(coh), there is a single point, and also for all values between min(coh) and min(w), all percentage w_perc choices are below min(w), requiring extrapolation. It is in some sense safer to extrapolate by starting solution at min(coh) = min(w). Now, for the lowest levels of coh(k, w-k, z), which are &lt; min(w), we now require extrapolation. But this extrapolation is straight forward, when coh &lt; min(w), households have to default, the utility from default is the same regardless of the level of coh at the time of default. So nearest extrapolation is fully correct.</p><p>Note that the first stage w grid is based on cash-on-hand level reached by the coh(k,w-k,z) possible choice and shock combinations. This coh(k,w-k,z) &gt; max(w), which also means that at max(coh) grid, the w_perc choices at higher points require extrapolation. Extrapolation is based on nearest extrapolation.</p><p>Note that even when w = 0, as long as interest rate is low, only the lowest level of borrowing is invalid.</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param bl_input_override boolean if true varargin contained param_map and support_map fully overrides local default. Local default is not invoked. This could be important for speed if this function is getting invoked within certain loops. Default is 0.</p><p>@return armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@return func_map container container with function handles for consumption cash-on-hand etc.</p><p>@example</p><pre>  it_param_set = 2;
   bl_input_override = true;
   [param_map, support_map] = ffs_ipwkbz_set_default_param(it_param_set);
-  [armt_map, func_map] = ffs_ipwkbz_get_funcgrid(param_map, support_map, bl_input_override);</pre><p>@include</p><div><ul><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/paramfunc/ffs_ipwkbz_set_functions.m">ffs_ipwkbz_set_functions</a></li><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/ffto_gen_tauchen_jhl.m">ffto_gen_tauchen_jhl</a></li><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/fft_gen_grid_loglin.m">fft_gen_grid_loglin</a></li></ul></div><h2 id="3">Default</h2><pre class="codeinput">bl_input_override = 0;
-<span class="keyword">if</span> (length(varargin) == 3)
-    bl_input_override = varargin{3};
-<span class="keyword">end</span>
-<span class="keyword">if</span> (bl_input_override)
+  [armt_map, func_map] = ffs_ipwkbz_get_funcgrid(param_map, support_map, bl_input_override);</pre><p>@include</p><div><ul><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/paramfunc/ffs_ipwkbz_set_functions.m">ffs_ipwkbz_set_functions</a></li><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/ffto_gen_tauchen_jhl.m">ffto_gen_tauchen_jhl</a></li><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/fft_gen_grid_loglin.m">fft_gen_grid_loglin</a></li></ul></div><h2 id="3">Default</h2><pre class="codeinput"><span class="keyword">if</span> (~isempty(varargin))
+
     <span class="comment">% override when called from outside</span>
-    [param_map, support_map, ~] = varargin{:};
+    [param_map, support_map] = varargin{:};
+
 <span class="keyword">else</span>
     <span class="comment">% default internal run</span>
     [param_map, support_map] = ffs_ipwkbz_set_default_param();
@@ -102,6 +100,224 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
     param_map = [param_map; default_maps{1}];
     support_map = [support_map; default_maps{2}];
 <span class="keyword">end</span>
+</pre><pre class="codeoutput">----------------------------------------
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Begin: Show all key and value pairs from container
+CONTAINER NAME: PARAM_MAP
+----------------------------------------
+  Map with properties:
+
+        Count: 34
+      KeyType: char
+    ValueType: any
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+----------------------------------------
+pos = 1 ; key = bl_default ; val = true
+pos = 2 ; key = fl_Amean ; val = 1
+pos = 3 ; key = fl_alpha ; val = 0.36
+pos = 4 ; key = fl_b_bd ; val = -20
+pos = 5 ; key = fl_beta ; val = 0.94
+pos = 6 ; key = fl_c_min ; val = 0.02
+pos = 7 ; key = fl_coh_interp_grid_gap ; val = 0.1
+pos = 8 ; key = fl_crra ; val = 1.5
+pos = 9 ; key = fl_default_wprime ; val = 0
+pos = 10 ; key = fl_delta ; val = 0.08
+pos = 11 ; key = fl_k_max ; val = 70
+pos = 12 ; key = fl_k_min ; val = 0
+pos = 13 ; key = fl_nan_replace ; val = -9999
+pos = 14 ; key = fl_r_borr ; val = 0.095
+pos = 15 ; key = fl_r_save ; val = 0.025
+pos = 16 ; key = fl_tol_dist ; val = 1e-05
+pos = 17 ; key = fl_tol_pol ; val = 1e-05
+pos = 18 ; key = fl_tol_val ; val = 1e-05
+pos = 19 ; key = fl_w ; val = 0.44365
+pos = 20 ; key = fl_w_interp_grid_gap ; val = 0.1
+pos = 21 ; key = fl_w_max ; val = 50
+pos = 22 ; key = fl_w_min ; val = -20
+pos = 23 ; key = fl_z_mu ; val = 0
+pos = 24 ; key = fl_z_rho ; val = 0.8
+pos = 25 ; key = fl_z_sig ; val = 0.2
+pos = 26 ; key = it_ak_perc_n ; val = 50
+pos = 27 ; key = it_c_interp_grid_gap ; val = 0.0001
+pos = 28 ; key = it_maxiter_dist ; val = 1000
+pos = 29 ; key = it_maxiter_val ; val = 250
+pos = 30 ; key = it_tol_pol_nochange ; val = 25
+pos = 31 ; key = it_w_perc_n ; val = 50
+pos = 32 ; key = it_z_n ; val = 15
+pos = 33 ; key = st_analytical_stationary_type ; val = eigenvector
+pos = 34 ; key = st_model ; val = ipwkbz
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Scalars in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                              i     idx     value 
+                              __    ___    _______
+
+    fl_Amean                   1     2           1
+    fl_alpha                   2     3        0.36
+    fl_b_bd                    3     4         -20
+    fl_beta                    4     5        0.94
+    fl_c_min                   5     6        0.02
+    fl_coh_interp_grid_gap     6     7         0.1
+    fl_crra                    7     8         1.5
+    fl_default_wprime          8     9           0
+    fl_delta                   9    10        0.08
+    fl_k_max                  10    11          70
+    fl_k_min                  11    12           0
+    fl_nan_replace            12    13       -9999
+    fl_r_borr                 13    14       0.095
+    fl_r_save                 14    15       0.025
+    fl_tol_dist               15    16       1e-05
+    fl_tol_pol                16    17       1e-05
+    fl_tol_val                17    18       1e-05
+    fl_w                      18    19     0.44365
+    fl_w_interp_grid_gap      19    20         0.1
+    fl_w_max                  20    21          50
+    fl_w_min                  21    22         -20
+    fl_z_mu                   22    23           0
+    fl_z_rho                  23    24         0.8
+    fl_z_sig                  24    25         0.2
+    it_ak_perc_n              25    26          50
+    it_c_interp_grid_gap      26    27      0.0001
+    it_maxiter_dist           27    28        1000
+    it_maxiter_val            28    29         250
+    it_tol_pol_nochange       29    30          25
+    it_w_perc_n               30    31          50
+    it_z_n                    31    32          15
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Strings in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                                     i    idx
+                                     _    ___
+
+    bl_default                       1     1 
+    st_analytical_stationary_type    2    33 
+    st_model                         3    34 
+
+----------------------------------------
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Begin: Show all key and value pairs from container
+CONTAINER NAME: SUPPORT_MAP
+----------------------------------------
+  Map with properties:
+
+        Count: 42
+      KeyType: char
+    ValueType: any
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+----------------------------------------
+pos = 1 ; key = bl_display ; val = false
+pos = 2 ; key = bl_display_defparam ; val = true
+pos = 3 ; key = bl_display_dist ; val = false
+pos = 4 ; key = bl_display_evf ; val = false
+pos = 5 ; key = bl_display_final ; val = true
+pos = 6 ; key = bl_display_final_dist ; val = false
+pos = 7 ; key = bl_display_final_dist_detail ; val = false
+pos = 8 ; key = bl_display_funcgrids ; val = false
+pos = 9 ; key = bl_graph ; val = true
+pos = 10 ; key = bl_graph_coh_t_coh ; val = true
+pos = 11 ; key = bl_graph_evf ; val = false
+pos = 12 ; key = bl_graph_funcgrids ; val = false
+pos = 13 ; key = bl_graph_funcgrids_detail ; val = false
+pos = 14 ; key = bl_graph_onebyones ; val = true
+pos = 15 ; key = bl_graph_pol_lvl ; val = true
+pos = 16 ; key = bl_graph_pol_pct ; val = true
+pos = 17 ; key = bl_graph_val ; val = true
+pos = 18 ; key = bl_img_save ; val = false
+pos = 19 ; key = bl_mat ; val = false
+pos = 20 ; key = bl_post ; val = true
+pos = 21 ; key = bl_profile ; val = false
+pos = 22 ; key = bl_profile_dist ; val = false
+pos = 23 ; key = bl_time ; val = false
+pos = 24 ; key = it_display_every ; val = 5
+pos = 25 ; key = it_display_final_colmax ; val = 12
+pos = 26 ; key = it_display_final_rowmax ; val = 100
+pos = 27 ; key = it_display_summmat_colmax ; val = 5
+pos = 28 ; key = it_display_summmat_rowmax ; val = 5
+pos = 29 ; key = st_img_name_main ; val = _default
+pos = 30 ; key = st_img_path ; val = C:/Users/fan/CodeDynaAsset//m_ipwkbz//solve/img/
+pos = 31 ; key = st_img_prefix ; val = 
+pos = 32 ; key = st_img_suffix ; val = _p4.png
+pos = 33 ; key = st_mat_name_main ; val = _default
+pos = 34 ; key = st_mat_path ; val = C:/Users/fan/CodeDynaAsset//m_ipwkbz//solve/mat/
+pos = 35 ; key = st_mat_prefix ; val = 
+pos = 36 ; key = st_mat_suffix ; val = _p4
+pos = 37 ; key = st_matimg_path_root ; val = C:/Users/fan/CodeDynaAsset//m_ipwkbz/
+pos = 38 ; key = st_profile_name_main ; val = _default
+pos = 39 ; key = st_profile_path ; val = C:/Users/fan/CodeDynaAsset//m_ipwkbz//solve/profile/
+pos = 40 ; key = st_profile_prefix ; val = 
+pos = 41 ; key = st_profile_suffix ; val = _p4
+pos = 42 ; key = st_title_prefix ; val = 
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Scalars in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                                 i    idx    value
+                                 _    ___    _____
+
+    it_display_every             1    24        5 
+    it_display_final_colmax      2    25       12 
+    it_display_final_rowmax      3    26      100 
+    it_display_summmat_colmax    4    27        5 
+    it_display_summmat_rowmax    5    28        5 
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Strings in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                                    i     idx
+                                    __    ___
+
+    bl_display                       1     1 
+    bl_display_defparam              2     2 
+    bl_display_dist                  3     3 
+    bl_display_evf                   4     4 
+    bl_display_final                 5     5 
+    bl_display_final_dist            6     6 
+    bl_display_final_dist_detail     7     7 
+    bl_display_funcgrids             8     8 
+    bl_graph                         9     9 
+    bl_graph_coh_t_coh              10    10 
+    bl_graph_evf                    11    11 
+    bl_graph_funcgrids              12    12 
+    bl_graph_funcgrids_detail       13    13 
+    bl_graph_onebyones              14    14 
+    bl_graph_pol_lvl                15    15 
+    bl_graph_pol_pct                16    16 
+    bl_graph_val                    17    17 
+    bl_img_save                     18    18 
+    bl_mat                          19    19 
+    bl_post                         20    20 
+    bl_profile                      21    21 
+    bl_profile_dist                 22    22 
+    bl_time                         23    23 
+    st_img_name_main                24    29 
+    st_img_path                     25    30 
+    st_img_prefix                   26    31 
+    st_img_suffix                   27    32 
+    st_mat_name_main                28    33 
+    st_mat_path                     29    34 
+    st_mat_prefix                   30    35 
+    st_mat_suffix                   31    36 
+    st_matimg_path_root             32    37 
+    st_profile_name_main            33    38 
+    st_profile_path                 34    39 
+    st_profile_prefix               35    40 
+    st_profile_suffix               36    41 
+    st_title_prefix                 37    42 
+
 </pre><h2 id="4">Parse Parameters</h2><pre class="codeinput">params_group = values(param_map, {<span class="string">'it_z_n'</span>, <span class="string">'fl_z_mu'</span>, <span class="string">'fl_z_rho'</span>, <span class="string">'fl_z_sig'</span>});
 [it_z_n, fl_z_mu, fl_z_rho, fl_z_sig] = params_group{:};
 
@@ -124,12 +340,15 @@ params_group = values(param_map, {<span class="string">'fl_r_save'</span>, <span
 
 params_group = values(support_map, {<span class="string">'bl_graph_funcgrids'</span>, <span class="string">'bl_graph_funcgrids_detail'</span>, <span class="string">'bl_display_funcgrids'</span>});
 [bl_graph_funcgrids, bl_graph_funcgrids_detail, bl_display_funcgrids] = params_group{:};
+params_group = values(support_map, {<span class="string">'it_display_summmat_rowmax'</span>, <span class="string">'it_display_summmat_colmax'</span>});
+[it_display_summmat_rowmax, it_display_summmat_colmax] = params_group{:};
 </pre><h2 id="5">Generate Asset and Choice Grid for 2nd stage Problem</h2><p>This generate triangular choice structure. Household choose total aggregate savings, and within that how much to put into risky capital and how much to put into safe assets, in percentages. See <a href="https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_set_default_param.html">ffs_ipwkbz_set_default_param</a> for details.</p><pre class="codeinput"><span class="comment">% percentage grid for 1st stage choice problem, level grid for 2nd stage</span>
 <span class="comment">% solving optimal k given w and z.</span>
 ar_w_perc = linspace(0.001, 0.999, it_w_perc_n);
 it_w_interp_n = (fl_w_max-fl_w_min)/(fl_w_interp_grid_gap);
 ar_w_level_full = fft_array_add_zero(linspace(fl_w_min, fl_w_max, it_w_interp_n), true);
 ar_w_level = ar_w_level_full;
+it_w_interp_n = length(ar_w_level_full);
 
 <span class="comment">% max k given w, need to consider the possibility of borrowing.</span>
 ar_k_max = ar_w_level_full - fl_b_bd;
@@ -373,76 +592,76 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     mt_coh_wkb_full1    mt_coh_wkb_full2    mt_coh_wkb_full3    mt_coh_wkb_full4    mt_coh_wkb_full5    mt_coh_wkb_full6    mt_coh_wkb_full7    mt_coh_wkb_full8    mt_coh_wkb_full9    mt_coh_wkb_full10    mt_coh_wkb_full11    mt_coh_wkb_full12    mt_coh_wkb_full13    mt_coh_wkb_full14    mt_coh_wkb_full15
     ________________    ________________    ________________    ________________    ________________    ________________    ________________    ________________    ________________    _________________    _________________    _________________    _________________    _________________    _________________
 
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056             -20.056              -20.056              -20.056              -20.056              -20.056              -20.056              -20.056     
-        -17.844             -17.839             -17.832             -17.824             -17.815             -17.805             -17.793             -17.779             -17.764              -17.745              -17.724                -17.7              -17.672               -17.64              -17.602     
-        -17.769             -17.751              -17.73             -17.706             -17.678             -17.646             -17.608             -17.566             -17.516              -17.459              -17.394              -17.318               -17.23              -17.129              -17.013     
-        -17.742             -17.719             -17.692             -17.661             -17.626             -17.585             -17.537             -17.483              -17.42              -17.347              -17.263              -17.167              -17.055              -16.927              -16.779     
-        -17.724             -17.697             -17.666              -17.63             -17.589             -17.542             -17.488             -17.425             -17.352              -17.268              -17.172               -17.06              -16.931              -16.783              -16.612     
-         -17.71              -17.68             -17.646             -17.607             -17.561             -17.509             -17.448             -17.379             -17.298              -17.205              -17.098              -16.975              -16.832              -16.668              -16.479     
-        -17.699             -17.667              -17.63             -17.587             -17.538             -17.481             -17.416              -17.34             -17.253              -17.153              -17.037              -16.903              -16.749              -16.571              -16.366     
-         -17.69             -17.656             -17.616             -17.571             -17.518             -17.458             -17.388             -17.307             -17.214              -17.107              -16.983              -16.841              -16.676              -16.486              -16.267     
-        -17.682             -17.646             -17.605             -17.556             -17.501             -17.437             -17.363             -17.278              -17.18              -17.066              -16.936              -16.785              -16.611               -16.41              -16.179     
-        -17.676             -17.638             -17.594             -17.544             -17.486             -17.419             -17.341             -17.252             -17.149               -17.03              -16.893              -16.735              -16.552              -16.342              -16.099     
-         -17.67             -17.631             -17.585             -17.533             -17.472             -17.402             -17.321             -17.228              -17.12              -16.996              -16.853              -16.688              -16.498              -16.279              -16.025     
-        -17.665             -17.624             -17.577             -17.522             -17.459             -17.387             -17.303             -17.206             -17.094              -16.966              -16.817              -16.646              -16.448               -16.22              -15.957     
-        -17.661             -17.619              -17.57             -17.513             -17.448             -17.373             -17.286             -17.186              -17.07              -16.937              -16.783              -16.606              -16.402              -16.166              -15.893     
-        -17.658             -17.614             -17.563             -17.505             -17.437              -17.36              -17.27             -17.167             -17.048               -16.91              -16.752              -16.569              -16.358              -16.115              -15.834     
-        -17.654             -17.609             -17.557             -17.497             -17.428             -17.348             -17.256             -17.149             -17.027              -16.885              -16.722              -16.534              -16.317              -16.066              -15.777     
-        -17.651             -17.605             -17.552              -17.49             -17.419             -17.337             -17.242             -17.133             -17.007              -16.862              -16.694              -16.501              -16.278              -16.021              -15.724     
-        -17.649             -17.601             -17.547             -17.483              -17.41             -17.326             -17.229             -17.117             -16.988              -16.839              -16.668               -16.47              -16.241              -15.977              -15.673     
-        -17.647             -17.598             -17.542             -17.477             -17.403             -17.317             -17.217             -17.103             -16.971              -16.818              -16.643               -16.44              -16.206              -15.936              -15.625     
-        -17.645             -17.595             -17.538             -17.472             -17.395             -17.307             -17.206             -17.089             -16.954              -16.798              -16.618              -16.411              -16.172              -15.896              -15.578     
-        -17.643             -17.592             -17.534             -17.466             -17.389             -17.299             -17.195             -17.076             -16.938              -16.779              -16.596              -16.384               -16.14              -15.858              -15.534     
-        -17.642              -17.59              -17.53             -17.462             -17.382             -17.291             -17.185             -17.063             -16.923              -16.761              -16.574              -16.358              -16.109              -15.822              -15.491     
-         -17.64             -17.588             -17.527             -17.457             -17.376             -17.283             -17.175             -17.051             -16.908              -16.743              -16.553              -16.333              -16.079              -15.787               -15.45     
-        -17.639             -17.586             -17.524             -17.453              -17.37             -17.276             -17.166              -17.04             -16.894              -16.726              -16.532              -16.309              -16.051              -15.753               -15.41     
-        -17.639             -17.584             -17.521             -17.449             -17.365             -17.269             -17.157             -17.029             -16.881               -16.71              -16.513              -16.285              -16.023              -15.721              -15.371     
-        -17.638             -17.583             -17.519             -17.445              -17.36             -17.262             -17.149             -17.018             -16.868              -16.694              -16.494              -16.263              -15.996              -15.689              -15.334     
-        -17.637             -17.581             -17.516             -17.442             -17.355             -17.256             -17.141             -17.008             -16.856              -16.679              -16.476              -16.241              -15.971              -15.658              -15.298     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456             -21.456              -21.456              -21.456              -21.456              -21.456              -21.456              -21.456     
+        -19.096              -19.09             -19.084             -19.076             -19.067             -19.057             -19.045             -19.031             -19.015              -18.997              -18.976              -18.952              -18.924              -18.891              -18.854     
+        -19.024             -19.006             -18.985             -18.961             -18.933             -18.901             -18.864             -18.821             -18.771              -18.714              -18.649              -18.573              -18.485              -18.384              -18.268     
+            -19             -18.977              -18.95             -18.919             -18.884             -18.843             -18.796             -18.741             -18.678              -18.606              -18.522              -18.425              -18.314              -18.185              -18.037     
+        -18.985             -18.959             -18.928             -18.892             -18.851             -18.804             -18.749             -18.686             -18.614               -18.53              -18.433              -18.322              -18.193              -18.045              -17.874     
+        -18.975             -18.945             -18.911             -18.872             -18.826             -18.774             -18.714             -18.644             -18.563              -18.471              -18.364               -18.24              -18.098              -17.933              -17.744     
+        -18.967             -18.935             -18.898             -18.856             -18.807              -18.75             -18.684             -18.609             -18.522              -18.421              -18.305              -18.172              -18.017              -17.839              -17.634     
+        -18.962             -18.928             -18.888             -18.843              -18.79              -18.73              -18.66             -18.579             -18.486              -18.379              -18.255              -18.113              -17.948              -17.758              -17.539     
+        -18.958             -18.921              -18.88             -18.832             -18.776             -18.712             -18.638             -18.553             -18.455              -18.342              -18.211               -18.06              -17.886              -17.686              -17.454     
+        -18.955             -18.917             -18.873             -18.822             -18.764             -18.697              -18.62              -18.53             -18.427              -18.308              -18.171              -18.013              -17.831               -17.62              -17.377     
+        -18.952             -18.913             -18.867             -18.815             -18.754             -18.684             -18.603              -18.51             -18.402              -18.278              -18.135               -17.97               -17.78               -17.56              -17.307     
+        -18.951              -18.91             -18.862             -18.808             -18.745             -18.672             -18.588             -18.491              -18.38              -18.251              -18.102              -17.931              -17.733              -17.505              -17.242     
+         -18.95             -18.907             -18.858             -18.802             -18.737             -18.661             -18.575             -18.475             -18.359              -18.226              -18.072              -17.895               -17.69              -17.454              -17.182     
+         -18.95             -18.906             -18.855             -18.797              -18.73             -18.652             -18.562             -18.459              -18.34              -18.202              -18.044              -17.861               -17.65              -17.407              -17.126     
+         -18.95             -18.905             -18.853             -18.793             -18.723             -18.643             -18.551             -18.445             -18.322              -18.181              -18.018              -17.829              -17.612              -17.362              -17.073     
+         -18.95             -18.904              -18.85             -18.789             -18.718             -18.636             -18.541             -18.432             -18.306              -18.161              -17.993                -17.8              -17.577              -17.319              -17.023     
+        -18.951             -18.904             -18.849             -18.786             -18.713             -18.629             -18.532              -18.42             -18.291              -18.142               -17.97              -17.772              -17.543              -17.279              -16.975     
+        -18.952             -18.904             -18.848             -18.783             -18.708             -18.622             -18.523             -18.408             -18.276              -18.124              -17.948              -17.745              -17.511              -17.241               -16.93     
+        -18.954             -18.904             -18.847             -18.781             -18.704             -18.616             -18.515             -18.398             -18.263              -18.107              -17.927               -17.72              -17.481              -17.205              -16.887     
+        -18.955             -18.905             -18.846             -18.779             -18.701             -18.611             -18.508             -18.388              -18.25              -18.091              -17.908              -17.696              -17.452              -17.171              -16.846     
+        -18.957             -18.906             -18.846             -18.777             -18.698             -18.606             -18.501             -18.379             -18.238              -18.076              -17.889              -17.674              -17.425              -17.138              -16.806     
+        -18.959             -18.907             -18.846             -18.776             -18.695             -18.602             -18.494              -18.37             -18.227              -18.062              -17.872              -17.652              -17.398              -17.106              -16.769     
+        -18.962             -18.908             -18.846             -18.775             -18.693             -18.598             -18.489             -18.362             -18.217              -18.049              -17.855              -17.631              -17.373              -17.076              -16.732     
+        -18.964              -18.91             -18.847             -18.775             -18.691             -18.594             -18.483             -18.355             -18.207              -18.036              -17.839              -17.611              -17.349              -17.046              -16.697     
+        -18.967             -18.912             -18.848             -18.774             -18.689             -18.591             -18.478             -18.348             -18.197              -18.023              -17.823              -17.592              -17.326              -17.018              -16.663     
+         -18.97             -18.914             -18.849             -18.774             -18.688             -18.588             -18.473             -18.341             -18.188              -18.012              -17.808              -17.574              -17.303              -16.991              -16.631     
 
     mt_coh_wkb_full1    mt_coh_wkb_full2    mt_coh_wkb_full3    mt_coh_wkb_full4    mt_coh_wkb_full5    mt_coh_wkb_full6    mt_coh_wkb_full7    mt_coh_wkb_full8    mt_coh_wkb_full9    mt_coh_wkb_full10    mt_coh_wkb_full11    mt_coh_wkb_full12    mt_coh_wkb_full13    mt_coh_wkb_full14    mt_coh_wkb_full15
     ________________    ________________    ________________    ________________    ________________    ________________    ________________    ________________    ________________    _________________    _________________    _________________    _________________    _________________    _________________
@@ -459,19 +678,19 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
          46.189              46.398               46.64              46.919              47.241              47.612               48.04              48.534              49.103               49.76               50.518               51.393               52.401               53.565               54.907      
          46.044              46.256              46.501              46.783              47.109              47.484              47.918              48.417              48.994              49.659               50.426               51.312               52.333               53.511               54.869      
          45.899              46.113              46.361              46.646              46.976              47.356              47.794                48.3              48.884              49.557               50.333               51.229               52.262               53.454               54.829      
-         45.753               45.97               46.22              46.509              46.843              47.227              47.671              48.182              48.772              49.453               50.238               51.144               52.189               53.395               54.786      
-         45.607              45.827               46.08              46.372              46.709              47.098              47.546              48.063               48.66              49.348               50.142               51.058               52.115               53.334                54.74      
-         45.461              45.683              45.939              46.234              46.575              46.967              47.421              47.944              48.547              49.243               50.045               50.971               52.039               53.271               54.692      
-         45.314              45.538              45.797              46.095               46.44              46.837              47.295              47.823              48.433              49.136               49.947               50.882               51.961               53.206               54.643      
-         45.167              45.394              45.655              45.957              46.304              46.705              47.168              47.702              48.317              49.028               49.847               50.792               51.882                53.14               54.591      
-          45.02              45.249              45.513              45.817              46.169              46.574              47.041               47.58              48.202              48.919               49.746               50.701               51.802               53.072               54.537      
-         44.873              45.104               45.37              45.678              46.032              46.441              46.913              47.457              48.085              48.809               49.645               50.608                51.72               53.002               54.481      
-         44.726              44.959              45.228              45.538              45.896              46.308              46.785              47.334              47.968              48.699               49.542               50.514               51.637               52.931               54.424      
-         44.578              44.813              45.084              45.397              45.759              46.175              46.656               47.21              47.849              48.587               49.438                50.42               51.552               52.858               54.365      
-          44.43              44.667              44.941              45.257              45.621              46.041              46.526              47.085              47.731              48.475               49.333               50.324               51.466               52.784               54.304      
-         44.282              44.521              44.797              45.116              45.483              45.907              46.396               46.96              47.611              48.362               49.228               50.227               51.379               52.709               54.242      
-         44.133              44.375              44.653              44.974              45.345              45.773              46.266              46.835              47.491              48.248               49.121               50.129               51.291               52.632               54.178      
-         43.985              44.228              44.509              44.833              45.206              45.638              46.135              46.709               47.37              48.134               49.014                50.03               51.202               52.554               54.113      
+         45.651              45.868              46.119              46.407              46.741              47.125              47.569               48.08               48.67              49.351               50.136               51.042               52.087               53.293               54.684      
+         45.397              45.617               45.87              46.162              46.499              46.888              47.336              47.854               48.45              49.139               49.933               50.849               51.905               53.124                54.53      
+         45.143              45.365              45.621              45.916              46.257               46.65              47.103              47.626              48.229              48.925               49.728               50.654               51.722               52.954               54.375      
+         44.889              45.113              45.372               45.67              46.014              46.411              46.869              47.398              48.007               48.71               49.521               50.457               51.536               52.781               54.217      
+         44.634              44.861              45.122              45.424              45.771              46.172              46.635              47.169              47.784              48.495               49.314               50.259               51.349               52.607               54.058      
+          44.38              44.608              44.872              45.177              45.528              45.933                46.4              46.939              47.561              48.278               49.105                50.06               51.161               52.431               53.896      
+         44.124              44.355              44.622              44.929              45.284              45.693              46.164              46.709              47.336              48.061               48.896                49.86               50.971               52.254               53.733      
+         43.869              44.102              44.371              44.681              45.039              45.452              45.928              46.478              47.111              47.842               48.685               49.658                50.78               52.075               53.568      
+         43.614              43.849               44.12              44.433              44.794              45.211              45.691              46.246              46.885              47.623               48.474               49.455               50.588               51.894               53.401      
+         43.358              43.595              43.869              44.185              44.549              44.969              45.454              46.014              46.659              47.403               48.261               49.252               50.394               51.712               53.232      
+         43.102              43.341              43.617              43.936              44.304              44.727              45.217              45.781              46.431              47.182               48.048               49.047               50.199               51.529               53.062      
+         42.846              43.087              43.366              43.687              44.058              44.485              44.978              45.547              46.204              46.961               47.834               48.841               50.004               51.344               52.891      
+         42.589              42.833              43.114              43.438              43.811              44.242               44.74              45.313              45.975              46.738               47.619               48.635               49.807               51.158               52.718      
           51.82               51.84              51.864              51.891              51.922              51.959              52.001              52.049              52.105              52.169               52.243               52.328               52.427               52.541               52.672      
          51.936                  52              52.074              52.159              52.258              52.371              52.502              52.652              52.826              53.027               53.259               53.526               53.834               54.189               54.599      
          51.884              51.965              52.059              52.168              52.293              52.437              52.604              52.796              53.017              53.273               53.568               53.908                 54.3               54.753               55.275      
@@ -504,19 +723,19 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
          48.231              48.443              48.688               48.97              49.295               49.67              50.103              50.602              51.178              51.843               52.609               53.493               54.513                55.69               57.047      
          48.082              48.296              48.544              48.829              49.158              49.538              49.976              50.482              51.065              51.737               52.513               53.408               54.441               55.632               57.006      
          47.932              48.149              48.399              48.688              49.021              49.405              49.849               50.36               50.95               51.63               52.416               53.321               54.366               55.571               56.961      
-         47.781              48.001              48.254              48.546              48.883              49.272               49.72              50.237              50.834              51.522               52.317               53.233               54.289               55.508               56.914      
-          47.63              47.852              48.108              48.404              48.744              49.137              49.591              50.114              50.717              51.413               52.216               53.142               54.211               55.443               56.865      
-         47.479              47.703              47.962              48.261              48.605              49.003              49.461               49.99              50.599              51.303               52.115               53.051               54.131               55.377               56.814      
-         47.328              47.554              47.816              48.118              48.466              48.867               49.33              49.864              50.481              51.192               52.012               52.958               54.049               55.308                56.76      
-         47.176              47.405              47.669              47.974              48.326              48.731              49.199              49.739              50.361              51.079               51.908               52.863               53.966               55.237               56.704      
-         47.024              47.255              47.522               47.83              48.185              48.595              49.067              49.612              50.241              50.966               51.803               52.768               53.881               55.165               56.647      
-         46.872              47.105              47.375              47.686              48.044              48.458              48.935              49.485               50.12              50.852               51.696               52.671               53.795               55.092               56.587      
-         46.719              46.955              47.227              47.541              47.903               48.32              48.801              49.357              49.998              50.737               51.589               52.573               53.707               55.016               56.526      
-         46.567              46.805              47.079              47.396              47.761              48.182              48.668              49.228              49.875              50.621               51.481               52.474               53.619               54.939               56.463      
-         46.414              46.654              46.931               47.25              47.618              48.043              48.534              49.099              49.751              50.504               51.372               52.373               53.529               54.861               56.398      
-         46.261              46.503              46.782              47.104              47.476              47.904              48.399              48.969              49.627              50.386               51.262               52.272               53.437               54.782               56.332      
-         46.107              46.352              46.633              46.958              47.333              47.765              48.264              48.839              49.503              50.268               51.151                52.17               53.345               54.701               56.264      
-         45.954                46.2              46.484              46.812              47.189              47.625              48.128              48.708              49.377              50.149                51.04               52.067               53.252               54.619               56.195      
+          47.72              47.939              48.192              48.485              48.822               49.21              49.659              50.176              50.773              51.461               52.255               53.171               54.228               55.447               56.853      
+         47.458               47.68              47.936              48.231              48.572              48.965              49.418              49.941              50.545              51.241               52.044                52.97               54.038               55.271               56.693      
+         47.195               47.42              47.679              47.977              48.322              48.719              49.177              49.706              50.316              51.019               51.831               52.767               53.847               55.093                56.53      
+         46.933               47.16              47.421              47.723              48.071              48.472              48.935               49.47              50.086              50.797               51.617               52.563               53.654               54.913               56.365      
+          46.67              46.899              47.163              47.468               47.82              48.225              48.693              49.233              49.855              50.573               51.402               52.357                53.46               54.731               56.198      
+         46.407              46.638              46.905              47.213              47.568              47.977               48.45              48.995              49.624              50.349               51.186               52.151               53.264               54.548                56.03      
+         46.144              46.377              46.647              46.957              47.316              47.729              48.206              48.757              49.391              50.124               50.968               51.943               53.067               54.363               55.859      
+          45.88              46.116              46.388              46.701              47.063              47.481              47.962              48.517              49.158              49.897                50.75               51.733               52.868               54.177               55.687      
+         45.616              45.854              46.129              46.445               46.81              47.231              47.717              48.278              48.924               49.67               50.531               51.523               52.668               53.989               55.513      
+         45.352              45.592              45.869              46.188              46.557              46.982              47.472              48.037               48.69              49.442                50.31               51.312               52.467                 53.8               55.337      
+         45.088               45.33              45.609              45.931              46.303              46.732              47.226              47.797              48.455              49.214               50.089               51.099               52.265               53.609               55.159      
+         44.824              45.068              45.349              45.674              46.049              46.481               46.98              47.555              48.219              48.984               49.867               50.886               52.061               53.417               54.981      
+         44.559              44.805              45.089              45.417              45.794               46.23              46.733              47.313              47.982              48.754               49.645               50.672               51.857               53.223                 54.8      
 
 </pre><h2 id="9">Check if COH is within Borrowing Bounds</h2><p>some coh levels are below borrowing bound, can not borrow enough to pay debt</p><pre class="codeinput">mt_bl_coh_wkb_invalid = (mt_coh_wkb_full &lt; fl_b_bd);
 
@@ -945,12 +1164,12 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 Variables:
 
-    Var1: 772761&times;1 double
+    Var1: 772571&times;1 double
 
         Values:
 
-            Min        0.001
-            Median    38.639
+            Min         0.02
+            Median    38.649
             Max       77.277
 
 ----------------------------------------
@@ -1092,6 +1311,260 @@ pos = 4 ; key = f_prod ; val = @(z,k)((fl_Amean.*(z)).*(k.^(fl_alpha)))
 pos = 5 ; key = f_util_crra ; val = @(c)(((c).^(1-fl_crra)-1)./(1-fl_crra))
 pos = 6 ; key = f_util_log ; val = @(c)log(c)
 pos = 7 ; key = f_util_standin ; val = @(z,b,k)f_util_log((f_coh(z,b,k)-fl_b_bd).*((f_coh(z,b,k)-fl_b_bd)&gt;fl_c_min)+fl_c_min.*((f_coh(z,b,k)-fl_b_bd)&lt;=fl_c_min))
+</pre><h2 id="33">Display</h2><pre class="codeinput"><span class="keyword">if</span> (bl_display_funcgrids)
+    fft_container_map_display(armt_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+    fft_container_map_display(func_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">----------------------------------------
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Begin: Show all key and value pairs from container
+CONTAINER NAME: ARMT_MAP
+----------------------------------------
+  Map with properties:
+
+        Count: 18
+      KeyType: char
+    ValueType: any
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+----------------------------------------
+pos = 1 ; key = ar_a_meshk ;rown= 1575 ,coln= 1
+ar_a_meshk :mu= -2.7143 ,sd= 15.737 ,min= -20 ,max= 49.93
+                     zi_1_c1
+                     _______
+
+    zi_1_R1              -20
+    zi_2_R2              -20
+    zi_788_R788      -3.0303
+    zi_1574_r1574    -18.342
+    zi_1575_r1575     -19.93
+
+pos = 2 ; key = ar_ak_perc ;rown= 1 ,coln= 45
+ar_ak_perc :mu= 0.5 ,sd= 0.2979 ,min= 0.001 ,max= 0.999
+               zi_1_C1    zi_2_C2     zi_23_c23    zi_44_c44    zi_45_c45
+               _______    ________    _________    _________    _________
+
+    zi_1_r1     0.001     0.023682       0.5        0.97632       0.999  
+
+pos = 3 ; key = ar_interp_c_grid ;rown= 1 ,coln= 772571
+ar_interp_c_grid :mu= 38.6486 ,sd= 22.3023 ,min= 0.02 ,max= 77.2772
+               zi_1_C1    zi_2_C2    zi_386286_c386286    zi_772570_c772570    zi_772571_c772571
+               _______    _______    _________________    _________________    _________________
+
+    zi_1_r1     0.02      0.0201          38.649               77.277               77.277      
+
+pos = 4 ; key = ar_interp_coh_grid ;rown= 1 ,coln= 38
+ar_interp_coh_grid :mu= 18.1481 ,sd= 23.1179 ,min= -20 ,max= 57.2772
+               zi_1_C1    zi_2_C2    zi_19_c19    zi_37_c37    zi_38_c38
+               _______    _______    _________    _________    _________
+
+    zi_1_r1      -20      -17.853     16.492       55.131       57.277  
+
+pos = 5 ; key = ar_k_mesha ;rown= 1575 ,coln= 1
+ar_k_mesha :mu= 17.2857 ,sd= 15.737 ,min= 0 ,max= 69.93
+                     zi_1_c1
+                     _______
+
+    zi_1_R1               0 
+    zi_2_R2               0 
+    zi_788_R788       16.97 
+    zi_1574_r1574    68.342 
+    zi_1575_r1575     69.93 
+
+pos = 6 ; key = ar_stationary ;rown= 1 ,coln= 15
+ar_stationary :mu= 0.066667 ,sd= 0.060897 ,min= 0.0027089 ,max= 0.16757
+               zi_1_C1     zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
+               ________    _______    _______    _________    _________
+
+    zi_1_r1    0.002709    0.00695    0.16757     0.00695     0.002709 
+
+pos = 7 ; key = ar_w_level ;rown= 1 ,coln= 35
+ar_w_level :mu= 14.5714 ,sd= 20.9645 ,min= -20 ,max= 50
+               zi_1_C1    zi_2_C2    zi_18_c18    zi_34_c34    zi_35_c35
+               _______    _______    _________    _________    _________
+
+    zi_1_r1      -20      -17.879     13.939       47.879         50    
+
+pos = 8 ; key = ar_w_perc ;rown= 1 ,coln= 25
+ar_w_perc :mu= 0.5 ,sd= 0.30605 ,min= 0.001 ,max= 0.999
+               zi_1_C1    zi_2_C2     zi_13_c13    zi_24_c24    zi_25_c25
+               _______    ________    _________    _________    _________
+
+    zi_1_r1     0.001     0.042583       0.5        0.95742       0.999  
+
+pos = 9 ; key = ar_z ;rown= 1 ,coln= 15
+ar_z :mu= 1.1347 ,sd= 0.69878 ,min= 0.34741 ,max= 2.567
+               zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
+               _______    _______    _______    _________    _________
+
+    zi_1_r1    0.34741    0.40076    0.94436     2.2253        2.567  
+
+pos = 10 ; key = it_ameshk_n ; val = 1575
+pos = 11 ; key = mt_coh_wkb ;rown= 1575 ,coln= 15
+mt_coh_wkb :mu= 15.7666 ,sd= 21.3231 ,min= -21.4564 ,max= 57.2772
+                     zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
+                     _______    _______    _______    _________    _________
+
+    zi_1_R1          -21.456    -21.456    -21.456     -21.456      -21.456 
+    zi_2_R2          -21.456    -21.456    -21.456     -21.456      -21.456 
+    zi_788_R788         13.7     13.848     15.355      18.905       19.852 
+    zi_1574_r1574     44.824     45.068     47.555      53.417       54.981 
+    zi_1575_r1575     44.559     44.805     47.313      53.223         54.8 
+
+pos = 12 ; key = mt_interp_coh_grid_mesh_w_perc ;rown= 25 ,coln= 38
+mt_interp_coh_grid_mesh_w_perc :mu= 18.1481 ,sd= 22.8237 ,min= -20 ,max= 57.2772
+                 zi_1_C1    zi_2_C2    zi_19_c19    zi_37_c37    zi_38_c38
+                 _______    _______    _________    _________    _________
+
+    zi_1_R1        -20      -17.853     16.492       55.131       57.277  
+    zi_2_R2        -20      -17.853     16.492       55.131       57.277  
+    zi_13_r13      -20      -17.853     16.492       55.131       57.277  
+    zi_24_r24      -20      -17.853     16.492       55.131       57.277  
+    zi_25_r25      -20      -17.853     16.492       55.131       57.277  
+
+pos = 13 ; key = mt_interp_coh_grid_mesh_z ;rown= 38 ,coln= 15
+mt_interp_coh_grid_mesh_z :mu= 18.1481 ,sd= 22.8317 ,min= -20 ,max= 57.2772
+                 zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
+                 _______    _______    _______    _________    _________
+
+    zi_1_R1          -20        -20        -20         -20          -20 
+    zi_2_R2      -17.853    -17.853    -17.853     -17.853      -17.853 
+    zi_19_r19     16.492     16.492     16.492      16.492       16.492 
+    zi_37_r37     55.131     55.131     55.131      55.131       55.131 
+    zi_38_r38     57.277     57.277     57.277      57.277       57.277 
+
+pos = 14 ; key = mt_k ;rown= 45 ,coln= 35
+mt_k :mu= 17.2857 ,sd= 15.737 ,min= 0 ,max= 69.93
+                 zi_1_C1    zi_2_C2     zi_18_c18    zi_34_c34    zi_35_c35
+                 _______    ________    _________    _________    _________
+
+    zi_1_R1         0       0.002121    0.033939     0.067879        0.07  
+    zi_2_R2         0       0.050234     0.80375       1.6075      1.6577  
+    zi_23_r23       0         1.0606       16.97       33.939          35  
+    zi_44_r44       0          2.071      33.136       66.271      68.342  
+    zi_45_r45       0         2.1191      33.905       67.811       69.93  
+
+pos = 15 ; key = mt_w_by_interp_coh_interp_grid ;rown= 25 ,coln= 38
+mt_w_by_interp_coh_interp_grid :mu= -0.92596 ,sd= 17.5517 ,min= -20 ,max= 57.1999
+                 zi_1_C1    zi_2_C2    zi_19_c19    zi_37_c37    zi_38_c38
+                 _______    _______    _________    _________    _________
+
+    zi_1_R1        -20      -19.998     -19.964      -19.925      -19.923 
+    zi_2_R2        -20      -19.909     -18.446      -16.801      -16.709 
+    zi_13_r13      -20      -18.927      -1.754       17.565       18.639 
+    zi_24_r24      -20      -17.945      14.938       51.931       53.986 
+    zi_25_r25      -20      -17.856      16.455       55.055         57.2 
+
+pos = 16 ; key = mt_z_mesh_coh_interp_grid ;rown= 38 ,coln= 15
+mt_z_mesh_coh_interp_grid :mu= 1.1347 ,sd= 0.67568 ,min= 0.34741 ,max= 2.567
+                 zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
+                 _______    _______    _______    _________    _________
+
+    zi_1_R1      0.34741    0.40076    0.94436     2.2253        2.567  
+    zi_2_R2      0.34741    0.40076    0.94436     2.2253        2.567  
+    zi_19_r19    0.34741    0.40076    0.94436     2.2253        2.567  
+    zi_37_r37    0.34741    0.40076    0.94436     2.2253        2.567  
+    zi_38_r38    0.34741    0.40076    0.94436     2.2253        2.567  
+
+pos = 17 ; key = mt_z_mesh_coh_wkb ;rown= 1575 ,coln= 15
+mt_z_mesh_coh_wkb :mu= 1.1347 ,sd= 0.6751 ,min= 0.34741 ,max= 2.567
+                     zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
+                     _______    _______    _______    _________    _________
+
+    zi_1_R1          0.34741    0.40076    0.94436     2.2253        2.567  
+    zi_2_R2          0.34741    0.40076    0.94436     2.2253        2.567  
+    zi_788_R788      0.34741    0.40076    0.94436     2.2253        2.567  
+    zi_1574_r1574    0.34741    0.40076    0.94436     2.2253        2.567  
+    zi_1575_r1575    0.34741    0.40076    0.94436     2.2253        2.567  
+
+pos = 18 ; key = mt_z_trans ;rown= 15 ,coln= 15
+mt_z_trans :mu= 0.066667 ,sd= 0.095337 ,min= 0 ,max= 0.27902
+                 zi_1_C1    zi_2_C2    zi_8_C8     zi_14_c14    zi_15_c15
+                 _______    _______    ________    _________    _________
+
+    zi_1_R1      0.26016    0.26831    0.000128           0            0 
+    zi_2_R2      0.11232    0.19622    0.000989           0            0 
+    zi_8_R8        2e-06    4.1e-05     0.27902     4.1e-05        2e-06 
+    zi_14_r14          0          0    0.000989     0.19622      0.11232 
+    zi_15_r15          0          0    0.000128     0.26831      0.26016 
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Matrix in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                                      i     idx    rowN       colN         mean        std          min         max  
+                                      __    ___    ____    __________    ________    ________    _________    _______
+
+    ar_a_meshk                         1     1     1575             1     -2.7143      15.737          -20      49.93
+    ar_ak_perc                         2     2        1            45         0.5      0.2979        0.001      0.999
+    ar_interp_c_grid                   3     3        1    7.7257e+05      38.649      22.302         0.02     77.277
+    ar_interp_coh_grid                 4     4        1            38      18.148      23.118          -20     57.277
+    ar_k_mesha                         5     5     1575             1      17.286      15.737            0      69.93
+    ar_stationary                      6     6        1            15    0.066667    0.060897    0.0027089    0.16757
+    ar_w_level                         7     7        1            35      14.571      20.964          -20         50
+    ar_w_perc                          8     8        1            25         0.5     0.30605        0.001      0.999
+    ar_z                               9     9        1            15      1.1347     0.69878      0.34741      2.567
+    mt_coh_wkb                        10    11     1575            15      15.767      21.323      -21.456     57.277
+    mt_interp_coh_grid_mesh_w_perc    11    12       25            38      18.148      22.824          -20     57.277
+    mt_interp_coh_grid_mesh_z         12    13       38            15      18.148      22.832          -20     57.277
+    mt_k                              13    14       45            35      17.286      15.737            0      69.93
+    mt_w_by_interp_coh_interp_grid    14    15       25            38    -0.92596      17.552          -20       57.2
+    mt_z_mesh_coh_interp_grid         15    16       38            15      1.1347     0.67568      0.34741      2.567
+    mt_z_mesh_coh_wkb                 16    17     1575            15      1.1347      0.6751      0.34741      2.567
+    mt_z_trans                        17    18       15            15    0.066667    0.095337            0    0.27902
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Scalars in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                   i    idx    value
+                   _    ___    _____
+
+    it_ameshk_n    1    10     1575 
+
+----------------------------------------
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Begin: Show all key and value pairs from container
+CONTAINER NAME: FUNC_MAP
+----------------------------------------
+  Map with properties:
+
+        Count: 7
+      KeyType: char
+    ValueType: any
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+----------------------------------------
+pos = 1 ; key = f_coh ; val = @(z,b,k)(f_prod(z,k)+k*(1-fl_delta)+fl_w+b.*(1+fl_r_save).*(b&gt;0)+b.*(1+fl_r_borr).*(b&lt;=0))
+pos = 2 ; key = f_cons ; val = @(coh,bprime,kprime)(coh-kprime-bprime)
+pos = 3 ; key = f_inc ; val = @(z,b,k)(f_prod(z,k)-(fl_delta)*k+fl_w+b.*(fl_r_save).*(b&gt;0)+b.*(fl_r_borr).*(b&lt;=0))
+pos = 4 ; key = f_prod ; val = @(z,k)((fl_Amean.*(z)).*(k.^(fl_alpha)))
+pos = 5 ; key = f_util_crra ; val = @(c)(((c).^(1-fl_crra)-1)./(1-fl_crra))
+pos = 6 ; key = f_util_log ; val = @(c)log(c)
+pos = 7 ; key = f_util_standin ; val = @(z,b,k)f_util_log((f_coh(z,b,k)-fl_b_bd).*((f_coh(z,b,k)-fl_b_bd)&gt;fl_c_min)+fl_c_min.*((f_coh(z,b,k)-fl_b_bd)&lt;=fl_c_min))
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Scalars in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                      i    idx    xFunction
+                      _    ___    _________
+
+    f_coh             1     1         1    
+    f_cons            2     2         2    
+    f_inc             3     3         3    
+    f_prod            4     4         4    
+    f_util_crra       5     5         5    
+    f_util_log        6     6         6    
+    f_util_standin    7     7         7    
+
 </pre><pre class="codeinput"><span class="keyword">end</span>
 </pre><pre class="codeoutput">
 ans = 
@@ -1174,21 +1647,18 @@ function [armt_map, func_map] = ffs_ipwkbz_get_funcgrid(varargin)
 %
 
 %% Default
-
-bl_input_override = 0;
-if (length(varargin) == 3)
-    bl_input_override = varargin{3};
-end
-if (bl_input_override)
+if (~isempty(varargin))
+    
     % override when called from outside
-    [param_map, support_map, ~] = varargin{:};
+    [param_map, support_map] = varargin{:};
+    
 else
     % default internal run
     [param_map, support_map] = ffs_ipwkbz_set_default_param();
     support_map('bl_graph_funcgrids') = true;
     support_map('bl_graph_funcgrids_detail') = true;
     support_map('bl_display_funcgrids') = true;
-    
+
     % to be able to visually see choice grid points
     param_map('fl_b_bd') = -20; % borrow bound, = 0 if save only
     param_map('fl_default_aprime') = 0;
@@ -1232,6 +1702,8 @@ params_group = values(param_map, {'fl_r_save', 'fl_r_borr', 'fl_w'});
 
 params_group = values(support_map, {'bl_graph_funcgrids', 'bl_graph_funcgrids_detail', 'bl_display_funcgrids'});
 [bl_graph_funcgrids, bl_graph_funcgrids_detail, bl_display_funcgrids] = params_group{:};
+params_group = values(support_map, {'it_display_summmat_rowmax', 'it_display_summmat_colmax'});
+[it_display_summmat_rowmax, it_display_summmat_colmax] = params_group{:};
 
 %% Generate Asset and Choice Grid for 2nd stage Problem
 % This generate triangular choice structure. Household choose total
@@ -1246,6 +1718,7 @@ ar_w_perc = linspace(0.001, 0.999, it_w_perc_n);
 it_w_interp_n = (fl_w_max-fl_w_min)/(fl_w_interp_grid_gap);
 ar_w_level_full = fft_array_add_zero(linspace(fl_w_min, fl_w_max, it_w_interp_n), true);
 ar_w_level = ar_w_level_full;
+it_w_interp_n = length(ar_w_level_full);
 
 % max k given w, need to consider the possibility of borrowing.
 ar_k_max = ar_w_level_full - fl_b_bd;
@@ -1293,15 +1766,15 @@ ar_k_mesha = ar_k_mesha_full;
 mt_coh_wkb_full = f_coh(ar_z, ar_a_meshk_full, ar_k_mesha_full);
 
 if (bl_display_funcgrids)
-    
+
     % Generate Aggregate Variables
     ar_aplusk_mesh = ar_a_meshk_full + ar_k_mesha_full;
-    
+
     % Genereate Table
     tab_ak_choices = array2table([ar_aplusk_mesh, ar_k_mesha_full, ar_a_meshk_full]);
     cl_col_names = {'ar_aplusk_mesh', 'ar_k_mesha_full', 'ar_a_meshk_full'};
     tab_ak_choices.Properties.VariableNames = cl_col_names;
-    
+
     % Label Table Variables
     tab_ak_choices.Properties.VariableDescriptions{'ar_aplusk_mesh'} = ...
         '*ar_aplusk_mesha*: ar_aplusk_mesha = ar_a_meshk_full + ar_k_mesha_full;';
@@ -1314,7 +1787,7 @@ if (bl_display_funcgrids)
     for it_var_name = 1:length(cl_var_desc)
         disp(cl_var_desc{it_var_name});
     end
-    
+
     disp('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('tab_ak_choices');
@@ -1332,7 +1805,7 @@ if (bl_display_funcgrids)
     disp(size(mt_coh_wkb_full));
     disp(head(array2table(mt_coh_wkb_full), it_rows_toshow));
     disp(tail(array2table(mt_coh_wkb_full), it_rows_toshow));
-    
+
 end
 
 %% Check if COH is within Borrowing Bounds
@@ -1527,7 +2000,7 @@ if (bl_graph_funcgrids)
     else
         legend(chart([legend2plot]), legendCell([legend2plot]), 'Location', 'northeast');
     end
-        
+
     grid on;
 
     %% Graph 2: coh by shock
@@ -1739,6 +2212,13 @@ if (bl_display_funcgrids)
         disp(st_display);
     end
 
+end
+
+%% Display
+
+if (bl_display_funcgrids)
+    fft_container_map_display(armt_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+    fft_container_map_display(func_map, it_display_summmat_rowmax, it_display_summmat_colmax);
 end
 
 end

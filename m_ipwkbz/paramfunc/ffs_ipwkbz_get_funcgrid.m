@@ -68,21 +68,18 @@ function [armt_map, func_map] = ffs_ipwkbz_get_funcgrid(varargin)
 %
 
 %% Default
-
-bl_input_override = 0;
-if (length(varargin) == 3)
-    bl_input_override = varargin{3};
-end
-if (bl_input_override)
+if (~isempty(varargin))
+    
     % override when called from outside
-    [param_map, support_map, ~] = varargin{:};
+    [param_map, support_map] = varargin{:};
+    
 else
     % default internal run
     [param_map, support_map] = ffs_ipwkbz_set_default_param();
     support_map('bl_graph_funcgrids') = true;
     support_map('bl_graph_funcgrids_detail') = true;
     support_map('bl_display_funcgrids') = true;
-    
+
     % to be able to visually see choice grid points
     param_map('fl_b_bd') = -20; % borrow bound, = 0 if save only
     param_map('fl_default_aprime') = 0;
@@ -126,6 +123,8 @@ params_group = values(param_map, {'fl_r_save', 'fl_r_borr', 'fl_w'});
 
 params_group = values(support_map, {'bl_graph_funcgrids', 'bl_graph_funcgrids_detail', 'bl_display_funcgrids'});
 [bl_graph_funcgrids, bl_graph_funcgrids_detail, bl_display_funcgrids] = params_group{:};
+params_group = values(support_map, {'it_display_summmat_rowmax', 'it_display_summmat_colmax'});
+[it_display_summmat_rowmax, it_display_summmat_colmax] = params_group{:};
 
 %% Generate Asset and Choice Grid for 2nd stage Problem
 % This generate triangular choice structure. Household choose total
@@ -140,6 +139,7 @@ ar_w_perc = linspace(0.001, 0.999, it_w_perc_n);
 it_w_interp_n = (fl_w_max-fl_w_min)/(fl_w_interp_grid_gap);
 ar_w_level_full = fft_array_add_zero(linspace(fl_w_min, fl_w_max, it_w_interp_n), true);
 ar_w_level = ar_w_level_full;
+it_w_interp_n = length(ar_w_level_full);
 
 % max k given w, need to consider the possibility of borrowing.
 ar_k_max = ar_w_level_full - fl_b_bd;
@@ -187,15 +187,15 @@ ar_k_mesha = ar_k_mesha_full;
 mt_coh_wkb_full = f_coh(ar_z, ar_a_meshk_full, ar_k_mesha_full);
 
 if (bl_display_funcgrids)
-    
+
     % Generate Aggregate Variables
     ar_aplusk_mesh = ar_a_meshk_full + ar_k_mesha_full;
-    
+
     % Genereate Table
     tab_ak_choices = array2table([ar_aplusk_mesh, ar_k_mesha_full, ar_a_meshk_full]);
     cl_col_names = {'ar_aplusk_mesh', 'ar_k_mesha_full', 'ar_a_meshk_full'};
     tab_ak_choices.Properties.VariableNames = cl_col_names;
-    
+
     % Label Table Variables
     tab_ak_choices.Properties.VariableDescriptions{'ar_aplusk_mesh'} = ...
         '*ar_aplusk_mesha*: ar_aplusk_mesha = ar_a_meshk_full + ar_k_mesha_full;';
@@ -208,7 +208,7 @@ if (bl_display_funcgrids)
     for it_var_name = 1:length(cl_var_desc)
         disp(cl_var_desc{it_var_name});
     end
-    
+
     disp('----------------------------------------');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('tab_ak_choices');
@@ -226,7 +226,7 @@ if (bl_display_funcgrids)
     disp(size(mt_coh_wkb_full));
     disp(head(array2table(mt_coh_wkb_full), it_rows_toshow));
     disp(tail(array2table(mt_coh_wkb_full), it_rows_toshow));
-    
+
 end
 
 %% Check if COH is within Borrowing Bounds
@@ -421,7 +421,7 @@ if (bl_graph_funcgrids)
     else
         legend(chart([legend2plot]), legendCell([legend2plot]), 'Location', 'northeast');
     end
-        
+
     grid on;
 
     %% Graph 2: coh by shock
@@ -633,6 +633,13 @@ if (bl_display_funcgrids)
         disp(st_display);
     end
 
+end
+
+%% Display
+
+if (bl_display_funcgrids)
+    fft_container_map_display(armt_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+    fft_container_map_display(func_map, it_display_summmat_rowmax, it_display_summmat_colmax);
 end
 
 end

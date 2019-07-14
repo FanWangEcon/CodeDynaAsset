@@ -36,6 +36,8 @@ default_params = {it_subset bl_display_defparam};
 
 param_map = containers.Map('KeyType','char', 'ValueType','any');
 
+param_map('st_model') = 'abz_fibs';
+
 % Preferences
 param_map('fl_crra') = 1.5;
 param_map('fl_beta') = 0.94;

@@ -24,15 +24,10 @@ function [result_map] = ffs_fibs_identify_discrete(varargin)
 
 %% Default 
 
-bl_input_override = 0;
-if (length(varargin) == 2)
-    bl_input_override = varargin{2};
-end
-
-if (bl_input_override)
+if (~isempty(varargin))
     
     % override when called from outside
-    [result_map, ~] = varargin{:};
+    [result_map] = varargin{:};
     bl_display_fibs_identify_discrete = false;
     
 else

@@ -55,10 +55,10 @@ fl_binom_n = 30;
 fl_binom_p = 0.3;
 ar_binom_x = 0:1:fl_binom_n;
 
-% x
-ar_choice_unique_sorted = ar_binom_x;
 % f(x)
 ar_choice_prob = binopdf(ar_binom_x, fl_binom_n, fl_binom_p);
+% x
+ar_choice_unique_sorted = ar_binom_x - 10;
 % percentiles of interest
 ar_fl_percentiles = [0.1 1 5:5:25 35:15:65 75:5:95 99 99.9];
 
@@ -66,7 +66,7 @@ ar_fl_percentiles = [0.1 1 5:5:25 35:15:65 75:5:95 99 99.9];
 st_var_name = 'binom';
 
 % display
-bl_display_drvstats = false;
+bl_display_drvstats = true;
 
 % default
 default_params = {st_var_name ar_choice_unique_sorted ar_choice_prob bl_display_drvstats ar_fl_percentiles};
@@ -113,7 +113,12 @@ fl_choice_prob_max = sum(ar_choice_prob(ar_choice_unique_sorted == max(ar_choice
 %
 % * percentiles: $min_{y} \left\{ P(Y \le y) - percentile \mid P(Y \le y) \ge percentile \right\}$
 % * share of outcome (consumption/assets) held by households below this
-% percentile: $E(Y<y)/E(Y)$
+% percentile: $E(Y<y)/E(Y)$. Note that this statistics could exceed 1.
+% Suppose the average level is negative, but there are both positive and
+% negative $y$, then the statistics will first be what fraction of overall
+% debt is held by up to this percentile, then it will exceed 100 percent,
+% as we move towards the final $y<0$ values, then as it goes through the
+% $Y>0$ values, we will move back to 100 percent. 
 %
 
 % cumulative share of total outcome held by up to this level for outcomes

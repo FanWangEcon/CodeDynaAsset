@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Solve One Asset Dynamic Programming Problem (Optimized-Vectorized)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_AZ_VF_VECSV solve infinite horizon exo shock + endo asset problem</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1</a></li><li><a href="#5">Parse Parameters 2</a></li><li><a href="#6">Initialize Output Matrixes</a></li><li><a href="#7">Initialize Convergence Conditions</a></li><li><a href="#8">Iterate Value Function</a></li><li><a href="#10">Solve Optimization Problem Current Iteration</a></li><li><a href="#11">Check Tolerance and Continuation</a></li><li><a href="#13">Process Optimal Choices</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> result_map = ff_az_vf_vecsv(varargin)
+  </style></head><body><div class="content"><h1>Solve One Asset Dynamic Programming Problem (Optimized-Vectorized)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_AZ_VF_VECSV solve infinite horizon exo shock + endo asset problem</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1</a></li><li><a href="#5">Parse Parameters 2</a></li><li><a href="#6">Display Parameters</a></li><li><a href="#7">Initialize Output Matrixes</a></li><li><a href="#8">Initialize Convergence Conditions</a></li><li><a href="#9">Iterate Value Function</a></li><li><a href="#11">Solve Optimization Problem Current Iteration</a></li><li><a href="#12">Check Tolerance and Continuation</a></li><li><a href="#14">Process Optimal Choices</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> result_map = ff_az_vf_vecsv(varargin)
 </pre><h2 id="2">FF_AZ_VF_VECSV solve infinite horizon exo shock + endo asset problem</h2><p>This program solves the infinite horizon dynamic single asset and single shock problem with vectorized codes. <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf.html">ff_az_vf</a> shows looped codes. <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vec.html">ff_az_vf_vec</a> shows vectorized codes. This file shows vectorized codes that is faster but is more memory intensive.</p><p>See <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vec.html">ff_az_vf_vec</a> how vectorization works within this structure.</p><p>This <i>optimized-vectorized</i> solution method provides very large speed improvements for this infinite horizon problem because the u(c(z,a,a')) calculation within each iteration is identical. Generally the idea is to identify inside iteration whether the model is infinite horizon or life-cycle based where repeat calculations are taking place. If such calculations can be identified, then potentially they could be stored and retrieved during future iterations/periods rather than recomputed every time. This saves time.</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@param func_map container container with function handles for consumption cash-on-hand etc.</p><p>@return result_map container contains policy function matrix, value function matrix, iteration results, and policy function, value function and iteration results tables.</p><p>keys included in result_map:</p><div><ul><li>mt_val matrix states_n by shock_n matrix of converged value function grid</li><li>mt_pol_a matrix states_n by shock_n matrix of converged policy function grid</li><li>ar_val_diff_norm array if bl_post = true it_iter_last by 1 val function difference between iteration</li><li>ar_pol_diff_norm array if bl_post = true it_iter_last by 1 policy function difference between iterations</li><li>mt_pol_perc_change matrix if bl_post = true it_iter_last by shock_n the proportion of grid points at which policy function changed between current and last iteration for each element of shock</li></ul></div><p>@example</p><pre>  % Get Default Parameters
   it_param_set = 2;
   [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
@@ -126,11 +126,88 @@ params_group = values(param_map, {<span class="string">'it_maxiter_val'</span>, 
 <span class="comment">% support_map</span>
 params_group = values(support_map, {<span class="string">'bl_profile'</span>, <span class="string">'st_profile_path'</span>, <span class="keyword">...</span>
     <span class="string">'st_profile_prefix'</span>, <span class="string">'st_profile_name_main'</span>, <span class="string">'st_profile_suffix'</span>,<span class="keyword">...</span>
-    <span class="string">'bl_time'</span>, <span class="string">'bl_display'</span>, <span class="string">'it_display_every'</span>, <span class="string">'bl_post'</span>});
+    <span class="string">'bl_time'</span>, <span class="string">'bl_display_defparam'</span>, <span class="string">'bl_display'</span>, <span class="string">'it_display_every'</span>, <span class="string">'bl_post'</span>});
 [bl_profile, st_profile_path, <span class="keyword">...</span>
     st_profile_prefix, st_profile_name_main, st_profile_suffix, <span class="keyword">...</span>
-    bl_time, bl_display, it_display_every, bl_post] = params_group{:};
-</pre><h2 id="6">Initialize Output Matrixes</h2><p>include mt_pol_idx which we did not have in looped code</p><pre class="codeinput">mt_val_cur = zeros(length(ar_a),length(ar_z));
+    bl_time, bl_display_defparam, bl_display, it_display_every, bl_post] = params_group{:};
+</pre><h2 id="6">Display Parameters</h2><pre class="codeinput"><span class="keyword">if</span>(bl_display_defparam)
+    fft_container_map_display(param_map);
+    fft_container_map_display(support_map);
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">  Map with properties:
+
+        Count: 24
+      KeyType: char
+    ValueType: any
+
+pos = 1 ; key = bl_loglin ; val = false
+pos = 2 ; key = fl_a_max ; val = 50
+pos = 3 ; key = fl_a_min ; val = 0
+pos = 4 ; key = fl_b_bd ; val = 0
+pos = 5 ; key = fl_beta ; val = 0.94
+pos = 6 ; key = fl_crra ; val = 1.5
+pos = 7 ; key = fl_loglin_threshold ; val = 1
+pos = 8 ; key = fl_nan_replace ; val = -9999
+pos = 9 ; key = fl_r_save ; val = 0.025
+pos = 10 ; key = fl_tol_dist ; val = 1e-05
+pos = 11 ; key = fl_tol_pol ; val = 1e-05
+pos = 12 ; key = fl_tol_val ; val = 1e-05
+pos = 13 ; key = fl_w ; val = 1.28
+pos = 14 ; key = fl_z_mu ; val = 0
+pos = 15 ; key = fl_z_rho ; val = 0.8
+pos = 16 ; key = fl_z_sig ; val = 0.2
+pos = 17 ; key = it_a_n ; val = 750
+pos = 18 ; key = it_maxiter_dist ; val = 1000
+pos = 19 ; key = it_maxiter_val ; val = 1000
+pos = 20 ; key = it_tol_pol_nochange ; val = 25
+pos = 21 ; key = it_trans_power_dist ; val = 1000
+pos = 22 ; key = it_z_n ; val = 15
+pos = 23 ; key = st_analytical_stationary_type ; val = eigenvector
+pos = 24 ; key = st_model ; val = az
+  Map with properties:
+
+        Count: 37
+      KeyType: char
+    ValueType: any
+
+pos = 1 ; key = bl_display ; val = false
+pos = 2 ; key = bl_display_defparam ; val = true
+pos = 3 ; key = bl_display_dist ; val = false
+pos = 4 ; key = bl_display_final ; val = true
+pos = 5 ; key = bl_display_final_dist ; val = false
+pos = 6 ; key = bl_display_final_dist_detail ; val = false
+pos = 7 ; key = bl_display_funcgrids ; val = false
+pos = 8 ; key = bl_graph ; val = true
+pos = 9 ; key = bl_graph_coh_t_coh ; val = true
+pos = 10 ; key = bl_graph_funcgrids ; val = false
+pos = 11 ; key = bl_graph_onebyones ; val = true
+pos = 12 ; key = bl_graph_pol_lvl ; val = true
+pos = 13 ; key = bl_graph_pol_pct ; val = true
+pos = 14 ; key = bl_graph_val ; val = true
+pos = 15 ; key = bl_img_save ; val = false
+pos = 16 ; key = bl_mat ; val = false
+pos = 17 ; key = bl_post ; val = true
+pos = 18 ; key = bl_profile ; val = false
+pos = 19 ; key = bl_profile_dist ; val = false
+pos = 20 ; key = bl_time ; val = false
+pos = 21 ; key = it_display_every ; val = 5
+pos = 22 ; key = it_display_final_colmax ; val = 12
+pos = 23 ; key = it_display_final_rowmax ; val = 100
+pos = 24 ; key = st_img_name_main ; val = ff_az_vf_vecsv_default
+pos = 25 ; key = st_img_path ; val = C:/Users/fan/CodeDynaAsset//m_az//solve/img/
+pos = 26 ; key = st_img_prefix ; val = 
+pos = 27 ; key = st_img_suffix ; val = _p4.png
+pos = 28 ; key = st_mat_name_main ; val = ff_az_vf_vecsv_default
+pos = 29 ; key = st_mat_path ; val = C:/Users/fan/CodeDynaAsset//m_az//solve/mat/
+pos = 30 ; key = st_mat_prefix ; val = 
+pos = 31 ; key = st_mat_suffix ; val = _p4
+pos = 32 ; key = st_matimg_path_root ; val = C:/Users/fan/CodeDynaAsset//m_az/
+pos = 33 ; key = st_profile_name_main ; val = ff_az_vf_vecsv_default
+pos = 34 ; key = st_profile_path ; val = C:/Users/fan/CodeDynaAsset//m_az//solve/profile/
+pos = 35 ; key = st_profile_prefix ; val = 
+pos = 36 ; key = st_profile_suffix ; val = _p4
+pos = 37 ; key = st_title_prefix ; val = 
+</pre><h2 id="7">Initialize Output Matrixes</h2><p>include mt_pol_idx which we did not have in looped code</p><pre class="codeinput">mt_val_cur = zeros(length(ar_a),length(ar_z));
 mt_val = mt_val_cur - 1;
 mt_pol_a = zeros(length(ar_a),length(ar_z));
 mt_pol_a_cur = mt_pol_a - 1;
@@ -142,12 +219,12 @@ mt_pol_idx = zeros(length(ar_a),length(ar_z));
 <span class="comment">% fs_u_c_partrepeat_main&gt; for why store using cells.</span>
 cl_u_c_store = cell([it_z_n, 1]);
 cl_c_valid_idx = cell([it_z_n, 1]);
-</pre><h2 id="7">Initialize Convergence Conditions</h2><pre class="codeinput">bl_vfi_continue = true;
+</pre><h2 id="8">Initialize Convergence Conditions</h2><pre class="codeinput">bl_vfi_continue = true;
 it_iter = 0;
 ar_val_diff_norm = zeros([it_maxiter_val, 1]);
 ar_pol_diff_norm = zeros([it_maxiter_val, 1]);
 mt_pol_perc_change = zeros([it_maxiter_val, it_z_n]);
-</pre><h2 id="8">Iterate Value Function</h2><p>Loop solution with 4 nested loops</p><div><ol><li>loop 1: over exogenous states</li><li>loop 2: over endogenous states</li><li>loop 3: over choices</li><li>loop 4: add future utility, integration--loop over future shocks</li></ol></div><pre class="codeinput"><span class="comment">% Start Profile</span>
+</pre><h2 id="9">Iterate Value Function</h2><p>Loop solution with 4 nested loops</p><div><ol><li>loop 1: over exogenous states</li><li>loop 2: over endogenous states</li><li>loop 3: over choices</li><li>loop 4: add future utility, integration--loop over future shocks</li></ol></div><pre class="codeinput"><span class="comment">% Start Profile</span>
 <span class="keyword">if</span> (bl_profile)
     close <span class="string">all</span>;
     profile <span class="string">off</span>;
@@ -162,7 +239,7 @@ mt_pol_perc_change = zeros([it_maxiter_val, it_z_n]);
 <span class="comment">% Value Function Iteration</span>
 <span class="keyword">while</span> bl_vfi_continue
 </pre><pre class="codeinput">    it_iter = it_iter + 1;
-</pre><h2 id="10">Solve Optimization Problem Current Iteration</h2><p>Only this segment of code differs between ff_az_vf and ff_az_vf_vec Store in cells results and retrieve, this is more memory intensive than ff_az_vf_vec.</p><pre class="codeinput">    <span class="comment">% loop 1: over exogenous states</span>
+</pre><h2 id="11">Solve Optimization Problem Current Iteration</h2><p>Only this segment of code differs between ff_az_vf and ff_az_vf_vec Store in cells results and retrieve, this is more memory intensive than ff_az_vf_vec.</p><pre class="codeinput">    <span class="comment">% loop 1: over exogenous states</span>
     <span class="keyword">for</span> it_z_i = 1:length(ar_z)
 
         <span class="comment">% Current Shock</span>
@@ -224,7 +301,7 @@ mt_pol_perc_change = zeros([it_maxiter_val, it_z_n]);
             mt_pol_idx(:,it_z_i) = ar_opti_idx_z;
         <span class="keyword">end</span>
     <span class="keyword">end</span>
-</pre><h2 id="11">Check Tolerance and Continuation</h2><pre class="codeinput">    <span class="comment">% Difference across iterations</span>
+</pre><h2 id="12">Check Tolerance and Continuation</h2><pre class="codeinput">    <span class="comment">% Difference across iterations</span>
     ar_val_diff_norm(it_iter) = norm(mt_val - mt_val_cur);
     ar_pol_diff_norm(it_iter) = norm(mt_pol_a - mt_pol_a_cur);
     mt_pol_perc_change(it_iter, :) = sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n);
@@ -275,7 +352,7 @@ mt_pol_perc_change = zeros([it_maxiter_val, it_z_n]);
     st_file_name = [st_profile_prefix st_profile_name_main st_profile_suffix];
     profsave(profile(<span class="string">'info'</span>), strcat(st_profile_path, st_file_name));
 <span class="keyword">end</span>
-</pre><h2 id="13">Process Optimal Choices</h2><p>for choices outcomes, store as cell with two elements, first element is the y(a,z), outcome given states, the second element will be solved found in <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_ds_vf.html">ff_ds_vf</a> and other distributions files. It stores what are the probability mass function of y, along with sorted unique values of y.</p><pre class="codeinput">result_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
+</pre><h2 id="14">Process Optimal Choices</h2><p>for choices outcomes, store as cell with two elements, first element is the y(a,z), outcome given states, the second element will be solved found in <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_ds_vf.html">ff_ds_vf</a> and other distributions files. It stores what are the probability mass function of y, along with sorted unique values of y.</p><pre class="codeinput">result_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
 result_map(<span class="string">'mt_val'</span>) = mt_val;
 result_map(<span class="string">'mt_pol_idx'</span>) = mt_pol_idx;
 
@@ -294,109 +371,109 @@ result_map(<span class="string">'ar_st_pol_names'</span>) = [<span class="string
 </pre><pre class="codeoutput">valgap = norm(mt_val - mt_val_cur): value function difference across iterations
 polgap = norm(mt_pol_a - mt_pol_a_cur): policy function difference across iterations
 z1 = z1 perc change: sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n): percentage of state space points conditional on shock where the policy function is changing across iterations
-                 valgap      polgap        z1           z2           z3           z4           z5           z6           z7           z8           z9           z10          z11          z12          z13          z14          z15   
-                ________    ________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________
+                 valgap      polgap     z1_0_34741    z2_0_40076    z3_0_4623    z4_0_5333    z5_0_61519    z6_0_70966    z10_1_2567    z11_1_4496    z12_1_6723    z13_1_9291    z14_2_2253    z15_2_567
+                ________    ________    __________    __________    _________    _________    __________    __________    __________    __________    __________    __________    __________    _________
 
-    iter=1        163.75      106.07            1            1            1            1            1            1            1            1            1            1            1            1            1            1            1
-    iter=2        124.31      1532.9        0.996        0.996        0.996        0.996      0.99733      0.99733      0.99733      0.99867      0.99867            1            1            1            1            1            1
-    iter=3        102.03      510.84        0.988      0.99067      0.99067      0.99067      0.99333        0.992      0.99467      0.99467      0.99733      0.99733            1            1            1            1            1
-    iter=4        86.034       255.3         0.98         0.98      0.98133      0.98267        0.984        0.984      0.98933      0.98933      0.99467      0.99867      0.99867            1            1            1            1
-    iter=5        73.685      152.77      0.96667      0.97067      0.96933        0.972      0.97467      0.97467      0.97867      0.98533        0.988        0.992        0.996      0.99867            1            1            1
-    iter=6        63.774      101.47      0.95333      0.95467      0.95733      0.95867      0.96267      0.96533      0.97067        0.972      0.98267      0.98533      0.99067        0.996            1            1            1
-    iter=7        55.621      72.103        0.936         0.94        0.944      0.94667      0.94667      0.95333         0.96      0.96533      0.97067      0.97467      0.98133        0.992      0.99733            1            1
-    iter=8        48.798       53.69         0.92      0.92133        0.924      0.92933      0.93467      0.93867        0.944        0.952        0.956      0.96533      0.97467      0.98267      0.98933        0.996            1
-    iter=9        43.012      41.353          0.9      0.90133      0.90533      0.90933        0.916      0.92133      0.92667      0.93467        0.948      0.95467      0.96533      0.97467        0.984        0.992      0.99467
-    iter=10       38.059       32.75      0.87333      0.87867      0.88533      0.89067      0.89867          0.9      0.90933         0.92      0.92933      0.93733      0.94933      0.95867      0.96933      0.98267      0.99333
-    iter=11       33.783      26.505      0.85467        0.856      0.86133      0.86533      0.87733      0.88533        0.892      0.89733        0.908      0.92533      0.93467      0.94667      0.95733      0.97067      0.98267
-    iter=12       30.068       21.79      0.82267      0.83067      0.83333        0.844      0.84933      0.85867        0.868         0.88      0.88533      0.89333        0.912      0.92533      0.94667      0.95867      0.96667
-    iter=13       26.824      18.165      0.80133      0.80533      0.80933      0.82267      0.82667      0.83333      0.83867      0.85333        0.864         0.88      0.89333      0.90933      0.91467      0.93067        0.952
-    iter=14       23.979      15.333      0.77333      0.77867        0.784      0.78533      0.79467      0.80667      0.81467      0.82533      0.83867      0.84933        0.868        0.884      0.89867        0.916      0.92933
-    iter=15       21.472      13.055      0.73333      0.73733      0.74933      0.76133      0.76533      0.78133      0.78667          0.8      0.81467      0.82667      0.83867        0.852        0.876      0.89333        0.912
-    iter=16       19.259      11.195      0.70667      0.70933      0.72133      0.72933      0.73867        0.744        0.756      0.76533      0.78267      0.79733        0.808      0.82667        0.844      0.86133        0.884
-    iter=17       17.297      9.6488      0.67067      0.67467      0.67733      0.68933      0.69733      0.71067      0.72133        0.736      0.74933      0.76533         0.78        0.796      0.81467      0.83067        0.852
-    iter=18       15.555      8.4101      0.63067      0.63333        0.652      0.65733      0.66933      0.67333      0.68533      0.70133      0.71333      0.72667        0.744         0.76      0.78267      0.79867      0.82267
-    iter=19       14.006      7.3437      0.58667      0.60533      0.60533      0.61467        0.628      0.63467      0.64667      0.66133      0.67333      0.68933        0.704      0.72933        0.748      0.76667      0.78267
-    iter=20       12.624       6.449      0.54933      0.55333      0.56533        0.576        0.588        0.596      0.60667         0.62      0.63467      0.65467        0.668        0.688      0.69867        0.732      0.74667
-    iter=21        11.39      5.6505          0.5      0.50933         0.52      0.53067         0.54      0.54533      0.56267        0.584      0.59467      0.60133      0.62533      0.63733      0.66533      0.68267      0.70533
-    iter=22       10.287      5.0083      0.46267      0.46533      0.47467      0.47733      0.49067      0.50933        0.516      0.52267      0.54133      0.56267      0.57467      0.59333      0.61867      0.63733      0.66667
-    iter=23       9.3002      4.4887      0.40533         0.42      0.41867        0.436      0.44933      0.45867      0.46133      0.47867      0.49333        0.508      0.53067        0.552      0.57467      0.59467      0.61333
-    iter=24       8.4155      4.0328        0.356         0.36      0.37733      0.37733      0.38933      0.40267      0.42133      0.43467        0.444      0.45867        0.476      0.49867        0.516        0.544      0.56267
-    iter=25       7.6221      3.5934      0.31333        0.312      0.32667      0.33467      0.34133        0.356      0.35867        0.372      0.39467      0.41333      0.42533      0.44667      0.46667        0.484        0.516
-    iter=26         6.91      3.2085        0.272      0.27867      0.28133      0.30133        0.304      0.30933        0.324      0.33467         0.34        0.356      0.37467        0.388      0.41067        0.428        0.452
-    iter=27       6.2702      2.8585        0.236      0.24933      0.24667        0.248      0.26133        0.272      0.28267      0.29333      0.30933      0.31867      0.33333      0.34533        0.364        0.384      0.40267
-    iter=28       5.6953      2.5765      0.21467      0.21467      0.22133        0.228      0.24133        0.244      0.24667      0.26267        0.268      0.27867        0.296      0.30667      0.31867      0.34133      0.35867
-    iter=29       5.1782       2.306        0.184        0.188      0.20133      0.20267      0.20267        0.212      0.22267        0.228      0.23733      0.24667        0.256      0.27333      0.29467      0.30267      0.32133
-    iter=30       4.7129      2.0418         0.16        0.164      0.16267      0.17333      0.18133      0.18133      0.19733      0.20133      0.20667      0.22267        0.228      0.24133      0.25333        0.264        0.288
-    iter=31       4.2941      1.8115      0.14133      0.14933        0.156        0.156      0.16267      0.17067      0.16533      0.17333      0.18667      0.19067          0.2      0.21067      0.21733      0.24267      0.24533
-    iter=32       3.9168      1.6523      0.12933        0.128      0.12933      0.13333      0.13467      0.13867      0.15333        0.156      0.15733      0.17467      0.18267        0.192          0.2      0.20267      0.22533
-    iter=33       3.5768      1.5041        0.108        0.112        0.112      0.11467        0.124      0.12667      0.12933         0.14      0.15067      0.14533        0.156         0.16      0.17733        0.192      0.19867
-    iter=34       3.2703      1.4169     0.089333     0.093333      0.10667      0.10933      0.10933        0.116        0.116      0.11733        0.124        0.136      0.13467        0.152      0.15467         0.16        0.176
-    iter=35       2.9938      1.3063     0.085333     0.081333         0.08        0.096     0.093333        0.092      0.10533      0.10267      0.10667        0.116      0.12533        0.128        0.136      0.14533      0.15333
-    iter=36       2.7442      1.2085     0.073333     0.078667     0.073333     0.073333         0.08     0.082667     0.085333          0.1     0.098667      0.10133        0.108      0.11467      0.11867      0.13333      0.13467
-    iter=37       2.5187      1.1046     0.058667     0.066667     0.066667     0.066667        0.072     0.073333     0.077333     0.077333     0.085333     0.086667     0.093333          0.1      0.10667        0.108      0.12267
-    iter=38       2.3149      0.9803     0.053333     0.050667     0.062667     0.058667     0.061333     0.066667        0.064        0.068     0.069333         0.08        0.084     0.090667          0.1     0.098667      0.11067
-    iter=39       2.1305     0.77536        0.044     0.045333     0.046667     0.053333        0.056     0.053333     0.058667     0.062667        0.064     0.065333     0.074667        0.072     0.074667        0.088     0.085333
-    iter=40       1.9634     0.74607     0.041333     0.042667     0.037333     0.042667     0.041333        0.044        0.052        0.052     0.057333     0.057333         0.06        0.064     0.069333         0.08     0.078667
-    iter=41       1.8119       0.714         0.04        0.032     0.034667     0.041333     0.038667     0.046667        0.044     0.049333     0.053333        0.052     0.053333         0.06        0.064     0.061333     0.073333
-    iter=42       1.6744     0.61466     0.025333     0.034667     0.034667        0.028     0.034667     0.030667        0.032     0.037333         0.04     0.042667     0.045333        0.048        0.056     0.057333     0.062667
-    iter=43       1.5494     0.57239        0.024        0.028     0.026667        0.028     0.030667     0.033333     0.030667        0.032        0.032     0.038667         0.04     0.050667     0.046667        0.052        0.056
-    iter=44       1.4355     0.51494        0.016     0.022667     0.022667     0.022667     0.025333        0.028     0.029333     0.029333     0.030667     0.034667        0.036        0.036     0.042667     0.042667        0.044
-    iter=45       1.3316     0.50433        0.016     0.018667         0.02     0.021333         0.02     0.025333     0.021333         0.02     0.025333     0.025333     0.029333        0.024        0.032     0.041333         0.04
-    iter=46       1.2367     0.40288     0.018667     0.013333     0.017333     0.017333         0.02     0.017333     0.026667     0.022667     0.022667        0.028     0.022667        0.028     0.029333     0.026667     0.038667
-    iter=47       1.1498     0.38952     0.014667    0.0093333     0.013333        0.016        0.016     0.013333     0.017333        0.016        0.016         0.02        0.028        0.024     0.025333     0.033333     0.025333
-    iter=48       1.0701     0.33652     0.010667        0.012     0.014667     0.013333     0.018667     0.010667     0.014667     0.014667        0.016        0.016     0.018667     0.021333     0.021333         0.02     0.029333
-    iter=49      0.99696     0.28366        0.004    0.0093333        0.008    0.0066667    0.0053333        0.012     0.010667        0.012     0.017333        0.012        0.012        0.016        0.016         0.02     0.018667
-    iter=50      0.92962     0.29039     0.010667        0.008        0.008     0.010667        0.008        0.008        0.012     0.010667     0.010667     0.010667     0.017333     0.013333        0.016        0.016        0.024
-    iter=56      0.62025     0.22154        0.004    0.0013333    0.0013333    0.0026667    0.0013333    0.0026667        0.004    0.0053333    0.0066667        0.004    0.0026667     0.010667    0.0066667    0.0066667    0.0066667
-    iter=57      0.58092     0.14927    0.0013333    0.0026667        0.004            0    0.0026667    0.0026667    0.0013333        0.004            0    0.0053333    0.0066667            0        0.004    0.0053333        0.004
-    iter=58       0.5443     0.16352    0.0026667    0.0013333    0.0013333    0.0013333        0.004            0    0.0026667        0.004        0.004    0.0026667    0.0013333    0.0026667    0.0053333        0.008        0.004
-    iter=59      0.51018     0.13847            0            0    0.0013333    0.0026667        0.004    0.0026667    0.0053333    0.0026667            0    0.0013333    0.0026667        0.004    0.0026667    0.0026667    0.0013333
-    iter=60      0.47836     0.14346    0.0013333            0        0.004    0.0013333            0    0.0013333            0            0        0.004        0.004    0.0013333    0.0026667        0.004    0.0013333    0.0053333
-    iter=61      0.44865     0.13351    0.0013333    0.0053333            0    0.0013333    0.0013333    0.0026667    0.0013333            0    0.0026667    0.0013333    0.0013333        0.004    0.0026667            0    0.0053333
-    iter=62      0.42089     0.13847    0.0013333    0.0026667            0    0.0013333            0            0            0    0.0013333    0.0013333    0.0026667    0.0013333            0    0.0053333    0.0026667            0
-    iter=63      0.39494     0.11562            0            0            0    0.0013333            0    0.0013333            0            0        0.004            0    0.0026667    0.0026667            0    0.0026667    0.0013333
-    iter=64      0.37067    0.066756    0.0013333            0            0    0.0013333            0    0.0013333            0            0            0    0.0013333            0    0.0013333    0.0013333    0.0013333    0.0013333
-    iter=65      0.34796    0.094407            0            0    0.0026667    0.0026667            0            0    0.0013333    0.0013333            0            0    0.0013333            0            0            0    0.0013333
-    iter=66      0.32668    0.094407            0            0            0            0            0            0            0    0.0013333            0            0    0.0026667    0.0013333            0    0.0013333    0.0013333
-    iter=67      0.30676    0.066756            0            0    0.0013333            0            0    0.0013333    0.0013333            0            0    0.0013333            0            0            0            0            0
-    iter=68      0.28808    0.066756            0            0            0    0.0013333    0.0013333            0            0    0.0013333            0            0            0    0.0013333            0    0.0013333    0.0013333
-    iter=69      0.27057    0.066756            0            0            0            0    0.0013333            0            0            0            0    0.0013333            0            0    0.0013333    0.0013333            0
-    iter=70      0.25415    0.066756            0            0            0            0            0            0            0    0.0013333    0.0013333    0.0013333            0            0            0            0            0
-    iter=71      0.23875    0.066756            0            0            0            0            0            0            0            0            0            0            0    0.0013333            0            0    0.0013333
-    iter=72      0.22429    0.066756            0            0            0            0            0            0            0            0            0    0.0013333            0            0            0            0            0
-    iter=73      0.21073    0.066756            0            0            0    0.0013333            0            0            0            0            0            0            0            0            0    0.0013333            0
-    iter=74        0.198    0.066756            0            0            0            0            0    0.0013333            0            0            0            0    0.0013333            0            0            0    0.0013333
-    iter=75      0.18605           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=76      0.17483           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=77      0.16429    0.066756            0            0            0            0            0            0            0            0            0            0            0            0    0.0013333            0            0
-    iter=78      0.15439    0.066756            0            0            0            0            0            0            0            0            0            0            0            0    0.0013333            0            0
-    iter=79      0.14509    0.066756            0            0            0            0            0            0            0            0            0            0            0            0            0    0.0013333            0
-    iter=80      0.13636           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=81      0.12815           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=82      0.12044           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=83       0.1132           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=84       0.1064           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=85          0.1           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=86     0.093993           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=87     0.088346           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=88     0.083039           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=89     0.078052           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=90     0.073365           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=91     0.068959           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=92     0.064819           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=93     0.060927           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=94      0.05727           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=95     0.053832           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=96     0.050601           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=97     0.047563           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=98     0.044709           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=99     0.042025           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=100    0.039503           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=101    0.037133           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=102    0.034904           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=103     0.03281           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=104    0.030841           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
-    iter=105     0.02899           0            0            0            0            0            0            0            0            0            0            0            0            0            0            0            0
+    iter=1        163.75      106.07            1             1             1            1            1             1             1             1             1             1             1             1
+    iter=2        124.31      1532.9        0.996         0.996         0.996        0.996      0.99733       0.99733             1             1             1             1             1             1
+    iter=3        102.03      510.84        0.988       0.99067       0.99067      0.99067      0.99333         0.992       0.99733             1             1             1             1             1
+    iter=4        86.034       255.3         0.98          0.98       0.98133      0.98267        0.984         0.984       0.99867       0.99867             1             1             1             1
+    iter=5        73.685      152.77      0.96667       0.97067       0.96933        0.972      0.97467       0.97467         0.992         0.996       0.99867             1             1             1
+    iter=6        63.774      101.47      0.95333       0.95467       0.95733      0.95867      0.96267       0.96533       0.98533       0.99067         0.996             1             1             1
+    iter=7        55.621      72.103        0.936          0.94         0.944      0.94667      0.94667       0.95333       0.97467       0.98133         0.992       0.99733             1             1
+    iter=8        48.798       53.69         0.92       0.92133         0.924      0.92933      0.93467       0.93867       0.96533       0.97467       0.98267       0.98933         0.996             1
+    iter=9        43.012      41.353          0.9       0.90133       0.90533      0.90933        0.916       0.92133       0.95467       0.96533       0.97467         0.984         0.992       0.99467
+    iter=10       38.059       32.75      0.87333       0.87867       0.88533      0.89067      0.89867           0.9       0.93733       0.94933       0.95867       0.96933       0.98267       0.99333
+    iter=11       33.783      26.505      0.85467         0.856       0.86133      0.86533      0.87733       0.88533       0.92533       0.93467       0.94667       0.95733       0.97067       0.98267
+    iter=12       30.068       21.79      0.82267       0.83067       0.83333        0.844      0.84933       0.85867       0.89333         0.912       0.92533       0.94667       0.95867       0.96667
+    iter=13       26.824      18.165      0.80133       0.80533       0.80933      0.82267      0.82667       0.83333          0.88       0.89333       0.90933       0.91467       0.93067         0.952
+    iter=14       23.979      15.333      0.77333       0.77867         0.784      0.78533      0.79467       0.80667       0.84933         0.868         0.884       0.89867         0.916       0.92933
+    iter=15       21.472      13.055      0.73333       0.73733       0.74933      0.76133      0.76533       0.78133       0.82667       0.83867         0.852         0.876       0.89333         0.912
+    iter=16       19.259      11.195      0.70667       0.70933       0.72133      0.72933      0.73867         0.744       0.79733         0.808       0.82667         0.844       0.86133         0.884
+    iter=17       17.297      9.6488      0.67067       0.67467       0.67733      0.68933      0.69733       0.71067       0.76533          0.78         0.796       0.81467       0.83067         0.852
+    iter=18       15.555      8.4101      0.63067       0.63333         0.652      0.65733      0.66933       0.67333       0.72667         0.744          0.76       0.78267       0.79867       0.82267
+    iter=19       14.006      7.3437      0.58667       0.60533       0.60533      0.61467        0.628       0.63467       0.68933         0.704       0.72933         0.748       0.76667       0.78267
+    iter=20       12.624       6.449      0.54933       0.55333       0.56533        0.576        0.588         0.596       0.65467         0.668         0.688       0.69867         0.732       0.74667
+    iter=21        11.39      5.6505          0.5       0.50933          0.52      0.53067         0.54       0.54533       0.60133       0.62533       0.63733       0.66533       0.68267       0.70533
+    iter=22       10.287      5.0083      0.46267       0.46533       0.47467      0.47733      0.49067       0.50933       0.56267       0.57467       0.59333       0.61867       0.63733       0.66667
+    iter=23       9.3002      4.4887      0.40533          0.42       0.41867        0.436      0.44933       0.45867         0.508       0.53067         0.552       0.57467       0.59467       0.61333
+    iter=24       8.4155      4.0328        0.356          0.36       0.37733      0.37733      0.38933       0.40267       0.45867         0.476       0.49867         0.516         0.544       0.56267
+    iter=25       7.6221      3.5934      0.31333         0.312       0.32667      0.33467      0.34133         0.356       0.41333       0.42533       0.44667       0.46667         0.484         0.516
+    iter=26         6.91      3.2085        0.272       0.27867       0.28133      0.30133        0.304       0.30933         0.356       0.37467         0.388       0.41067         0.428         0.452
+    iter=27       6.2702      2.8585        0.236       0.24933       0.24667        0.248      0.26133         0.272       0.31867       0.33333       0.34533         0.364         0.384       0.40267
+    iter=28       5.6953      2.5765      0.21467       0.21467       0.22133        0.228      0.24133         0.244       0.27867         0.296       0.30667       0.31867       0.34133       0.35867
+    iter=29       5.1782       2.306        0.184         0.188       0.20133      0.20267      0.20267         0.212       0.24667         0.256       0.27333       0.29467       0.30267       0.32133
+    iter=30       4.7129      2.0418         0.16         0.164       0.16267      0.17333      0.18133       0.18133       0.22267         0.228       0.24133       0.25333         0.264         0.288
+    iter=31       4.2941      1.8115      0.14133       0.14933         0.156        0.156      0.16267       0.17067       0.19067           0.2       0.21067       0.21733       0.24267       0.24533
+    iter=32       3.9168      1.6523      0.12933         0.128       0.12933      0.13333      0.13467       0.13867       0.17467       0.18267         0.192           0.2       0.20267       0.22533
+    iter=33       3.5768      1.5041        0.108         0.112         0.112      0.11467        0.124       0.12667       0.14533         0.156          0.16       0.17733         0.192       0.19867
+    iter=34       3.2703      1.4169     0.089333      0.093333       0.10667      0.10933      0.10933         0.116         0.136       0.13467         0.152       0.15467          0.16         0.176
+    iter=35       2.9938      1.3063     0.085333      0.081333          0.08        0.096     0.093333         0.092         0.116       0.12533         0.128         0.136       0.14533       0.15333
+    iter=36       2.7442      1.2085     0.073333      0.078667      0.073333     0.073333         0.08      0.082667       0.10133         0.108       0.11467       0.11867       0.13333       0.13467
+    iter=37       2.5187      1.1046     0.058667      0.066667      0.066667     0.066667        0.072      0.073333      0.086667      0.093333           0.1       0.10667         0.108       0.12267
+    iter=38       2.3149      0.9803     0.053333      0.050667      0.062667     0.058667     0.061333      0.066667          0.08         0.084      0.090667           0.1      0.098667       0.11067
+    iter=39       2.1305     0.77536        0.044      0.045333      0.046667     0.053333        0.056      0.053333      0.065333      0.074667         0.072      0.074667         0.088      0.085333
+    iter=40       1.9634     0.74607     0.041333      0.042667      0.037333     0.042667     0.041333         0.044      0.057333          0.06         0.064      0.069333          0.08      0.078667
+    iter=41       1.8119       0.714         0.04         0.032      0.034667     0.041333     0.038667      0.046667         0.052      0.053333          0.06         0.064      0.061333      0.073333
+    iter=42       1.6744     0.61466     0.025333      0.034667      0.034667        0.028     0.034667      0.030667      0.042667      0.045333         0.048         0.056      0.057333      0.062667
+    iter=43       1.5494     0.57239        0.024         0.028      0.026667        0.028     0.030667      0.033333      0.038667          0.04      0.050667      0.046667         0.052         0.056
+    iter=44       1.4355     0.51494        0.016      0.022667      0.022667     0.022667     0.025333         0.028      0.034667         0.036         0.036      0.042667      0.042667         0.044
+    iter=45       1.3316     0.50433        0.016      0.018667          0.02     0.021333         0.02      0.025333      0.025333      0.029333         0.024         0.032      0.041333          0.04
+    iter=46       1.2367     0.40288     0.018667      0.013333      0.017333     0.017333         0.02      0.017333         0.028      0.022667         0.028      0.029333      0.026667      0.038667
+    iter=47       1.1498     0.38952     0.014667     0.0093333      0.013333        0.016        0.016      0.013333          0.02         0.028         0.024      0.025333      0.033333      0.025333
+    iter=48       1.0701     0.33652     0.010667         0.012      0.014667     0.013333     0.018667      0.010667         0.016      0.018667      0.021333      0.021333          0.02      0.029333
+    iter=49      0.99696     0.28366        0.004     0.0093333         0.008    0.0066667    0.0053333         0.012         0.012         0.012         0.016         0.016          0.02      0.018667
+    iter=50      0.92962     0.29039     0.010667         0.008         0.008     0.010667        0.008         0.008      0.010667      0.017333      0.013333         0.016         0.016         0.024
+    iter=56      0.62025     0.22154        0.004     0.0013333     0.0013333    0.0026667    0.0013333     0.0026667         0.004     0.0026667      0.010667     0.0066667     0.0066667     0.0066667
+    iter=57      0.58092     0.14927    0.0013333     0.0026667         0.004            0    0.0026667     0.0026667     0.0053333     0.0066667             0         0.004     0.0053333         0.004
+    iter=58       0.5443     0.16352    0.0026667     0.0013333     0.0013333    0.0013333        0.004             0     0.0026667     0.0013333     0.0026667     0.0053333         0.008         0.004
+    iter=59      0.51018     0.13847            0             0     0.0013333    0.0026667        0.004     0.0026667     0.0013333     0.0026667         0.004     0.0026667     0.0026667     0.0013333
+    iter=60      0.47836     0.14346    0.0013333             0         0.004    0.0013333            0     0.0013333         0.004     0.0013333     0.0026667         0.004     0.0013333     0.0053333
+    iter=61      0.44865     0.13351    0.0013333     0.0053333             0    0.0013333    0.0013333     0.0026667     0.0013333     0.0013333         0.004     0.0026667             0     0.0053333
+    iter=62      0.42089     0.13847    0.0013333     0.0026667             0    0.0013333            0             0     0.0026667     0.0013333             0     0.0053333     0.0026667             0
+    iter=63      0.39494     0.11562            0             0             0    0.0013333            0     0.0013333             0     0.0026667     0.0026667             0     0.0026667     0.0013333
+    iter=64      0.37067    0.066756    0.0013333             0             0    0.0013333            0     0.0013333     0.0013333             0     0.0013333     0.0013333     0.0013333     0.0013333
+    iter=65      0.34796    0.094407            0             0     0.0026667    0.0026667            0             0             0     0.0013333             0             0             0     0.0013333
+    iter=66      0.32668    0.094407            0             0             0            0            0             0             0     0.0026667     0.0013333             0     0.0013333     0.0013333
+    iter=67      0.30676    0.066756            0             0     0.0013333            0            0     0.0013333     0.0013333             0             0             0             0             0
+    iter=68      0.28808    0.066756            0             0             0    0.0013333    0.0013333             0             0             0     0.0013333             0     0.0013333     0.0013333
+    iter=69      0.27057    0.066756            0             0             0            0    0.0013333             0     0.0013333             0             0     0.0013333     0.0013333             0
+    iter=70      0.25415    0.066756            0             0             0            0            0             0     0.0013333             0             0             0             0             0
+    iter=71      0.23875    0.066756            0             0             0            0            0             0             0             0     0.0013333             0             0     0.0013333
+    iter=72      0.22429    0.066756            0             0             0            0            0             0     0.0013333             0             0             0             0             0
+    iter=73      0.21073    0.066756            0             0             0    0.0013333            0             0             0             0             0             0     0.0013333             0
+    iter=74        0.198    0.066756            0             0             0            0            0     0.0013333             0     0.0013333             0             0             0     0.0013333
+    iter=75      0.18605           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=76      0.17483           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=77      0.16429    0.066756            0             0             0            0            0             0             0             0             0     0.0013333             0             0
+    iter=78      0.15439    0.066756            0             0             0            0            0             0             0             0             0     0.0013333             0             0
+    iter=79      0.14509    0.066756            0             0             0            0            0             0             0             0             0             0     0.0013333             0
+    iter=80      0.13636           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=81      0.12815           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=82      0.12044           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=83       0.1132           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=84       0.1064           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=85          0.1           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=86     0.093993           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=87     0.088346           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=88     0.083039           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=89     0.078052           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=90     0.073365           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=91     0.068959           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=92     0.064819           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=93     0.060927           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=94      0.05727           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=95     0.053832           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=96     0.050601           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=97     0.047563           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=98     0.044709           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=99     0.042025           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=100    0.039503           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=101    0.037133           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=102    0.034904           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=103     0.03281           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=104    0.030841           0            0             0             0            0            0             0             0             0             0             0             0             0
+    iter=105     0.02899           0            0             0             0            0            0             0             0             0             0             0             0             0
 
 tb_val: V(a,z) value at each state space point
                     z1_0_34741    z2_0_40076    z3_0_4623    z4_0_5333    z5_0_61519    z6_0_70966    z10_1_2567    z11_1_4496    z12_1_6723    z13_1_9291    z14_2_2253    z15_2_567
@@ -647,7 +724,7 @@ function result_map = ff_az_vf_vecsv(varargin)
 % life-cycle based where repeat calculations are taking place. If such
 % calculations can be identified, then potentially they could be stored and
 % retrieved during future iterations/periods rather than recomputed every
-% time. This saves time. 
+% time. This saves time.
 %
 % @param param_map container parameter container
 %
@@ -730,7 +807,7 @@ bl_input_override = true;
 % Note: param_map and support_map can be adjusted here or outside to override defaults
 % param_map('it_a_n') = 750;
 % param_map('it_z_n') = 15;
-
+    
 [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 default_params = {param_map support_map armt_map func_map};
 
@@ -775,10 +852,17 @@ params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol', 
 % support_map
 params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
     'st_profile_prefix', 'st_profile_name_main', 'st_profile_suffix',...
-    'bl_time', 'bl_display', 'it_display_every', 'bl_post'});
+    'bl_time', 'bl_display_defparam', 'bl_display', 'it_display_every', 'bl_post'});
 [bl_profile, st_profile_path, ...
     st_profile_prefix, st_profile_name_main, st_profile_suffix, ...
-    bl_time, bl_display, it_display_every, bl_post] = params_group{:};
+    bl_time, bl_display_defparam, bl_display, it_display_every, bl_post] = params_group{:};
+
+%% Display Parameters
+
+if(bl_display_defparam)
+    fft_container_map_display(param_map);
+    fft_container_map_display(support_map);
+end
 
 %% Initialize Output Matrixes
 % include mt_pol_idx which we did not have in looped code

@@ -97,17 +97,17 @@ result_map = ff_ipwkbz_fibs_vf_vecsv(param_map, support_map, armt_map, func_map)
 %% Derive Distribution
 
 if (strcmp(st_analytical_stationary_type, 'loop'))
-    
+
     result_map = ff_iwkz_ds(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
-    
+
 elseif (strcmp(st_analytical_stationary_type, 'vector'))
-    
+
     result_map = ff_iwkz_ds_vec(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
-    
+
 elseif (strcmp(st_analytical_stationary_type, 'eigenvector'))
-    
+
     result_map = ff_iwkz_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
-    
+
 end
 
 %% End Profiler and Timer

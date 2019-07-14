@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Generate States, Choices and Shocks Grids and Get Functions (Interpolated + Percentage + Risky + Safe Asset + FIBS)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-04"><meta name="DC.source" content="ffs_ipwkbz_fibs_get_funcgrid.m"><style type="text/css">
+      --><title>Generate States, Choices and Shocks Grids and Get Functions (Interpolated + Percentage + Risky + Safe Asset + FIBS)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-13"><meta name="DC.source" content="ffs_ipwkbz_fibs_get_funcgrid.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,14 +66,12 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Generate States, Choices and Shocks Grids and Get Functions (Interpolated + Percentage + Risky + Safe Asset + FIBS)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FFS_IPWKBZ_FIBS_GET_FUNCGRID get funcs, params, states choices shocks grids</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">G1: Generate Asset and Choice Grid for 2nd stage Problem</a></li><li><a href="#6">G2: Expand A and K Arrays further if bridge is allowed</a></li><li><a href="#7">G3: Flatten Choices to Arrays to be Combined with Shocks as Columns.</a></li><li><a href="#8">F1: Get Shock Grids</a></li><li><a href="#9">FIBS1: Get Equations</a></li><li><a href="#10">FIBS2: Get Formal Borrowing Blocks</a></li><li><a href="#11">Find Formal and Informal Choices for Borrowing points</a></li><li><a href="#12">FIBS3: Generate C cost Matrix when aggregate savings = k'+b' is negative</a></li><li><a href="#13">FIBS3: Generate C cost Cash-on-Hand/State Matrix when aggregate savings is positive</a></li><li><a href="#14">COH1: Combine overall Reachable Cash-on-Hand Levels</a></li><li><a href="#15">COH2: Check if COH is within Borrowing Bounds</a></li><li><a href="#16">COH3: Update Valid 2nd stage choice matrix</a></li><li><a href="#17">COH4: Select only Valid (k(w), a) choices</a></li><li><a href="#18">Generate 1st Stage States: Interpolation Cash-on-hand Interpolation Grid</a></li><li><a href="#19">Generate 1st Stage Choices: Interpolation Cash-on-hand Interpolation Grid</a></li><li><a href="#20">Generate 1st Stage Choices: Percent of W for Covering Bridge Loans</a></li><li><a href="#21">Generate Interpolation Consumption Grid</a></li><li><a href="#22">Initialize armt_map to store, state, choice, shock matrixes</a></li><li><a href="#23">Store armt_map (1): 2nd Stage Problem Arrays and Matrixes</a></li><li><a href="#24">Store armt_map (2): First Stage Aggregate Savings</a></li><li><a href="#25">Store armt_map (3): First Stage Consumption and Cash-on-Hand Grids</a></li><li><a href="#26">Store armt_map (4): Shock Grids</a></li><li><a href="#27">Store armt_map (5): Formal grid</a></li><li><a href="#28">Store Function Map</a></li><li><a href="#29">Graph</a></li><li><a href="#31">Graph 1: a and k choice grid graphs</a></li><li><a href="#32">Graph 2: coh by shock</a></li><li><a href="#33">Graph 3: 1st State Aggregate Savings Choices by COH interpolation grids</a></li><li><a href="#35">Graph Details, Generally do Not Run</a></li><li><a href="#37">Graph 1: 2nd stage coh reached by k' b' choices by index</a></li><li><a href="#38">Graph 2: 2nd stage coh reached by k' b' choices  by coh</a></li><li><a href="#40">Display</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(varargin)
-</pre><h2 id="2">FFS_IPWKBZ_FIBS_GET_FUNCGRID get funcs, params, states choices shocks grids</h2><p>This file is based on <a href="https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_get_funcgrid.html">ffs_ipwkbz_get_funcgrid</a>, see that file for more comments and compare differences in graphs and tables to see how the inclusion of formal and informal choices that consider bridge loans impact choice sets.</p><p>Also compare against <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_paramfunc/html/ffs_abz_fibs_get_funcgrid.html">ffs_abz_fibs_get_funcgrid</a> where the results are also considering formal and informal choices etc in the context of <b>abz fibs</b>.</p><p>In contrast to ff_ipwkbz_evf.m, here, we need to deal with borrowing and savings formal and informal. These will change how the testing matrix is constructed. When bridge loan is allowed, we also need to construct the output matrixes differently. In ff_ipwkbz_evf.m, the assumption is that coh today does not matter, so to find optimal k* choice, we only need to know the aggregate savings level. But now, we need to know the coh level as well.</p><p>Below two reachable coh matrixes are constructed, one for when aggregate savings choice w &gt;= 0, and another for when aggregate savings &lt;= 0. Then they are stacked together. And we still have the same outputs as ff_ipwkbz_evf.m. The difference is that while for savings where w &gt;=0, each row are w levels for the output matrixes, but for w &lt;=0, each row is for w level + coh percentage combinations.</p><div><ul><li><i>ar_w_level</i>: What are the feasible grid of w = k'+b', these are to be interpolated later, these are level grid, not percentage grid</li><li><i>ar_w_level</i>: What are the percentage based choices points for k' and b' given each w. These are <i>ar_a_meshk</i>, <i>ar_k_mesha</i>. Note here these are principles, k + b' is the total aggregate savings in period t. b is be a combination of formal and informal choices, but our percentage point for b is the overall principle of all formal and informal choices</li><li><i>mt_coh_wkb_full</i> : These are the cash-on-hand levels reacheable given the choice percentages of k and b'. The problem here is more complicated than <a href="https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_get_funcgrid.html">ffs_ipwkbz_get_funcgrid</a> because here we can not get to coh tomorrow by multiplying principle by savings or borrowing interest rates, if borrowing, we have to optimize among formal and informal choices. That is computationally trivial because it's a static choice unrelated to the dynamic problem. The slightly more complicated thing is that we also have to consider percentages of b' that has to go to bridge loans due to negative cash-on-hand in period t. That makes the reachable cash-on-hand grid significantly larger than the grid in <a href="https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_get_funcgrid.html">ffs_ipwkbz_get_funcgrid</a>, we have to expand the grid by another percentage dimension--percentages of b' going to bridge--for negative levels of w=k'+b' overall choice.</li></ul></div><h2 id="3">Default</h2><p>Results identical to <a href="https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_get_funcgrid.html">ffs_ipwkbz_get_funcgrid</a> is obtained by running default with: st_param_which = 'ffs_ipwkbz_get_funcgrid';</p><pre class="codeinput">bl_input_override = 0;
-<span class="keyword">if</span> (length(varargin) == 3)
-    bl_input_override = varargin{3};
-<span class="keyword">end</span>
-<span class="keyword">if</span> (bl_input_override)
+  </style></head><body><div class="content"><h1>Generate States, Choices and Shocks Grids and Get Functions (Interpolated + Percentage + Risky + Safe Asset + FIBS)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FFS_IPWKBZ_FIBS_GET_FUNCGRID get funcs, params, states choices shocks grids</a></li><li><a href="#3">Default</a></li><li><a href="#4">Default</a></li><li><a href="#5">Parse Parameters</a></li><li><a href="#6">G1: Generate Asset and Choice Grid for 2nd stage Problem</a></li><li><a href="#7">G2: Expand A and K Arrays further if bridge is allowed</a></li><li><a href="#8">G3: Flatten Choices to Arrays to be Combined with Shocks as Columns.</a></li><li><a href="#9">F1: Get Shock Grids</a></li><li><a href="#10">FIBS1: Get Equations</a></li><li><a href="#11">FIBS2: Get Formal Borrowing Blocks</a></li><li><a href="#12">Find Formal and Informal Choices for Borrowing points</a></li><li><a href="#13">FIBS3: Generate C cost Matrix when aggregate savings = k'+b' is negative</a></li><li><a href="#14">FIBS3: Generate C cost Cash-on-Hand/State Matrix when aggregate savings is positive</a></li><li><a href="#15">COH1: Combine overall Reachable Cash-on-Hand Levels</a></li><li><a href="#16">COH2: Check if COH is within Borrowing Bounds</a></li><li><a href="#17">COH3: Update Valid 2nd stage choice matrix</a></li><li><a href="#18">COH4: Select only Valid (k(w), a) choices</a></li><li><a href="#19">Generate 1st Stage States: Interpolation Cash-on-hand Interpolation Grid</a></li><li><a href="#20">Generate 1st Stage Choices: Interpolation Cash-on-hand Interpolation Grid</a></li><li><a href="#21">Generate 1st Stage Choices: Percent of W for Covering Bridge Loans</a></li><li><a href="#22">Generate Interpolation Consumption Grid</a></li><li><a href="#23">Initialize armt_map to store, state, choice, shock matrixes</a></li><li><a href="#24">Store armt_map (1): 2nd Stage Problem Arrays and Matrixes</a></li><li><a href="#25">Store armt_map (2): First Stage Aggregate Savings</a></li><li><a href="#26">Store armt_map (3): First Stage Consumption and Cash-on-Hand Grids</a></li><li><a href="#27">Store armt_map (4): Shock Grids</a></li><li><a href="#28">Store armt_map (5): Formal grid</a></li><li><a href="#29">Store Function Map</a></li><li><a href="#30">Graph</a></li><li><a href="#32">Graph 1: a and k choice grid graphs</a></li><li><a href="#33">Graph 2: coh by shock</a></li><li><a href="#34">Graph 3: 1st State Aggregate Savings Choices by COH interpolation grids</a></li><li><a href="#36">Graph Details, Generally do Not Run</a></li><li><a href="#38">Graph 1: 2nd stage coh reached by k' b' choices by index</a></li><li><a href="#39">Graph 2: 2nd stage coh reached by k' b' choices  by coh</a></li><li><a href="#41">Display</a></li><li><a href="#42">Display</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(varargin)
+</pre><h2 id="2">FFS_IPWKBZ_FIBS_GET_FUNCGRID get funcs, params, states choices shocks grids</h2><p>This file is based on <a href="https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_get_funcgrid.html">ffs_ipwkbz_get_funcgrid</a>, see that file for more comments and compare differences in graphs and tables to see how the inclusion of formal and informal choices that consider bridge loans impact choice sets.</p><p>Also compare against <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_paramfunc/html/ffs_abz_fibs_get_funcgrid.html">ffs_abz_fibs_get_funcgrid</a> where the results are also considering formal and informal choices etc in the context of <b>abz fibs</b>.</p><p>In contrast to ff_ipwkbz_evf.m, here, we need to deal with borrowing and savings formal and informal. These will change how the testing matrix is constructed. When bridge loan is allowed, we also need to construct the output matrixes differently. In ff_ipwkbz_evf.m, the assumption is that coh today does not matter, so to find optimal k* choice, we only need to know the aggregate savings level. But now, we need to know the coh level as well.</p><p>Below two reachable coh matrixes are constructed, one for when aggregate savings choice w &gt;= 0, and another for when aggregate savings &lt;= 0. Then they are stacked together. And we still have the same outputs as ff_ipwkbz_evf.m. The difference is that while for savings where w &gt;=0, each row are w levels for the output matrixes, but for w &lt;=0, each row is for w level + coh percentage combinations.</p><div><ul><li><i>ar_w_level</i>: What are the feasible grid of w = k'+b', these are to be interpolated later, these are level grid, not percentage grid</li><li><i>ar_w_level</i>: What are the percentage based choices points for k' and b' given each w. These are <i>ar_a_meshk</i>, <i>ar_k_mesha</i>. Note here these are principles, k + b' is the total aggregate savings in period t. b is be a combination of formal and informal choices, but our percentage point for b is the overall principle of all formal and informal choices</li><li><i>mt_coh_wkb_full</i> : These are the cash-on-hand levels reacheable given the choice percentages of k and b'. The problem here is more complicated than <a href="https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_get_funcgrid.html">ffs_ipwkbz_get_funcgrid</a> because here we can not get to coh tomorrow by multiplying principle by savings or borrowing interest rates, if borrowing, we have to optimize among formal and informal choices. That is computationally trivial because it's a static choice unrelated to the dynamic problem. The slightly more complicated thing is that we also have to consider percentages of b' that has to go to bridge loans due to negative cash-on-hand in period t. That makes the reachable cash-on-hand grid significantly larger than the grid in <a href="https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_get_funcgrid.html">ffs_ipwkbz_get_funcgrid</a>, we have to expand the grid by another percentage dimension--percentages of b' going to bridge--for negative levels of w=k'+b' overall choice.</li></ul></div><h2 id="3">Default</h2><p>Results identical to <a href="https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_get_funcgrid.html">ffs_ipwkbz_get_funcgrid</a> is obtained by running default with: st_param_which = 'ffs_ipwkbz_get_funcgrid';</p><h2 id="4">Default</h2><pre class="codeinput"><span class="keyword">if</span> (~isempty(varargin))
+
     <span class="comment">% override when called from outside</span>
-    [param_map, support_map, ~] = varargin{:};
+    [param_map, support_map] = varargin{:};
+
 <span class="keyword">else</span>
     <span class="comment">% default internal run</span>
     [param_map, support_map] = ffs_ipwkbz_fibs_set_default_param();
@@ -148,7 +146,360 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
     param_map = [param_map; default_maps{1}];
     support_map = [support_map; default_maps{2}];
 <span class="keyword">end</span>
-</pre><h2 id="4">Parse Parameters</h2><pre class="codeinput">params_group = values(param_map, {<span class="string">'it_z_n'</span>, <span class="string">'fl_z_mu'</span>, <span class="string">'fl_z_rho'</span>, <span class="string">'fl_z_sig'</span>});
+</pre><pre class="codeoutput">----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Display Parameters Specific to IPWKBZ_FIBS
+it_coh_bridge_perc_n ADDED ON NEXT
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Begin: Show all key and value pairs from container
+CONTAINER NAME: PARAM_MAP
+----------------------------------------
+  Map with properties:
+
+        Count: 12
+      KeyType: char
+    ValueType: any
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+----------------------------------------
+pos = 1 ; key = bl_b_is_principle ; val = true
+pos = 2 ; key = bl_bridge ; val = true
+pos = 3 ; key = bl_default ; val = true
+pos = 4 ; key = bl_rollover ; val = true
+pos = 5 ; key = fl_forbrblk_brleast ; val = -1
+pos = 6 ; key = fl_forbrblk_brmost ; val = -19
+pos = 7 ; key = fl_forbrblk_gap ; val = -1.5
+pos = 8 ; key = fl_r_fbr ; val = 0.065
+pos = 9 ; key = fl_r_fsv ; val = 0.025
+pos = 10 ; key = fl_r_inf ; val = 0.095
+pos = 11 ; key = st_forbrblk_type ; val = seg3
+pos = 12 ; key = st_model ; val = ipwkbz_fibs
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Scalars in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                           i     idx    value
+                           __    ___    _____
+
+    bl_b_is_principle       1     1       1  
+    bl_bridge               2     2       1  
+    bl_default              3     3       1  
+    bl_rollover             4     4       1  
+    fl_forbrblk_brleast     5     5       1  
+    fl_forbrblk_brmost      6     6       1  
+    fl_forbrblk_gap         7     7       1  
+    fl_r_fbr                8     8       1  
+    fl_r_fsv                9     9       1  
+    fl_r_inf               10    10       1  
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Strings in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                        i    idx
+                        _    ___
+
+    st_forbrblk_type    1    11 
+    st_model            2    12 
+
+----------------------------------------
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Begin: Show all key and value pairs from container
+CONTAINER NAME: SUPPORT_MAP
+----------------------------------------
+  Map with properties:
+
+        Count: 8
+      KeyType: char
+    ValueType: any
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+----------------------------------------
+pos = 1 ; key = bl_display_funcgrids ; val = false
+pos = 2 ; key = bl_display_minccost ; val = false
+pos = 3 ; key = bl_graph_funcgrids ; val = false
+pos = 4 ; key = bl_graph_funcgrids_detail ; val = false
+pos = 5 ; key = st_img_path ; val = C:/Users/fan/CodeDynaAsset//m_fibs//m_ipwkbz_solve/img/
+pos = 6 ; key = st_mat_path ; val = C:/Users/fan/CodeDynaAsset//m_fibs//m_ipwkbz_solve/mat/
+pos = 7 ; key = st_matimg_path_root ; val = C:/Users/fan/CodeDynaAsset//m_fibs/
+pos = 8 ; key = st_profile_path ; val = C:/Users/fan/CodeDynaAsset//m_fibs//m_ipwkbz_solve/profile/
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Scalars in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                                 i    idx    value
+                                 _    ___    _____
+
+    bl_display_funcgrids         1     1       0  
+    bl_display_minccost          2     2       0  
+    bl_graph_funcgrids           3     3       0  
+    bl_graph_funcgrids_detail    4     4       0  
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Strings in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                           i    idx
+                           _    ___
+
+    st_img_path            1     5 
+    st_mat_path            2     6 
+    st_matimg_path_root    3     7 
+    st_profile_path        4     8 
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Display All Parameters with IPWKBZR overriding IPWKBZR
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Begin: Show all key and value pairs from container
+CONTAINER NAME: PARAM_MAP
+----------------------------------------
+  Map with properties:
+
+        Count: 43
+      KeyType: char
+    ValueType: any
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+----------------------------------------
+pos = 1 ; key = bl_b_is_principle ; val = true
+pos = 2 ; key = bl_bridge ; val = true
+pos = 3 ; key = bl_default ; val = true
+pos = 4 ; key = bl_rollover ; val = true
+pos = 5 ; key = fl_Amean ; val = 1
+pos = 6 ; key = fl_alpha ; val = 0.36
+pos = 7 ; key = fl_b_bd ; val = -20
+pos = 8 ; key = fl_beta ; val = 0.94
+pos = 9 ; key = fl_c_min ; val = 0.02
+pos = 10 ; key = fl_coh_interp_grid_gap ; val = 0.1
+pos = 11 ; key = fl_crra ; val = 1.5
+pos = 12 ; key = fl_default_wprime ; val = 0
+pos = 13 ; key = fl_delta ; val = 0.08
+pos = 14 ; key = fl_forbrblk_brleast ; val = -1
+pos = 15 ; key = fl_forbrblk_brmost ; val = -19
+pos = 16 ; key = fl_forbrblk_gap ; val = -1.5
+pos = 17 ; key = fl_k_max ; val = 70
+pos = 18 ; key = fl_k_min ; val = 0
+pos = 19 ; key = fl_nan_replace ; val = -9999
+pos = 20 ; key = fl_r_fbr ; val = 0.065
+pos = 21 ; key = fl_r_fsv ; val = 0.025
+pos = 22 ; key = fl_r_inf ; val = 0.095
+pos = 23 ; key = fl_tol_dist ; val = 1e-05
+pos = 24 ; key = fl_tol_pol ; val = 1e-05
+pos = 25 ; key = fl_tol_val ; val = 1e-05
+pos = 26 ; key = fl_w ; val = 0.44365
+pos = 27 ; key = fl_w_interp_grid_gap ; val = 0.1
+pos = 28 ; key = fl_w_max ; val = 50
+pos = 29 ; key = fl_w_min ; val = -20
+pos = 30 ; key = fl_z_mu ; val = 0
+pos = 31 ; key = fl_z_rho ; val = 0.8
+pos = 32 ; key = fl_z_sig ; val = 0.2
+pos = 33 ; key = it_ak_perc_n ; val = 50
+pos = 34 ; key = it_c_interp_grid_gap ; val = 0.0001
+pos = 35 ; key = it_coh_bridge_perc_n ; val = 50
+pos = 36 ; key = it_maxiter_dist ; val = 1000
+pos = 37 ; key = it_maxiter_val ; val = 250
+pos = 38 ; key = it_tol_pol_nochange ; val = 25
+pos = 39 ; key = it_w_perc_n ; val = 50
+pos = 40 ; key = it_z_n ; val = 15
+pos = 41 ; key = st_analytical_stationary_type ; val = eigenvector
+pos = 42 ; key = st_forbrblk_type ; val = seg3
+pos = 43 ; key = st_model ; val = ipwkbz_fibs
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Scalars in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                              i     idx    value
+                              __    ___    _____
+
+    bl_b_is_principle          1     1       1  
+    bl_bridge                  2     2       1  
+    bl_default                 3     3       1  
+    bl_rollover                4     4       1  
+    fl_Amean                   5     5       1  
+    fl_alpha                   6     6       1  
+    fl_b_bd                    7     7       1  
+    fl_beta                    8     8       1  
+    fl_c_min                   9     9       1  
+    fl_coh_interp_grid_gap    10    10       1  
+    fl_crra                   11    11       1  
+    fl_default_wprime         12    12       0  
+    fl_delta                  13    13       1  
+    fl_forbrblk_brleast       14    14       1  
+    fl_forbrblk_brmost        15    15       1  
+    fl_forbrblk_gap           16    16       1  
+    fl_k_max                  17    17       1  
+    fl_k_min                  18    18       0  
+    fl_nan_replace            19    19       1  
+    fl_r_fbr                  20    20       1  
+    fl_r_fsv                  21    21       1  
+    fl_r_inf                  22    22       1  
+    fl_tol_dist               23    23       1  
+    fl_tol_pol                24    24       1  
+    fl_tol_val                25    25       1  
+    fl_w                      26    26       1  
+    fl_w_interp_grid_gap      27    27       1  
+    fl_w_max                  28    28       1  
+    fl_w_min                  29    29       1  
+    fl_z_mu                   30    30       0  
+    fl_z_rho                  31    31       1  
+    fl_z_sig                  32    32       1  
+    it_ak_perc_n              33    33       1  
+    it_c_interp_grid_gap      34    34       1  
+    it_coh_bridge_perc_n      35    35       1  
+    it_maxiter_dist           36    36       1  
+    it_maxiter_val            37    37       1  
+    it_tol_pol_nochange       38    38       1  
+    it_w_perc_n               39    39       1  
+    it_z_n                    40    40       1  
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Strings in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                                     i    idx
+                                     _    ___
+
+    st_analytical_stationary_type    1    41 
+    st_forbrblk_type                 2    42 
+    st_model                         3    43 
+
+----------------------------------------
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Begin: Show all key and value pairs from container
+CONTAINER NAME: SUPPORT_MAP
+----------------------------------------
+  Map with properties:
+
+        Count: 43
+      KeyType: char
+    ValueType: any
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+----------------------------------------
+pos = 1 ; key = bl_display ; val = false
+pos = 2 ; key = bl_display_defparam ; val = true
+pos = 3 ; key = bl_display_dist ; val = false
+pos = 4 ; key = bl_display_evf ; val = false
+pos = 5 ; key = bl_display_final ; val = true
+pos = 6 ; key = bl_display_final_dist ; val = false
+pos = 7 ; key = bl_display_final_dist_detail ; val = false
+pos = 8 ; key = bl_display_funcgrids ; val = false
+pos = 9 ; key = bl_display_minccost ; val = false
+pos = 10 ; key = bl_graph ; val = true
+pos = 11 ; key = bl_graph_coh_t_coh ; val = true
+pos = 12 ; key = bl_graph_evf ; val = false
+pos = 13 ; key = bl_graph_funcgrids ; val = false
+pos = 14 ; key = bl_graph_funcgrids_detail ; val = false
+pos = 15 ; key = bl_graph_onebyones ; val = true
+pos = 16 ; key = bl_graph_pol_lvl ; val = true
+pos = 17 ; key = bl_graph_pol_pct ; val = true
+pos = 18 ; key = bl_graph_val ; val = true
+pos = 19 ; key = bl_img_save ; val = false
+pos = 20 ; key = bl_mat ; val = false
+pos = 21 ; key = bl_post ; val = true
+pos = 22 ; key = bl_profile ; val = false
+pos = 23 ; key = bl_profile_dist ; val = false
+pos = 24 ; key = bl_time ; val = false
+pos = 25 ; key = it_display_every ; val = 5
+pos = 26 ; key = it_display_final_colmax ; val = 12
+pos = 27 ; key = it_display_final_rowmax ; val = 100
+pos = 28 ; key = it_display_summmat_colmax ; val = 5
+pos = 29 ; key = it_display_summmat_rowmax ; val = 5
+pos = 30 ; key = st_img_name_main ; val = _default
+pos = 31 ; key = st_img_path ; val = C:/Users/fan/CodeDynaAsset//m_fibs//m_ipwkbz_solve/img/
+pos = 32 ; key = st_img_prefix ; val = 
+pos = 33 ; key = st_img_suffix ; val = _p4.png
+pos = 34 ; key = st_mat_name_main ; val = _default
+pos = 35 ; key = st_mat_path ; val = C:/Users/fan/CodeDynaAsset//m_fibs//m_ipwkbz_solve/mat/
+pos = 36 ; key = st_mat_prefix ; val = 
+pos = 37 ; key = st_mat_suffix ; val = _p4
+pos = 38 ; key = st_matimg_path_root ; val = C:/Users/fan/CodeDynaAsset//m_fibs/
+pos = 39 ; key = st_profile_name_main ; val = _default
+pos = 40 ; key = st_profile_path ; val = C:/Users/fan/CodeDynaAsset//m_fibs//m_ipwkbz_solve/profile/
+pos = 41 ; key = st_profile_prefix ; val = 
+pos = 42 ; key = st_profile_suffix ; val = _p4
+pos = 43 ; key = st_title_prefix ; val = 
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Scalars in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                                    i     idx    value
+                                    __    ___    _____
+
+    bl_display                       1     1       0  
+    bl_display_defparam              2     2       1  
+    bl_display_dist                  3     3       0  
+    bl_display_evf                   4     4       0  
+    bl_display_final                 5     5       1  
+    bl_display_final_dist            6     6       0  
+    bl_display_final_dist_detail     7     7       0  
+    bl_display_funcgrids             8     8       0  
+    bl_display_minccost              9     9       0  
+    bl_graph                        10    10       1  
+    bl_graph_coh_t_coh              11    11       1  
+    bl_graph_evf                    12    12       0  
+    bl_graph_funcgrids              13    13       0  
+    bl_graph_funcgrids_detail       14    14       0  
+    bl_graph_onebyones              15    15       1  
+    bl_graph_pol_lvl                16    16       1  
+    bl_graph_pol_pct                17    17       1  
+    bl_graph_val                    18    18       1  
+    bl_img_save                     19    19       0  
+    bl_mat                          20    20       0  
+    bl_post                         21    21       1  
+    bl_profile                      22    22       0  
+    bl_profile_dist                 23    23       0  
+    bl_time                         24    24       0  
+    it_display_every                25    25       1  
+    it_display_final_colmax         26    26       1  
+    it_display_final_rowmax         27    27       1  
+    it_display_summmat_colmax       28    28       1  
+    it_display_summmat_rowmax       29    29       1  
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Strings in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                            i     idx
+                            __    ___
+
+    st_img_name_main         1    30 
+    st_img_path              2    31 
+    st_img_prefix            3    32 
+    st_img_suffix            4    33 
+    st_mat_name_main         5    34 
+    st_mat_path              6    35 
+    st_mat_prefix            7    36 
+    st_mat_suffix            8    37 
+    st_matimg_path_root      9    38 
+    st_profile_name_main    10    39 
+    st_profile_path         11    40 
+    st_profile_prefix       12    41 
+    st_profile_suffix       13    42 
+    st_title_prefix         14    43 
+
+</pre><h2 id="5">Parse Parameters</h2><pre class="codeinput">params_group = values(param_map, {<span class="string">'it_z_n'</span>, <span class="string">'fl_z_mu'</span>, <span class="string">'fl_z_rho'</span>, <span class="string">'fl_z_sig'</span>});
 [it_z_n, fl_z_mu, fl_z_rho, fl_z_sig] = params_group{:};
 
 params_group = values(param_map, {<span class="string">'fl_nan_replace'</span>, <span class="string">'fl_b_bd'</span>, <span class="string">'fl_w_min'</span>, <span class="string">'fl_w_max'</span>, <span class="keyword">...</span>
@@ -176,7 +527,10 @@ params_group = values(param_map, {<span class="string">'st_forbrblk_type'</span>
 
 params_group = values(support_map, {<span class="string">'bl_display_minccost'</span>, <span class="string">'bl_graph_funcgrids'</span>, <span class="string">'bl_graph_funcgrids_detail'</span>, <span class="string">'bl_display_funcgrids'</span>});
 [bl_display_minccost, bl_graph_funcgrids, bl_graph_funcgrids_detail, bl_display_funcgrids] = params_group{:};
-</pre><h2 id="5">G1: Generate Asset and Choice Grid for 2nd stage Problem</h2><p>This generate triangular choice structure. Household choose total aggregate savings, and within that how much to put into risky capital and how much to put into safe assets, in percentages. See <a href="https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_fibs_set_default_param.html">ffs_ipwkbz_fibs_set_default_param</a> for details.</p><p>@example</p><pre>  % For 2nd stage Grid
+
+params_group = values(support_map, {<span class="string">'it_display_summmat_rowmax'</span>, <span class="string">'it_display_summmat_colmax'</span>});
+[it_display_summmat_rowmax, it_display_summmat_colmax] = params_group{:};
+</pre><h2 id="6">G1: Generate Asset and Choice Grid for 2nd stage Problem</h2><p>This generate triangular choice structure. Household choose total aggregate savings, and within that how much to put into risky capital and how much to put into safe assets, in percentages. See <a href="https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_fibs_set_default_param.html">ffs_ipwkbz_fibs_set_default_param</a> for details.</p><p>@example</p><pre>  % For 2nd stage Grid
   ar_w_level = [-2,0,2]
   fl_b_bd = -4
   ar_k_max = ar_w_level - fl_b_bd
@@ -210,7 +564,7 @@ mt_bl_constrained = (mt_a &lt; fl_b_bd);
     error(<span class="string">'at %s second stage choice points, percentage choice exceed bounds, can not happen'</span>,<span class="keyword">...</span>
         num2str(sum(mt_bl_constrained)));
 <span class="keyword">end</span>
-</pre><h2 id="6">G2: Expand A and K Arrays further if bridge is allowed</h2><p>Crucially, when a fraction of overall borrowing/savings needs to go pay negative coh, that comes out of w, fraction of w = k' + b' that goes to this. NOT a fraction of the b' choice condition on w, which would change for the same w as w' changes. We are fixing bridge repay level for w.</p><p>@example</p><pre>  clear all
+</pre><h2 id="7">G2: Expand A and K Arrays further if bridge is allowed</h2><p>Crucially, when a fraction of overall borrowing/savings needs to go pay negative coh, that comes out of w, fraction of w = k' + b' that goes to this. NOT a fraction of the b' choice condition on w, which would change for the same w as w' changes. We are fixing bridge repay level for w.</p><p>@example</p><pre>  clear all
   % Same as above
   ar_w_level = [-2,-1,-0.1]
   fl_b_bd = -4
@@ -283,7 +637,7 @@ ar_w_level_neg = ar_w_level(ar_bl_w_neg);
         ndgrid(ar_w_level_neg, ar_coh_bridge_perc);
 
 <span class="keyword">end</span>
-</pre><h2 id="7">G3: Flatten Choices to Arrays to be Combined with Shocks as Columns.</h2><p>For the arrays below, their dimensionality are all: N_neg*N^2 + N_pos*N number of rows. Where N is the percentage grid point for coh as well as k' choices: N = it_ak_perc_n = it_coh_bridge_perc_n; And N_neg + N_pos = numger of grid points for ar_w_level</p><div><ol><li><b>mt_a</b> includes aggregate/total borrowing and savings levels. b &lt; 0 happens alot when w &gt;= 0. The mt_a_nobridge</li><li><b>mt_a_nobridge</b> includes all aggregate/total borrowing and savings whether w &gt; 0 or w &lt; 0, however, it subtracts away the borrowing that is for bridge loans when b &lt; 0</li><li><b>mt_bridge_a</b> is the bridge loan amount.</li></ol></div><pre class="codeinput">ar_a_meshk_full = mt_a(:);
+</pre><h2 id="8">G3: Flatten Choices to Arrays to be Combined with Shocks as Columns.</h2><p>For the arrays below, their dimensionality are all: N_neg*N^2 + N_pos*N number of rows. Where N is the percentage grid point for coh as well as k' choices: N = it_ak_perc_n = it_coh_bridge_perc_n; And N_neg + N_pos = numger of grid points for ar_w_level</p><div><ol><li><b>mt_a</b> includes aggregate/total borrowing and savings levels. b &lt; 0 happens alot when w &gt;= 0. The mt_a_nobridge</li><li><b>mt_a_nobridge</b> includes all aggregate/total borrowing and savings whether w &gt; 0 or w &lt; 0, however, it subtracts away the borrowing that is for bridge loans when b &lt; 0</li><li><b>mt_bridge_a</b> is the bridge loan amount.</li></ol></div><pre class="codeinput">ar_a_meshk_full = mt_a(:);
 ar_a_nobridge_meshk_full = mt_a_nobridge(:);
 ar_k_mesha_full = mt_k(:);
 ar_bridge_a_full = mt_bridge_a(:);
@@ -292,12 +646,12 @@ ar_a_meshk = ar_a_meshk_full;
 ar_a_nobridge_meshk = ar_a_nobridge_meshk_full;
 ar_k_mesha = ar_k_mesha_full;
 ar_bridge_a = ar_bridge_a_full;
-</pre><h2 id="8">F1: Get Shock Grids</h2><pre class="codeinput">[~, mt_z_trans, ar_stationary, ar_z] = ffto_gen_tauchen_jhl(fl_z_mu,fl_z_rho,fl_z_sig,it_z_n);
-</pre><h2 id="9">FIBS1: Get Equations</h2><pre class="codeinput">[f_util_log, f_util_crra, f_util_standin, f_prod, f_inc, f_coh, f_coh_fbis, f_coh_save, f_cons] = <span class="keyword">...</span>
+</pre><h2 id="9">F1: Get Shock Grids</h2><pre class="codeinput">[~, mt_z_trans, ar_stationary, ar_z] = ffto_gen_tauchen_jhl(fl_z_mu,fl_z_rho,fl_z_sig,it_z_n);
+</pre><h2 id="10">FIBS1: Get Equations</h2><pre class="codeinput">[f_util_log, f_util_crra, f_util_standin, f_prod, f_inc, f_coh, f_coh_fbis, f_coh_save, f_cons] = <span class="keyword">...</span>
     ffs_ipwkbz_fibs_set_functions(fl_crra, fl_c_min, fl_b_bd, fl_Amean, fl_alpha, fl_delta, fl_w, fl_r_fbr, fl_r_fsv);
-</pre><h2 id="10">FIBS2: Get Formal Borrowing Blocks</h2><pre class="codeinput">[ar_forbrblk, ar_forbrblk_r] = <span class="keyword">...</span>
+</pre><h2 id="11">FIBS2: Get Formal Borrowing Blocks</h2><pre class="codeinput">[ar_forbrblk, ar_forbrblk_r] = <span class="keyword">...</span>
         ffs_for_br_block_gen(fl_r_fbr, st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap);
-</pre><h2 id="11">Find Formal and Informal Choices for Borrowing points</h2><p>Here we solve for the optimal formal and informal choices given b. Note that kind of like the static firm's maximization problem. Here the optimization problem is static, and can be done independently of the overall dynamic optimization problem.</p><pre class="codeinput"><span class="comment">% When borrowing index and array</span>
+</pre><h2 id="12">Find Formal and Informal Choices for Borrowing points</h2><p>Here we solve for the optimal formal and informal choices given b. Note that kind of like the static firm's maximization problem. Here the optimization problem is static, and can be done independently of the overall dynamic optimization problem.</p><pre class="codeinput"><span class="comment">% When borrowing index and array</span>
 <span class="comment">% note index for negative is from _ar_a_meshk_full_, but value from</span>
 <span class="comment">% _ar_a_nobridge_meshk_. Index from _ar_a_meshk_full_, which means at some</span>
 <span class="comment">% of these points _ar_a_nobridge_meshk_ = 0. But need to use</span>
@@ -312,13 +666,13 @@ bl_input_override = true;
    ffs_fibs_min_c_cost(bl_b_is_principle, fl_r_inf, fl_r_fsv, <span class="keyword">...</span>
                          ar_forbrblk_r, ar_forbrblk, <span class="keyword">...</span>
                          ar_a_meshk_nobridge_aneg, bl_display_minccost, bl_input_override);
-</pre><h2 id="12">FIBS3: Generate C cost Matrix when aggregate savings = k'+b' is negative</h2><p><b>ar_coh_fbis_aneg</b>: the consumption cost to t+1 from borrowing in t given formal and informal joint choice optimization.</p><p>Reachable cash-on-hand borrowing points: N_neg*N^2 rows</p><p>Additionally, need to convert borrowing choices to consumption units next period. borrowing choices in percentage are in unit of last period borrowing, principles only, need to convert to interest rates plus principle which means considering which formal informal choice combination maximizes cash-on-hand for the same level of overall principles.</p><p>Construct another percentage, which is, percentages of ar_a_meshk_full when w &lt; 0. Percentage represents what fraction of the a debt is going towards bridge loan debts. Note that as long as w &lt; 0, b &lt; 0 must be the case as well. So for negative elements of w, there is a triple mesh: N points for A x N points for K x N points for Bridge.</p><pre class="codeinput">ar_coh_fbis_aneg = f_coh_fbis(fl_r_inf, <span class="keyword">...</span>
+</pre><h2 id="13">FIBS3: Generate C cost Matrix when aggregate savings = k'+b' is negative</h2><p><b>ar_coh_fbis_aneg</b>: the consumption cost to t+1 from borrowing in t given formal and informal joint choice optimization.</p><p>Reachable cash-on-hand borrowing points: N_neg*N^2 rows</p><p>Additionally, need to convert borrowing choices to consumption units next period. borrowing choices in percentage are in unit of last period borrowing, principles only, need to convert to interest rates plus principle which means considering which formal informal choice combination maximizes cash-on-hand for the same level of overall principles.</p><p>Construct another percentage, which is, percentages of ar_a_meshk_full when w &lt; 0. Percentage represents what fraction of the a debt is going towards bridge loan debts. Note that as long as w &lt; 0, b &lt; 0 must be the case as well. So for negative elements of w, there is a triple mesh: N points for A x N points for K x N points for Bridge.</p><pre class="codeinput">ar_coh_fbis_aneg = f_coh_fbis(fl_r_inf, <span class="keyword">...</span>
                                 ar_for_borr_aneg, <span class="keyword">...</span>
                                 ar_inf_borr_nobridge_aneg + ar_bridge_a(ar_bl_ameshk_neg_idx), <span class="keyword">...</span>
                                 ar_for_save_aneg);
-</pre><h2 id="13">FIBS3: Generate C cost Cash-on-Hand/State Matrix when aggregate savings is positive</h2><p><b>ar_coh_save_apos</b>: the consumption gain to t+1 from savings in t</p><pre class="codeinput">ar_a_meshk_apos = ar_a_meshk(~ar_bl_ameshk_neg_idx);
+</pre><h2 id="14">FIBS3: Generate C cost Cash-on-Hand/State Matrix when aggregate savings is positive</h2><p><b>ar_coh_save_apos</b>: the consumption gain to t+1 from savings in t</p><pre class="codeinput">ar_a_meshk_apos = ar_a_meshk(~ar_bl_ameshk_neg_idx);
 ar_coh_save_apos = f_coh_save(ar_a_meshk_apos);
-</pre><h2 id="14">COH1: Combine overall Reachable Cash-on-Hand Levels</h2><p>N_neg*N^2 + N_pos*N rows total row count, and N_z shock column count. These are the cash-on-hand points reachable given percentage grid choice structure and the possibility of bridge loans.</p><pre class="codeinput">ar_ameshk_tnext_with_r = zeros(size(ar_k_mesha));
+</pre><h2 id="15">COH1: Combine overall Reachable Cash-on-Hand Levels</h2><p>N_neg*N^2 + N_pos*N rows total row count, and N_z shock column count. These are the cash-on-hand points reachable given percentage grid choice structure and the possibility of bridge loans.</p><pre class="codeinput">ar_ameshk_tnext_with_r = zeros(size(ar_k_mesha));
 ar_ameshk_tnext_with_r(ar_bl_ameshk_neg_idx) = ar_coh_fbis_aneg;
 ar_ameshk_tnext_with_r(~ar_bl_ameshk_neg_idx) = ar_coh_save_apos;
 
@@ -401,68 +755,68 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
               -26                   -20                  0                   -26                    -20                     0                 -20    
               -26                   -20                  0                   -26                    -20                     0                 -20    
           -23.243               -17.879          0.0021212               -23.245                -17.881            -0.0021212             -17.879    
-          -23.261               -17.879            0.35495               -23.616                -18.234              -0.35495             -17.879    
-           -23.27               -17.879            0.70778               -23.978                -18.587              -0.70778             -17.879    
-          -23.294               -17.879             1.0606               -24.355                -18.939               -1.0606             -17.879    
-          -23.303               -17.879             1.4134               -24.716                -19.292               -1.4134             -17.879    
-          -23.312               -17.879             1.7663               -25.078                -19.645               -1.7663             -17.879    
-           -23.32               -17.879             2.1191               -25.439                -19.998               -2.1191             -17.879    
+          -23.291               -17.879            0.35495               -23.646                -18.234              -0.35495             -17.879    
+            -23.3               -17.879            0.70778               -24.008                -18.587              -0.70778             -17.879    
+          -23.326               -17.879             1.0606               -24.386                -18.939               -1.0606             -17.879    
+          -23.378               -17.879             1.4134               -24.791                -19.292               -1.4134             -17.879    
+          -23.387               -17.879             1.7663               -25.153                -19.645               -1.7663             -17.879    
+          -23.395               -17.879             2.1191               -25.514                -19.998               -2.1191             -17.879    
           -20.486               -15.758          0.0042424                -20.49                -15.762            -0.0042424             -15.758    
-          -20.513               -15.758             0.7099               -21.222                -16.467               -0.7099             -15.758    
-          -20.545               -15.758             1.4156               -21.961                -17.173               -1.4156             -15.758    
-          -20.563               -15.758             2.1212               -22.684                -17.879               -2.1212             -15.758    
-          -20.596               -15.758             2.8269               -23.422                -18.584               -2.8269             -15.758    
-          -20.613               -15.758             3.5325               -24.146                 -19.29               -3.5325             -15.758    
-          -20.646               -15.758             4.2382               -24.884                -19.996               -4.2382             -15.758    
+          -20.543               -15.758             0.7099               -21.252                -16.467               -0.7099             -15.758    
+           -20.62               -15.758             1.4156               -22.036                -17.173               -1.4156             -15.758    
+          -20.638               -15.758             2.1212               -22.759                -17.879               -2.1212             -15.758    
+          -20.716               -15.758             2.8269               -23.542                -18.584               -2.8269             -15.758    
+          -20.733               -15.758             3.5325               -24.266                 -19.29               -3.5325             -15.758    
+          -20.811               -15.758             4.2382               -25.049                -19.996               -4.2382             -15.758    
           -17.729               -13.636          0.0063636               -17.736                -13.643            -0.0063636             -13.636    
-          -17.779               -13.636             1.0648               -18.844                -14.701               -1.0648             -13.636    
-          -17.805               -13.636             2.1233               -19.929                 -15.76               -2.1233             -13.636    
-          -17.847               -13.636             3.1818               -21.029                -16.818               -3.1818             -13.636    
-          -17.888               -13.636             4.2403               -22.129                -17.877               -4.2403             -13.636    
-          -17.915               -13.636             5.2988               -23.214                -18.935               -5.2988             -13.636    
-          -17.956               -13.636             6.3573               -24.313                -19.994               -6.3573             -13.636    
+          -17.812               -13.636             1.0648               -18.877                -14.701               -1.0648             -13.636    
+           -17.88               -13.636             2.1233               -20.004                 -15.76               -2.1233             -13.636    
+          -17.967               -13.636             3.1818               -21.149                -16.818               -3.1818             -13.636    
+          -18.053               -13.636             4.2403               -22.294                -17.877               -4.2403             -13.636    
+           -18.08               -13.636             5.2988               -23.379                -18.935               -5.2988             -13.636    
+          -18.166               -13.636             6.3573               -24.523                -19.994               -6.3573             -13.636    
           -14.972               -11.515          0.0084848               -14.981                -11.524            -0.0084848             -11.515    
-           -15.03               -11.515             1.4198                -16.45                -12.935               -1.4198             -11.515    
-           -15.08               -11.515             2.8311               -17.912                -14.346               -2.8311             -11.515    
-          -15.131               -11.515             4.2424               -19.373                -15.758               -4.2424             -11.515    
-          -15.181               -11.515             5.6537               -20.835                -17.169               -5.6537             -11.515    
-          -15.234               -11.515             7.0651               -22.299                 -18.58               -7.0651             -11.515    
-          -15.282               -11.515             8.4764               -23.758                -19.992               -8.4764             -11.515    
+          -15.105               -11.515             1.4198               -16.525                -12.935               -1.4198             -11.515    
+            -15.2               -11.515             2.8311               -18.032                -14.346               -2.8311             -11.515    
+          -15.296               -11.515             4.2424               -19.538                -15.758               -4.2424             -11.515    
+          -15.373               -11.515             5.6537               -21.027                -17.169               -5.6537             -11.515    
+          -15.444               -11.515             7.0651               -22.509                 -18.58               -7.0651             -11.515    
+          -15.582               -11.515             8.4764               -24.058                -19.992               -8.4764             -11.515    
           -12.215               -9.3939           0.010606               -12.226                -9.4045             -0.010606             -9.3939    
-          -12.281               -9.3939             1.7747               -14.056                -11.169               -1.7747             -9.3939    
-          -12.341               -9.3939             3.5389               -15.879                -12.933               -3.5389             -9.3939    
-            -12.4               -9.3939              5.303               -17.703                -14.697                -5.303             -9.3939    
-          -12.477               -9.3939             7.0672               -19.544                -16.461               -7.0672             -9.3939    
-          -12.533               -9.3939             8.8313               -21.364                -18.225               -8.8313             -9.3939    
-          -12.622               -9.3939             10.595               -23.217                -19.989               -10.595             -9.3939    
+          -12.356               -9.3939             1.7747               -14.131                -11.169               -1.7747             -9.3939    
+          -12.461               -9.3939             3.5389               -15.999                -12.933               -3.5389             -9.3939    
+          -12.565               -9.3939              5.303               -17.868                -14.697                -5.303             -9.3939    
+          -12.687               -9.3939             7.0672               -19.754                -16.461               -7.0672             -9.3939    
+          -12.833               -9.3939             8.8313               -21.664                -18.225               -8.8313             -9.3939    
+          -13.041               -9.3939             10.595               -23.636                -19.989               -10.595             -9.3939    
           -9.4584               -7.2727           0.012727               -9.4711                -7.2855             -0.012727             -7.2727    
-          -9.5328               -7.2727             2.1297               -11.662                -9.4024               -2.1297             -7.2727    
-          -9.6157               -7.2727             4.2467               -13.862                -11.519               -4.2467             -7.2727    
-          -9.6836               -7.2727             6.3636               -16.047                -13.636               -6.3636             -7.2727    
-          -9.7666               -7.2727             8.4806               -18.247                -15.753               -8.4806             -7.2727    
-          -9.8645               -7.2727             10.598               -20.462                 -17.87               -10.598             -7.2727    
-          -9.9174               -7.2727             12.715               -22.632                -19.987               -12.715             -7.2727    
+          -9.6078               -7.2727             2.1297               -11.737                -9.4024               -2.1297             -7.2727    
+          -9.7807               -7.2727             4.2467               -14.027                -11.519               -4.2467             -7.2727    
+          -9.8936               -7.2727             6.3636               -16.257                -13.636               -6.3636             -7.2727    
+          -10.067               -7.2727             8.4806               -18.547                -15.753               -8.4806             -7.2727    
+          -10.284               -7.2727             10.598               -20.881                 -17.87               -10.598             -7.2727    
+          -10.352               -7.2727             12.715               -23.067                -19.987               -12.715             -7.2727    
           -6.7014               -5.1515           0.014848               -6.7163                -5.1664             -0.014848             -5.1515    
-          -6.7841               -5.1515             2.4846               -9.2687                -7.6362               -2.4846             -5.1515    
-          -6.8758               -5.1515             4.9544                -11.83                -10.106               -4.9544             -5.1515    
-          -6.9826               -5.1515             7.4242               -14.407                -12.576               -7.4242             -5.1515    
-          -7.0443               -5.1515              9.894               -16.938                -15.046                -9.894             -5.1515    
-          -7.1511               -5.1515             12.364               -19.515                -17.515               -12.364             -5.1515    
-          -7.2578               -5.1515             14.834               -22.091                -19.985               -14.834             -5.1515    
+          -6.8591               -5.1515             2.4846               -9.3437                -7.6362               -2.4846             -5.1515    
+          -7.0408               -5.1515             4.9544               -11.995                -10.106               -4.9544             -5.1515    
+          -7.2792               -5.1515             7.4242               -14.703                -12.576               -7.4242             -5.1515    
+          -7.3443               -5.1515              9.894               -17.238                -15.046                -9.894             -5.1515    
+          -7.5861               -5.1515             12.364                -19.95                -17.515               -12.364             -5.1515    
+          -7.7396               -5.1515             14.834               -22.573                -19.985               -14.834             -5.1515    
           -3.9445               -3.0303            0.01697               -3.9615                -3.0473              -0.01697             -3.0303    
-          -4.0504               -3.0303             2.8396                 -6.89                -5.8699               -2.8396             -3.0303    
-          -4.1509               -3.0303             5.6622               -9.8132                -8.6925               -5.6622             -3.0303    
-          -4.2515               -3.0303             8.4848               -12.736                -11.515               -8.4848             -3.0303    
-          -4.3671               -3.0303             11.307               -15.675                -14.338               -11.307             -3.0303    
-          -4.4376               -3.0303              14.13               -18.568                 -17.16                -14.13             -3.0303    
-          -4.5532               -3.0303             16.953               -21.506                -19.983               -16.953             -3.0303    
+          -4.1704               -3.0303             2.8396                 -7.01                -5.8699               -2.8396             -3.0303    
+          -4.3456               -3.0303             5.6622               -10.008                -8.6925               -5.6622             -3.0303    
+          -4.5515               -3.0303             8.4848               -13.036                -11.515               -8.4848             -3.0303    
+          -4.8021               -3.0303             11.307                -16.11                -14.338               -11.307             -3.0303    
+          -4.8726               -3.0303              14.13               -19.003                 -17.16                -14.13             -3.0303    
+          -5.1232               -3.0303             16.953               -22.076                -19.983               -16.953             -3.0303    
           -1.1875              -0.90909           0.019091               -1.2066               -0.92818             -0.019091            -0.90909    
-          -1.3017              -0.90909             3.1945               -4.4962                -4.1036               -3.1945            -0.90909    
-          -1.4111              -0.90909               6.37               -7.7811                -7.2791                 -6.37            -0.90909    
-          -1.5205              -0.90909             9.5455               -11.066                -10.455               -9.5455            -0.90909    
-          -1.6448              -0.90909             12.721               -14.366                 -13.63               -12.721            -0.90909    
-          -1.7692              -0.90909             15.896               -17.666                -16.805               -15.896            -0.90909    
-          -1.8684              -0.90909             19.072                -20.94                -19.981               -19.072            -0.90909    
+          -1.4217              -0.90909             3.1945               -4.6162                -4.1036               -3.1945            -0.90909    
+          -1.6211              -0.90909               6.37               -7.9911                -7.2791                 -6.37            -0.90909    
+          -1.8205              -0.90909             9.5455               -11.366                -10.455               -9.5455            -0.90909    
+          -2.0798              -0.90909             12.721               -14.801                 -13.63               -12.721            -0.90909    
+          -2.3392              -0.90909             15.896               -18.236                -16.805               -15.896            -0.90909    
+          -2.4384              -0.90909             19.072                -21.51                -19.981               -19.072            -0.90909    
 
       tab_ak_choices1       tab_ak_choices2    tab_ak_choices3       tab_ak_choices4        tab_ak_choices5      tab_ak_choices6      tab_ak_choices7
     ar_bwithrplusk_mesha    ar_aplusk_mesha      ar_k_mesha       ar_ameshk_tnext_with_r      ar_a_meshk       ar_a_nobridge_meshk      ar_bridge_a  
@@ -472,72 +826,72 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
            31.469               30.909              8.5188                  22.95                 22.39                22.39                 0       
            31.257               30.909              16.987                  14.27                13.922               13.922                 0       
            31.045               30.909              25.455                 5.5909                5.4545               5.4545                 0       
-           30.794               30.909              33.922                -3.1287               -3.0133              -3.0133                 0       
-           30.477               30.909               42.39                -11.913               -11.481              -11.481                 0       
-           29.959               30.909              50.858                -20.899               -19.949              -19.949                 0       
+           30.674               30.909              33.922                -3.2487               -3.0133              -3.0133                 0       
+           30.042               30.909               42.39                -12.348               -11.481              -11.481                 0       
+           29.389               30.909              50.858                -21.469               -19.949              -19.949                 0       
            33.855                33.03             0.05303                 33.802                32.977               32.977                 0       
            33.634                33.03              8.8737                  24.76                24.157               24.157                 0       
            33.414                33.03              17.694                 15.719                15.336               15.336                 0       
            33.193                33.03              26.515                  6.678                6.5152               6.5152                 0       
-           32.948                33.03              35.336                -2.3882               -2.3056              -2.3056                 0       
-           32.607                33.03              44.157                -11.549               -11.126              -11.126                 0       
-           32.081                33.03              52.977                -20.896               -19.947              -19.947                 0       
+           32.873                33.03              35.336                -2.4632               -2.3056              -2.3056                 0       
+           32.172                33.03              44.157                -11.984               -11.126              -11.126                 0       
+           31.511                33.03              52.977                -21.466               -19.947              -19.947                 0       
            36.029               35.152            0.055152                 35.974                35.096               35.096                 0       
              35.8               35.152              9.2287                 26.571                25.923               25.923                 0       
             35.57               35.152              18.402                 17.168                16.749               16.749                 0       
            35.341               35.152              27.576                 7.7652                7.5758               7.5758                 0       
-           35.087               35.152              36.749                -1.6627               -1.5978              -1.5978                 0       
-           34.737               35.152              45.923                -11.186               -10.771              -10.771                 0       
-           34.203               35.152              55.096                -20.893               -19.945              -19.945                 0       
+           35.012               35.152              36.749                -1.7377               -1.5978              -1.5978                 0       
+           34.302               35.152              45.923                -11.621               -10.771              -10.771                 0       
+           33.633               35.152              55.096                -21.463               -19.945              -19.945                 0       
            38.203               37.273            0.057273                 38.146                37.215               37.215                 0       
            37.965               37.273              9.5836                 28.381                27.689               27.689                 0       
            37.727               37.273               19.11                 18.617                18.163               18.163                 0       
            37.489               37.273              28.636                 8.8523                8.6364               8.6364                 0       
-            37.24               37.273              38.163               -0.92225                 -0.89                -0.89                 0       
-           36.867               37.273              47.689                -10.822               -10.416              -10.416                 0       
-           36.325               37.273              57.215                -20.891               -19.943              -19.943                 0       
+            37.21               37.273              38.163               -0.95225                 -0.89                -0.89                 0       
+           36.498               37.273              47.689                -11.191               -10.416              -10.416                 0       
+           35.755               37.273              57.215                -21.461               -19.943              -19.943                 0       
            40.377               39.394            0.059394                 40.318                39.335               39.335                 0       
             40.13               39.394              9.9386                 30.192                29.455               29.455                 0       
            39.883               39.394              19.818                 20.066                19.576               19.576                 0       
            39.636               39.394              29.697                 9.9394                 9.697                9.697                 0       
-           39.379               39.394              39.576               -0.19678              -0.18222             -0.18222                 0       
-           39.026               39.394              49.455                 -10.43               -10.061              -10.061                 0       
-           38.447               39.394              59.335                -20.888               -19.941              -19.941                 0       
+           39.349               39.394              39.576               -0.22678              -0.18222             -0.18222                 0       
+           38.726               39.394              49.455                 -10.73               -10.061              -10.061                 0       
+           37.877               39.394              59.335                -21.458               -19.941              -19.941                 0       
            42.551               41.515            0.061515                  42.49                41.454               41.454                 0       
            42.296               41.515              10.294                 32.002                31.222               31.222                 0       
             42.04               41.515              20.526                 21.514                 20.99                20.99                 0       
            41.784               41.515              30.758                 11.027                10.758               10.758                 0       
            41.528               41.515               40.99                0.53869               0.52556              0.52556                 0       
-           41.172               41.515              51.222                -10.049               -9.7065              -9.7065                 0       
-           40.569               41.515              61.454                -20.885               -19.938              -19.938                 0       
+           40.872               41.515              51.222                -10.349               -9.7065              -9.7065                 0       
+           39.999               41.515              61.454                -21.455               -19.938              -19.938                 0       
            44.726               43.636            0.063636                 44.662                43.573               43.573                 0       
            44.461               43.636              10.648                 33.813                32.988               32.988                 0       
            44.196               43.636              21.233                 22.963                22.403               22.403                 0       
            43.932               43.636              31.818                 12.114                11.818               11.818                 0       
            43.667               43.636              42.403                 1.2642                1.2333               1.2333                 0       
-           43.303               43.636              52.988                -9.6853               -9.3515              -9.3515                 0       
-            42.69               43.636              63.573                -20.882               -19.936              -19.936                 0       
+           43.003               43.636              52.988                -9.9853               -9.3515              -9.3515                 0       
+            42.12               43.636              63.573                -21.452               -19.936              -19.936                 0       
              46.9               45.758            0.065758                 46.834                45.692               45.692                 0       
            46.626               45.758              11.003                 35.623                34.754               34.754                 0       
            46.353               45.758              21.941                 24.412                23.816               23.816                 0       
             46.08               45.758              32.879                 13.201                12.879               12.879                 0       
            45.806               45.758              43.816                 1.9896                1.9411               1.9411                 0       
-           45.433               45.758              54.754                -9.3215               -8.9966              -8.9966                 0       
-           44.812               45.758              65.692                 -20.88               -19.934              -19.934                 0       
+           45.133               45.758              54.754                -9.6215               -8.9966              -8.9966                 0       
+           44.242               45.758              65.692                 -21.45               -19.934              -19.934                 0       
            49.074               47.879            0.067879                 49.006                47.811               47.811                 0       
            48.792               47.879              11.358                 37.433                 36.52                36.52                 0       
             48.51               47.879              22.649                 25.861                 25.23                25.23                 0       
            48.227               47.879              33.939                 14.288                13.939               13.939                 0       
            47.945               47.879               45.23                 2.7151                2.6489               2.6489                 0       
-           47.563               47.879               56.52                -8.9577               -8.6416              -8.6416                 0       
-           46.934               47.879              67.811                -20.877               -19.932              -19.932                 0       
+           47.263               47.879               56.52                -9.2577               -8.6416              -8.6416                 0       
+           46.364               47.879              67.811                -21.447               -19.932              -19.932                 0       
            51.248                   50                0.07                 51.178                 49.93                49.93                 0       
            50.957                   50              11.713                 39.244                38.287               38.287                 0       
            50.666                   50              23.357                 27.309                26.643               26.643                 0       
            50.375                   50                  35                 15.375                    15                   15                 0       
            50.084                   50              46.643                 3.4406                3.3567               3.3567                 0       
-           49.693                   50              58.287                -8.5938               -8.2867              -8.2867                 0       
-           49.056                   50               69.93                -20.874                -19.93               -19.93                 0       
+           49.393                   50              58.287                -8.8938               -8.2867              -8.2867                 0       
+           48.486                   50               69.93                -21.444                -19.93               -19.93                 0       
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -548,76 +902,76 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     mt_coh_wkb_full1    mt_coh_wkb_full2    mt_coh_wkb_full3    mt_coh_wkb_full4    mt_coh_wkb_full5    mt_coh_wkb_full6    mt_coh_wkb_full7    mt_coh_wkb_full8    mt_coh_wkb_full9    mt_coh_wkb_full10    mt_coh_wkb_full11    mt_coh_wkb_full12    mt_coh_wkb_full13    mt_coh_wkb_full14    mt_coh_wkb_full15
     ________________    ________________    ________________    ________________    ________________    ________________    ________________    ________________    ________________    _________________    _________________    _________________    _________________    _________________    _________________
 
-         -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556              -25.556              -25.556              -25.556               -25.556              -25.556    
-         -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556              -25.556              -25.556              -25.556               -25.556              -25.556    
-         -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556              -25.556              -25.556              -25.556               -25.556              -25.556    
-         -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556              -25.556              -25.556              -25.556               -25.556              -25.556    
-         -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556              -25.556              -25.556              -25.556               -25.556              -25.556    
-         -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556              -25.556              -25.556              -25.556               -25.556              -25.556    
-         -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556              -25.556              -25.556              -25.556               -25.556              -25.556    
-         -22.762             -22.756             -22.749             -22.741             -22.733             -22.722              -22.71             -22.697             -22.681             -22.663              -22.642              -22.617              -22.589               -22.557               -22.52    
-         -22.607              -22.57             -22.528             -22.479             -22.422             -22.357             -22.282             -22.196             -22.096             -21.981              -21.848              -21.694              -21.517               -21.313              -21.078    
-         -22.576             -22.529             -22.475             -22.412              -22.34             -22.256              -22.16             -22.049             -21.921             -21.773              -21.603              -21.406               -21.18               -20.918              -20.616    
-          -22.58             -22.526             -22.463              -22.39             -22.307              -22.21             -22.099             -21.971             -21.822             -21.652              -21.454              -21.227              -20.965               -20.662              -20.313    
-         -22.579             -22.518             -22.449             -22.368             -22.275             -22.168             -22.045             -21.903             -21.738             -21.549               -21.33              -21.078              -20.787               -20.452              -20.065    
-         -22.583             -22.517             -22.442             -22.355             -22.254             -22.138             -22.005              -21.85             -21.672             -21.467               -21.23              -20.957              -20.642               -20.278              -19.859    
-         -22.591             -22.521              -22.44             -22.347              -22.24             -22.116             -21.974             -21.809             -21.619               -21.4              -21.147              -20.855              -20.518                -20.13              -19.682    
-         -19.994             -19.987             -19.978             -19.968             -19.957             -19.944             -19.928             -19.911              -19.89             -19.867               -19.84              -19.809              -19.773               -19.731              -19.684    
-         -19.819             -19.771             -19.717             -19.654             -19.582             -19.498             -19.402             -19.291             -19.163             -19.015              -18.844              -18.648              -18.421               -18.159              -17.857    
-         -19.821             -19.761             -19.691              -19.61             -19.518             -19.411             -19.287             -19.145              -18.98             -18.791              -18.572               -18.32              -18.029               -17.693              -17.306    
-         -19.834             -19.764             -19.683              -19.59             -19.482             -19.359             -19.216             -19.051             -18.861             -18.642              -18.389              -18.097               -17.76               -17.372              -16.924    
-         -19.873             -19.795             -19.706             -19.603             -19.484             -19.346             -19.188             -19.005             -18.794             -18.551              -18.271              -17.947              -17.574               -17.143              -16.646    
-         -19.905             -19.821             -19.724             -19.612             -19.483             -19.334             -19.163             -18.965             -18.736             -18.473              -18.169              -17.818              -17.414               -16.947              -16.409    
-         -19.957             -19.867             -19.764             -19.644             -19.507             -19.348             -19.164             -18.953             -18.709             -18.428              -18.103              -17.729              -17.297               -16.799              -16.224    
-          -17.23             -17.221             -17.211               -17.2             -17.186             -17.171             -17.153             -17.133              -17.11             -17.083              -17.051              -17.015              -16.974               -16.926               -16.87    
-         -17.065             -17.011             -16.948             -16.875             -16.791             -16.695             -16.583             -16.454             -16.306             -16.135              -15.938               -15.71              -15.447               -15.144              -14.795    
-         -17.076             -17.006             -16.925             -16.832             -16.725             -16.601             -16.458             -16.293             -16.103             -15.884              -15.631              -15.339              -15.002               -14.613              -14.165    
-         -17.131              -17.05             -16.956             -16.849             -16.725             -16.581             -16.416             -16.225             -16.005             -15.751              -15.459              -15.121              -14.731               -14.282              -13.764    
-         -17.199              -17.11             -17.006             -16.887             -16.749              -16.59             -16.407             -16.195             -15.951              -15.67              -15.345              -14.971              -14.539               -14.041              -13.466    
-         -17.262             -17.165             -17.052             -16.923             -16.774             -16.602             -16.403             -16.174             -15.909             -15.605              -15.253              -14.847              -14.379               -13.839              -13.216    
-         -17.345             -17.241             -17.121             -16.983             -16.824              -16.64             -16.428             -16.183             -15.901             -15.575                -15.2              -14.767              -14.267                -13.69              -13.025    
-         -14.467             -14.457             -14.446             -14.433             -14.419             -14.402             -14.382              -14.36             -14.334             -14.304              -14.269              -14.229              -14.183                -14.13              -14.068    
-         -14.306             -14.245             -14.176             -14.095             -14.002             -13.895             -13.771             -13.629             -13.464             -13.274              -13.056              -12.803              -12.512               -12.176              -11.788    
-         -14.358              -14.28             -14.191             -14.088             -13.969             -13.831             -13.673              -13.49             -13.279             -13.036              -12.755              -12.431              -12.058               -11.627               -11.13    
-         -14.442             -14.352             -14.249             -14.129             -13.991             -13.833             -13.649             -13.438             -13.194             -12.912              -12.588              -12.213              -11.781               -11.283              -10.708    
-         -14.542             -14.442             -14.327             -14.195             -14.042             -13.866             -13.662             -13.428             -13.157             -12.845              -12.485               -12.07              -11.591               -11.038                -10.4    
-         -14.653             -14.546             -14.421             -14.278             -14.112             -13.921             -13.701             -13.447             -13.154             -12.815              -12.425              -11.975              -11.456               -10.857              -10.166    
-         -14.766             -14.651             -14.518             -14.365             -14.188             -13.984             -13.749             -13.478             -13.165             -12.804              -12.387              -11.906              -11.352               -10.713              -9.9751    
-         -11.705             -11.695             -11.683             -11.669             -11.653             -11.634             -11.613             -11.589              -11.56             -11.528               -11.49              -11.447              -11.397               -11.339              -11.273    
-         -11.553             -11.487             -11.411             -11.324             -11.224             -11.107             -10.973             -10.819             -10.641             -10.435              -10.198               -9.924              -9.6083               -9.2441              -8.8239    
-         -11.632             -11.548             -11.451              -11.34              -11.21             -11.062              -10.89             -10.692             -10.463             -10.199              -9.8952              -9.5444              -9.1396               -8.6727              -8.1341    
-         -11.747              -11.65             -11.537             -11.408             -11.259             -11.086             -10.888             -10.659             -10.394             -10.089              -9.7373              -9.3315              -8.8633               -8.3232              -7.7001    
-         -11.897             -11.789             -11.664             -11.521             -11.355             -11.164             -10.944              -10.69             -10.397             -10.058              -9.6682              -9.2181              -8.6989                  -8.1              -7.4091    
-         -12.035             -11.918             -11.783             -11.628             -11.448             -11.241             -11.002             -10.727             -10.409             -10.043              -9.6201              -9.1325              -8.5699                -7.921              -7.1724    
-         -12.213             -12.089             -11.945             -11.779             -11.587             -11.366             -11.111             -10.817             -10.478             -10.087              -9.6352              -9.1145              -8.5138               -7.8209              -7.0215    
-         -8.9435             -8.9324             -8.9197             -8.9049             -8.8879             -8.8682             -8.8456             -8.8195             -8.7893             -8.7546              -8.7145              -8.6682              -8.6148               -8.5533              -8.4822    
-         -8.8034             -8.7334             -8.6526             -8.5594             -8.4519             -8.3279             -8.1848             -8.0198             -7.8294             -7.6098              -7.3564              -7.0642              -6.7271               -6.3382              -5.8896    
-         -8.9271             -8.8373             -8.7337             -8.6142             -8.4764             -8.3174              -8.134             -7.9224             -7.6783             -7.3968               -7.072              -6.6973              -6.2651               -5.7665              -5.1914    
-         -9.0727             -8.9689              -8.849             -8.7108             -8.5514             -8.3675             -8.1553             -7.9106             -7.6282             -7.3025              -6.9268              -6.4934              -5.9935               -5.4167              -4.7514    
-         -9.2513             -9.1362             -9.0033               -8.85             -8.6732             -8.4693              -8.234             -7.9626             -7.6495             -7.2883              -6.8717              -6.3911              -5.8367               -5.1972              -4.4594    
-          -9.456             -9.3312             -9.1872             -9.0211             -8.8296             -8.6086             -8.3536             -8.0596             -7.7203              -7.329              -6.8776              -6.3568              -5.7561               -5.0631              -4.2638    
-         -9.6232             -9.4899             -9.3362             -9.1589             -8.9543             -8.7184             -8.4462             -8.1322             -7.7699             -7.3521              -6.8701               -6.314              -5.6726               -4.9327              -4.0791    
-         -6.1826             -6.1709             -6.1574             -6.1418             -6.1238             -6.1031             -6.0791             -6.0515             -6.0196             -5.9829              -5.9405              -5.8916              -5.8352               -5.7701               -5.695    
-         -6.0571             -5.9831             -5.8977             -5.7992             -5.6855             -5.5544             -5.4032             -5.2287             -5.0275             -4.7953              -4.5275              -4.2186              -3.8623               -3.4512              -2.9769    
-         -6.2105             -6.1156             -6.0061             -5.8798             -5.7341              -5.566             -5.3721             -5.1484             -4.8904             -4.5928              -4.2495              -3.8534              -3.3966               -2.8695              -2.2616    
-         -6.4179             -6.3081             -6.1815             -6.0354             -5.8668             -5.6724             -5.4481             -5.1894              -4.891             -4.5467              -4.1496              -3.6914               -3.163               -2.5533              -1.8501    
-         -6.5994             -6.4776             -6.3372             -6.1752             -5.9883             -5.7727              -5.524             -5.2371             -4.9061             -4.5244               -4.084              -3.5759              -2.9899               -2.3138               -1.534    
-         -6.8375             -6.7056             -6.5534             -6.3778             -6.1753             -5.9417             -5.6723             -5.3614             -5.0028             -4.5891               -4.112              -3.5615              -2.9265                -2.194               -1.349    
-         -7.0836             -6.9427             -6.7802             -6.5928             -6.3766             -6.1271             -5.8394             -5.5075             -5.1246             -4.6829              -4.1734              -3.5856              -2.9076               -2.1255              -1.2232    
-         -3.4221             -3.4098             -3.3956             -3.3793             -3.3604             -3.3386             -3.3135             -3.2845             -3.2511             -3.2125               -3.168              -3.1167              -3.0575               -2.9892              -2.9105    
-         -3.3281             -3.2504             -3.1608             -3.0574             -2.9382             -2.8006             -2.6419             -2.4589             -2.2477             -2.0042              -1.7232               -1.399              -1.0251              -0.59379            -0.096218    
-         -3.5118             -3.4122             -3.2973             -3.1648             -3.0119             -2.8356             -2.6321             -2.3974             -2.1267             -1.8145              -1.4542              -1.0387             -0.55929            -0.0063072               0.6316    
-         -3.7365             -3.6213             -3.4884             -3.3351             -3.1583             -2.9543              -2.719             -2.4475             -2.1344             -1.7731              -1.3564             -0.87575             -0.32124               0.31842               1.0563    
-         -3.9962             -3.8684             -3.7211             -3.5511              -3.355             -3.1288             -2.8678             -2.5668             -2.2195              -1.819              -1.3569             -0.82383             -0.20893               0.50041               1.3187    
-         -4.2231             -4.0846              -3.925             -3.7408             -3.5283             -3.2832             -3.0004             -2.6743              -2.298              -1.864              -1.3633             -0.78574             -0.11947               0.64911               1.5357    
-         -4.5034             -4.3556             -4.1851             -3.9884             -3.7615             -3.4998             -3.1979             -2.8496             -2.4479             -1.9844              -1.4498             -0.83312             -0.12171               0.69895               1.6456    
-        -0.66188            -0.64905            -0.63425            -0.61717            -0.59748            -0.57476            -0.54855            -0.51832            -0.48344            -0.44321              -0.3968             -0.34326              -0.2815              -0.21026             -0.12808    
-        -0.58585             -0.5048            -0.41131            -0.30347            -0.17906           -0.035547                0.13             0.32098             0.54128             0.79541               1.0886               1.4267               1.8168                2.2669                2.786    
-        -0.80042            -0.69652            -0.57666             -0.4384             -0.2789           -0.094912             0.11733             0.36217              0.6446             0.97041               1.3462               1.7798               2.2799                2.8569               3.5224    
-         -1.0578             -0.9376            -0.79896            -0.63902            -0.45453             -0.2417           0.0038105             0.28702             0.61373              0.9906               1.4254               1.9269               2.5054                3.1728               3.9426    
-          -1.351             -1.2177             -1.0639            -0.88659              -0.682            -0.44599            -0.17374             0.14032             0.50261             0.92053               1.4026               1.9588               2.6003                3.3404               4.1941    
-         -1.6569             -1.5125             -1.3459             -1.1537            -0.93205            -0.67633            -0.38133            -0.04104             0.35151             0.80434               1.3267               1.9293               2.6244                3.4263               4.3513    
-         -1.9463             -1.7922             -1.6143             -1.4091             -1.1724            -0.89933            -0.58435              -0.221             0.19815             0.68167               1.2394               1.8829               2.6251                3.4813                4.469    
+         -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556              -25.556              -25.556              -25.556              -25.556              -25.556     
+         -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556              -25.556              -25.556              -25.556              -25.556              -25.556     
+         -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556              -25.556              -25.556              -25.556              -25.556              -25.556     
+         -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556              -25.556              -25.556              -25.556              -25.556              -25.556     
+         -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556              -25.556              -25.556              -25.556              -25.556              -25.556     
+         -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556              -25.556              -25.556              -25.556              -25.556              -25.556     
+         -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556             -25.556              -25.556              -25.556              -25.556              -25.556              -25.556     
+         -22.762             -22.756             -22.749             -22.741             -22.733             -22.722              -22.71             -22.697             -22.681             -22.663              -22.642              -22.617              -22.589              -22.557               -22.52     
+         -22.637               -22.6             -22.558             -22.509             -22.452             -22.387             -22.312             -22.226             -22.126             -22.011              -21.878              -21.724              -21.547              -21.343              -21.108     
+         -22.606             -22.559             -22.505             -22.442              -22.37             -22.286              -22.19             -22.079             -21.951             -21.803              -21.633              -21.436               -21.21              -20.948              -20.646     
+         -22.612             -22.557             -22.495             -22.422             -22.338             -22.242             -22.131             -22.002             -21.854             -21.683              -21.486              -21.259              -20.996              -20.694              -20.345     
+         -22.654             -22.593             -22.524             -22.443              -22.35             -22.243              -22.12             -21.978             -21.813             -21.624              -21.405              -21.153              -20.862              -20.527               -20.14     
+         -22.658             -22.592             -22.517              -22.43             -22.329             -22.213              -22.08             -21.925             -21.747             -21.542              -21.305              -21.032              -20.717              -20.353              -19.934     
+         -22.666             -22.596             -22.515             -22.422             -22.315             -22.191             -22.049             -21.884             -21.694             -21.475              -21.222               -20.93              -20.593              -20.205              -19.757     
+         -19.994             -19.987             -19.978             -19.968             -19.957             -19.944             -19.928             -19.911              -19.89             -19.867               -19.84              -19.809              -19.773              -19.731              -19.684     
+         -19.849             -19.801             -19.747             -19.684             -19.612             -19.528             -19.432             -19.321             -19.193             -19.045              -18.874              -18.678              -18.451              -18.189              -17.887     
+         -19.896             -19.836             -19.766             -19.685             -19.593             -19.486             -19.362              -19.22             -19.055             -18.866              -18.647              -18.395              -18.104              -17.768              -17.381     
+         -19.909             -19.839             -19.758             -19.665             -19.557             -19.434             -19.291             -19.126             -18.936             -18.717              -18.464              -18.172              -17.835              -17.447              -16.999     
+         -19.993             -19.915             -19.826             -19.723             -19.604             -19.466             -19.308             -19.125             -18.914             -18.671              -18.391              -18.067              -17.694              -17.263              -16.766     
+         -20.025             -19.941             -19.844             -19.732             -19.603             -19.454             -19.283             -19.085             -18.856             -18.593              -18.289              -17.938              -17.534              -17.067              -16.529     
+         -20.122             -20.032             -19.929             -19.809             -19.672             -19.513             -19.329             -19.118             -18.874             -18.593              -18.268              -17.894              -17.462              -16.964              -16.389     
+          -17.23             -17.221             -17.211               -17.2             -17.186             -17.171             -17.153             -17.133              -17.11             -17.083              -17.051              -17.015              -16.974              -16.926               -16.87     
+         -17.098             -17.043              -16.98             -16.908             -16.824             -16.727             -16.616             -16.487             -16.339             -16.168               -15.97              -15.743               -15.48              -15.177              -14.828     
+         -17.151             -17.081                 -17             -16.907               -16.8             -16.676             -16.533             -16.368             -16.178             -15.959              -15.706              -15.414              -15.077              -14.688               -14.24     
+         -17.251              -17.17             -17.076             -16.969             -16.845             -16.701             -16.536             -16.345             -16.125             -15.871              -15.579              -15.241              -14.851              -14.402              -13.884     
+         -17.364             -17.275             -17.171             -17.052             -16.914             -16.755             -16.572              -16.36             -16.116             -15.835               -15.51              -15.136              -14.704              -14.206              -13.631     
+         -17.427              -17.33             -17.217             -17.088             -16.939             -16.767             -16.568             -16.339             -16.074              -15.77              -15.418              -15.012              -14.544              -14.004              -13.381     
+         -17.555             -17.451             -17.331             -17.193             -17.034              -16.85             -16.638             -16.393             -16.111             -15.785               -15.41              -14.977              -14.477                -13.9              -13.235     
+         -14.467             -14.457             -14.446             -14.433             -14.419             -14.402             -14.382              -14.36             -14.334             -14.304              -14.269              -14.229              -14.183               -14.13              -14.068     
+         -14.381              -14.32             -14.251              -14.17             -14.077              -13.97             -13.846             -13.704             -13.539             -13.349              -13.131              -12.878              -12.587              -12.251              -11.863     
+         -14.478               -14.4             -14.311             -14.208             -14.089             -13.951             -13.793              -13.61             -13.399             -13.156              -12.875              -12.551              -12.178              -11.747               -11.25     
+         -14.607             -14.517             -14.414             -14.294             -14.156             -13.998             -13.814             -13.603             -13.359             -13.077              -12.753              -12.378              -11.946              -11.448              -10.873     
+         -14.734             -14.634             -14.519             -14.387             -14.234             -14.058             -13.855              -13.62              -13.35             -13.037              -12.677              -12.262              -11.783               -11.23              -10.593     
+         -14.863             -14.756             -14.631             -14.488             -14.322             -14.131             -13.911             -13.657             -13.364             -13.025              -12.635              -12.185              -11.666              -11.067              -10.376     
+         -15.066             -14.951             -14.818             -14.665             -14.488             -14.284             -14.049             -13.778             -13.465             -13.104              -12.687              -12.206              -11.652              -11.013              -10.275     
+         -11.705             -11.695             -11.683             -11.669             -11.653             -11.634             -11.613             -11.589              -11.56             -11.528               -11.49              -11.447              -11.397              -11.339              -11.273     
+         -11.628             -11.562             -11.486             -11.399             -11.299             -11.182             -11.048             -10.894             -10.716              -10.51              -10.273               -9.999              -9.6833              -9.3191              -8.8989     
+         -11.752             -11.668             -11.571              -11.46              -11.33             -11.182              -11.01             -10.812             -10.583             -10.319              -10.015              -9.6644              -9.2596              -8.7927              -8.2541     
+         -11.912             -11.815             -11.702             -11.573             -11.424             -11.251             -11.053             -10.824             -10.559             -10.254              -9.9023              -9.4965              -9.0283              -8.4882              -7.8651     
+         -12.107             -11.999             -11.874             -11.731             -11.565             -11.374             -11.154               -10.9             -10.607             -10.268              -9.8782              -9.4281              -8.9089                -8.31              -7.6191     
+         -12.335             -12.218             -12.083             -11.928             -11.748             -11.541             -11.302             -11.027             -10.709             -10.343              -9.9201              -9.4325              -8.8699               -8.221              -7.4724     
+         -12.632             -12.507             -12.363             -12.197             -12.006             -11.785              -11.53             -11.236             -10.897             -10.505              -10.054              -9.5332              -8.9325              -8.2396              -7.4403     
+         -8.9435             -8.9324             -8.9197             -8.9049             -8.8879             -8.8682             -8.8456             -8.8195             -8.7893             -8.7546              -8.7145              -8.6682              -8.6148              -8.5533              -8.4822     
+         -8.8784             -8.8084             -8.7276             -8.6344             -8.5269             -8.4029             -8.2598             -8.0948             -7.9044             -7.6848              -7.4314              -7.1392              -6.8021              -6.4132              -5.9646     
+         -9.0921             -9.0023             -8.8987             -8.7792             -8.6414             -8.4824              -8.299             -8.0874             -7.8433             -7.5618               -7.237              -6.8623              -6.4301              -5.9315              -5.3564     
+         -9.2827             -9.1789              -9.059             -8.9208             -8.7614             -8.5775             -8.3653             -8.1206             -7.8382             -7.5125              -7.1368              -6.7034              -6.2035              -5.6267              -4.9614     
+         -9.5513             -9.4362             -9.3033               -9.15             -8.9732             -8.7693              -8.534             -8.2626             -7.9495             -7.5883              -7.1717              -6.6911              -6.1367              -5.4972              -4.7594     
+         -9.8753             -9.7505             -9.6065             -9.4405             -9.2489             -9.0279              -8.773             -8.4789             -8.1397             -7.7483              -7.2969              -6.7762              -6.1754              -5.4825              -4.6831     
+         -10.058             -9.9249             -9.7712             -9.5939             -9.3893             -9.1534             -8.8812             -8.5672             -8.2049             -7.7871              -7.3051               -6.749              -6.1076              -5.3677              -4.5141     
+         -6.1826             -6.1709             -6.1574             -6.1418             -6.1238             -6.1031             -6.0791             -6.0515             -6.0196             -5.9829              -5.9405              -5.8916              -5.8352              -5.7701               -5.695     
+         -6.1321             -6.0581             -5.9727             -5.8742             -5.7605             -5.6294             -5.4782             -5.3037             -5.1025             -4.8703              -4.6025              -4.2936              -3.9373              -3.5262              -3.0519     
+         -6.3755             -6.2806             -6.1711             -6.0448             -5.8991              -5.731             -5.5371             -5.3134             -5.0554             -4.7578              -4.4145              -4.0184              -3.5616              -3.0345              -2.4266     
+         -6.7146             -6.6048             -6.4781              -6.332             -6.1635             -5.9691             -5.7448             -5.4861             -5.1877             -4.8434              -4.4462              -3.9881              -3.4596                -2.85              -2.1467     
+         -6.8994             -6.7776             -6.6372             -6.4752             -6.2883             -6.0727              -5.824             -5.5371             -5.2061             -4.8244               -4.384              -3.8759              -3.2899              -2.6138               -1.834     
+         -7.2725             -7.1406             -6.9884             -6.8128             -6.6103             -6.3767             -6.1073             -5.7964             -5.4378             -5.0241               -4.547              -3.9965              -3.3615               -2.629               -1.784     
+         -7.5653             -7.4245              -7.262             -7.0746             -6.8583             -6.6089             -6.3212             -5.9892             -5.6064             -5.1647              -4.6551              -4.0674              -3.3893              -2.6072              -1.7049     
+         -3.4221             -3.4098             -3.3956             -3.3793             -3.3604             -3.3386             -3.3135             -3.2845             -3.2511             -3.2125               -3.168              -3.1167              -3.0575              -2.9892              -2.9105     
+         -3.4481             -3.3704             -3.2808             -3.1774             -3.0582             -2.9206             -2.7619             -2.5789             -2.3677             -2.1242              -1.8432               -1.519              -1.1451             -0.71379             -0.21622     
+         -3.7064             -3.6068             -3.4919             -3.3594             -3.2065             -3.0302             -2.8267             -2.5921             -2.3213             -2.0091              -1.6488              -1.2333              -0.7539             -0.20092              0.43699     
+         -4.0365             -3.9213             -3.7884             -3.6351             -3.4583             -3.2543              -3.019             -2.7475             -2.4344             -2.0731              -1.6564              -1.1758             -0.62124              0.01842              0.75631     
+         -4.4312             -4.3034             -4.1561             -3.9861               -3.79             -3.5638             -3.3028             -3.0018             -2.6545              -2.254              -1.7919              -1.2588             -0.64393             0.065407              0.88367     
+         -4.6581             -4.5196               -4.36             -4.1758             -3.9633             -3.7182             -3.4354             -3.1093              -2.733              -2.299              -1.7983              -1.2207             -0.55447              0.21411               1.1007     
+         -5.0734             -4.9256             -4.7551             -4.5584             -4.3315             -4.0698             -3.7679             -3.4196             -3.0179             -2.5544              -2.0198              -1.4031             -0.69171              0.12895               1.0756     
+        -0.66188            -0.64905            -0.63425            -0.61717            -0.59748            -0.57476            -0.54855            -0.51832            -0.48344            -0.44321              -0.3968             -0.34326              -0.2815             -0.21026             -0.12808     
+        -0.70585             -0.6248            -0.53131            -0.42347            -0.29906            -0.15555            0.010004             0.20098             0.42128             0.67541              0.96856               1.3067               1.6968               2.1469                2.666     
+         -1.0104            -0.90652            -0.78666             -0.6484             -0.4889            -0.30491           -0.092669             0.15217              0.4346             0.76041               1.1362               1.5698               2.0699               2.6469               3.3124     
+         -1.3578             -1.2376              -1.099            -0.93902            -0.75453             -0.5417            -0.29619           -0.012977             0.31373              0.6906               1.1254               1.6269               2.2054               2.8728               3.6426     
+          -1.786             -1.6527             -1.4989             -1.3216              -1.117            -0.88099            -0.60874            -0.29468             0.06761             0.48553              0.96764               1.5238               2.1653               2.9054               3.7591     
+         -2.2269             -2.0825             -1.9159             -1.7237              -1.502             -1.2463            -0.95133            -0.61104            -0.21849             0.23434              0.75671               1.3593               2.0544               2.8563               3.7813     
+         -2.5163             -2.3622             -2.1843             -1.9791             -1.7424             -1.4693             -1.1544              -0.791            -0.37185             0.11167              0.66943               1.3129               2.0551               2.9113                3.899     
 
     mt_coh_wkb_full1    mt_coh_wkb_full2    mt_coh_wkb_full3    mt_coh_wkb_full4    mt_coh_wkb_full5    mt_coh_wkb_full6    mt_coh_wkb_full7    mt_coh_wkb_full8    mt_coh_wkb_full9    mt_coh_wkb_full10    mt_coh_wkb_full11    mt_coh_wkb_full12    mt_coh_wkb_full13    mt_coh_wkb_full14    mt_coh_wkb_full15
     ________________    ________________    ________________    ________________    ________________    ________________    ________________    ________________    ________________    _________________    _________________    _________________    _________________    _________________    _________________
@@ -626,74 +980,74 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
          31.982              32.098              32.231              32.384              32.561              32.766              33.001              33.273              33.587              33.948               34.366               34.847               35.402               36.043               36.782      
          31.305              31.453              31.624               31.82              32.047              32.309              32.611               32.96              33.362              33.826               34.361               34.978                35.69               36.511               37.458      
          30.567              30.738              30.935              31.163              31.426              31.729              32.078              32.481              32.946              33.483               34.102               34.815               35.639               36.589               37.685      
-         29.759              29.949              30.168               30.42              30.711              31.047              31.435              31.882              32.398              32.992               33.679                34.47               35.384               36.437               37.652      
-         28.868              29.074              29.311              29.584                29.9              30.264              30.684              31.168              31.727              32.372               33.115               33.973               34.962               36.104               37.421      
-         27.764              27.983              28.236              28.528              28.865              29.254              29.702               30.22              30.816              31.505               32.299               33.214               34.271                35.49               36.896      
+         29.639              29.829              30.048                30.3              30.591              30.927              31.315              31.762              32.278              32.872               33.559                34.35               35.264               36.317               37.532      
+         28.433              28.639              28.876              29.149              29.465              29.829              30.249              30.733              31.292              31.937                32.68               33.538               34.527               35.669               36.986      
+         27.194              27.413              27.666              27.958              28.295              28.684              29.132               29.65              30.246              30.935               31.729               32.644               33.701                34.92               36.326      
          34.415              34.433              34.455              34.479              34.508              34.541              34.579              34.622              34.673              34.731               34.798               34.875               34.964               35.067               35.186      
           34.13              34.247              34.382              34.538              34.718              34.925              35.164               35.44              35.759              36.126               36.549               37.038               37.601               38.251               39.001      
          33.419              33.569              33.742              33.942              34.173              34.438              34.745              35.099              35.507              35.977                36.52               37.146               37.869               38.702               39.664      
          32.646               32.82               33.02              33.251              33.518              33.825               34.18              34.589              35.061              35.605               36.233               36.958               37.793               38.757               39.869      
-         31.818              32.011              32.233              32.489              32.785              33.125              33.519              33.972              34.496              35.099               35.796               36.599               37.526               38.595               39.828      
-         30.877              31.085              31.326              31.604              31.924              32.293              32.719              33.211              33.778              34.432               35.187               36.057               37.061                38.22               39.556      
-         29.737               29.96              30.217              30.513              30.855               31.25              31.705               32.23              32.835              33.533               34.339               35.269               36.341               37.578               39.004      
+         31.743              31.936              32.158              32.414               32.71               33.05              33.444              33.897              34.421              35.024               35.721               36.524               37.451                38.52               39.753      
+         30.442               30.65              30.891              31.169              31.489              31.858              32.284              32.776              33.343              33.997               34.752               35.622               36.626               37.785               39.121      
+         29.167               29.39              29.647              29.943              30.285               30.68              31.135               31.66              32.265              32.963               33.769               34.699               35.771               37.008               38.434      
          36.591              36.609              36.631              36.656              36.685              36.718              36.757              36.801              36.852              36.911               36.979               37.057               37.148               37.252               37.373      
          36.278              36.397              36.534              36.692              36.874              37.084              37.327              37.607              37.929              38.302               38.731               39.227               39.798               40.458               41.218      
          35.533              35.685              35.861              36.063              36.297              36.567              36.878              37.236               37.65              38.127               38.678               39.313               40.046               40.891               41.866      
          34.725              34.901              35.104              35.339              35.609              35.921               36.28              36.695              37.174              37.726               38.363               39.098               39.946               40.923               42.051      
-         33.862              34.057              34.282              34.542              34.842              35.188              35.587              36.047              36.577               37.19               37.896               38.711               39.651               40.735               41.986      
-         32.885              33.096               33.34              33.622              33.947              34.321              34.754              35.252              35.827              36.491               37.256               38.139               39.157               40.332               41.687      
-          31.71              31.936              32.197              32.497              32.844              33.244              33.706              34.238              34.852               35.56               36.378                37.32               38.408               39.662               41.109      
+         33.787              33.982              34.207              34.467              34.767              35.113              35.512              35.972              36.502              37.115               37.821               38.636               39.576                40.66               41.911      
+          32.45              32.661              32.905              33.187              33.512              33.886              34.319              34.817              35.392              36.056               36.821               37.704               38.722               39.897               41.252      
+          31.14              31.366              31.627              31.927              32.274              32.674              33.136              33.668              34.282               34.99               35.808                36.75               37.838               39.092               40.539      
          38.766              38.785              38.807              38.833              38.862              38.896              38.935              38.979              39.031              39.091                39.16               39.239               39.331               39.437               39.559      
          38.426              38.546              38.685              38.845               39.03              39.243              39.489              39.772                40.1              40.477               40.912               41.415               41.994               42.662               43.433      
          37.646              37.801              37.979              38.184              38.421              38.694              39.009              39.373              39.793              40.276               40.835               41.478               42.221               43.078               44.066      
          36.804              36.982              37.188              37.426                37.7              38.016               38.38              38.801              39.286              39.846               40.491               41.236               42.095               43.087                44.23      
-          35.92              36.118              36.346               36.61              36.914              37.264              37.668              38.135              38.673              39.294               40.009               40.835               41.788               42.887               44.155      
-         34.892              35.107              35.354               35.64              35.969              36.349              36.787              37.292              37.875              38.548               39.323               40.218               41.251               42.442               43.815      
-         33.683              33.912              34.176               34.48              34.832              35.238              35.705              36.245              36.867              37.585               38.414               39.369               40.472               41.743                43.21      
+          35.89              36.088              36.316               36.58              36.884              37.234              37.638              38.105              38.643              39.264               39.979               40.805               41.758               42.857               44.125      
+         34.523              34.737              34.985               35.27              35.599              35.979              36.417              36.923              37.506              38.178               38.954               39.849               40.881               42.072               43.446      
+         33.113              33.342              33.606               33.91              34.262              34.668              35.135              35.675              36.297              37.015               37.844               38.799               39.902               41.173                42.64      
          40.942              40.961              40.983              41.009              41.039              41.073              41.112              41.158               41.21              41.271               41.341               41.421               41.514               41.621               41.745      
          40.573              40.695              40.836              40.998              41.185              41.401               41.65              41.937              42.269              42.651               43.092               43.601               44.188               44.865               45.647      
           39.76              39.916              40.096              40.304              40.544              40.821              41.141              41.509              41.934              42.424                42.99               43.642               44.395               45.263               46.264      
          38.882              39.063              39.271              39.512               39.79               40.11              40.479              40.905              41.397              41.964               42.618               43.373               44.243               45.248               46.406      
-         37.963              38.163              38.395              38.662              38.969              39.325              39.734              40.207              40.752              41.381               42.106               42.943               43.908               45.022               46.306      
-         36.928              37.145              37.396              37.685              38.018              38.403              38.847              39.359               39.95              40.631               41.417               42.324                43.37               44.576               45.968      
-         35.655              35.887              36.154              36.463              36.819               37.23              37.704              38.251              38.881              39.609               40.448               41.416               42.533               43.821               45.308      
+         37.933              38.133              38.365              38.632              38.939              39.295              39.704              40.177              40.722              41.351               42.076               42.913               43.878               44.992               46.276      
+         36.628              36.845              37.096              37.385              37.718              38.103              38.547              39.059               39.65              40.331               41.117               42.024                43.07               44.276               45.668      
+         35.085              35.317              35.584              35.893              36.249               36.66              37.134              37.681              38.311              39.039               39.878               40.846               41.963               43.251               44.738      
          43.118              43.137               43.16              43.186              43.216               43.25               43.29              43.336              43.389              43.451               43.521               43.603               43.697               43.806               43.931      
           42.72              42.844              42.986               43.15               43.34              43.559              43.811              44.102              44.438              44.825               45.272               45.787               46.381               47.067               47.858      
          41.873              42.031              42.213              42.424              42.667              42.948              43.271              43.644              44.074              44.571               45.144               45.804               46.566               47.446                48.46      
           40.96              41.143              41.354              41.598              41.879              42.203              42.577              43.009              43.507              44.081               44.744               45.508               46.389               47.406                48.58      
          40.015              40.218              40.453              40.723              41.035              41.394              41.809              42.288               42.84              43.477               44.211               45.059               46.036               47.164               48.465      
-         38.951              39.171              39.425              39.718              40.056              40.446              40.895              41.414              42.012              42.702               43.498               44.416               45.475               46.697               48.107      
-         37.626              37.861              38.132              38.445              38.805              39.222              39.702              40.255              40.894              41.631               42.481               43.461               44.592               45.897               47.402      
+         38.651              38.871              39.125              39.418              39.756              40.146              40.595              41.114              41.712              42.402               43.198               44.116               45.175               46.397               47.807      
+         37.056              37.291              37.562              37.875              38.235              38.652              39.132              39.685              40.324              41.061               41.911               42.891               44.022               45.327               46.832      
          45.293              45.313              45.336              45.362              45.392              45.427              45.468              45.515              45.568               45.63               45.702               45.785                45.88                45.99               46.117      
          44.867              44.992              45.136              45.302              45.494              45.716              45.971              46.266              46.606              46.998                47.45               47.971               48.573               49.267               50.068      
          43.985              44.145               44.33              44.544               44.79              45.073              45.401              45.778              46.214              46.717               47.296               47.965               48.737               49.627               50.653      
          43.037              43.223              43.437              43.683              43.968              44.296              44.675              45.112              45.616              46.197               46.868               47.641               48.534               49.563               50.751      
          42.057              42.263                42.5              42.774              43.089              43.453              43.873              44.358              44.917              45.561               46.305               47.163               48.152               49.294               50.611      
-         40.958              41.181              41.438              41.734              42.076               42.47              42.925               43.45              44.056              44.754                45.56                46.49               47.562               48.799               50.226      
-         39.597              39.835              40.109              40.426              40.791              41.212              41.698              42.259              42.905              43.651               44.511               45.504               46.649                47.97               49.493      
+         40.658              40.881              41.138              41.434              41.776               42.17              42.625               43.15              43.756              44.454                45.26                46.19               47.262               48.499               49.926      
+         39.027              39.265              39.539              39.856              40.221              40.642              41.128              41.689              42.335              43.081               43.941               44.934               46.079                 47.4               48.923      
          47.469              47.489              47.512              47.538              47.569              47.605              47.646              47.693              47.747               47.81               47.882               47.966               48.062               48.174               48.302      
          47.014               47.14              47.286              47.454              47.648              47.872              48.131              48.429              48.773              49.169               49.627               50.155               50.764               51.466               52.276      
          46.097               46.26              46.447              46.662              46.911              47.199               47.53              47.912              48.353              48.861               49.448               50.125               50.905               51.806               52.845      
          45.114              45.302              45.518              45.768              46.056              46.388              46.772              47.214              47.723              48.312                48.99               49.773               50.676               51.718               52.919      
          44.099              44.307              44.547              44.824              45.143              45.512              45.937              46.427              46.992              47.645               48.397               49.265               50.266               51.422               52.754      
-         42.964              43.189              43.449              43.749              44.095              44.494              44.955              45.486              46.099              46.805               47.621               48.561               49.646               50.898               52.342      
-         41.568              41.809              42.086              42.406              42.776              43.202              43.694              44.261              44.915               45.67                46.54               47.545               48.703                50.04               51.581      
+         42.664              42.889              43.149              43.449              43.795              44.194              44.655              45.186              45.799              46.505               47.321               48.261               49.346               50.598               52.042      
+         40.998              41.239              41.516              41.836              42.206              42.632              43.124              43.691              44.345                45.1                45.97               46.975               48.133                49.47               51.011      
          49.644              49.664              49.688              49.715              49.746              49.782              49.823              49.871              49.926              49.989               50.063               50.147               50.245               50.357               50.487      
           49.16              49.288              49.436              49.606              49.802              50.029               50.29              50.592              50.939              51.341               51.804               52.337               52.953               53.664               54.483      
          48.209              48.374              48.563              48.781              49.033              49.323              49.658              50.045              50.491              51.005               51.599               52.283               53.073               53.984               55.034      
          47.191              47.381                47.6              47.853              48.144               48.48              48.867              49.315               49.83              50.425               51.112               51.904               52.817               53.871               55.086      
           46.14              46.351              46.594              46.874              47.197              47.569              47.999              48.495              49.067              49.727               50.488               51.366               52.379               53.547               54.895      
-         44.969              45.197               45.46              45.764              46.114              46.518              46.983              47.521               48.14              48.855                49.68               50.631               51.729               52.995               54.455      
-         43.538              43.782              44.062              44.386               44.76              45.191              45.689              46.262              46.924              47.687               48.568               49.584               50.756               52.107               53.667      
+         44.669              44.897               45.16              45.464              45.814              46.218              46.683              47.221               47.84              48.555                49.38               50.331               51.429               52.695               54.155      
+         42.968              43.212              43.492              43.816               44.19              44.621              45.119              45.692              46.354              47.117               47.998               49.014               50.186               51.537               53.097      
           51.82               51.84              51.864              51.891              51.922              51.959              52.001              52.049              52.105              52.169               52.243               52.328               52.427               52.541               52.672      
          51.306              51.436              51.585              51.757              51.956              52.185              52.449              52.754              53.106              53.511               53.979               54.519               55.142                55.86               56.689      
          50.321              50.487              50.679              50.899              51.154              51.448              51.786              52.177              52.628              53.148               53.748                54.44               55.239                56.16               57.222      
          49.268               49.46              49.681              49.937              50.231              50.571              50.963              51.415              51.936              52.538               53.232               54.033               54.956               56.022               57.251      
          48.182              48.394               48.64              48.923               49.25              49.626              50.061              50.562              51.141              51.808               52.577               53.465               54.489               55.671               57.034      
-         46.975              47.205              47.471              47.778              48.132               48.54              49.011              49.554              50.181              50.904               51.738                 52.7               53.809                55.09               56.566      
-         45.508              45.754              46.038              46.366              46.744               47.18              47.682              48.263              48.932              49.704               50.594               51.621               52.806               54.173                55.75      
+         46.675              46.905              47.171              47.478              47.832               48.24              48.711              49.254              49.881              50.604               51.438                 52.4               53.509                54.79               56.266      
+         44.938              45.184              45.468              45.796              46.174               46.61              47.112              47.693              48.362              49.134               50.024               51.051               52.236               53.603                55.18      
 
-</pre><h2 id="15">COH2: Check if COH is within Borrowing Bounds</h2><p>some coh levels are below borrowing bound, can not borrow enough to pay debt</p><pre class="codeinput">mt_bl_coh_wkb_invalid = (mt_coh_wkb_full &lt; fl_b_bd);
+</pre><h2 id="16">COH2: Check if COH is within Borrowing Bounds</h2><p>some coh levels are below borrowing bound, can not borrow enough to pay debt</p><pre class="codeinput">mt_bl_coh_wkb_invalid = (mt_coh_wkb_full &lt; fl_b_bd);
 
 <span class="comment">% (k,a) invalid if coh(k,a,z) &lt; bd for any z</span>
 ar_bl_wkb_invalid = max(mt_bl_coh_wkb_invalid,[], 2);
@@ -709,10 +1063,10 @@ ar_bl_w_level_invalid =  min(mt_bl_wkb_invalid, [], 1);
 <span class="comment">% the future when the household when making this choice will be unable to</span>
 <span class="comment">% borrow sufficiently to maintain positive consumption.</span>
 fl_w_level_min_valid = min(ar_w_level_full(~ar_bl_w_level_invalid));
-</pre><h2 id="16">COH3: Update Valid 2nd stage choice matrix</h2><p>ar_w_level = linspace(fl_w_level_min_valid, fl_w_max, it_w_interp_n); ar_k_max = ar_w_level - fl_b_bd; mt_k = (ar_k_max'*ar_ak_perc)'; mt_a = (ar_w_level - mt_k); ar_a_meshk = mt_a(:); ar_k_mesha = mt_k(:);</p><h2 id="17">COH4: Select only Valid (k(w), a) choices</h2><pre class="codeinput"><span class="comment">% mt_coh_wkb = mt_coh_wkb_full(~ar_bl_wkb_invalid, :);</span>
+</pre><h2 id="17">COH3: Update Valid 2nd stage choice matrix</h2><p>ar_w_level = linspace(fl_w_level_min_valid, fl_w_max, it_w_interp_n); ar_k_max = ar_w_level - fl_b_bd; mt_k = (ar_k_max'*ar_ak_perc)'; mt_a = (ar_w_level - mt_k); ar_a_meshk = mt_a(:); ar_k_mesha = mt_k(:);</p><h2 id="18">COH4: Select only Valid (k(w), a) choices</h2><pre class="codeinput"><span class="comment">% mt_coh_wkb = mt_coh_wkb_full(~ar_bl_wkb_invalid, :);</span>
 mt_coh_wkb = mt_coh_wkb_full;
 mt_z_mesh_coh_wkb = repmat(ar_z, [size(mt_coh_wkb,1),1]);
-</pre><h2 id="18">Generate 1st Stage States: Interpolation Cash-on-hand Interpolation Grid</h2><p>For the iwkz problems, we solve the problem along a grid of cash-on-hand values, the interpolate to find v(k',b',z) at (k',b') choices. Crucially, we have to coh matrxies</p><pre class="codeinput">fl_max_mt_coh = max(max(mt_coh_wkb));
+</pre><h2 id="19">Generate 1st Stage States: Interpolation Cash-on-hand Interpolation Grid</h2><p>For the iwkz problems, we solve the problem along a grid of cash-on-hand values, the interpolate to find v(k',b',z) at (k',b') choices. Crucially, we have to coh matrxies</p><pre class="codeinput">fl_max_mt_coh = max(max(mt_coh_wkb));
 
 <span class="comment">% This is savings only condition</span>
 <span class="comment">% fl_min_mt_coh = min(min(mt_coh_wkb));</span>
@@ -727,7 +1081,7 @@ it_coh_interp_n = (fl_max_mt_coh-fl_min_mt_coh)/(fl_coh_interp_grid_gap);
 ar_interp_coh_grid = fft_array_add_zero(linspace(fl_min_mt_coh, fl_max_mt_coh, it_coh_interp_n), true);
 [mt_interp_coh_grid_mesh_z, mt_z_mesh_coh_interp_grid] = ndgrid(ar_interp_coh_grid, ar_z);
 mt_interp_coh_grid_mesh_w_perc = repmat(ar_interp_coh_grid, [it_w_perc_n, 1]);
-</pre><h2 id="19">Generate 1st Stage Choices: Interpolation Cash-on-hand Interpolation Grid</h2><p>previously, our ar_w was the first stage choice grid, the grid was the same for all coh levels. Now, for each coh level, there is a different ar_w. ar_interp_coh_grid is (1 by ar_interp_coh_grid) and ar_w_perc is ( 1 by it_w_perc_n). Conditional on z, each choice matrix is (it_w_perc_n by ar_interp_coh_grid). Here we are pre-computing the choice matrix. This could be a large matrix if the choice grid is large. This is the matrix of aggregate savings choices</p><pre class="codeinput"><span class="comment">% 1. Given COH grid, w choices in terms of cash-on-hand percentages</span>
+</pre><h2 id="20">Generate 1st Stage Choices: Interpolation Cash-on-hand Interpolation Grid</h2><p>previously, our ar_w was the first stage choice grid, the grid was the same for all coh levels. Now, for each coh level, there is a different ar_w. ar_interp_coh_grid is (1 by ar_interp_coh_grid) and ar_w_perc is ( 1 by it_w_perc_n). Conditional on z, each choice matrix is (it_w_perc_n by ar_interp_coh_grid). Here we are pre-computing the choice matrix. This could be a large matrix if the choice grid is large. This is the matrix of aggregate savings choices</p><pre class="codeinput"><span class="comment">% 1. Given COH grid, w choices in terms of cash-on-hand percentages</span>
 <span class="keyword">if</span> (fl_min_mt_coh &lt; 0)
     <span class="comment">% borrowing bound is below zero</span>
     mt_w_by_interp_coh_interp_grid = ((ar_interp_coh_grid-fl_min_mt_coh)'*ar_w_perc)' + fl_min_mt_coh;
@@ -743,7 +1097,7 @@ mt_interp_coh_grid_mesh_w_perc = repmat(ar_interp_coh_grid, [it_w_perc_n, 1]);
 mt_bl_w_by_interp_coh_interp_grid_wneg = (mt_w_by_interp_coh_interp_grid &lt; 0);
 mt_w_by_interp_coh_interp_grid_wneg = mt_w_by_interp_coh_interp_grid(mt_bl_w_by_interp_coh_interp_grid_wneg);
 mt_w_by_interp_coh_interp_grid_wpos = mt_w_by_interp_coh_interp_grid(~mt_bl_w_by_interp_coh_interp_grid_wneg);
-</pre><h2 id="20">Generate 1st Stage Choices: Percent of W for Covering Bridge Loans</h2><p>If bridge loan does not matter, do not need to cover bridge loan. Then these percentages should reflect what happens when param_map('bl_bridge') = false, and, param_map('it_coh_bridge_perc_n') = 1;</p><pre class="codeinput"><span class="comment">% 1. Expand cash-on-hand by w_perc grid</span>
+</pre><h2 id="21">Generate 1st Stage Choices: Percent of W for Covering Bridge Loans</h2><p>If bridge loan does not matter, do not need to cover bridge loan. Then these percentages should reflect what happens when param_map('bl_bridge') = false, and, param_map('it_coh_bridge_perc_n') = 1;</p><pre class="codeinput"><span class="comment">% 1. Expand cash-on-hand by w_perc grid</span>
 mt_interp_coh_grid_mesh_w_perc = zeros(size(mt_w_by_interp_coh_interp_grid)) + ar_interp_coh_grid;
 
 <span class="comment">% 2. How much is coh as perc of w_perc grid level choice based on w_perc</span>
@@ -754,12 +1108,12 @@ mt_coh_w_perc_ratio = (1-(mt_interp_coh_grid_mesh_w_perc./mt_w_by_interp_coh_int
 <span class="comment">% bridge.</span>
 mt_coh_w_perc_ratio(mt_interp_coh_grid_mesh_w_perc &gt;= 0) = 1;
 mt_coh_w_perc_ratio_wneg = mt_coh_w_perc_ratio(mt_bl_w_by_interp_coh_interp_grid_wneg);
-</pre><h2 id="21">Generate Interpolation Consumption Grid</h2><p>We also interpolate over consumption to speed the program up. We only solve for u(c) at this grid for the iwkz problmes, and then interpolate other c values.</p><pre class="codeinput">fl_c_max = max(max(mt_coh_wkb_full)) - fl_b_bd;
+</pre><h2 id="22">Generate Interpolation Consumption Grid</h2><p>We also interpolate over consumption to speed the program up. We only solve for u(c) at this grid for the iwkz problmes, and then interpolate other c values.</p><pre class="codeinput">fl_c_max = max(max(mt_coh_wkb_full)) - fl_b_bd;
 it_interp_c_grid_n = (fl_c_max-fl_c_min)/(it_c_interp_grid_gap);
 ar_interp_c_grid = linspace(fl_c_min, fl_c_max, it_interp_c_grid_n);
-</pre><h2 id="22">Initialize armt_map to store, state, choice, shock matrixes</h2><pre class="codeinput">armt_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
+</pre><h2 id="23">Initialize armt_map to store, state, choice, shock matrixes</h2><pre class="codeinput">armt_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
 armtdesc_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
-</pre><h2 id="23">Store armt_map (1): 2nd Stage Problem Arrays and Matrixes</h2><p>ar_a_meshk is t: b ar_ameshk_tnext_with_r is t+1: b*(1+r) with for inf ar_coh_bridge_perc: this is percentage of w NOT for bridge loan</p><pre class="codeinput">armt_map(<span class="string">'ar_coh_bridge_perc'</span>) = ar_coh_bridge_perc;
+</pre><h2 id="24">Store armt_map (1): 2nd Stage Problem Arrays and Matrixes</h2><p>ar_a_meshk is t: b ar_ameshk_tnext_with_r is t+1: b*(1+r) with for inf ar_coh_bridge_perc: this is percentage of w NOT for bridge loan</p><pre class="codeinput">armt_map(<span class="string">'ar_coh_bridge_perc'</span>) = ar_coh_bridge_perc;
 armt_map(<span class="string">'ar_ak_perc'</span>) = ar_ak_perc;
 armt_map(<span class="string">'mt_k'</span>) = mt_k;
 armt_map(<span class="string">'ar_a_meshk'</span>) = ar_a_meshk;
@@ -768,7 +1122,7 @@ armt_map(<span class="string">'ar_k_mesha'</span>) = ar_k_mesha;
 armt_map(<span class="string">'it_ameshk_n'</span>) = length(ar_a_meshk);
 armt_map(<span class="string">'mt_coh_wkb'</span>) = mt_coh_wkb_full;
 armt_map(<span class="string">'mt_z_mesh_coh_wkb'</span>) = mt_z_mesh_coh_wkb;
-</pre><h2 id="24">Store armt_map (2): First Stage Aggregate Savings</h2><p>w = k' + b', w is aggregate Savings</p><div><ol><li><b>ar_w_perc</b> 1st stage, percentage w choice given coh, at each coh level the number of choice points is the same for this problem with percentage grid points.</li><li><b>ar_w_level</b> 2nd stage, level of w over which we solve the optimal percentage k' choices. Need to generate interpolant based on this so that we know optimal k* given ar_w_perc(coh) in the 1st stage</li><li><b>ar_w_level_full</b>: in <a href="https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_vf_vecsv.html">ff_ipwkbz_vf_vecsv</a>, <i>ar_w_level</i> and <i>ar_w_level_full</i> were the same. Now have this thing which is stored (length(ar_w_level_full)) by (length(ar_z)). <i>ar_w_level_full</i> includes not just different levels of <i>ar_w_level</i>, but also repeats the elements of <i>ar_w_level</i> that are &lt; 0 by <i>it_coh_bridge_perc_n</i> times, starting with what corresponds to 100 percent of w should go to cover bridge loan, until 0 percent for w &lt; 0, which then proceeds to w &gt; 0. So the last segment of <i>ar_w_level_full</i> is the same as ar_w_level: ar_w_level_full((end-length(ar_w_level)+1):end) = ar_w_level.</li><li><b>mt_w_by_interp_coh_interp_grid</b> 1st stage, generate w(coh, percent), meaning the level of w given coh and the percentage grid of ar_w_perc. Mesh this with the coh grid, Rows here correspond to percentage of w choices, columns correspond to cash-on-hand. The columns of cash-on-hand is determined by ar_interp_coh_grid, because we solve the 1st stage problem at that coh grid.</li></ol></div><pre class="codeinput">armt_map(<span class="string">'ar_w_perc'</span>) = ar_w_perc;
+</pre><h2 id="25">Store armt_map (2): First Stage Aggregate Savings</h2><p>w = k' + b', w is aggregate Savings</p><div><ol><li><b>ar_w_perc</b> 1st stage, percentage w choice given coh, at each coh level the number of choice points is the same for this problem with percentage grid points.</li><li><b>ar_w_level</b> 2nd stage, level of w over which we solve the optimal percentage k' choices. Need to generate interpolant based on this so that we know optimal k* given ar_w_perc(coh) in the 1st stage</li><li><b>ar_w_level_full</b>: in <a href="https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_vf_vecsv.html">ff_ipwkbz_vf_vecsv</a>, <i>ar_w_level</i> and <i>ar_w_level_full</i> were the same. Now have this thing which is stored (length(ar_w_level_full)) by (length(ar_z)). <i>ar_w_level_full</i> includes not just different levels of <i>ar_w_level</i>, but also repeats the elements of <i>ar_w_level</i> that are &lt; 0 by <i>it_coh_bridge_perc_n</i> times, starting with what corresponds to 100 percent of w should go to cover bridge loan, until 0 percent for w &lt; 0, which then proceeds to w &gt; 0. So the last segment of <i>ar_w_level_full</i> is the same as ar_w_level: ar_w_level_full((end-length(ar_w_level)+1):end) = ar_w_level.</li><li><b>mt_w_by_interp_coh_interp_grid</b> 1st stage, generate w(coh, percent), meaning the level of w given coh and the percentage grid of ar_w_perc. Mesh this with the coh grid, Rows here correspond to percentage of w choices, columns correspond to cash-on-hand. The columns of cash-on-hand is determined by ar_interp_coh_grid, because we solve the 1st stage problem at that coh grid.</li></ol></div><pre class="codeinput">armt_map(<span class="string">'ar_w_perc'</span>) = ar_w_perc;
 armt_map(<span class="string">'ar_w_level'</span>) = ar_w_level;
 armt_map(<span class="string">'ar_w_level_full'</span>) = ar_w_level_full;
 
@@ -782,16 +1136,16 @@ armt_map(<span class="string">'mt_bl_w_by_interp_coh_interp_grid_wneg'</span>) =
 armt_map(<span class="string">'mt_w_by_interp_coh_interp_grid_wneg'</span>) = mt_w_by_interp_coh_interp_grid_wneg;
 armt_map(<span class="string">'mt_w_by_interp_coh_interp_grid_wpos'</span>) = mt_w_by_interp_coh_interp_grid_wpos;
 armt_map(<span class="string">'mt_coh_w_perc_ratio_wneg'</span>) = mt_coh_w_perc_ratio_wneg;
-</pre><h2 id="25">Store armt_map (3): First Stage Consumption and Cash-on-Hand Grids</h2><pre class="codeinput">armt_map(<span class="string">'ar_interp_c_grid'</span>) = ar_interp_c_grid;
+</pre><h2 id="26">Store armt_map (3): First Stage Consumption and Cash-on-Hand Grids</h2><pre class="codeinput">armt_map(<span class="string">'ar_interp_c_grid'</span>) = ar_interp_c_grid;
 armt_map(<span class="string">'ar_interp_coh_grid'</span>) = ar_interp_coh_grid;
 armt_map(<span class="string">'mt_interp_coh_grid_mesh_z'</span>) = mt_interp_coh_grid_mesh_z;
 armt_map(<span class="string">'mt_z_mesh_coh_interp_grid'</span>) = mt_z_mesh_coh_interp_grid;
-</pre><h2 id="26">Store armt_map (4): Shock Grids</h2><pre class="codeinput">armt_map(<span class="string">'mt_z_trans'</span>) = mt_z_trans;
+</pre><h2 id="27">Store armt_map (4): Shock Grids</h2><pre class="codeinput">armt_map(<span class="string">'mt_z_trans'</span>) = mt_z_trans;
 armt_map(<span class="string">'ar_stationary'</span>) = ar_stationary;
 armt_map(<span class="string">'ar_z'</span>) = ar_z;
-</pre><h2 id="27">Store armt_map (5): Formal grid</h2><pre class="codeinput">armt_map(<span class="string">'ar_forbrblk'</span>) = ar_forbrblk;
+</pre><h2 id="28">Store armt_map (5): Formal grid</h2><pre class="codeinput">armt_map(<span class="string">'ar_forbrblk'</span>) = ar_forbrblk;
 armt_map(<span class="string">'ar_forbrblk_r'</span>) = ar_forbrblk_r;
-</pre><h2 id="28">Store Function Map</h2><pre class="codeinput">func_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
+</pre><h2 id="29">Store Function Map</h2><pre class="codeinput">func_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
 func_map(<span class="string">'f_util_log'</span>) = f_util_log;
 func_map(<span class="string">'f_util_crra'</span>) = f_util_crra;
 func_map(<span class="string">'f_util_standin'</span>) = f_util_standin;
@@ -801,8 +1155,8 @@ func_map(<span class="string">'f_coh'</span>) = f_coh;
 func_map(<span class="string">'f_coh_fbis'</span>) = f_coh_fbis;
 func_map(<span class="string">'f_coh_save'</span>) = f_coh_save;
 func_map(<span class="string">'f_cons'</span>) = f_cons;
-</pre><h2 id="29">Graph</h2><pre class="codeinput"><span class="keyword">if</span> (bl_graph_funcgrids)
-</pre><h2 id="31">Graph 1: a and k choice grid graphs</h2><p>compare the figure here to the same figure in <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html">ffs_akz_get_funcgrid</a>. there the grid points are on an even grid, half of the grid points have NA. for the grid here, the grid points get denser as we get closer to low w = k'+b' levels. This is what is different visually about percentage points based choice grid for the 2nd stage problem.</p><p>Plot end because earlier parts have repeating w and a levels due to potentially bridge which are coh percentage dependent. This will only plot out the grid basically when coh percentage for bridge loan = 0</p><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
+</pre><h2 id="30">Graph</h2><pre class="codeinput"><span class="keyword">if</span> (bl_graph_funcgrids)
+</pre><h2 id="32">Graph 1: a and k choice grid graphs</h2><p>compare the figure here to the same figure in <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html">ffs_akz_get_funcgrid</a>. there the grid points are on an even grid, half of the grid points have NA. for the grid here, the grid points get denser as we get closer to low w = k'+b' levels. This is what is different visually about percentage points based choice grid for the 2nd stage problem.</p><p>Plot end because earlier parts have repeating w and a levels due to potentially bridge which are coh percentage dependent. This will only plot out the grid basically when coh percentage for bridge loan = 0</p><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
     hold <span class="string">on</span>;
 
     it_col_end = size(mt_a, 2);
@@ -853,7 +1207,7 @@ func_map(<span class="string">'f_cons'</span>) = f_cons;
     <span class="keyword">end</span>
 
     grid <span class="string">on</span>;
-</pre><img vspace="5" hspace="5" src="ffs_ipwkbz_fibs_get_funcgrid_01.png" alt=""> <h2 id="32">Graph 2: coh by shock</h2><p>compare the figure here to the same figure in <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html">ffs_akz_get_funcgrid</a>. there the grid points are on an even grid. Visually, one could see that the blue/red line segments here are always the same length, but in the ffs_akz_get_funcgrid figure, they are increasingly longer as we move towards the right. They are even because the number of percentage points available is constant regardless of w = k' + b' levels. But previously, the number of grid points available is increasing as w increases since choice grid is based on levels.</p><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
+</pre><img vspace="5" hspace="5" src="ffs_ipwkbz_fibs_get_funcgrid_01.png" alt=""> <h2 id="33">Graph 2: coh by shock</h2><p>compare the figure here to the same figure in <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html">ffs_akz_get_funcgrid</a>. there the grid points are on an even grid. Visually, one could see that the blue/red line segments here are always the same length, but in the ffs_akz_get_funcgrid figure, they are increasingly longer as we move towards the right. They are even because the number of percentage points available is constant regardless of w = k' + b' levels. But previously, the number of grid points available is increasing as w increases since choice grid is based on levels.</p><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
     chart = plot(0:1:(size(mt_coh_wkb_full,1)-1), mt_coh_wkb_full);
     clr = jet(numel(chart));
     <span class="keyword">for</span> m = 1:numel(chart)
@@ -885,7 +1239,7 @@ func_map(<span class="string">'f_cons'</span>) = f_cons;
     legend(chart([legend2plot length(legendCell)]), legendCell([legend2plot length(legendCell)]), <span class="string">'Location'</span>, <span class="string">'northwest'</span>);
 
     grid <span class="string">on</span>;
-</pre><img vspace="5" hspace="5" src="ffs_ipwkbz_fibs_get_funcgrid_02.png" alt=""> <h2 id="33">Graph 3: 1st State Aggregate Savings Choices by COH interpolation grids</h2><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
+</pre><img vspace="5" hspace="5" src="ffs_ipwkbz_fibs_get_funcgrid_02.png" alt=""> <h2 id="34">Graph 3: 1st State Aggregate Savings Choices by COH interpolation grids</h2><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
     hold <span class="string">on</span>;
 
     chart = plot(ar_interp_coh_grid, mt_w_by_interp_coh_interp_grid');
@@ -926,8 +1280,8 @@ func_map(<span class="string">'f_cons'</span>) = f_cons;
 
     grid <span class="string">on</span>;
 </pre><img vspace="5" hspace="5" src="ffs_ipwkbz_fibs_get_funcgrid_03.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
-</pre><h2 id="35">Graph Details, Generally do Not Run</h2><pre class="codeinput"><span class="keyword">if</span> (bl_graph_funcgrids_detail)
-</pre><h2 id="37">Graph 1: 2nd stage coh reached by k' b' choices by index</h2><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
+</pre><h2 id="36">Graph Details, Generally do Not Run</h2><pre class="codeinput"><span class="keyword">if</span> (bl_graph_funcgrids_detail)
+</pre><h2 id="38">Graph 1: 2nd stage coh reached by k' b' choices by index</h2><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
     ar_coh_kpzgrid_unique = unique(sort(mt_coh_wkb_full(:)));
     scatter(1:length(ar_coh_kpzgrid_unique), ar_coh_kpzgrid_unique);
     xline(0);
@@ -936,7 +1290,7 @@ func_map(<span class="string">'f_cons'</span>) = f_cons;
     ylabel(<span class="string">'Cash-on-Hand (y=ar\_coh\_kpzgrid\_unique)'</span>);
     xlabel({<span class="string">'Index of Cash-on-Hand Discrete Point'</span> <span class="string">'x = 1:length(ar\_coh\_kpzgrid\_unique)'</span>});
     grid <span class="string">on</span>;
-</pre><img vspace="5" hspace="5" src="ffs_ipwkbz_fibs_get_funcgrid_04.png" alt=""> <h2 id="38">Graph 2: 2nd stage coh reached by k' b' choices  by coh</h2><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
+</pre><img vspace="5" hspace="5" src="ffs_ipwkbz_fibs_get_funcgrid_04.png" alt=""> <h2 id="39">Graph 2: 2nd stage coh reached by k' b' choices  by coh</h2><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
     ar_coh_kpzgrid_unique = unique(sort(mt_coh_wkb_full(:)));
     scatter(ar_coh_kpzgrid_unique, ar_coh_kpzgrid_unique, <span class="string">'.'</span>);
     xline(0);
@@ -946,7 +1300,7 @@ func_map(<span class="string">'f_cons'</span>) = f_cons;
     xlabel({<span class="string">'Cash-on-Hand'</span> <span class="string">'x = ar\_coh\_kpzgrid\_unique'</span>});
     grid <span class="string">on</span>;
 </pre><img vspace="5" hspace="5" src="ffs_ipwkbz_fibs_get_funcgrid_05.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
-</pre><h2 id="40">Display</h2><pre class="codeinput"><span class="keyword">if</span> (bl_display_funcgrids)
+</pre><h2 id="41">Display</h2><pre class="codeinput"><span class="keyword">if</span> (bl_display_funcgrids)
 
     disp(<span class="string">'----------------------------------------'</span>);
     disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
@@ -1174,12 +1528,12 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 Variables:
 
-    Var1: 772496&times;1 double
+    Var1: 772306&times;1 double
 
         Values:
 
-            Min        0.001
-            Median    38.626
+            Min         0.02
+            Median    38.635
             Max       77.251
 
 ----------------------------------------
@@ -1311,6 +1665,380 @@ pos = 6 ; key = f_prod ; val = @(z,k)((fl_Amean.*(z)).*(k.^(fl_alpha)))
 pos = 7 ; key = f_util_crra ; val = @(c)(((c).^(1-fl_crra)-1)./(1-fl_crra))
 pos = 8 ; key = f_util_log ; val = @(c)log(c)
 pos = 9 ; key = f_util_standin ; val = @(z,b,k)f_util_log((f_coh(z,b,k)-fl_b_bd).*((f_coh(z,b,k)-fl_b_bd)&gt;fl_c_min)+fl_c_min.*((f_coh(z,b,k)-fl_b_bd)&lt;=fl_c_min))
+</pre><h2 id="42">Display</h2><pre class="codeinput"><span class="keyword">if</span> (bl_display_funcgrids)
+    fft_container_map_display(armt_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+    fft_container_map_display(func_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">----------------------------------------
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Begin: Show all key and value pairs from container
+CONTAINER NAME: ARMT_MAP
+----------------------------------------
+  Map with properties:
+
+        Count: 29
+      KeyType: char
+    ValueType: any
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+----------------------------------------
+pos = 1 ; key = ar_a_meshk ;rown= 385 ,coln= 1
+ar_a_meshk :mu= -7.2645 ,sd= 15.0838 ,min= -20 ,max= 49.93
+                   zi_1_c1
+                   _______
+
+    zi_1_R1            -20
+    zi_2_R2            -20
+    zi_193_r193    -12.576
+    zi_384_r384    -8.2867
+    zi_385_r385     -19.93
+
+pos = 2 ; key = ar_ak_perc ;rown= 1 ,coln= 7
+ar_ak_perc :mu= 0.5 ,sd= 0.35932 ,min= 0.001 ,max= 0.999
+               zi_1_c1    zi_2_c2    zi_4_c4    zi_6_c6    zi_7_c7
+               _______    _______    _______    _______    _______
+
+    zi_1_r1     0.001     0.16733      0.5      0.83267     0.999 
+
+pos = 3 ; key = ar_ameshk_tnext_with_r ;rown= 385 ,coln= 1
+ar_ameshk_tnext_with_r :mu= -8.6132 ,sd= 16.2368 ,min= -26 ,max= 51.1782
+                   zi_1_c1
+                   _______
+
+    zi_1_R1            -26
+    zi_2_R2            -26
+    zi_193_r193     -13.47
+    zi_384_r384    -8.8938
+    zi_385_r385    -21.444
+
+pos = 4 ; key = ar_coh_bridge_perc ;rown= 1 ,coln= 3
+ar_coh_bridge_perc :mu= 0.5 ,sd= 0.5 ,min= 0 ,max= 1
+               zi_1_c1    zi_2_c2    zi_3_c3
+               _______    _______    _______
+
+    zi_1_r1       0         0.5         1   
+
+pos = 5 ; key = ar_forbrblk ;rown= 1 ,coln= 9
+ar_forbrblk :mu= -7.0556 ,sd= 6.3809 ,min= -19 ,max= 0
+               zi_1_c1    zi_2_c2    zi_5_c5    zi_8_c8    zi_9_c9
+               _______    _______    _______    _______    _______
+
+    zi_1_r1      -19       -14.5      -5.5        -1          0   
+
+pos = 6 ; key = ar_forbrblk_r ;rown= 1 ,coln= 9
+ar_forbrblk_r :mu= 0.065 ,sd= 0 ,min= 0.065 ,max= 0.065
+               zi_1_c1    zi_2_c2    zi_5_c5    zi_8_c8    zi_9_c9
+               _______    _______    _______    _______    _______
+
+    zi_1_r1     0.065      0.065      0.065      0.065      0.065 
+
+pos = 7 ; key = ar_interp_c_grid ;rown= 1 ,coln= 772306
+ar_interp_c_grid :mu= 38.6353 ,sd= 22.2946 ,min= 0.02 ,max= 77.2506
+               zi_1_C1    zi_2_C2    zi_386153_c386153    zi_772305_c772305    zi_772306_c772306
+               _______    _______    _________________    _________________    _________________
+
+    zi_1_r1     0.02      0.0201          38.635               77.251               77.251      
+
+pos = 8 ; key = ar_interp_coh_grid ;rown= 1 ,coln= 38
+ar_interp_coh_grid :mu= 18.1352 ,sd= 23.1098 ,min= -20 ,max= 57.2506
+               zi_1_C1    zi_2_C2    zi_19_c19    zi_37_c37    zi_38_c38
+               _______    _______    _________    _________    _________
+
+    zi_1_r1      -20      -17.854     16.479       55.105       57.251  
+
+pos = 9 ; key = ar_k_mesha ;rown= 385 ,coln= 1
+ar_k_mesha :mu= 12.7355 ,sd= 15.0838 ,min= 0 ,max= 69.93
+                   zi_1_c1
+                   _______
+
+    zi_1_R1             0 
+    zi_2_R2             0 
+    zi_193_r193    7.4242 
+    zi_384_r384    58.287 
+    zi_385_r385     69.93 
+
+pos = 10 ; key = ar_stationary ;rown= 1 ,coln= 15
+ar_stationary :mu= 0.066667 ,sd= 0.060897 ,min= 0.0027089 ,max= 0.16757
+                zi_1_C1      zi_2_C2     zi_8_C8    zi_14_c14    zi_15_c15
+               _________    _________    _______    _________    _________
+
+    zi_1_r1    0.0027089    0.0069499    0.16757    0.0069499    0.0027089
+
+pos = 11 ; key = ar_w_level ;rown= 1 ,coln= 35
+ar_w_level :mu= 14.5714 ,sd= 20.9645 ,min= -20 ,max= 50
+               zi_1_C1    zi_2_C2    zi_18_c18    zi_34_c34    zi_35_c35
+               _______    _______    _________    _________    _________
+
+    zi_1_r1      -20      -17.879     13.939       47.879         50    
+
+pos = 12 ; key = ar_w_level_full ;rown= 1 ,coln= 55
+ar_w_level_full :mu= 5.4711 ,sd= 20.9306 ,min= -20 ,max= 50
+               zi_1_C1    zi_2_C2    zi_28_c28    zi_54_c54    zi_55_c55
+               _______    _______    _________    _________    _________
+
+    zi_1_r1      -20      -17.879     -5.1515      47.879         50    
+
+pos = 13 ; key = ar_w_perc ;rown= 1 ,coln= 7
+ar_w_perc :mu= 0.5 ,sd= 0.35932 ,min= 0.001 ,max= 0.999
+               zi_1_c1    zi_2_c2    zi_4_c4    zi_6_c6    zi_7_c7
+               _______    _______    _______    _______    _______
+
+    zi_1_r1     0.001     0.16733      0.5      0.83267     0.999 
+
+pos = 14 ; key = ar_z ;rown= 1 ,coln= 15
+ar_z :mu= 1.1347 ,sd= 0.69878 ,min= 0.34741 ,max= 2.567
+               zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
+               _______    _______    _______    _________    _________
+
+    zi_1_r1    0.34741    0.40076    0.94436     2.2253        2.567  
+
+pos = 15 ; key = it_ameshk_n ; val = 385
+pos = 16 ; key = mt_bl_w_by_interp_coh_interp_grid_wneg ;rown= 7 ,coln= 38
+mt_bl_w_by_interp_coh_interp_grid_wneg :mu= 0.61654 ,sd= 0.48715 ,min= 0 ,max= 1
+               zi_1_C1    zi_2_C2    zi_19_c19    zi_37_c37    zi_38_c38
+               _______    _______    _________    _________    _________
+
+    zi_1_r1     true       true        true         true         true   
+    zi_2_r2     true       true        true         true         true   
+    zi_4_r4     true       true        true         false        false  
+    zi_6_r6     true       true        false        false        false  
+    zi_7_r7     true       true        false        false        false  
+
+pos = 17 ; key = mt_coh_bridge_perc_mesh_w_level_neg ;rown= 10 ,coln= 3
+mt_coh_bridge_perc_mesh_w_level_neg :mu= 0.5 ,sd= 0.41523 ,min= 0 ,max= 1
+                 zi_1_c1    zi_2_c2    zi_3_c3
+                 _______    _______    _______
+
+    zi_1_R1         0         0.5         1   
+    zi_2_R2         0         0.5         1   
+    zi_5_R5         0         0.5         1   
+    zi_9_R9         0         0.5         1   
+    zi_10_r10       0         0.5         1   
+
+pos = 18 ; key = mt_coh_w_perc_ratio_wneg ;rown= 164 ,coln= 1
+mt_coh_w_perc_ratio_wneg :mu= 0.71268 ,sd= 0.3908 ,min= 0 ,max= 1
+                   zi_1_c1
+                   _______
+
+    zi_1_R1           0   
+    zi_2_R2           0   
+    zi_82_R82         1   
+    zi_163_r163       1   
+    zi_164_r164       1   
+
+pos = 19 ; key = mt_coh_wkb ;rown= 385 ,coln= 15
+mt_coh_wkb :mu= 5.8021 ,sd= 21.9424 ,min= -25.5564 ,max= 57.2506
+                   zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
+                   _______    _______    _______    _________    _________
+
+    zi_1_R1        -25.556    -25.556    -25.556     -25.556      -25.556 
+    zi_2_R2        -25.556    -25.556    -25.556     -25.556      -25.556 
+    zi_193_r193    -5.4812    -5.3715    -4.2528     -1.6166     -0.91339 
+    zi_384_r384     46.675     46.905     49.254       54.79       56.266 
+    zi_385_r385     44.938     45.184     47.693      53.603        55.18 
+
+pos = 20 ; key = mt_interp_coh_grid_mesh_w_perc ;rown= 7 ,coln= 38
+mt_interp_coh_grid_mesh_w_perc :mu= 18.1352 ,sd= 22.8467 ,min= -20 ,max= 57.2506
+               zi_1_C1    zi_2_C2    zi_19_c19    zi_37_c37    zi_38_c38
+               _______    _______    _________    _________    _________
+
+    zi_1_r1      -20      -17.854     16.479       55.105       57.251  
+    zi_2_r2      -20      -17.854     16.479       55.105       57.251  
+    zi_4_r4      -20      -17.854     16.479       55.105       57.251  
+    zi_6_r6      -20      -17.854     16.479       55.105       57.251  
+    zi_7_r7      -20      -17.854     16.479       55.105       57.251  
+
+pos = 21 ; key = mt_interp_coh_grid_mesh_z ;rown= 38 ,coln= 15
+mt_interp_coh_grid_mesh_z :mu= 18.1352 ,sd= 22.8237 ,min= -20 ,max= 57.2506
+                 zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
+                 _______    _______    _______    _________    _________
+
+    zi_1_R1          -20        -20        -20         -20          -20 
+    zi_2_R2      -17.854    -17.854    -17.854     -17.854      -17.854 
+    zi_19_r19     16.479     16.479     16.479      16.479       16.479 
+    zi_37_r37     55.105     55.105     55.105      55.105       55.105 
+    zi_38_r38     57.251     57.251     57.251      57.251       57.251 
+
+pos = 22 ; key = mt_k ;rown= 7 ,coln= 55
+mt_k :mu= 12.7355 ,sd= 15.0838 ,min= 0 ,max= 69.93
+               zi_1_C1     zi_2_C2     zi_28_c28    zi_54_c54    zi_55_c55
+               _______    _________    _________    _________    _________
+
+    zi_1_r1       0       0.0021212    0.014848     0.067879        0.07  
+    zi_2_r2       0         0.35495      2.4846       11.358      11.713  
+    zi_4_r4       0          1.0606      7.4242       33.939          35  
+    zi_6_r6       0          1.7663      12.364        56.52      58.287  
+    zi_7_r7       0          2.1191      14.834       67.811       69.93  
+
+pos = 23 ; key = mt_w_by_interp_coh_interp_grid ;rown= 7 ,coln= 38
+mt_w_by_interp_coh_interp_grid :mu= -0.93241 ,sd= 18.7031 ,min= -20 ,max= 57.1734
+               zi_1_C1    zi_2_C2    zi_19_c19    zi_37_c37    zi_38_c38
+               _______    _______    _________    _________    _________
+
+    zi_1_r1      -20      -19.998     -19.964      -19.925      -19.923 
+    zi_2_r2      -20      -19.641     -13.896      -7.4325      -7.0734 
+    zi_4_r4      -20      -18.927     -1.7603       17.552       18.625 
+    zi_6_r6      -20      -18.213      10.375       42.537       44.324 
+    zi_7_r7      -20      -17.856      16.443        55.03       57.173 
+
+pos = 24 ; key = mt_w_by_interp_coh_interp_grid_wneg ;rown= 164 ,coln= 1
+mt_w_by_interp_coh_interp_grid_wneg :mu= -13.2366 ,sd= 6.1562 ,min= -20 ,max= -0.02
+                   zi_1_c1
+                   _______
+
+    zi_1_R1            -20
+    zi_2_R2            -20
+    zi_82_R82      -5.7015
+    zi_163_r163    -19.923
+    zi_164_r164    -7.0734
+
+pos = 25 ; key = mt_w_by_interp_coh_interp_grid_wpos ;rown= 102 ,coln= 1
+mt_w_by_interp_coh_interp_grid_wpos :mu= 18.8508 ,sd= 14.6824 ,min= 0.017927 ,max= 57.1734
+                   zi_1_c1
+                   _______
+
+    zi_1_R1         1.437 
+    zi_2_R2        3.5808 
+    zi_51_R51      17.176 
+    zi_101_r101    44.324 
+    zi_102_r102    57.173 
+
+pos = 26 ; key = mt_w_level_neg_mesh_coh_bridge_perc ;rown= 10 ,coln= 3
+mt_w_level_neg_mesh_coh_bridge_perc :mu= -10.4545 ,sd= 6.1969 ,min= -20 ,max= -0.90909
+                 zi_1_c1     zi_2_c2     zi_3_c3 
+                 ________    ________    ________
+
+    zi_1_R1           -20         -20         -20
+    zi_2_R2       -17.879     -17.879     -17.879
+    zi_5_R5       -11.515     -11.515     -11.515
+    zi_9_R9       -3.0303     -3.0303     -3.0303
+    zi_10_r10    -0.90909    -0.90909    -0.90909
+
+pos = 27 ; key = mt_z_mesh_coh_interp_grid ;rown= 38 ,coln= 15
+mt_z_mesh_coh_interp_grid :mu= 1.1347 ,sd= 0.67568 ,min= 0.34741 ,max= 2.567
+                 zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
+                 _______    _______    _______    _________    _________
+
+    zi_1_R1      0.34741    0.40076    0.94436     2.2253        2.567  
+    zi_2_R2      0.34741    0.40076    0.94436     2.2253        2.567  
+    zi_19_r19    0.34741    0.40076    0.94436     2.2253        2.567  
+    zi_37_r37    0.34741    0.40076    0.94436     2.2253        2.567  
+    zi_38_r38    0.34741    0.40076    0.94436     2.2253        2.567  
+
+pos = 28 ; key = mt_z_mesh_coh_wkb ;rown= 385 ,coln= 15
+mt_z_mesh_coh_wkb :mu= 1.1347 ,sd= 0.67514 ,min= 0.34741 ,max= 2.567
+                   zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
+                   _______    _______    _______    _________    _________
+
+    zi_1_R1        0.34741    0.40076    0.94436     2.2253        2.567  
+    zi_2_R2        0.34741    0.40076    0.94436     2.2253        2.567  
+    zi_193_r193    0.34741    0.40076    0.94436     2.2253        2.567  
+    zi_384_r384    0.34741    0.40076    0.94436     2.2253        2.567  
+    zi_385_r385    0.34741    0.40076    0.94436     2.2253        2.567  
+
+pos = 29 ; key = mt_z_trans ;rown= 15 ,coln= 15
+mt_z_trans :mu= 0.066667 ,sd= 0.095337 ,min= 0 ,max= 0.27902
+                  zi_1_C1       zi_2_C2       zi_8_C8      zi_14_c14     zi_15_c15 
+                 __________    __________    __________    __________    __________
+
+    zi_1_R1         0.26016       0.26831    0.00012823    1.1102e-15             0
+    zi_2_R2         0.11232       0.19622    0.00098855    9.3592e-14    3.3307e-16
+    zi_8_R8      1.7181e-06    4.1008e-05       0.27902    4.1008e-05    1.7181e-06
+    zi_14_r14     3.474e-16    9.3597e-14    0.00098855       0.19622       0.11232
+    zi_15_r15    2.7412e-18    1.1057e-15    0.00012823       0.26831       0.26016
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Matrix in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                                              i     idx    rowN       colN         mean        std          min         max   
+                                              __    ___    ____    __________    ________    ________    _________    ________
+
+    ar_a_meshk                                 1     1     385              1     -7.2645      15.084          -20       49.93
+    ar_ak_perc                                 2     2       1              7         0.5     0.35932        0.001       0.999
+    ar_ameshk_tnext_with_r                     3     3     385              1     -8.6132      16.237          -26      51.178
+    ar_coh_bridge_perc                         4     4       1              3         0.5         0.5            0           1
+    ar_forbrblk                                5     5       1              9     -7.0556      6.3809          -19           0
+    ar_forbrblk_r                              6     6       1              9       0.065           0        0.065       0.065
+    ar_interp_c_grid                           7     7       1     7.7231e+05      38.635      22.295         0.02      77.251
+    ar_interp_coh_grid                         8     8       1             38      18.135       23.11          -20      57.251
+    ar_k_mesha                                 9     9     385              1      12.736      15.084            0       69.93
+    ar_stationary                             10    10       1             15    0.066667    0.060897    0.0027089     0.16757
+    ar_w_level                                11    11       1             35      14.571      20.964          -20          50
+    ar_w_level_full                           12    12       1             55      5.4711      20.931          -20          50
+    ar_w_perc                                 13    13       1              7         0.5     0.35932        0.001       0.999
+    ar_z                                      14    14       1             15      1.1347     0.69878      0.34741       2.567
+    mt_bl_w_by_interp_coh_interp_grid_wneg    15    16       7             38     0.61654     0.48715            0           1
+    mt_coh_bridge_perc_mesh_w_level_neg       16    17      10              3         0.5     0.41523            0           1
+    mt_coh_w_perc_ratio_wneg                  17    18     164              1     0.71268      0.3908            0           1
+    mt_coh_wkb                                18    19     385             15      5.8021      21.942      -25.556      57.251
+    mt_interp_coh_grid_mesh_w_perc            19    20       7             38      18.135      22.847          -20      57.251
+    mt_interp_coh_grid_mesh_z                 20    21      38             15      18.135      22.824          -20      57.251
+    mt_k                                      21    22       7             55      12.736      15.084            0       69.93
+    mt_w_by_interp_coh_interp_grid            22    23       7             38    -0.93241      18.703          -20      57.173
+    mt_w_by_interp_coh_interp_grid_wneg       23    24     164              1     -13.237      6.1562          -20       -0.02
+    mt_w_by_interp_coh_interp_grid_wpos       24    25     102              1      18.851      14.682     0.017927      57.173
+    mt_w_level_neg_mesh_coh_bridge_perc       25    26      10              3     -10.455      6.1969          -20    -0.90909
+    mt_z_mesh_coh_interp_grid                 26    27      38             15      1.1347     0.67568      0.34741       2.567
+    mt_z_mesh_coh_wkb                         27    28     385             15      1.1347     0.67514      0.34741       2.567
+    mt_z_trans                                28    29      15             15    0.066667    0.095337            0     0.27902
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Scalars in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                   i    idx    value
+                   _    ___    _____
+
+    it_ameshk_n    1    15      385 
+
+----------------------------------------
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Begin: Show all key and value pairs from container
+CONTAINER NAME: FUNC_MAP
+----------------------------------------
+  Map with properties:
+
+        Count: 9
+      KeyType: char
+    ValueType: any
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+----------------------------------------
+pos = 1 ; key = f_coh ; val = @(z,b_with_r,k)(f_prod(z,k)+k*(1-fl_delta)+fl_w+b_with_r)
+pos = 2 ; key = f_coh_fbis ; val = @(fl_r_inf,ar_for_borr,ar_inf_borr,ar_for_save)(ar_for_borr.*(1+fl_r_fbr)+ar_inf_borr.*(1+fl_r_inf)+ar_for_save.*(1+fl_r_fsv))
+pos = 3 ; key = f_coh_save ; val = @(b)(b.*(1+fl_r_fsv))
+pos = 4 ; key = f_cons ; val = @(coh,bprime,kprime)(coh-kprime-bprime)
+pos = 5 ; key = f_inc ; val = @(z,k,fl_r_inf,ar_for_borr,ar_inf_borr,ar_for_save)(f_prod(z,k)-(fl_delta)*k+fl_w+(ar_for_borr.*(fl_r_fbr)+ar_inf_borr.*(fl_r_inf)+ar_for_save.*(fl_r_fsv)))
+pos = 6 ; key = f_prod ; val = @(z,k)((fl_Amean.*(z)).*(k.^(fl_alpha)))
+pos = 7 ; key = f_util_crra ; val = @(c)(((c).^(1-fl_crra)-1)./(1-fl_crra))
+pos = 8 ; key = f_util_log ; val = @(c)log(c)
+pos = 9 ; key = f_util_standin ; val = @(z,b,k)f_util_log((f_coh(z,b,k)-fl_b_bd).*((f_coh(z,b,k)-fl_b_bd)&gt;fl_c_min)+fl_c_min.*((f_coh(z,b,k)-fl_b_bd)&lt;=fl_c_min))
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Scalars in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                      i    idx    xFunction
+                      _    ___    _________
+
+    f_coh             1     1         1    
+    f_coh_fbis        2     2         2    
+    f_coh_save        3     3         3    
+    f_cons            4     4         4    
+    f_inc             5     5         5    
+    f_prod            6     6         6    
+    f_util_crra       7     7         7    
+    f_util_log        8     8         8    
+    f_util_standin    9     9         9    
+
 </pre><pre class="codeinput"><span class="keyword">end</span>
 </pre><pre class="codeoutput">
 ans = 
@@ -1389,13 +2117,12 @@ function [armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(varargin)
 % st_param_which = 'ffs_ipwkbz_get_funcgrid';
 %
 
-bl_input_override = 0;
-if (length(varargin) == 3)
-    bl_input_override = varargin{3};
-end
-if (bl_input_override)
+%% Default
+if (~isempty(varargin))
+    
     % override when called from outside
-    [param_map, support_map, ~] = varargin{:};
+    [param_map, support_map] = varargin{:};
+    
 else
     % default internal run
     [param_map, support_map] = ffs_ipwkbz_fibs_set_default_param();
@@ -1418,10 +2145,10 @@ else
 
         param_map('fl_w_interp_grid_gap') = 2;
         param_map('fl_coh_interp_grid_gap') = 2;
-        
+
         % Note it_coh_bridge_perc is percentage NOT for BRIDGE
         if (strcmp(st_param_which, 'default'))
-            
+
             param_map('it_coh_bridge_perc_n') = 3;
 
             % Adjust interest rates
@@ -1501,6 +2228,9 @@ params_group = values(param_map, {'st_forbrblk_type', 'fl_forbrblk_brmost', 'fl_
 
 params_group = values(support_map, {'bl_display_minccost', 'bl_graph_funcgrids', 'bl_graph_funcgrids_detail', 'bl_display_funcgrids'});
 [bl_display_minccost, bl_graph_funcgrids, bl_graph_funcgrids_detail, bl_display_funcgrids] = params_group{:};
+
+params_group = values(support_map, {'it_display_summmat_rowmax', 'it_display_summmat_colmax'});
+[it_display_summmat_rowmax, it_display_summmat_colmax] = params_group{:};
 
 %% G1: Generate Asset and Choice Grid for 2nd stage Problem
 % This generate triangular choice structure. Household choose total
@@ -1624,11 +2354,11 @@ if (bl_bridge)
     ar_w_level_neg_rep = repmat(ar_w_level_neg, [1, length(ar_coh_bridge_perc)]);
     ar_w_level_full(1:1:size(mt_a_wneg_nobridge,2)) = ar_w_level_neg_rep;
     ar_w_level_full((size(mt_a_wneg_nobridge,2)+1):1:length(ar_w_level_full)) = ar_w_level(~ar_bl_w_neg);
-    
+
     % 10. Pre-generate Interpolation matrix for negative w levels
     [mt_w_level_neg_mesh_coh_bridge_perc, mt_coh_bridge_perc_mesh_w_level_neg] = ...
         ndgrid(ar_w_level_neg, ar_coh_bridge_perc);
-    
+
 else
 
     % If bridge loans are not needed, do not need to do expansions
@@ -1639,7 +2369,7 @@ else
 
     [mt_w_level_neg_mesh_coh_bridge_perc, mt_coh_bridge_perc_mesh_w_level_neg] = ...
         ndgrid(ar_w_level_neg, ar_coh_bridge_perc);
-    
+
 end
 
 %% G3: Flatten Choices to Arrays to be Combined with Shocks as Columns.
@@ -2278,6 +3008,13 @@ if (bl_display_funcgrids)
         disp(st_display);
     end
 
+end
+
+%% Display
+
+if (bl_display_funcgrids)
+    fft_container_map_display(armt_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+    fft_container_map_display(func_map, it_display_summmat_rowmax, it_display_summmat_colmax);
 end
 
 end

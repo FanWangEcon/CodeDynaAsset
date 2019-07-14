@@ -44,17 +44,11 @@ function [result_map] = ff_az_fibs_vf_post(varargin)
 
 %% Default
 
-params_len = length(varargin);
-bl_input_override = 0;
-if (params_len == 6)
-    bl_input_override = varargin{6};
-end
-
-if (bl_input_override)
+if (~isempty(varargin))
+    
     % if invoked from outside overrid fully
-    [param_map, support_map, armt_map, func_map, result_map, ~] = varargin{:};
-    
-    
+    [param_map, support_map, armt_map, func_map, result_map] = varargin{:};
+        
 else
     
     clear all;
@@ -65,24 +59,29 @@ else
     bl_input_override = true;
     
     % 2. Get Parameters
-    [param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
-    [armt_map, func_map] = ffs_abz_fibs_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
+    [param_map, support_map] = ffs_abzr_fibs_set_default_param(it_param_set);
+    [armt_map, func_map] = ffs_abzr_fibs_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
     
     % 3. Get Arrays and Functions
-    params_group = values(armt_map, {'ar_a', 'ar_z'});
-    [ar_a, ar_z] = params_group{:};
+    params_group = values(param_map, {'it_a_n', 'it_z_n'});
+    [it_a_n, it_z_n] = params_group{:};    
+    params_group = values(armt_map, {'ar_a'});
+    [ar_a] = params_group{:};
+    params_group = values(armt_map, {'ar_z_r_infbr_mesh_wage', 'ar_z_wage_mesh_r_infbr'});
+    [ar_z_r_inf_mesh_wage, ar_z_wage_mesh_r_inf] = params_group{:};    
     params_group = values(func_map, {'f_util_standin', 'f_cons_coh_fbis', 'f_cons_coh_save', 'f_coh'});
     [f_util_standin, f_cons_coh_fbis, f_cons_coh_save, f_coh] = params_group{:};
     
     % 4. Value Default
-    mt_val = f_util_standin(ar_z, ar_a');
+    mt_val = f_util_standin(ar_z_r_inf_mesh_wage, ar_a');
     
     % 5. default optimal asset choices (overall, interesint + principle from
     % different formal and informal sources following how model is solved)
-    mt_pol_a = zeros(size(mt_val)) + ar_a'*(cumsum(sort(ar_z))/sum(ar_z)*0.4 + 0.4);
+    mt_pol_a = zeros(size(mt_val)) + ...
+        ar_a'*(cumsum(sort(ar_z_r_inf_mesh_wage))/sum(ar_z_r_inf_mesh_wage)*0.4 + 0.4);
     
     % 6. Default COH
-    mt_coh = f_coh(ar_z, ar_a');
+    mt_coh = f_coh(ar_z_r_inf_mesh_wage, ar_a');
     
     % 7. Set Default Consumption
     mt_pol_a_pos_idx = (mt_pol_a > 0);
@@ -91,18 +90,22 @@ else
     mt_pol_cons(~mt_pol_a_pos_idx) = f_cons_coh_fbis(mt_coh(~mt_pol_a_pos_idx), mt_pol_a(~mt_pol_a_pos_idx));
     
     % 8. Find Formal Informal Choices given Fake Data
-    mt_pol_b_bridge = zeros(length(ar_a),length(ar_z));
-    mt_pol_inf_borr_nobridge = zeros(length(ar_a),length(ar_z));
-    mt_pol_for_borr = zeros(length(ar_a),length(ar_z));
-    mt_pol_for_save = zeros(length(ar_a),length(ar_z));
+    mt_pol_b_bridge = zeros(it_a_n,it_z_n);
+    mt_pol_inf_borr_nobridge = zeros(it_a_n,it_z_n);
+    mt_pol_for_borr = zeros(it_a_n,it_z_n);
+    mt_pol_for_save = zeros(it_a_n,it_z_n);
     
     % 9. Solve for formal and informal combinations given the overall fake
     % choices.
-    for it_z_i = 1:length(ar_z)
-        for it_a_j = 1:length(ar_a)
-            fl_z = ar_z(it_z_i);
+    for it_z_i = 1:it_z_n
+        for it_a_j = 1:it_a_n
+
+            fl_z_r_borr = ar_z_r_inf_mesh_wage(it_z_i);
+            fl_z_wage = ar_z_wage_mesh_r_inf(it_z_i);
+            param_map('fl_r_inf') = fl_z_r_borr;
+            
             fl_a = ar_a(it_a_j);
-            fl_coh = f_coh(fl_z, fl_a);
+            fl_coh = f_coh(fl_z_wage, fl_a);
             fl_a_opti = mt_pol_a(it_a_j, it_z_i);
             
             % call formal and informal function.
@@ -146,9 +149,26 @@ end
 
 %% Parse Parameter
 
+% Model Name
+params_group = values(param_map, {'st_model'});
+[st_model] = params_group{:};
+
 % armt_map standards
-params_group = values(armt_map, {'ar_z'});
-[ar_z] = params_group{:};    
+if (ismember(st_model, ["ipwkbzr_fibs", "abzr_fibs"]))
+    params_group = values(param_map, {'fl_z_r_infbr_n'});
+    [fl_z_r_borr_n] = params_group{:};
+    if (ismember(st_model, ["ipwkbzr_fibs"]))
+        params_group = values(armt_map, {'ar_z_r_infbr_mesh_wage_w1r2', 'ar_z_wage_mesh_r_infbr_w1r2'});
+    elseif (ismember(st_model, ["abzr_fibs"]))
+        params_group = values(armt_map, {'ar_z_r_infbr_mesh_wage', 'ar_z_wage_mesh_r_infbr'});
+    end
+    [ar_z_r_inf_mesh_wage, ar_z_wage_mesh_r_inf] = params_group{:};   
+else
+    fl_z_r_borr_n = 1;
+    params_group = values(armt_map, {'ar_z'});
+    [ar_z_wage_mesh_r_inf] = params_group{:};
+end
+
 
 % result_map standards
 params_group = values(result_map, {'cl_mt_pol_a'});
@@ -179,16 +199,16 @@ it_exostates_n = size(mt_pol_a, 2);
 
 if (~isKey(result_map, 'cl_mt_pol_c'))
     params_group = values(armt_map, {'ar_a', 'ar_z'});
-    [ar_a, ar_z] = params_group{:};    
+    [ar_a, ar_z_r_inf_mesh_wage] = params_group{:};    
     f_cons = func_map('f_cons');
-    mt_cons = f_cons(ar_z, ar_a', mt_pol_a);
+    mt_cons = f_cons(ar_z_r_inf_mesh_wage, ar_a', mt_pol_a);
     result_map('cl_mt_pol_c') = {mt_cons, zeros(1)};
 end
 if (~isKey(result_map, 'cl_mt_coh'))
     params_group = values(armt_map, {'ar_a', 'ar_z'});
-    [ar_a, ar_z] = params_group{:};    
+    [ar_a, ar_z_r_inf_mesh_wage] = params_group{:};    
     f_coh = func_map('f_coh');
-    mt_coh = f_coh(ar_z, ar_a');
+    mt_coh = f_coh(ar_z_r_inf_mesh_wage, ar_a');
     result_map('cl_mt_coh') = {mt_coh, zeros(1)};
 else
     params_group = values(result_map, {'cl_mt_coh'});
@@ -225,42 +245,55 @@ if (bl_display_final)
     else
         ar_it_rows = 1:1:it_endostates_n;
     end
+    ar_it_rows = unique(ar_it_rows);
+    
     if (it_exostates_n >= it_display_final_colmax)
         ar_it_cols = (1:1:round(it_display_final_colmax/2));
         ar_it_cols = [ar_it_cols ((it_exostates_n)-round(it_display_final_colmax/2)+1):1:(it_exostates_n)];
     else
         ar_it_cols = 1:1:it_exostates_n;
     end
+    ar_it_cols = unique(ar_it_cols);
+    
     mt_pol_b_bridge_print = mt_pol_b_bridge(ar_it_rows, ar_it_cols);
     mt_pol_inf_borr_nobridge_print = mt_pol_inf_borr_nobridge(ar_it_rows, ar_it_cols);
     mt_pol_for_borr_print = mt_pol_for_borr(ar_it_rows, ar_it_cols);
     mt_pol_for_save_print = mt_pol_for_save(ar_it_rows, ar_it_cols);
     
+    % Column Z Names
+    if (fl_z_r_borr_n == 1)
+        ar_st_col_zs = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z_wage_mesh_r_inf(ar_it_cols))));
+    else
+        ar_st_col_zs = matlab.lang.makeValidName(strcat('zi', string(ar_it_cols), ...
+                                                        ':zr=', string(ar_z_r_inf_mesh_wage(ar_it_cols)), ...
+                                                        ';zw=', string(ar_z_wage_mesh_r_inf(ar_it_cols))));                          
+    end
+    
     % Display Optimal Values
     tb_mt_pol_b_bridge_print = array2table(mt_pol_b_bridge_print);
     tb_mt_pol_b_bridge_print.Properties.RowNames = strcat('coh', string(ar_it_rows), '=', string(mt_coh(ar_it_rows)));
-    tb_mt_pol_b_bridge_print.Properties.VariableNames = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));
+    tb_mt_pol_b_bridge_print.Properties.VariableNames = ar_st_col_zs;
     disp('mt_pol_b_bridge_print: bridge loans');
     disp(tb_mt_pol_b_bridge_print);
     
     % Display Optimal Values
     tb_mt_pol_inf_borr_nobridge_print = array2table(mt_pol_inf_borr_nobridge_print);
     tb_mt_pol_inf_borr_nobridge_print.Properties.RowNames = strcat('coh', string(ar_it_rows), '=', string(mt_coh(ar_it_rows)));
-    tb_mt_pol_inf_borr_nobridge_print.Properties.VariableNames = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));
-    disp('mt_pol_inf_borr_nobridge_print: bridge loans');
+    tb_mt_pol_inf_borr_nobridge_print.Properties.VariableNames = ar_st_col_zs;
+    disp('mt_pol_inf_borr_nobridge_print: Informal loans that is not bridge loan');
     disp(tb_mt_pol_inf_borr_nobridge_print);
     
     % Display Optimal Values
     tb_mt_pol_for_borr_print = array2table(mt_pol_for_borr_print);
     tb_mt_pol_for_borr_print.Properties.RowNames = strcat('coh', string(ar_it_rows), '=', string(mt_coh(ar_it_rows)));
-    tb_mt_pol_for_borr_print.Properties.VariableNames = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));
+    tb_mt_pol_for_borr_print.Properties.VariableNames = ar_st_col_zs;
     disp('mt_pol_for_borr_print: formal borrowing');
     disp(tb_mt_pol_for_borr_print);
     
     % Display Optimal Values
     tb_mt_pol_for_save_print = array2table(mt_pol_for_save_print);
     tb_mt_pol_for_save_print.Properties.RowNames = strcat('coh', string(ar_it_rows), '=', string(mt_coh(ar_it_rows)));
-    tb_mt_pol_for_save_print.Properties.VariableNames = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));
+    tb_mt_pol_for_save_print.Properties.VariableNames = ar_st_col_zs;
     disp('mt_pol_for_save_print: formal savings');
     disp(tb_mt_pol_for_save_print);    
     

@@ -46,15 +46,9 @@ function [result_map] = ff_az_vf_post(varargin)
 
 %% Default
 
-params_len = length(varargin);
-bl_input_override = 0;
-if (params_len == 6)
-    bl_input_override = varargin{6};
-end
-
-if (bl_input_override)
+if (~isempty(varargin))
     % if invoked from outside overrid fully
-    [param_map, support_map, armt_map, func_map, result_map, ~] = varargin{:};
+    [param_map, support_map, armt_map, func_map, result_map] = varargin{:};
 
     params_group = values(result_map, {'mt_val', 'cl_mt_pol_a'});
     [mt_val, cl_mt_pol_a] = params_group{:};
@@ -109,14 +103,19 @@ params_group = values(param_map, {'st_model'});
 [st_model] = params_group{:};
 
 % armt_map
-if (strcmp(st_model, 'az'))
-    params_group = values(armt_map, {'ar_z'});
-    [ar_z] = params_group{:};
-elseif (strcmp(st_model, 'abz'))
+if (ismember(st_model, ["abz"]))
     params_group = values(armt_map, {'ar_z_r_borr_mesh_wage', 'ar_z_wage_mesh_r_borr'});
     [ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
-    params_group = values(param_map, {'it_z_wage_n', 'fl_z_r_borr_n'});
-    [it_z_wage_n, fl_z_r_borr_n] = params_group{:};        
+    params_group = values(param_map, {'fl_z_r_borr_n'});
+    [fl_z_r_borr_n] = params_group{:};    
+elseif (ismember(st_model, ["abzr_fibs"]))
+    params_group = values(armt_map, {'ar_z_r_infbr_mesh_wage', 'ar_z_wage_mesh_r_infbr'});
+    [ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
+    params_group = values(param_map, {'fl_z_r_infbr_n'});
+    [fl_z_r_borr_n] = params_group{:};
+else
+    params_group = values(armt_map, {'ar_z'});
+    [ar_z] = params_group{:};
 end
 
 % support_map
@@ -158,7 +157,29 @@ end
 %% Display Val Pol Iter Table
 
 if (bl_display_final)
-
+        
+    % Columns to Display
+    if (it_z_n >= it_display_final_colmax)
+        ar_it_cols = (1:1:round(it_display_final_colmax/2));
+        ar_it_cols = [ar_it_cols ((it_z_n)-round(it_display_final_colmax/2)+1):1:(it_z_n)];
+    else
+        ar_it_cols = 1:1:it_z_n;
+    end
+    ar_it_cols = unique(ar_it_cols);
+    
+    % Column Z Names
+    if (ismember(st_model, ["abz", "abzr_fibs"]))
+        if (fl_z_r_borr_n == 1)
+            ar_st_col_zs = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z_wage_mesh_r_borr(ar_it_cols))));
+        else
+            ar_st_col_zs = matlab.lang.makeValidName(strcat('zi', string(ar_it_cols), ...
+                                                            ':zr=', string(ar_z_r_borr_mesh_wage(ar_it_cols)), ...
+                                                            ';zw=', string(ar_z_wage_mesh_r_borr(ar_it_cols))));                          
+        end
+    else
+        ar_st_col_zs = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));
+    end
+    
     
     % Display Value Function Iteration Step by Step REsults
     it_iter_max = length(ar_val_diff_norm);
@@ -168,17 +189,17 @@ if (bl_display_final)
     else
         ar_it_rows_iter = 1:1:it_iter_max;
     end
+           
     tb_valpol_alliter = array2table([ar_val_diff_norm(ar_it_rows_iter)';...
                                      ar_pol_diff_norm(ar_it_rows_iter)';...
-                                     mt_pol_perc_change(ar_it_rows_iter, :)']');
+                                     mt_pol_perc_change(ar_it_rows_iter, ar_it_cols)']');
 
-    cl_col_names = ['valgap', 'polgap', strcat('z', string((1:it_z_n)))];
+    cl_col_names = ['valgap', 'polgap', ar_st_col_zs];
     cl_row_names = strcat('iter=', string(ar_it_rows_iter));
     tb_valpol_alliter.Properties.VariableNames = cl_col_names;
     tb_valpol_alliter.Properties.RowNames = cl_row_names;
     tb_valpol_alliter.Properties.VariableDescriptions{'valgap'} = 'norm(mt_val - mt_val_cur)';
     tb_valpol_alliter.Properties.VariableDescriptions{'polgap'} = 'norm(mt_pol_a - mt_pol_a_cur)';
-    tb_valpol_alliter.Properties.VariableDescriptions{'z1'} = 'z1 perc change: sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n)';
 
     disp('valgap = norm(mt_val - mt_val_cur): value function difference across iterations');
     disp('polgap = norm(mt_pol_a - mt_pol_a_cur): policy function difference across iterations');
@@ -198,29 +219,10 @@ if (bl_display_final)
     end
     ar_it_rows = unique(ar_it_rows);
     
-    if (it_z_n >= it_display_final_colmax)
-        ar_it_cols = (1:1:round(it_display_final_colmax/2));
-        ar_it_cols = [ar_it_cols ((it_z_n)-round(it_display_final_colmax/2)+1):1:(it_z_n)];
-    else
-        ar_it_cols = 1:1:it_z_n;
-    end
-    ar_it_cols = unique(ar_it_cols);
-    
+    % Subsetting
     mt_val_print = mt_val(ar_it_rows, ar_it_cols);
     mt_pol_a_print = mt_pol_a(ar_it_rows, ar_it_cols);
-    
-    if (strcmp(st_model, 'az'))
-        ar_st_col_zs = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));
-    elseif (strcmp(st_model, 'abz'))
-        if (fl_z_r_borr_n == 1)
-            ar_st_col_zs = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z_wage_mesh_r_borr(ar_it_cols))));
-        else
-            ar_st_col_zs = matlab.lang.makeValidName(strcat('zi', string(ar_it_cols), ...
-                                                            ':zr=', string(ar_z_r_borr_mesh_wage(ar_it_cols)), ...
-                                                            ';zw=', string(ar_z_wage_mesh_r_borr(ar_it_cols))));                          
-        end
-    end
-    
+        
     % Display Optimal Values
     tb_val = array2table(mt_val_print);
     tb_val.Properties.RowNames = strcat('a', string(ar_it_rows), '=', string(ar_a(ar_it_rows)));

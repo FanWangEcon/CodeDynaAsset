@@ -26,16 +26,30 @@ function [param_map, support_map] = ffs_az_set_default_param(varargin)
 %   it_param_set = 1;
 %   [param_map, support_map] = ffs_az_set_default_param(it_param_set);
 %
+% @seealso
+%
+% * initialize paramters *az*: <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_set_default_param.html ffs_az_set_default_param>
+% * initialize paramters *abz*: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param>
+% * initialize functions: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_functions.html ffs_abz_set_functions>
+% * set asset grid: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_gen_borrsave_grid.html ffs_abz_gen_borrsave_grid>
+% * set shock borrow rate: <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_gen_discrete_var.html fft_gen_discrete_var>
+% * set shock wage: <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/ffto_gen_tauchen_jhl.m ffto_gen_tauchen_jhl>
+% * gateway function processing grid, paramters, functions: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
+%
 
 %% Default
 
 it_subset = 0;
-bl_display_defparam = false;
+if (isempty(varargin))
+    bl_display_defparam = true;
+else
+    bl_display_defparam = false;
+end
 default_params = {it_subset bl_display_defparam};
 [default_params{1:length(varargin)}] = varargin{:};
 [it_subset, bl_display_defparam] = default_params{:};
 
-%% Setting param_map container
+%% 1. Initiate Param_map
 
 param_map = containers.Map('KeyType','char', 'ValueType','any');
 % model name
@@ -43,11 +57,14 @@ param_map('st_model') = 'az';
 % Preferences
 param_map('fl_crra') = 1.5;
 param_map('fl_beta') = 0.94;
-% Shock Parameters
-param_map('it_z_n') = 15;
-param_map('fl_z_mu') = 0;
-param_map('fl_z_rho') = 0.8;
-param_map('fl_z_sig') = 0.2;
+param_map('fl_nan_replace') = -9999;
+
+%% 2. Set Asset Grid Parameters
+% see
+% <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_gen_borrsave_grid.html
+% ffs_abz_gen_borrsave_grid> for how these borrowing/saving grid parameters
+% will be used.
+
 % Choice vector
 param_map('fl_b_bd') = 0; % borrow bound, = 0 if save only
 param_map('fl_a_min') = 0; % if there is minimum savings requirement
@@ -57,9 +74,20 @@ param_map('fl_loglin_threshold') = 1; % dense points before 1
 param_map('it_a_n') = 750;
 % Prices
 param_map('fl_w') = 1.28;
+
+%% 3. Set Interest Rates Parameters
+
 param_map('fl_r_save') = 0.025;
-% Minimum Consumption, utility lower bound (major impact parameter
-param_map('fl_nan_replace') = -9999;
+
+%% 4. Set Shock Wage Shock Parameters
+
+% Shock Parameters
+param_map('it_z_n') = 15;
+param_map('fl_z_mu') = 0;
+param_map('fl_z_rho') = 0.8;
+param_map('fl_z_sig') = 0.2;
+
+%% 5. Set Solution Control Parameters
 
 % Solution Accuracy
 param_map('it_maxiter_val') = 1000;
@@ -71,7 +99,7 @@ param_map('fl_tol_dist') = 10^-5;
 param_map('it_trans_power_dist') = 1000;
 param_map('it_tol_pol_nochange') = 25; % number of iterations where policy does not change
 
-%% Setting support_map container
+%% 6. Setting support_map container
 % Sets up support container map. One important input is st_root_path, which
 % is obtained from the
 % <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/preamble.m
@@ -86,6 +114,7 @@ support_map('st_matimg_path_root') = st_matimg_path_root;
 % timer
 support_map('bl_time') = true;
 % Print Controls
+support_map('bl_display_defparam') = false;
 support_map('bl_display') = true;
 support_map('bl_display_dist') = false;
 support_map('it_display_every') = 5; % how often to print results vf + dist
@@ -152,6 +181,7 @@ if (ismember(it_subset, [1,2,3,4]))
         close all;
         % Main Run
         support_map('bl_time') = true;
+        support_map('bl_display_defparam') = true;
         support_map('bl_display') = true;
         support_map('it_display_every') = 5;
 
@@ -200,6 +230,7 @@ if (ismember(it_subset, [5,6,7,8,9]))
         close all;
         % Main Run
         support_map('bl_time') = true;
+        support_map('bl_display_defparam') = true;
         support_map('bl_display') = false;
         support_map('bl_display_dist') = true;
         support_map('it_display_every') = 20;
@@ -227,6 +258,7 @@ if (ismember(it_subset, [5,6,7,8,9]))
             if (ismember(it_subset, [9]))
                 % quietly turn off all graphs, only tables
                 support_map('bl_display_final_dist_detail') = false;
+                support_map('bl_display_defparam') = false;
                 support_map('bl_graph_coh_t_coh') = false;
             end
         end

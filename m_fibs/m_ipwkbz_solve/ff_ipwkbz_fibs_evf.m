@@ -75,14 +75,11 @@ function [mt_ev_condi_z_max, mt_ev_condi_z_max_idx, mt_ev_condi_z_max_kp, mt_ev_
 % result as ff_ipwkbz_evf.m.
 %
 
-params_len = length(varargin);
-bl_input_override = 0;
-if (params_len == 5)
-    bl_input_override = varargin{5};
-end
-if (bl_input_override)
+if (~isempty(varargin))
+    
     % override when called from outside
-    [mt_val, param_map, support_map, armt_map, ~] = varargin{:};
+    [mt_val, param_map, support_map, armt_map] = varargin{:};
+    
 else
     clear all;
     close all;
@@ -123,7 +120,7 @@ else
 
         param_map('bl_bridge') = false;
         param_map('it_coh_bridge_perc_n') = 1;
-        
+
     end
 
     param_map('fl_w_interp_grid_gap') = (param_map('fl_w_max')-param_map('fl_b_bd'))/param_map('it_ak_perc_n');
@@ -162,6 +159,8 @@ params_group = values(support_map, {'bl_graph_onebyones','bl_display_evf', 'bl_g
 [bl_graph_onebyones, bl_display_evf, bl_graph_evf] = params_group{:};
 params_group = values(support_map, {'bl_img_save', 'st_img_path', 'st_img_prefix', 'st_img_name_main', 'st_img_suffix'});
 [bl_img_save, st_img_path, st_img_prefix, st_img_name_main, st_img_suffix] = params_group{:};
+params_group = values(support_map, {'it_display_summmat_rowmax', 'it_display_summmat_colmax'});
+[it_display_summmat_rowmax, it_display_summmat_colmax] = params_group{:};
 
 % append function name
 st_func_name = 'ff_ipwkbz_evf';
@@ -551,6 +550,23 @@ if (bl_graph_evf)
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
 
+end
+
+%% Display Various Containers
+
+if (bl_display_evf)
+
+    %% Display 1 support_map
+    fft_container_map_display(support_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+        
+    %% Display 2 armt_map
+    fft_container_map_display(armt_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+
+    %% Display 3 param_map
+    fft_container_map_display(param_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+    
+    %% Display 4 func_map
+    fft_container_map_display(func_map, it_display_summmat_rowmax, it_display_summmat_colmax);
 end
 
 end

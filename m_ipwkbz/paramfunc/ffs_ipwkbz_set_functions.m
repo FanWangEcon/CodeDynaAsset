@@ -5,7 +5,7 @@
 
 %%
 function [f_util_log, f_util_crra, f_util_standin, f_prod, f_inc, f_coh, f_cons] = ffs_ipwkbz_set_functions(varargin)
-%% FFS_IPWKZ_SET_FUNCTIONS setting model functions
+%% FFS_IPWKBZ_SET_FUNCTIONS setting model functions
 % define functions here to avoid copy paste mistakes. This function is
 % identical to the
 % <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html

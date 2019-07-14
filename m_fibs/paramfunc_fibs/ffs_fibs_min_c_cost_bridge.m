@@ -69,14 +69,12 @@ function [fl_max_c, fl_b_bridge, fl_inf_borr_nobridge, fl_for_borr, fl_for_save]
 
 %% Default 
 
-bl_input_override = 0;
-if (length(varargin) == 7)
-    bl_input_override = varargin{7};
-end
-if (bl_input_override)
+if (~isempty(varargin))
+    
     % override when called from outside
-    [fl_ap, fl_coh, param_map, support_map, armt_map, func_map, ~] = varargin{:};
+    [fl_ap, fl_coh, param_map, support_map, armt_map, func_map] = varargin{:};
     bl_display_minccost_bridge = false;
+    
 else
     
     close all
@@ -88,6 +86,7 @@ else
     
     % principle or p+r
     param_map('bl_bridge') = true;
+    param_map('fl_r_inf') = 0.065;
     
     % Gather Inputs from armt_map
     params_group = values(param_map, ...
@@ -141,6 +140,7 @@ params_group = values(armt_map, {'ar_forbrblk', 'ar_forbrblk_r'});
 [ar_forbrblk, ar_forbrblk_r] = params_group{:};
 
 % Gather Inputs from param_map
+% fl_r_inf is a shock, need to be inserted in
 params_group = values(param_map, {'bl_rollover', 'bl_default', 'bl_bridge', 'bl_b_is_principle', 'fl_r_inf', 'fl_r_fsv', 'fl_c_min'});
 [bl_rollover, bl_default, bl_bridge, bl_b_is_principle, fl_r_inf, fl_r_fsv, fl_c_min] = params_group{:};
 

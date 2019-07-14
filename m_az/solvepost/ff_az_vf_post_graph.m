@@ -96,15 +96,21 @@ params_group = values(support_map, {'st_title_prefix'});
 % armt_map
 params_group = values(armt_map, {'ar_a'});
 [ar_a] = params_group{:};
-if (strcmp(st_model, 'az'))
-    params_group = values(armt_map, {'ar_z'});
-    [ar_z] = params_group{:};
-elseif (strcmp(st_model, 'abz'))        
+if (ismember(st_model, ["abz"]))
     params_group = values(armt_map, {'ar_z_r_borr_mesh_wage', 'ar_z_wage_mesh_r_borr'});
     [ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
     params_group = values(param_map, {'it_z_wage_n', 'fl_z_r_borr_n'});
     [it_z_wage_n, fl_z_r_borr_n] = params_group{:};    
-end  
+elseif (ismember(st_model, ["abzr_fibs"]))
+    params_group = values(armt_map, {'ar_z_r_infbr_mesh_wage', 'ar_z_wage_mesh_r_infbr'});
+    [ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
+    params_group = values(param_map, {'it_z_wage_n', 'fl_z_r_infbr_n'});
+    [it_z_wage_n, fl_z_r_borr_n] = params_group{:};    
+else
+    params_group = values(armt_map, {'ar_z'});
+    [ar_z] = params_group{:};    
+end
+
 % func_map
 params_group = values(func_map, {'f_coh'});
 [f_coh] = params_group{:};
@@ -117,14 +123,8 @@ params_group = values(result_map, {'mt_val', 'cl_mt_pol_c', 'cl_mt_coh', 'cl_mt_
 % How many zs to Graph
 
 %% Generate Limited Legends
-if (strcmp(st_model, 'az'))
-    
-    ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)) (it_z_n)]);
-    ar_it_legend2plot = fliplr(ar_it_z_graph);
-    ar_it_legend2plot_lth = ar_it_z_graph;
-    cl_st_legendCell = cellstr(num2str(ar_z', 'shock next=%3.2f'));
-    
-elseif (strcmp(st_model, 'abz'))
+
+if (ismember(st_model, ["abz", "abzr_fibs"]))
     
     % 8 graph points, 2 levels of borrow rates, and 4 levels of rbr rates
     ar_it_z_r_borr = ([1 round((fl_z_r_borr_n)/2) (fl_z_r_borr_n)]);
@@ -139,6 +139,11 @@ elseif (strcmp(st_model, 'abz'))
     ar_it_legend2plot_lth = ar_it_z_graph;
     cl_st_legendCell = cellstr([num2str(ar_z_r_borr_mesh_wage', 'zr=%3.2f;'), ...
                           num2str(ar_z_wage_mesh_r_borr', 'zw=%3.2f')]);
+else
+    ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)) (it_z_n)]);
+    ar_it_legend2plot = fliplr(ar_it_z_graph);
+    ar_it_legend2plot_lth = ar_it_z_graph;
+    cl_st_legendCell = cellstr(num2str(ar_z', 'shock next=%3.2f'));
 end
 
 %% Graphing COH today vs COH tomorrow
@@ -180,10 +185,12 @@ if (bl_graph_coh_t_coh)
     ar_coh_full = mt_coh(:);
 
     % 2. COH Next Period
-    if (strcmp(st_model, 'az'))
-        mt_coh_next = f_coh(ar_z, ar_pol_a_full);
-    elseif (strcmp(st_model, 'abz'))        
+    if (ismember(st_model, ["abz"]))
         mt_coh_next = f_coh(ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr, ar_pol_a_full);
+    elseif (ismember(st_model, ["abzr_fibs"]))
+        mt_coh_next = f_coh(ar_z_wage_mesh_r_borr, ar_pol_a_full);
+    else
+        mt_coh_next = f_coh(ar_z, ar_pol_a_full);
     end
     
 
@@ -250,7 +257,9 @@ if (bl_graph_coh_t_coh)
         clr = jet(it_z_n);
         for m = 1:it_z_n
             % scatter
-            fig_cur_z = scatter(ar_xvar, mt_outcome(:,m), 1, ...
+            mt_y = real(mt_outcome(:,m));
+            ar_x = real(ar_xvar);
+            fig_cur_z = scatter(ar_x, mt_y, 1, ...
                 'MarkerEdgeColor', clr(m,:), 'MarkerFaceAlpha', 0.3, ...
                 'MarkerFaceColor', clr(m,:), 'MarkerEdgeAlpha', 0.3);
             chart(m) = fig_cur_z;
@@ -296,7 +305,7 @@ if (bl_graph_coh_t_coh)
 
     % save file
     if (bl_img_save)
-        mkdir(support_map('st_img_path'));
+        if ~exist(support_map('st_img_path'),'dir'); mkdir(support_map('st_img_path')); end
         st_file_name = [st_img_prefix st_img_name_main '_coh' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
@@ -373,7 +382,7 @@ if (bl_graph_val)
 
     % save file
     if (bl_img_save)
-        mkdir(support_map('st_img_path'));
+        if ~exist(support_map('st_img_path'),'dir'); mkdir(support_map('st_img_path')); end;
         st_file_name = [st_img_prefix st_img_name_main '_val' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
@@ -509,7 +518,7 @@ if (bl_graph_pol_lvl)
 
     % save file
     if (bl_img_save)
-        mkdir(support_map('st_img_path'));
+        if ~exist(support_map('st_img_path'),'dir'); mkdir(support_map('st_img_path')); end;
         st_file_name = [st_img_prefix st_img_name_main '_pol_lvl' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
@@ -619,7 +628,7 @@ if (bl_graph_pol_pct)
 
     % save file
     if (bl_img_save)
-        mkdir(support_map('st_img_path'));
+        if ~exist(support_map('st_img_path'),'dir'); mkdir(support_map('st_img_path')); end;
         st_file_name = [st_img_prefix st_img_name_main '_pol_pct' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end

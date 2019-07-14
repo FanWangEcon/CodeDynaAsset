@@ -71,17 +71,13 @@ function [result_map] = ff_iwkz_ds_vecsv(varargin)
 % # it_subset = 9 is invoke operational (only final stats) and coh graph
 %
 
-params_len = length(varargin);
-bl_input_override = 0;
-if (params_len == 6)
-    bl_input_override = varargin{6};
-end
-
-if (bl_input_override)
+if (~isempty(varargin))
+    
     % if invoked from outside override fully
-    [param_map, support_map, armt_map, func_map, result_map, ~] = varargin{:};
+    [param_map, support_map, armt_map, func_map, result_map] = varargin{:};
 
 else
+    
     % default invoke
     close all;
 
@@ -98,7 +94,7 @@ else
     % param_map('it_z_n') = 15;
 
     param_map('st_analytical_stationary_type') = 'eigenvector';
-    
+
     % 2. Generate function and grids
     [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 
@@ -123,15 +119,34 @@ params_group = values(result_map, {'cl_mt_pol_a', 'cl_mt_pol_k'});
 [cl_mt_pol_a, cl_mt_pol_k] = params_group{:};
 [mt_pol_a, mt_pol_k] = deal(cl_mt_pol_a{1}, cl_mt_pol_k{1});
 
+% Get Model Name
+params_group = values(param_map, {'st_model'});
+[st_model] = params_group{:};
+% param_map
+params_group = values(param_map, {'it_z_n'});
+[it_z_n] = params_group{:};
+
 % func_map
 params_group = values(func_map, {'f_coh'});
 [f_coh] = params_group{:};
 
 % armt_map
-params_group = values(armt_map, {'mt_z_trans', 'ar_z'});
-[mt_z_trans, ar_z] = params_group{:};
-params_group = values(armt_map, {'ar_interp_coh_grid'});
-[ar_interp_coh_grid] = params_group{:};
+params_group = values(armt_map, {'mt_z_trans', 'ar_interp_coh_grid'});
+[mt_z_trans, ar_interp_coh_grid] = params_group{:};
+if (ismember(st_model, ["ipwkbzr"]))
+    params_group = values(armt_map, {'ar_z_r_borr_mesh_wage_w1r2', 'ar_z_wage_mesh_r_borr_w1r2'});
+    [ar_z_r_borr_mesh_wage_w1r2, ar_z_wage_mesh_r_borr_w1r2] = params_group{:};
+    params_group = values(param_map, {'it_z_wage_n', 'fl_z_r_borr_n'});
+    [it_z_wage_n, fl_z_r_borr_n] = params_group{:};
+elseif (ismember(st_model, ["ipwkbzr_fibs"]))
+    params_group = values(armt_map, {'ar_z_r_infbr_mesh_wage_w1r2', 'ar_z_wage_mesh_r_infbr_w1r2'});
+    [ar_z_r_borr_mesh_wage_w1r2, ar_z_wage_mesh_r_borr_w1r2] = params_group{:};
+    params_group = values(param_map, {'it_z_wage_n', 'fl_z_r_infbr_n'});
+    [it_z_wage_n, fl_z_r_borr_n] = params_group{:};
+else
+    params_group = values(armt_map, {'ar_z'});
+    [ar_z] = params_group{:};
+end
 
 % param_map
 params_group = values(param_map, {'st_analytical_stationary_type'});
@@ -162,13 +177,13 @@ end
 %% A. Get Size of Endogenous and Exogenous State
 
 it_endostates_n = length(ar_interp_coh_grid);
-it_exostates_n = length(ar_z);
+it_exostates_n = it_z_n;
 
 %% B. Solve for Index
 % The model is solved by interpolating over cash-on-hand. The optimal
 % choices do not map to specific points on the cash-on-hand grid. Find the
 % index of the cash-on-hand vector that is the closest to the
-% coh'(a'(coh,z),k'(coh,z),z'). 
+% coh'(a'(coh,z),k'(coh,z),z').
 %
 % Since we have *z_n* elements of shocks, and *coh_n* elements of the
 % cash-on-hand grid, there are (coh_n x z_n) possible combinations of
@@ -178,13 +193,22 @@ it_exostates_n = length(ar_z);
 %
 
 % 1. *mt_coh_prime* is (coh_n x z_n) by (z_n)
-% coh'(z', a'(coh,z), k'(coh,z))    
-mt_coh_prime = f_coh(ar_z, mt_pol_a(:), mt_pol_k(:));
+% coh'(z', a'(coh,z), k'(coh,z))
+if (ismember(st_model, ["ipwkbzr"]))
+    mt_coh_prime = f_coh(ar_z_r_borr_mesh_wage_w1r2, ar_z_wage_mesh_r_borr_w1r2, ...
+                        mt_pol_a(:), mt_pol_k(:));
+elseif (ismember(st_model, ["ipwkbzr_fibs"]))
+    % mt_pol_a includes interest rates
+    mt_coh_prime = f_coh(ar_z_wage_mesh_r_borr_w1r2, mt_pol_a(:), mt_pol_k(:));
+else
+    mt_coh_prime = f_coh(ar_z, mt_pol_a(:), mt_pol_k(:));
+end
+
 
 % 2. *mt_coh_prime_on_grid_idx* is (coh_n x z_n) by (z_n):
 % index for coh'(a,k,z')
 [~, ar_coh_prime_on_grid_idx] = min(abs(mt_coh_prime(:)' - ar_interp_coh_grid'));
-mt_coh_prime_on_grid_idx = reshape(ar_coh_prime_on_grid_idx, size(mt_coh_prime));    
+mt_coh_prime_on_grid_idx = reshape(ar_coh_prime_on_grid_idx, size(mt_coh_prime));
 
 %% C. Expand Index so Matches Full States Index Dimension
 % The index above matches the index in the cash-on-hand grid, but now, the
@@ -215,7 +239,7 @@ j = repmat((1:1:it_endostates_n*it_exostates_n),[1,it_exostates_n])';
 v = mt_trans_prob(:);
 m = it_endostates_n*it_exostates_n;
 n = it_endostates_n*it_exostates_n;
-mt_full_trans_mat = sparse(i, j, v, m, n);   
+mt_full_trans_mat = sparse(i, j, v, m, n);
 
 %% F. Stationary Distribution *Method A*, Eigenvector Approach
 % Given that markov chain we have constructured for all state-space
@@ -224,7 +248,7 @@ mt_full_trans_mat = sparse(i, j, v, m, n);
 % eigenvector> approach. See
 % <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html
 % ff_az_ds_vecsv> for additional methods using the full states markov
-% structure. 
+% structure.
 
 if (strcmp(st_analytical_stationary_type, 'eigenvector'))
     [V, ~] = eigs(mt_full_trans_mat,1,1);

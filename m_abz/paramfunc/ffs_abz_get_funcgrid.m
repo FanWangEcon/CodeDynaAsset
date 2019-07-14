@@ -40,6 +40,16 @@ function [armt_map, func_map] = ffs_abz_get_funcgrid(varargin)
 % * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/ffto_gen_tauchen_jhl.m ffto_gen_tauchen_jhl>
 % * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/fft_gen_grid_loglin.m fft_gen_grid_loglin>
 %
+% @seealso
+%
+% * initialize parameters: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param>
+% * initialize functions: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_functions.html ffs_abz_set_functions>
+% * set asset grid: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_gen_borrsave_grid.html ffs_abz_gen_borrsave_grid>
+% * set shock borrow rate: <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_gen_discrete_var.html fft_gen_discrete_var>
+% * set shock wage: <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/ffto_gen_tauchen_jhl.m ffto_gen_tauchen_jhl>
+% * gateway function processing grid, paramters, functions: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
+%
+
 
 %% Default
 
@@ -53,7 +63,7 @@ if (bl_input_override)
 else
     close all
     % default internal run
-    it_param_set = 1;
+    it_param_set = 4;
     [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
     support_map('bl_graph_funcgrids') = true;
     support_map('bl_display_funcgrids') = true;
@@ -65,7 +75,7 @@ else
     support_map = [support_map; default_maps{2}];
 end
 
-%% Parse Parameters
+%% Parse Parameters 1
 
 % param_map asset grid
 params_group = values(param_map, {'fl_b_bd', 'bl_default', 'fl_a_min', 'fl_a_max', 'bl_loglin', 'fl_loglin_threshold', 'it_a_n'});
@@ -79,14 +89,19 @@ params_group = values(param_map, {'fl_crra', 'fl_c_min'});
 params_group = values(param_map, {'bl_b_is_principle', 'fl_r_save', 'fl_w'});
 [bl_b_is_principle, fl_r_save, fl_w] = params_group{:};
 
+%% Parse Parameters 2
+
 % param_map shock income
 params_group = values(param_map, {'it_z_wage_n', 'fl_z_wage_mu', 'fl_z_wage_rho', 'fl_z_wage_sig'});
 [it_z_wage_n, fl_z_wage_mu, fl_z_wage_rho, fl_z_wage_sig] = params_group{:};
+
 % param_map shock borrowing interest
 params_group = values(param_map, {'st_z_r_borr_drv_ele_type', 'st_z_r_borr_drv_prb_type', 'fl_z_r_borr_poiss_mean', ...
     'fl_z_r_borr_max', 'fl_z_r_borr_min', 'fl_z_r_borr_n'});
 [st_z_r_borr_drv_ele_type, st_z_r_borr_drv_prb_type, fl_z_r_borr_poiss_mean, ...
     fl_z_r_borr_max, fl_z_r_borr_min, fl_z_r_borr_n] = params_group{:};
+
+%% Parse Parameters 3
 
 % support_map controls
 params_group = values(support_map, {'bl_graph_funcgrids', 'bl_display_funcgrids'});
@@ -94,7 +109,7 @@ params_group = values(support_map, {'bl_graph_funcgrids', 'bl_display_funcgrids'
 
 %% Get Shock: Income Shock (ar1)
 
-[~, mt_z_wage_trans, ar_wage_stationary, ar_z_wage] = ffto_gen_tauchen_jhl(fl_z_wage_mu,fl_z_wage_rho,fl_z_wage_sig,it_z_wage_n);
+[~, mt_z_wage_trans, ~, ar_z_wage] = ffto_gen_tauchen_jhl(fl_z_wage_mu,fl_z_wage_rho,fl_z_wage_sig,it_z_wage_n);
 
 %% Get Shock: Interest Rate Shock (iid)
 
@@ -120,6 +135,88 @@ mt_z_trans = kron(mt_z_r_borr_prob_trans, mt_z_wage_trans);
 [mt_z_wage_mesh_r_borr, mt_z_r_borr_mesh_wage] = ndgrid(ar_z_wage, ar_z_r_borr);
 ar_z_r_borr_mesh_wage = mt_z_r_borr_mesh_wage(:)';
 ar_z_wage_mesh_r_borr = mt_z_wage_mesh_r_borr(:)';
+
+if (bl_display_funcgrids)
+    
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('Borrow R Shock: ar_z_r_borr_mesh_wage');
+    disp('Prod/Wage Shock: mt_z_wage_mesh_r_borr');
+    disp('show which shock is inner and which is outter');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    
+    tb_two_shocks = array2table([ar_z_r_borr_mesh_wage;...
+        ar_z_wage_mesh_r_borr]');
+    cl_col_names = ["Borrow R Shock (Meshed)", "Wage R Shock (Meshed)"];
+    cl_row_names = strcat('zi=', string((1:length(ar_z_r_borr_mesh_wage))));
+    tb_two_shocks.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_two_shocks.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
+    
+    it_row_display = it_z_wage_n*2;
+    
+    disp(size(tb_two_shocks));
+    disp(head(tb_two_shocks, it_row_display));
+    disp(tail(tb_two_shocks, it_row_display));
+    
+    
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('Borrow Rate Transition Matrix: mt_z_r_borr_prob_trans');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    it_col_n_keep = 15;
+    it_row_n_keep = 15;    
+    [it_row_n, it_col_n] = size(mt_z_r_borr_prob_trans);
+    [ar_it_cols, ar_it_rows] = fft_row_col_subset(it_col_n, it_col_n_keep, it_row_n, it_row_n_keep);    
+    cl_st_full_rowscols = cellstr([num2str(ar_z_r_borr', 'r%3.2f')]);
+    tb_z_r_borr_prob_trans = array2table(round(mt_z_r_borr_prob_trans(ar_it_rows, ar_it_cols), 6));
+    cl_col_names = strcat('zi=', num2str(ar_it_cols'), ':', cl_st_full_rowscols(ar_it_cols));
+    cl_row_names = strcat('zi=', num2str(ar_it_rows'), ':', cl_st_full_rowscols(ar_it_cols));
+    tb_z_r_borr_prob_trans.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_z_r_borr_prob_trans.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
+       
+    disp(size(tb_z_r_borr_prob_trans));
+    disp(tb_z_r_borr_prob_trans);
+    
+    
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('Wage Prod Shock Transition Matrix: mt_z_r_borr_prob_trans');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    it_col_n_keep = 15;
+    it_row_n_keep = 15;    
+    [it_row_n, it_col_n] = size(mt_z_wage_trans);
+    [ar_it_cols, ar_it_rows] = fft_row_col_subset(it_col_n, it_col_n_keep, it_row_n, it_row_n_keep);    
+    cl_st_full_rowscols = cellstr([num2str(ar_z_wage', 'w%3.2f')]);
+    tb_z_wage_trans = array2table(round(mt_z_wage_trans(ar_it_rows, ar_it_cols),6));    
+    cl_col_names = strcat('zi=', num2str(ar_it_cols'), ':', cl_st_full_rowscols(ar_it_cols));
+    cl_row_names = strcat('zi=', num2str(ar_it_rows'), ':', cl_st_full_rowscols(ar_it_cols));
+    tb_z_wage_trans.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_z_wage_trans.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
+       
+    disp(size(tb_z_wage_trans));
+    disp(tb_z_wage_trans);
+    
+    
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('Full Transition Matrix: mt_z_trans');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    it_col_n_keep = it_z_wage_n*3;
+    it_row_n_keep = it_z_wage_n*3;
+    [it_row_n, it_col_n] = size(mt_z_trans);
+    [ar_it_cols, ar_it_rows] = fft_row_col_subset(it_col_n, it_col_n_keep, it_row_n, it_row_n_keep);    
+    cl_st_full_rowscols = cellstr([num2str(ar_z_r_borr_mesh_wage', 'r%3.2f;'), ...
+                                   num2str(ar_z_wage_mesh_r_borr', 'w%3.2f')]);
+    tb_mt_z_trans = array2table(round(mt_z_trans(ar_it_rows, ar_it_cols),6));
+    cl_col_names = strcat('i', num2str(ar_it_cols'), ':', cl_st_full_rowscols(ar_it_cols));
+    cl_row_names = strcat('i', num2str(ar_it_rows'), ':', cl_st_full_rowscols(ar_it_cols));
+    tb_mt_z_trans.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_mt_z_trans.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
+       
+    disp(size(tb_mt_z_trans));
+    disp(tb_mt_z_trans);
+    
+end
 
 %% Get Equations
 
@@ -235,7 +332,7 @@ if (bl_graph_funcgrids)
         ylabel(st_ylabel)
         
         grid on;
-        grid minor; 
+        grid minor;
         
         legend2plot = fliplr([1 round(numel(chart)/3) round((2*numel(chart))/4)  numel(chart)]);
         legendCell = cellstr(num2str(ar_z_wage', 'z=%3.2f'));
@@ -245,9 +342,9 @@ if (bl_graph_funcgrids)
         
         % if borrow plot additional borrowing bound lines
         if (fl_b_bd >= 0 )
-            ar_legend_ele = [legend2plot];            
-            xlabel({st_xlabel})            
-        else            
+            ar_legend_ele = [legend2plot];
+            xlabel({st_xlabel})
+        else
             % add fl_b_bd exo borrow line
             if (fl_b_bd >= min(ar_a))
                 xline_borrbound = xline(fl_b_bd_graph);
@@ -255,12 +352,12 @@ if (bl_graph_funcgrids)
                 xline_borrbound.LineStyle = '-';
                 xline_borrbound.Color = 'black';
                 xline_borrbound.LineWidth = 2.5;
-
+                
                 yline_borrbound = yline(fl_b_bd_graph);
                 yline_borrbound.HandleVisibility = 'off';
                 yline_borrbound.LineStyle = '-';
                 yline_borrbound.Color = 'black';
-                yline_borrbound.LineWidth = 1;               
+                yline_borrbound.LineWidth = 1;
             end
             
             xline_yminbd = xline(fl_borr_yminbd_graph);
@@ -268,7 +365,7 @@ if (bl_graph_funcgrids)
             xline_yminbd.LineStyle = '--';
             xline_yminbd.Color = 'red';
             xline_yminbd.LineWidth = 2.5;
-
+            
             yline_yminbd = yline(fl_borr_yminbd_graph);
             yline_yminbd.HandleVisibility = 'off';
             yline_yminbd.LineStyle = '--';
@@ -311,11 +408,11 @@ if (bl_graph_funcgrids)
             
             % draw legend
             ar_legend_ele = [legend2plot length(legendCell)-it_addlines_cn:1:length(legendCell)];
-            xlabel({st_xlabel 'if coh(a,z) < a, then a''(a,z)<a'})            
+            xlabel({st_xlabel 'if coh(a,z) < a, then a''(a,z)<a'})
         end
         
         % draw legends
-        legend(chart(unique(ar_legend_ele)), legendCell(unique(ar_legend_ele)), 'Location', 'northwest');            
+        legend(chart(unique(ar_legend_ele)), legendCell(unique(ar_legend_ele)), 'Location', 'northwest');
         
     end
     
@@ -328,10 +425,10 @@ if (bl_display_funcgrids)
     disp('ar_z_wage');
     disp(size(ar_z_wage));
     disp(ar_z_wage);
-    
-    disp('mt_z_trans');
-    disp(size(mt_z_trans));
-    disp(mt_z_trans);
+
+    disp('ar_z_r_borr');
+    disp(size(ar_z_r_borr));
+    disp(ar_z_r_borr);
     
     param_map_keys = keys(func_map);
     param_map_vals = values(func_map);
