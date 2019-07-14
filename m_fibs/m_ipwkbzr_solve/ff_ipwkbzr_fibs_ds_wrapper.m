@@ -1,4 +1,4 @@
-%% Derive Distributions for For+Inf+Borr+Save Risky + Safe Asset Interpolated-Percentage (Wrapper)
+%% Derive Distributions for For+Inf+Borr+Save+RShock Risky + Safe Asset Interpolated-Percentage (Wrapper)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
@@ -15,7 +15,7 @@ function [result_map] = ff_ipwkbzr_fibs_ds_wrapper(varargin)
 % # it_subset = 8 is matlab publish
 % # it_subset = 9 is invoke operational (only final stats) and coh graph
 
-it_param_set = 6;
+it_param_set = 8;
 bl_input_override = true;
 [param_map, support_map] = ffs_ipwkbzr_fibs_set_default_param(it_param_set);
 

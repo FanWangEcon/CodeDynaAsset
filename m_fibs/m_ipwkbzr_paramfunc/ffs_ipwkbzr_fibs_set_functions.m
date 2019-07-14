@@ -1,4 +1,4 @@
-%% Set Model Functions (Interpolated + Percentage + Risky + Safe Asset + FIBS)
+%% Set Model Functions (Interpolated + Percentage + Risky + Safe Asset + FIBS + RShock)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
@@ -6,7 +6,7 @@
 %%
 function [f_util_log, f_util_crra, f_util_standin, f_util_standin_coh, ...
     f_prod, f_inc, f_coh, f_coh_fbis, f_coh_save, f_cons] = ffs_ipwkbzr_fibs_set_functions(varargin)
-%% FFS_IPWKZ_FIBS_SET_FUNCTIONS setting model functions
+%% FFS_IPWKZR_FIBS_SET_FUNCTIONS setting model functions
 
 %% Default
 

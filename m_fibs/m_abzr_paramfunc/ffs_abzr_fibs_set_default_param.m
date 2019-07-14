@@ -1,4 +1,4 @@
-%% Set Model Parameters (ABZ FIBS)
+%% Set Model Parameters (ABZR FIBS)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
@@ -26,7 +26,7 @@ function [param_map, support_map] = ffs_abzr_fibs_set_default_param(varargin)
 % @seealso
 %
 % * initialize paramters *az*: <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_set_default_param.html ffs_az_set_default_param>
-% * initialize paramters *abzr*: <https://fanwangecon.github.io/CodeDynaAsset/m_abzr/paramfunc/html/ffs_abzr_set_default_param.html ffs_abzr_set_default_param>
+% * initialize paramters *abz*: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param>
 %
 
 %% Default
@@ -356,6 +356,5 @@ if (bl_display_defparam)
     fft_container_map_display(param_map);
     fft_container_map_display(support_map);
 end
-
 
 end

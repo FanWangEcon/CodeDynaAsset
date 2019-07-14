@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Risky + Safe Asset (Save + Borr + FIBS) Interpolated-Percentage (Optimized-Vectorized)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-13"><meta name="DC.source" content="ff_ipwkbzr_fibs_vf_vecsv.m"><style type="text/css">
+      --><title>Risky + Safe Asset (Save + Borr + FIBS + RShock) Interpolated-Percentage (Optimized-Vectorized)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-14"><meta name="DC.source" content="ff_ipwkbzr_fibs_vf_vecsv.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Risky + Safe Asset (Save + Borr + FIBS) Interpolated-Percentage (Optimized-Vectorized)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_IPWKBZ_FIBS_VF_VECSV solve infinite horizon exo shock + endo asset problem</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1</a></li><li><a href="#5">Parse Parameters 2, Asset Arrays</a></li><li><a href="#6">Parse Parameters 2, interp_coh related matrixes</a></li><li><a href="#7">Parse Parameters 3, reachable cash-on-hand</a></li><li><a href="#8">Parse Parameters 4, percentage of w for bridge repayment parameters</a></li><li><a href="#9">Parse Parameters 6, other asset arrays</a></li><li><a href="#10">Parse Parameters 7, Others</a></li><li><a href="#11">Initialize Output Matrixes</a></li><li><a href="#12">Initialize Convergence Conditions</a></li><li><a href="#13">Pre-calculate u(c)</a></li><li><a href="#14">Iterate Value Function</a></li><li><a href="#16">Interpolate reacahble V(coh(k'(w),b'(w),zr,zw'),zw',zr')) given v(coh, z)</a></li><li><a href="#17">Solve Second Stage Problem k*(w,z)</a></li><li><a href="#18">Solve First Stage Problem w*(z) given k*(w,z)</a></li><li><a href="#20">A. Interpolate FULL to get k*(coh_level, w_perc, z), b*(k,w) based on k*(coh_perc, w_level)</a></li><li><a href="#21">B. Calculate UPDATE u(c) Update: u(c(coh_level, w_perc)) given k*_interp, b*_interp</a></li><li><a href="#22">D. Compute FULL U(coh_level, w_perc, z) over all w_perc</a></li><li><a href="#23">E. Optimize Over Choices: max_{w_perc} U(coh_level, w_perc, z)</a></li><li><a href="#24">F. Store Results</a></li><li><a href="#26">Check Tolerance and Continuation</a></li><li><a href="#28">Process Optimal Choices 1: Formal and Informal Choices</a></li><li><a href="#29">Process Optimal Choices 2: Store a, k, c, coh Results</a></li><li><a href="#30">Process Optimal Choices 3: Store Formal and Informal Choices</a></li><li><a href="#31">Process Optimal Choices 4: List of Variable Names to be processed by distributional codes</a></li><li><a href="#32">Post Solution Graph and Table Generation</a></li><li><a href="#33">Display Various Containers</a></li><li><a href="#35">Display 1 support_map</a></li><li><a href="#36">Display 2 armt_map</a></li><li><a href="#37">Display 3 param_map</a></li><li><a href="#38">Display 4 func_map</a></li><li><a href="#39">Display 5 result_map</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> result_map = ff_ipwkbzr_fibs_vf_vecsv(varargin)
+  </style></head><body><div class="content"><h1>Risky + Safe Asset (Save + Borr + FIBS + RShock) Interpolated-Percentage (Optimized-Vectorized)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_IPWKBZ_FIBS_VF_VECSV solve infinite horizon exo shock + endo asset problem</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1</a></li><li><a href="#5">Parse Parameters 2, Asset Arrays</a></li><li><a href="#6">Parse Parameters 2, interp_coh related matrixes</a></li><li><a href="#7">Parse Parameters 3, reachable cash-on-hand</a></li><li><a href="#8">Parse Parameters 4, percentage of w for bridge repayment parameters</a></li><li><a href="#9">Parse Parameters 6, other asset arrays</a></li><li><a href="#10">Parse Parameters 7, Others</a></li><li><a href="#11">Initialize Output Matrixes</a></li><li><a href="#12">Initialize Convergence Conditions</a></li><li><a href="#13">Pre-calculate u(c)</a></li><li><a href="#14">Iterate Value Function</a></li><li><a href="#16">Interpolate reacahble V(coh(k'(w),b'(w),zr,zw'),zw',zr')) given v(coh, z)</a></li><li><a href="#17">Solve Second Stage Problem k*(w,z)</a></li><li><a href="#18">Solve First Stage Problem w*(z) given k*(w,z)</a></li><li><a href="#20">A. Interpolate FULL to get k*(coh_level, w_perc, z), b*(k,w) based on k*(coh_perc, w_level)</a></li><li><a href="#21">B. Calculate UPDATE u(c) Update: u(c(coh_level, w_perc)) given k*_interp, b*_interp</a></li><li><a href="#22">D. Compute FULL U(coh_level, w_perc, z) over all w_perc</a></li><li><a href="#23">E. Optimize Over Choices: max_{w_perc} U(coh_level, w_perc, z)</a></li><li><a href="#24">F. Store Results</a></li><li><a href="#26">Check Tolerance and Continuation</a></li><li><a href="#28">Process Optimal Choices 1: Formal and Informal Choices</a></li><li><a href="#29">Process Optimal Choices 2: Store a, k, c, coh Results</a></li><li><a href="#30">Process Optimal Choices 3: Store Formal and Informal Choices</a></li><li><a href="#31">Process Optimal Choices 4: List of Variable Names to be processed by distributional codes</a></li><li><a href="#32">Post Solution Graph and Table Generation</a></li><li><a href="#33">Display Various Containers</a></li><li><a href="#35">Display 1 support_map</a></li><li><a href="#36">Display 2 armt_map</a></li><li><a href="#37">Display 3 param_map</a></li><li><a href="#38">Display 4 func_map</a></li><li><a href="#39">Display 5 result_map</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> result_map = ff_ipwkbzr_fibs_vf_vecsv(varargin)
 </pre><h2 id="2">FF_IPWKBZ_FIBS_VF_VECSV solve infinite horizon exo shock + endo asset problem</h2><p>This is a modified version of <a href="https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/solve/html/ff_ipwkbzr_vf_vecsv.html">ff_ipwkbzr_vf_vecsv</a>, to see how this function solves the formal and savings risky and safe asset problem with formal and informal choices, compare the code here and from <a href="https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/solve/html/ff_ipwkbzr_vf_vecsv.html">ff_ipwkbzr_vf_vecsv</a> side by side.</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@param func_map container container with function handles for consumption cash-on-hand etc.</p><p>@return result_map container contains policy function matrix, value function matrix, iteration results, and policy function, value function and iteration results tables.</p><p>keys included in result_map:</p><div><ul><li>mt_val matrix states_n by shock_n matrix of converged value function grid</li><li>mt_pol_a matrix states_n by shock_n matrix of converged policy function grid</li><li>ar_val_diff_norm array if bl_post = true it_iter_last by 1 val function difference between iteration</li><li>ar_pol_diff_norm array if bl_post = true it_iter_last by 1 policy function difference between iterations</li><li>mt_pol_perc_change matrix if bl_post = true it_iter_last by shock_n the proportion of grid points at which policy function changed between current and last iteration for each element of shock</li></ul></div><p>@example</p><p>@include</p><div><ul><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbzr/paramfunc/ff_ipwkbzr_evf.m">ff_ipwkbzr_evf</a></li><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbzr/paramfunc/ffs_ipwkbzr_set_default_param.m">ffs_ipwkbzr_set_default_param</a></li><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbzr/paramfunc/ffs_ipwkbzr_get_funcgrid.m">ffs_ipwkbzr_get_funcgrid</a></li><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solvepost/ff_akz_vf_post.m">ff_akz_vf_post</a></li></ul></div><h2 id="3">Default</h2><div><ul><li>it_param_set = 1: quick test</li><li>it_param_set = 2: benchmark run</li><li>it_param_set = 3: benchmark profile</li><li>it_param_set = 4: press publish button</li></ul></div><pre class="codeinput">it_param_set = 4;
 [param_map, support_map] = ffs_ipwkbzr_fibs_set_default_param(it_param_set);
 
@@ -555,6 +555,10 @@ result_map = ffs_fibs_identify_discrete(result_map, bl_input_override);
     result_map(<span class="string">'ar_val_diff_norm'</span>) = ar_val_diff_norm(1:it_iter_last);
     result_map(<span class="string">'ar_pol_diff_norm'</span>) = ar_pol_diff_norm(1:it_iter_last);
     result_map(<span class="string">'mt_pol_perc_change'</span>) = mt_pol_perc_change(1:it_iter_last, :);
+
+    armt_map(<span class="string">'mt_coh_wkb_ori'</span>) = mt_coh_wkb;
+    armt_map(<span class="string">'ar_a_meshk_ori'</span>) = ar_a_meshk;
+    armt_map(<span class="string">'ar_k_mesha_ori'</span>) = ar_k_mesha;
 
     armt_map(<span class="string">'mt_coh_wkb'</span>) = mt_interp_coh_grid_mesh_z;
     armt_map(<span class="string">'it_ameshk_n'</span>) = length(ar_interp_coh_grid);
@@ -1589,39 +1593,39 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
                                     i     idx    value
                                     __    ___    _____
 
-    bl_display                       1     1       0  
-    bl_display_defparam              2     2       1  
-    bl_display_dist                  3     3       0  
-    bl_display_evf                   4     4       0  
-    bl_display_final                 5     5       1  
-    bl_display_final_dist            6     6       0  
-    bl_display_final_dist_detail     7     7       0  
-    bl_display_funcgrids             8     8       0  
-    bl_display_infbridge             9     9       0  
-    bl_display_minccost             10    10       0  
-    bl_graph                        11    11       1  
-    bl_graph_coh_t_coh              12    12       1  
-    bl_graph_evf                    13    13       0  
-    bl_graph_forinf_discrete        14    14       1  
-    bl_graph_forinf_pol_lvl         15    15       1  
-    bl_graph_forinf_pol_pct         16    16       1  
-    bl_graph_funcgrids              17    17       0  
-    bl_graph_funcgrids_detail       18    18       0  
-    bl_graph_onebyones              19    19       1  
-    bl_graph_pol_lvl                20    20       1  
-    bl_graph_pol_pct                21    21       1  
-    bl_graph_val                    22    22       1  
-    bl_img_save                     23    23       0  
-    bl_mat                          24    24       0  
-    bl_post                         25    25       1  
-    bl_profile                      26    26       0  
-    bl_profile_dist                 27    27       0  
-    bl_time                         28    28       0  
-    it_display_every                29    29       1  
-    it_display_final_colmax         30    30       1  
-    it_display_final_rowmax         31    31       1  
-    it_display_summmat_colmax       32    32       1  
-    it_display_summmat_rowmax       33    33       1  
+    bl_display                       1     1        0 
+    bl_display_defparam              2     2        1 
+    bl_display_dist                  3     3        0 
+    bl_display_evf                   4     4        0 
+    bl_display_final                 5     5        1 
+    bl_display_final_dist            6     6        0 
+    bl_display_final_dist_detail     7     7        0 
+    bl_display_funcgrids             8     8        0 
+    bl_display_infbridge             9     9        0 
+    bl_display_minccost             10    10        0 
+    bl_graph                        11    11        1 
+    bl_graph_coh_t_coh              12    12        1 
+    bl_graph_evf                    13    13        0 
+    bl_graph_forinf_discrete        14    14        1 
+    bl_graph_forinf_pol_lvl         15    15        1 
+    bl_graph_forinf_pol_pct         16    16        1 
+    bl_graph_funcgrids              17    17        0 
+    bl_graph_funcgrids_detail       18    18        0 
+    bl_graph_onebyones              19    19        1 
+    bl_graph_pol_lvl                20    20        1 
+    bl_graph_pol_pct                21    21        1 
+    bl_graph_val                    22    22        1 
+    bl_img_save                     23    23        0 
+    bl_mat                          24    24        0 
+    bl_post                         25    25        1 
+    bl_profile                      26    26        0 
+    bl_profile_dist                 27    27        0 
+    bl_time                         28    28        0 
+    it_display_every                29    29        5 
+    it_display_final_colmax         30    30       12 
+    it_display_final_rowmax         31    31      100 
+    it_display_summmat_colmax       32    32        5 
+    it_display_summmat_rowmax       33    33        5 
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -1655,7 +1659,7 @@ CONTAINER NAME: ARMT_MAP
 ----------------------------------------
   Map with properties:
 
-        Count: 38
+        Count: 41
       KeyType: char
     ValueType: any
 
@@ -1681,14 +1685,25 @@ ar_a_meshk :mu= 18.6145 ,sd= 22.347 ,min= -20 ,max= 57.2773
     zi_771_r771    57.177 
     zi_772_r772    57.277 
 
-pos = 3 ; key = ar_ak_perc ;rown= 1 ,coln= 50
+pos = 3 ; key = ar_a_meshk_ori ;rown= 525000 ,coln= 1
+ar_a_meshk_ori :mu= -14.1774 ,sd= 6.6708 ,min= -20 ,max= 49.93
+                         zi_1_c1
+                         _______
+
+    zi_1_R1                  -20
+    zi_2_R2                  -20
+    zi_262500_r262500    -19.995
+    zi_524999_r524999    -18.504
+    zi_525000_r525000     -19.93
+
+pos = 4 ; key = ar_ak_perc ;rown= 1 ,coln= 50
 ar_ak_perc :mu= 0.5 ,sd= 0.2969 ,min= 0.001 ,max= 0.999
                zi_1_C1    zi_2_C2     zi_25_c25    zi_49_c49    zi_50_c50
                _______    ________    _________    _________    _________
 
     zi_1_r1     0.001     0.021367     0.48982      0.97863       0.999  
 
-pos = 4 ; key = ar_ameshk_tnext_with_r ;rown= 525000 ,coln= 5
+pos = 5 ; key = ar_ameshk_tnext_with_r ;rown= 525000 ,coln= 5
 ar_ameshk_tnext_with_r :mu= -14.9661 ,sd= 6.9834 ,min= -21.9 ,max= 51.1782
                          zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5
                          _______    _______    _______    _______    _______
@@ -1699,7 +1714,7 @@ ar_ameshk_tnext_with_r :mu= -14.9661 ,sd= 6.9834 ,min= -21.9 ,max= 51.1782
     zi_524999_r524999    -18.967    -19.291    -19.615    -19.727    -19.727
     zi_525000_r525000    -20.428    -20.777    -21.126    -21.237    -21.253
 
-pos = 5 ; key = ar_aplusk_mesh ;rown= 525000 ,coln= 1
+pos = 6 ; key = ar_aplusk_mesh ;rown= 525000 ,coln= 1
 ar_aplusk_mesh :mu= -8.3548 ,sd= 9.8722 ,min= -20 ,max= 50
                          zi_1_c1
                          _______
@@ -1710,42 +1725,42 @@ ar_aplusk_mesh :mu= -8.3548 ,sd= 9.8722 ,min= -20 ,max= 50
     zi_524999_r524999         50
     zi_525000_r525000         50
 
-pos = 6 ; key = ar_coh_bridge_perc ;rown= 1 ,coln= 50
+pos = 7 ; key = ar_coh_bridge_perc ;rown= 1 ,coln= 50
 ar_coh_bridge_perc :mu= 0.5 ,sd= 0.2975 ,min= 0 ,max= 1
                zi_1_C1    zi_2_C2     zi_25_c25    zi_49_c49    zi_50_c50
                _______    ________    _________    _________    _________
 
     zi_1_r1       0       0.020408     0.4898       0.97959         1    
 
-pos = 7 ; key = ar_forbrblk ;rown= 1 ,coln= 9
+pos = 8 ; key = ar_forbrblk ;rown= 1 ,coln= 9
 ar_forbrblk :mu= -7.0556 ,sd= 6.3809 ,min= -19 ,max= 0
                zi_1_c1    zi_2_c2    zi_5_c5    zi_8_c8    zi_9_c9
                _______    _______    _______    _______    _______
 
     zi_1_r1      -19       -14.5      -5.5        -1          0   
 
-pos = 8 ; key = ar_forbrblk_r ;rown= 1 ,coln= 9
+pos = 9 ; key = ar_forbrblk_r ;rown= 1 ,coln= 9
 ar_forbrblk_r :mu= 0.065 ,sd= 0 ,min= 0.065 ,max= 0.065
                zi_1_c1    zi_2_c2    zi_5_c5    zi_8_c8    zi_9_c9
                _______    _______    _______    _______    _______
 
     zi_1_r1     0.065      0.065      0.065      0.065      0.065 
 
-pos = 9 ; key = ar_interp_c_grid ;rown= 1 ,coln= 772572
+pos = 10 ; key = ar_interp_c_grid ;rown= 1 ,coln= 772572
 ar_interp_c_grid :mu= 38.6486 ,sd= 22.3023 ,min= 0.02 ,max= 77.2773
                zi_1_C1    zi_2_C2    zi_386286_c386286    zi_772571_c772571    zi_772572_c772572
                _______    _______    _________________    _________________    _________________
 
     zi_1_r1     0.02      0.0201          38.649               77.277               77.277      
 
-pos = 10 ; key = ar_interp_coh_grid ;rown= 1 ,coln= 772
+pos = 11 ; key = ar_interp_coh_grid ;rown= 1 ,coln= 772
 ar_interp_coh_grid :mu= 18.6145 ,sd= 22.347 ,min= -20 ,max= 57.2773
                zi_1_C1    zi_2_C2    zi_386_c386    zi_771_c771    zi_772_c772
                _______    _______    ___________    ___________    ___________
 
     zi_1_r1      -20       -19.9       18.538         57.177         57.277   
 
-pos = 11 ; key = ar_k_mesha ;rown= 772 ,coln= 1
+pos = 12 ; key = ar_k_mesha ;rown= 772 ,coln= 1
 ar_k_mesha :mu= 0 ,sd= 0 ,min= 0 ,max= 0
                    zi_1_c1
                    _______
@@ -1756,85 +1771,96 @@ ar_k_mesha :mu= 0 ,sd= 0 ,min= 0 ,max= 0
     zi_771_r771       0   
     zi_772_r772       0   
 
-pos = 12 ; key = ar_w_level ;rown= 1 ,coln= 700
+pos = 13 ; key = ar_k_mesha_ori ;rown= 525000 ,coln= 1
+ar_k_mesha_ori :mu= 5.8226 ,sd= 6.6708 ,min= 0 ,max= 69.93
+                         zi_1_c1
+                         _______
+
+    zi_1_R1                   0 
+    zi_2_R2                   0 
+    zi_262500_r262500    4.9091 
+    zi_524999_r524999    68.504 
+    zi_525000_r525000     69.93 
+
+pos = 14 ; key = ar_w_level ;rown= 1 ,coln= 700
 ar_w_level :mu= 14.9786 ,sd= 20.2441 ,min= -20 ,max= 50
                zi_1_C1    zi_2_C2    zi_350_c350    zi_699_c699    zi_700_c700
                _______    _______    ___________    ___________    ___________
 
     zi_1_r1      -20       -19.9        14.9           49.9            50     
 
-pos = 13 ; key = ar_w_level_full ;rown= 1 ,coln= 10500
+pos = 15 ; key = ar_w_level_full ;rown= 1 ,coln= 10500
 ar_w_level_full :mu= -8.3548 ,sd= 9.8727 ,min= -20 ,max= 50
                zi_1_C1    zi_2_C2    zi_5250_C5250    zi_10499_c10499    zi_10500_c10500
                _______    _______    _____________    _______________    _______________
 
     zi_1_r1      -20       -19.9        -15.086            49.9                50       
 
-pos = 14 ; key = ar_w_perc ;rown= 1 ,coln= 50
+pos = 16 ; key = ar_w_perc ;rown= 1 ,coln= 50
 ar_w_perc :mu= 0.5 ,sd= 0.2969 ,min= 0.001 ,max= 0.999
                zi_1_C1    zi_2_C2     zi_25_c25    zi_49_c49    zi_50_c50
                _______    ________    _________    _________    _________
 
     zi_1_r1     0.001     0.021367     0.48982      0.97863       0.999  
 
-pos = 15 ; key = ar_z_r_infbr ;rown= 1 ,coln= 5
+pos = 17 ; key = ar_z_r_infbr ;rown= 1 ,coln= 5
 ar_z_r_infbr :mu= 0.06 ,sd= 0.02767 ,min= 0.025 ,max= 0.095
                zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5
                _______    _______    _______    _______    _______
 
     zi_1_r1     0.025     0.0425      0.06      0.0775      0.095 
 
-pos = 16 ; key = ar_z_r_infbr_mesh_wage_r1w2 ;rown= 1 ,coln= 75
+pos = 18 ; key = ar_z_r_infbr_mesh_wage_r1w2 ;rown= 1 ,coln= 75
 ar_z_r_infbr_mesh_wage_r1w2 :mu= 0.06 ,sd= 0.024915 ,min= 0.025 ,max= 0.095
                zi_1_C1    zi_2_C2    zi_38_c38    zi_74_c74    zi_75_c75
                _______    _______    _________    _________    _________
 
     zi_1_r1     0.025     0.0425       0.06        0.0775        0.095  
 
-pos = 17 ; key = ar_z_r_infbr_mesh_wage_w1r2 ;rown= 1 ,coln= 75
+pos = 19 ; key = ar_z_r_infbr_mesh_wage_w1r2 ;rown= 1 ,coln= 75
 ar_z_r_infbr_mesh_wage_w1r2 :mu= 0.06 ,sd= 0.024915 ,min= 0.025 ,max= 0.095
                zi_1_C1    zi_2_C2    zi_38_c38    zi_74_c74    zi_75_c75
                _______    _______    _________    _________    _________
 
     zi_1_r1     0.025      0.025       0.06         0.095        0.095  
 
-pos = 18 ; key = ar_z_r_infbr_prob ;rown= 1 ,coln= 5
+pos = 20 ; key = ar_z_r_infbr_prob ;rown= 1 ,coln= 5
 ar_z_r_infbr_prob :mu= 0.2 ,sd= 0.34803 ,min= 0.00012164 ,max= 0.81093
                 zi_1_c1       zi_2_c2     zi_3_c3     zi_4_c4    zi_5_c5
                __________    _________    ________    _______    _______
 
     zi_1_r1    0.00012164    0.0024328    0.024328    0.16219    0.81093
 
-pos = 19 ; key = ar_z_wage ;rown= 1 ,coln= 15
+pos = 21 ; key = ar_z_wage ;rown= 1 ,coln= 15
 ar_z_wage :mu= 1.1347 ,sd= 0.69878 ,min= 0.34741 ,max= 2.567
                zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                _______    _______    _______    _________    _________
 
     zi_1_r1    0.34741    0.40076    0.94436     2.2253        2.567  
 
-pos = 20 ; key = ar_z_wage_mesh_r_infbr_r1w2 ;rown= 1 ,coln= 75
+pos = 22 ; key = ar_z_wage_mesh_r_infbr_r1w2 ;rown= 1 ,coln= 75
 ar_z_wage_mesh_r_infbr_r1w2 :mu= 1.1347 ,sd= 0.67963 ,min= 0.34741 ,max= 2.567
                zi_1_C1    zi_2_C2    zi_38_c38    zi_74_c74    zi_75_c75
                _______    _______    _________    _________    _________
 
     zi_1_r1    0.34741    0.34741     0.94436       2.567        2.567  
 
-pos = 21 ; key = ar_z_wage_mesh_r_infbr_w1r2 ;rown= 1 ,coln= 75
+pos = 23 ; key = ar_z_wage_mesh_r_infbr_w1r2 ;rown= 1 ,coln= 75
 ar_z_wage_mesh_r_infbr_w1r2 :mu= 1.1347 ,sd= 0.67963 ,min= 0.34741 ,max= 2.567
                zi_1_C1    zi_2_C2    zi_38_c38    zi_74_c74    zi_75_c75
                _______    _______    _________    _________    _________
 
     zi_1_r1    0.34741    0.40076     0.94436      2.2253        2.567  
 
-pos = 22 ; key = ar_z_wage_prob ;rown= 1 ,coln= 15
+pos = 24 ; key = ar_z_wage_prob ;rown= 1 ,coln= 15
 ar_z_wage_prob :mu= 0.066667 ,sd= 0.060897 ,min= 0.0027089 ,max= 0.16757
                 zi_1_C1      zi_2_C2     zi_8_C8    zi_14_c14    zi_15_c15
                _________    _________    _______    _________    _________
 
     zi_1_r1    0.0027089    0.0069499    0.16757    0.0069499    0.0027089
 
-pos = 23 ; key = it_ameshk_n ; val = 772
-pos = 24 ; key = mt_bl_w_perc_mesh_interp_coh_grid_wneg ;rown= 50 ,coln= 772
+pos = 25 ; key = it_ameshk_n ; val = 772
+pos = 26 ; key = mt_bl_w_perc_mesh_interp_coh_grid_wneg ;rown= 50 ,coln= 772
 mt_bl_w_perc_mesh_interp_coh_grid_wneg :mu= 0.60951 ,sd= 0.48787 ,min= 0 ,max= 1
                  zi_1_C1    zi_2_C2    zi_386_c386    zi_771_c771    zi_772_c772
                  _______    _______    ___________    ___________    ___________
@@ -1845,7 +1871,7 @@ mt_bl_w_perc_mesh_interp_coh_grid_wneg :mu= 0.60951 ,sd= 0.48787 ,min= 0 ,max= 1
     zi_49_r49     true       true         false          false          false   
     zi_50_r50     true       true         false          false          false   
 
-pos = 25 ; key = mt_coh_bridge_perc_mesh_w_level_neg ;rown= 200 ,coln= 50
+pos = 27 ; key = mt_coh_bridge_perc_mesh_w_level_neg ;rown= 200 ,coln= 50
 mt_coh_bridge_perc_mesh_w_level_neg :mu= 0.5 ,sd= 0.29452 ,min= 0 ,max= 1
                    zi_1_C1    zi_2_C2     zi_25_c25    zi_49_c49    zi_50_c50
                    _______    ________    _________    _________    _________
@@ -1856,7 +1882,7 @@ mt_coh_bridge_perc_mesh_w_level_neg :mu= 0.5 ,sd= 0.29452 ,min= 0 ,max= 1
     zi_199_r199       0       0.020408     0.4898       0.97959         1    
     zi_200_r200       0       0.020408     0.4898       0.97959         1    
 
-pos = 26 ; key = mt_coh_w_perc_ratio_wneg ;rown= 23527 ,coln= 1
+pos = 28 ; key = mt_coh_w_perc_ratio_wneg ;rown= 23527 ,coln= 1
 mt_coh_w_perc_ratio_wneg :mu= 0.72495 ,sd= 0.37217 ,min= 0 ,max= 1
                        zi_1_c1
                        _______
@@ -1867,7 +1893,7 @@ mt_coh_w_perc_ratio_wneg :mu= 0.72495 ,sd= 0.37217 ,min= 0 ,max= 1
     zi_23526_r23526       1   
     zi_23527_r23527       1   
 
-pos = 27 ; key = mt_coh_wkb ;rown= 772 ,coln= 75
+pos = 29 ; key = mt_coh_wkb ;rown= 772 ,coln= 75
 mt_coh_wkb :mu= 18.6145 ,sd= 22.3328 ,min= -20 ,max= 57.2773
                    zi_1_C1    zi_2_C2    zi_38_c38    zi_74_c74    zi_75_c75
                    _______    _______    _________    _________    _________
@@ -1878,7 +1904,18 @@ mt_coh_wkb :mu= 18.6145 ,sd= 22.3328 ,min= -20 ,max= 57.2773
     zi_771_r771    57.177     57.177      57.177       57.177       57.177  
     zi_772_r772    57.277     57.277      57.277       57.277       57.277  
 
-pos = 28 ; key = mt_interp_coh_grid_mesh_w_perc ;rown= 50 ,coln= 772
+pos = 30 ; key = mt_coh_wkb_ori ;rown= 2625000 ,coln= 15
+mt_coh_wkb_ori :mu= -7.3083 ,sd= 10.3196 ,min= -21.4564 ,max= 57.2773
+                           zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
+                           _______    _______    _______    _________    _________
+
+    zi_1_R1                -20.056    -20.056    -20.056     -20.056      -20.056 
+    zi_2_R2                -20.056    -20.056    -20.056     -20.056      -20.056 
+    zi_1312500_r1312500    -15.619    -15.524     -14.56     -12.289      -11.683 
+    zi_2624999_r2624999     45.332     45.576     48.066      53.932       55.497 
+    zi_2625000_r2625000     45.129     45.375     47.883      53.793        55.37 
+
+pos = 31 ; key = mt_interp_coh_grid_mesh_w_perc ;rown= 50 ,coln= 772
 mt_interp_coh_grid_mesh_w_perc :mu= 18.6145 ,sd= 22.3329 ,min= -20 ,max= 57.2773
                  zi_1_C1    zi_2_C2    zi_386_c386    zi_771_c771    zi_772_c772
                  _______    _______    ___________    ___________    ___________
@@ -1889,7 +1926,7 @@ mt_interp_coh_grid_mesh_w_perc :mu= 18.6145 ,sd= 22.3329 ,min= -20 ,max= 57.2773
     zi_49_r49      -20       -19.9       18.538         57.177         57.277   
     zi_50_r50      -20       -19.9       18.538         57.177         57.277   
 
-pos = 29 ; key = mt_interp_coh_grid_mesh_z ;rown= 772 ,coln= 75
+pos = 32 ; key = mt_interp_coh_grid_mesh_z ;rown= 772 ,coln= 75
 mt_interp_coh_grid_mesh_z :mu= 18.6145 ,sd= 22.3328 ,min= -20 ,max= 57.2773
                    zi_1_C1    zi_2_C2    zi_38_c38    zi_74_c74    zi_75_c75
                    _______    _______    _________    _________    _________
@@ -1900,7 +1937,7 @@ mt_interp_coh_grid_mesh_z :mu= 18.6145 ,sd= 22.3328 ,min= -20 ,max= 57.2773
     zi_771_r771    57.177     57.177      57.177       57.177       57.177  
     zi_772_r772    57.277     57.277      57.277       57.277       57.277  
 
-pos = 30 ; key = mt_interp_coh_grid_mesh_z_wage ;rown= 772 ,coln= 15
+pos = 33 ; key = mt_interp_coh_grid_mesh_z_wage ;rown= 772 ,coln= 15
 mt_interp_coh_grid_mesh_z_wage :mu= 18.6145 ,sd= 22.3335 ,min= -20 ,max= 57.2773
                    zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                    _______    _______    _______    _________    _________
@@ -1911,7 +1948,7 @@ mt_interp_coh_grid_mesh_z_wage :mu= 18.6145 ,sd= 22.3335 ,min= -20 ,max= 57.2773
     zi_771_r771    57.177     57.177     57.177      57.177       57.177  
     zi_772_r772    57.277     57.277     57.277      57.277       57.277  
 
-pos = 31 ; key = mt_k ;rown= 50 ,coln= 10500
+pos = 34 ; key = mt_k ;rown= 50 ,coln= 10500
 mt_k :mu= 5.8226 ,sd= 6.6708 ,min= 0 ,max= 69.93
                  zi_1_C1     zi_2_C2      zi_5250_C5250    zi_10499_c10499    zi_10500_c10500
                  _______    __________    _____________    _______________    _______________
@@ -1922,7 +1959,7 @@ mt_k :mu= 5.8226 ,sd= 6.6708 ,min= 0 ,max= 69.93
     zi_49_r49       0         0.098144         4.809           68.406             68.504     
     zi_50_r50       0          0.10019        4.9091            69.83              69.93     
 
-pos = 32 ; key = mt_w_level_neg_mesh_coh_bridge_perc ;rown= 200 ,coln= 50
+pos = 35 ; key = mt_w_level_neg_mesh_coh_bridge_perc ;rown= 200 ,coln= 50
 mt_w_level_neg_mesh_coh_bridge_perc :mu= -10.0215 ,sd= 5.7903 ,min= -20 ,max= -0.04298
                    zi_1_C1     zi_2_C2     zi_25_c25    zi_49_c49    zi_50_c50
                    ________    ________    _________    _________    _________
@@ -1933,7 +1970,7 @@ mt_w_level_neg_mesh_coh_bridge_perc :mu= -10.0215 ,sd= 5.7903 ,min= -20 ,max= -0
     zi_199_r199    -0.14327    -0.14327    -0.14327     -0.14327     -0.14327 
     zi_200_r200    -0.04298    -0.04298    -0.04298     -0.04298     -0.04298 
 
-pos = 33 ; key = mt_w_perc_mesh_interp_coh_grid ;rown= 50 ,coln= 772
+pos = 36 ; key = mt_w_perc_mesh_interp_coh_grid ;rown= 50 ,coln= 772
 mt_w_perc_mesh_interp_coh_grid :mu= -0.69276 ,sd= 17.2218 ,min= -20 ,max= 57.2
                  zi_1_C1    zi_2_C2    zi_386_c386    zi_771_c771    zi_772_c772
                  _______    _______    ___________    ___________    ___________
@@ -1944,7 +1981,7 @@ mt_w_perc_mesh_interp_coh_grid :mu= -0.69276 ,sd= 17.2218 ,min= -20 ,max= 57.2
     zi_49_r49      -20      -19.902       17.715         55.528         55.626  
     zi_50_r50      -20        -19.9         18.5           57.1           57.2  
 
-pos = 34 ; key = mt_w_perc_mesh_interp_coh_grid_wneg ;rown= 23527 ,coln= 1
+pos = 37 ; key = mt_w_perc_mesh_interp_coh_grid_wneg ;rown= 23527 ,coln= 1
 mt_w_perc_mesh_interp_coh_grid_wneg :mu= -12.2397 ,sd= 5.8332 ,min= -20 ,max= -0.00091541
                        zi_1_c1
                        _______
@@ -1955,7 +1992,7 @@ mt_w_perc_mesh_interp_coh_grid_wneg :mu= -12.2397 ,sd= 5.8332 ,min= -20 ,max= -0
     zi_23526_r23526    -2.6095
     zi_23527_r23527    -1.0355
 
-pos = 35 ; key = mt_w_perc_mesh_interp_coh_grid_wpos ;rown= 15073 ,coln= 1
+pos = 38 ; key = mt_w_perc_mesh_interp_coh_grid_wpos ;rown= 15073 ,coln= 1
 mt_w_perc_mesh_interp_coh_grid_wpos :mu= 17.3305 ,sd= 13.1706 ,min= 0.0036274 ,max= 57.2
                        zi_1_c1 
                        ________
@@ -1966,7 +2003,7 @@ mt_w_perc_mesh_interp_coh_grid_wpos :mu= 17.3305 ,sd= 13.1706 ,min= 0.0036274 ,m
     zi_15072_r15072      55.626
     zi_15073_r15073        57.2
 
-pos = 36 ; key = mt_z_trans ;rown= 75 ,coln= 75
+pos = 39 ; key = mt_z_trans ;rown= 75 ,coln= 75
 mt_z_trans :mu= 0.013333 ,sd= 0.040863 ,min= 0 ,max= 0.22626
                   zi_1_C1       zi_2_C2      zi_38_c38     zi_74_c74     zi_75_c75 
                  __________    __________    __________    __________    __________
@@ -1977,7 +2014,7 @@ mt_z_trans :mu= 0.013333 ,sd= 0.040863 ,min= 0 ,max= 0.22626
     zi_74_r74    4.2258e-20    1.1385e-17    2.4049e-05       0.15912      0.091083
     zi_75_r75    3.3344e-22    1.3449e-19    3.1195e-06       0.21758       0.21097
 
-pos = 37 ; key = mt_z_wage_mesh_coh_wkb ;rown= 2625000 ,coln= 15
+pos = 40 ; key = mt_z_wage_mesh_coh_wkb ;rown= 2625000 ,coln= 15
 mt_z_wage_mesh_coh_wkb :mu= 1.1347 ,sd= 0.67508 ,min= 0.34741 ,max= 2.567
                            zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                            _______    _______    _______    _________    _________
@@ -1988,7 +2025,7 @@ mt_z_wage_mesh_coh_wkb :mu= 1.1347 ,sd= 0.67508 ,min= 0.34741 ,max= 2.567
     zi_2624999_r2624999    0.34741    0.40076    0.94436     2.2253        2.567  
     zi_2625000_r2625000    0.34741    0.40076    0.94436     2.2253        2.567  
 
-pos = 38 ; key = mt_z_wage_mesh_interp_coh_grid ;rown= 772 ,coln= 15
+pos = 41 ; key = mt_z_wage_mesh_interp_coh_grid ;rown= 772 ,coln= 15
 mt_z_wage_mesh_interp_coh_grid :mu= 1.1347 ,sd= 0.67511 ,min= 0.34741 ,max= 2.567
                    zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                    _______    _______    _______    _________    _________
@@ -2003,46 +2040,49 @@ mt_z_wage_mesh_interp_coh_grid :mu= 1.1347 ,sd= 0.67511 ,min= 0.34741 ,max= 2.56
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Matrix in Container and Sizes and Basic Statistics
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                                            i     idx      rowN          colN         mean        std          min            max    
-                                            __    ___    _________    __________    ________    ________    __________    ___________
+                                              i     idx      rowN          colN         mean        std          min            max    
+                                              __    ___    _________    __________    ________    ________    __________    ___________
 
-    ar_a                                     1     1             1           772      18.614      22.347           -20         57.277
-    ar_a_meshk                               2     2           772             1      18.614      22.347           -20         57.277
-    ar_ak_perc                               3     3             1            50         0.5      0.2969         0.001          0.999
-    ar_ameshk_tnext_with_r                   4     4      5.25e+05             5     -14.966      6.9834         -21.9         51.178
-    ar_aplusk_mesh                           5     5      5.25e+05             1     -8.3548      9.8722           -20             50
-    ar_coh_bridge_perc                       6     6             1            50         0.5      0.2975             0              1
-    ar_forbrblk                              7     7             1             9     -7.0556      6.3809           -19              0
-    ar_forbrblk_r                            8     8             1             9       0.065           0         0.065          0.065
-    ar_interp_c_grid                         9     9             1    7.7257e+05      38.649      22.302          0.02         77.277
-    ar_interp_coh_grid                      10    10             1           772      18.614      22.347           -20         57.277
-    ar_k_mesha                              11    11           772             1           0           0             0              0
-    ar_w_level                              12    12             1           700      14.979      20.244           -20             50
-    ar_w_level_full                         13    13             1         10500     -8.3548      9.8727           -20             50
-    ar_w_perc                               14    14             1            50         0.5      0.2969         0.001          0.999
-    ar_z_r_infbr                            15    15             1             5        0.06     0.02767         0.025          0.095
-    ar_z_r_infbr_mesh_wage_r1w2             16    16             1            75        0.06    0.024915         0.025          0.095
-    ar_z_r_infbr_mesh_wage_w1r2             17    17             1            75        0.06    0.024915         0.025          0.095
-    ar_z_r_infbr_prob                       18    18             1             5         0.2     0.34803    0.00012164        0.81093
-    ar_z_wage                               19    19             1            15      1.1347     0.69878       0.34741          2.567
-    ar_z_wage_mesh_r_infbr_r1w2             20    20             1            75      1.1347     0.67963       0.34741          2.567
-    ar_z_wage_mesh_r_infbr_w1r2             21    21             1            75      1.1347     0.67963       0.34741          2.567
-    ar_z_wage_prob                          22    22             1            15    0.066667    0.060897     0.0027089        0.16757
-    mt_bl_w_perc_mesh_interp_coh_grid_w&#8230;    23    24            50           772     0.60951     0.48787             0              1
-    mt_coh_bridge_perc_mesh_w_level_neg     24    25           200            50         0.5     0.29452             0              1
-    mt_coh_w_perc_ratio_wneg                25    26         23527             1     0.72495     0.37217             0              1
-    mt_coh_wkb                              26    27           772            75      18.614      22.333           -20         57.277
-    mt_interp_coh_grid_mesh_w_perc          27    28            50           772      18.614      22.333           -20         57.277
-    mt_interp_coh_grid_mesh_z               28    29           772            75      18.614      22.333           -20         57.277
-    mt_interp_coh_grid_mesh_z_wage          29    30           772            15      18.614      22.334           -20         57.277
-    mt_k                                    30    31            50         10500      5.8226      6.6708             0          69.93
-    mt_w_level_neg_mesh_coh_bridge_perc     31    32           200            50     -10.021      5.7903           -20       -0.04298
-    mt_w_perc_mesh_interp_coh_grid          32    33            50           772    -0.69276      17.222           -20           57.2
-    mt_w_perc_mesh_interp_coh_grid_wneg     33    34         23527             1      -12.24      5.8332           -20    -0.00091541
-    mt_w_perc_mesh_interp_coh_grid_wpos     34    35         15073             1       17.33      13.171     0.0036274           57.2
-    mt_z_trans                              35    36            75            75    0.013333    0.040863             0        0.22626
-    mt_z_wage_mesh_coh_wkb                  36    37     2.625e+06            15      1.1347     0.67508       0.34741          2.567
-    mt_z_wage_mesh_interp_coh_grid          37    38           772            15      1.1347     0.67511       0.34741          2.567
+    ar_a                                       1     1             1           772      18.614      22.347           -20         57.277
+    ar_a_meshk                                 2     2           772             1      18.614      22.347           -20         57.277
+    ar_a_meshk_ori                             3     3      5.25e+05             1     -14.177      6.6708           -20          49.93
+    ar_ak_perc                                 4     4             1            50         0.5      0.2969         0.001          0.999
+    ar_ameshk_tnext_with_r                     5     5      5.25e+05             5     -14.966      6.9834         -21.9         51.178
+    ar_aplusk_mesh                             6     6      5.25e+05             1     -8.3548      9.8722           -20             50
+    ar_coh_bridge_perc                         7     7             1            50         0.5      0.2975             0              1
+    ar_forbrblk                                8     8             1             9     -7.0556      6.3809           -19              0
+    ar_forbrblk_r                              9     9             1             9       0.065           0         0.065          0.065
+    ar_interp_c_grid                          10    10             1    7.7257e+05      38.649      22.302          0.02         77.277
+    ar_interp_coh_grid                        11    11             1           772      18.614      22.347           -20         57.277
+    ar_k_mesha                                12    12           772             1           0           0             0              0
+    ar_k_mesha_ori                            13    13      5.25e+05             1      5.8226      6.6708             0          69.93
+    ar_w_level                                14    14             1           700      14.979      20.244           -20             50
+    ar_w_level_full                           15    15             1         10500     -8.3548      9.8727           -20             50
+    ar_w_perc                                 16    16             1            50         0.5      0.2969         0.001          0.999
+    ar_z_r_infbr                              17    17             1             5        0.06     0.02767         0.025          0.095
+    ar_z_r_infbr_mesh_wage_r1w2               18    18             1            75        0.06    0.024915         0.025          0.095
+    ar_z_r_infbr_mesh_wage_w1r2               19    19             1            75        0.06    0.024915         0.025          0.095
+    ar_z_r_infbr_prob                         20    20             1             5         0.2     0.34803    0.00012164        0.81093
+    ar_z_wage                                 21    21             1            15      1.1347     0.69878       0.34741          2.567
+    ar_z_wage_mesh_r_infbr_r1w2               22    22             1            75      1.1347     0.67963       0.34741          2.567
+    ar_z_wage_mesh_r_infbr_w1r2               23    23             1            75      1.1347     0.67963       0.34741          2.567
+    ar_z_wage_prob                            24    24             1            15    0.066667    0.060897     0.0027089        0.16757
+    mt_bl_w_perc_mesh_interp_coh_grid_wneg    25    26            50           772     0.60951     0.48787             0              1
+    mt_coh_bridge_perc_mesh_w_level_neg       26    27           200            50         0.5     0.29452             0              1
+    mt_coh_w_perc_ratio_wneg                  27    28         23527             1     0.72495     0.37217             0              1
+    mt_coh_wkb                                28    29           772            75      18.614      22.333           -20         57.277
+    mt_coh_wkb_ori                            29    30     2.625e+06            15     -7.3083       10.32       -21.456         57.277
+    mt_interp_coh_grid_mesh_w_perc            30    31            50           772      18.614      22.333           -20         57.277
+    mt_interp_coh_grid_mesh_z                 31    32           772            75      18.614      22.333           -20         57.277
+    mt_interp_coh_grid_mesh_z_wage            32    33           772            15      18.614      22.334           -20         57.277
+    mt_k                                      33    34            50         10500      5.8226      6.6708             0          69.93
+    mt_w_level_neg_mesh_coh_bridge_perc       34    35           200            50     -10.021      5.7903           -20       -0.04298
+    mt_w_perc_mesh_interp_coh_grid            35    36            50           772    -0.69276      17.222           -20           57.2
+    mt_w_perc_mesh_interp_coh_grid_wneg       36    37         23527             1      -12.24      5.8332           -20    -0.00091541
+    mt_w_perc_mesh_interp_coh_grid_wpos       37    38         15073             1       17.33      13.171     0.0036274           57.2
+    mt_z_trans                                38    39            75            75    0.013333    0.040863             0        0.22626
+    mt_z_wage_mesh_coh_wkb                    39    40     2.625e+06            15      1.1347     0.67508       0.34741          2.567
+    mt_z_wage_mesh_interp_coh_grid            40    41           772            15      1.1347     0.67511       0.34741          2.567
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -2051,7 +2091,7 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
                    i    idx    value
                    _    ___    _____
 
-    it_ameshk_n    1    23      772 
+    it_ameshk_n    1    25      772 
 
 </pre><h2 id="37">Display 3 param_map</h2><pre class="codeinput">    fft_container_map_display(param_map, it_display_summmat_rowmax, it_display_summmat_colmax);
 </pre><pre class="codeoutput">----------------------------------------
@@ -2125,54 +2165,54 @@ pos = 50 ; key = st_z_r_infbr_drv_prb_type ; val = poiss
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Scalars in Container and Sizes and Basic Statistics
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                               i     idx    value
-                               __    ___    _____
+                               i     idx     value 
+                               __    ___    _______
 
-    bl_b_is_principle           1     1       1  
-    bl_bridge                   2     2       1  
-    bl_default                  3     3       1  
-    bl_rollover                 4     4       1  
-    fl_Amean                    5     5       1  
-    fl_alpha                    6     6       1  
-    fl_b_bd                     7     7       1  
-    fl_beta                     8     8       1  
-    fl_c_min                    9     9       1  
-    fl_coh_interp_grid_gap     10    10       1  
-    fl_crra                    11    11       1  
-    fl_default_wprime          12    12       0  
-    fl_delta                   13    13       1  
-    fl_forbrblk_brleast        14    14       1  
-    fl_forbrblk_brmost         15    15       1  
-    fl_forbrblk_gap            16    16       1  
-    fl_k_max                   17    17       1  
-    fl_k_min                   18    18       0  
-    fl_nan_replace             19    19       1  
-    fl_r_fbr                   20    20       1  
-    fl_r_fsv                   21    21       1  
-    fl_r_inf                   22    22       1  
-    fl_tol_dist                23    23       1  
-    fl_tol_pol                 24    24       1  
-    fl_tol_val                 25    25       1  
-    fl_w                       26    26       1  
-    fl_w_interp_grid_gap       27    27       1  
-    fl_w_max                   28    28       1  
-    fl_w_min                   29    29       1  
-    fl_z_r_infbr_max           30    30       1  
-    fl_z_r_infbr_min           31    31       1  
-    fl_z_r_infbr_n             32    32       1  
-    fl_z_r_infbr_poiss_mean    33    33       1  
-    fl_z_wage_mu               34    34       0  
-    fl_z_wage_rho              35    35       1  
-    fl_z_wage_sig              36    36       1  
-    it_ak_perc_n               37    37       1  
-    it_c_interp_grid_gap       38    38       1  
-    it_coh_bridge_perc_n       39    39       1  
-    it_maxiter_dist            40    40       1  
-    it_maxiter_val             41    41       1  
-    it_tol_pol_nochange        42    42       1  
-    it_w_perc_n                43    43       1  
-    it_z_n                     44    44       1  
-    it_z_wage_n                45    45       1  
+    bl_b_is_principle           1     1           1
+    bl_bridge                   2     2           1
+    bl_default                  3     3           1
+    bl_rollover                 4     4           1
+    fl_Amean                    5     5           1
+    fl_alpha                    6     6        0.36
+    fl_b_bd                     7     7         -20
+    fl_beta                     8     8        0.94
+    fl_c_min                    9     9        0.02
+    fl_coh_interp_grid_gap     10    10         0.1
+    fl_crra                    11    11         1.5
+    fl_default_wprime          12    12           0
+    fl_delta                   13    13        0.08
+    fl_forbrblk_brleast        14    14          -1
+    fl_forbrblk_brmost         15    15         -19
+    fl_forbrblk_gap            16    16        -1.5
+    fl_k_max                   17    17          70
+    fl_k_min                   18    18           0
+    fl_nan_replace             19    19       -9999
+    fl_r_fbr                   20    20       0.065
+    fl_r_fsv                   21    21       0.025
+    fl_r_inf                   22    22       0.095
+    fl_tol_dist                23    23       1e-05
+    fl_tol_pol                 24    24       1e-05
+    fl_tol_val                 25    25       1e-05
+    fl_w                       26    26     0.44365
+    fl_w_interp_grid_gap       27    27         0.1
+    fl_w_max                   28    28          50
+    fl_w_min                   29    29         -20
+    fl_z_r_infbr_max           30    30       0.095
+    fl_z_r_infbr_min           31    31       0.025
+    fl_z_r_infbr_n             32    32           5
+    fl_z_r_infbr_poiss_mean    33    33          20
+    fl_z_wage_mu               34    34           0
+    fl_z_wage_rho              35    35         0.8
+    fl_z_wage_sig              36    36         0.2
+    it_ak_perc_n               37    37          50
+    it_c_interp_grid_gap       38    38      0.0001
+    it_coh_bridge_perc_n       39    39          50
+    it_maxiter_dist            40    40        1000
+    it_maxiter_val             41    41         250
+    it_tol_pol_nochange        42    42          25
+    it_w_perc_n                43    43          50
+    it_z_n                     44    44          75
+    it_z_wage_n                45    45          15
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -2570,7 +2610,7 @@ ans =
 
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
-%% Risky + Safe Asset (Save + Borr + FIBS) Interpolated-Percentage (Optimized-Vectorized)
+%% Risky + Safe Asset (Save + Borr + FIBS + RShock) Interpolated-Percentage (Optimized-Vectorized)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
@@ -3287,6 +3327,10 @@ if (bl_post)
     result_map('ar_val_diff_norm') = ar_val_diff_norm(1:it_iter_last);
     result_map('ar_pol_diff_norm') = ar_pol_diff_norm(1:it_iter_last);
     result_map('mt_pol_perc_change') = mt_pol_perc_change(1:it_iter_last, :);
+    
+    armt_map('mt_coh_wkb_ori') = mt_coh_wkb;
+    armt_map('ar_a_meshk_ori') = ar_a_meshk;
+    armt_map('ar_k_mesha_ori') = ar_k_mesha;
     
     armt_map('mt_coh_wkb') = mt_interp_coh_grid_mesh_z;
     armt_map('it_ameshk_n') = length(ar_interp_coh_grid);

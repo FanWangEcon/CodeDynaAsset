@@ -1,4 +1,4 @@
-%% Solve Save + Borr Dynamic Programming Problem (Optimized-Vectorized)
+%% Solve Save + Borr (RShock) Dynamic Programming Problem (Optimized-Vectorized)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
@@ -107,7 +107,6 @@ function result_map = ff_abz_vf_vecsv(varargin)
 %
 
 it_param_set = 4;
-bl_input_override = true;
 [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
 
 % Note: param_map and support_map can be adjusted here or outside to override defaults
@@ -118,7 +117,7 @@ bl_input_override = true;
 % param_map('fl_r_save') = 0.025;
 % param_map('fl_z_r_borr_poiss_mean') = 1.75;
 
-[armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
+[armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map); % 1 for override
 default_params = {param_map support_map armt_map func_map};
 
 %% Parse Parameters 1
@@ -131,8 +130,7 @@ support_map = [support_map; default_params{2}];
 if params_len >= 1 && params_len <= 2
     % If override param_map, re-generate armt and func if they are not
     % provided
-    bl_input_override = true;
-    [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+    [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map);
 else
     % Override all
     armt_map = [armt_map; default_params{3}];
@@ -170,13 +168,8 @@ params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
 [bl_profile, st_profile_path, ...
     st_profile_prefix, st_profile_name_main, st_profile_suffix, ...
     bl_time, bl_display_defparam, bl_display, it_display_every, bl_post] = params_group{:};
-
-%% Display Parameters
-
-if (bl_display_defparam)
-    fft_container_map_display(param_map);
-    fft_container_map_display(support_map);
-end
+params_group = values(support_map, {'it_display_summmat_rowmax', 'it_display_summmat_colmax'});
+[it_display_summmat_rowmax, it_display_summmat_colmax] = params_group{:};
 
 %% Initialize Output Matrixes
 % include mt_pol_idx which we did not have in looped code
@@ -399,6 +392,27 @@ if (bl_post)
     result_map('ar_pol_diff_norm') = ar_pol_diff_norm(1:it_iter_last);
     result_map('mt_pol_perc_change') = mt_pol_perc_change(1:it_iter_last, :);
     result_map = ff_az_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+end
+
+%% Display Various Containers
+
+if (bl_display_defparam)
+
+    %% Display 1 support_map
+    fft_container_map_display(support_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+
+    %% Display 2 armt_map
+    fft_container_map_display(armt_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+
+    %% Display 3 param_map
+    fft_container_map_display(param_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+
+    %% Display 4 func_map
+    fft_container_map_display(func_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+
+    %% Display 5 result_map
+    fft_container_map_display(result_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+
 end
 
 end

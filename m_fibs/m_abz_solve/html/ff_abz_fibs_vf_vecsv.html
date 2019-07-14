@@ -67,7 +67,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
   </style></head><body><div class="content"><h1>Solve For+Inf+Borr+Save Dynamic Programming Problem (Optimized-Vectorized)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_ABZ_FIBS_VF_VECSV solve infinite horizon exo shock + endo asset problem</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1</a></li><li><a href="#5">Parse Parameters 2</a></li><li><a href="#6">Initialize Output Matrixes</a></li><li><a href="#7">Initialize Convergence Conditions</a></li><li><a href="#8">Iterate Value Function</a></li><li><a href="#10">Solve Optimization Problem Current Iteration</a></li><li><a href="#12">Solve the Formal Informal Problem for each a' and coh: c_forinf(a')</a></li><li><a href="#14">Update Consumption Matrix <b>CASE A + B + C</b> Consumptions</a></li><li><a href="#15">Evaluate u(c) and store</a></li><li><a href="#17">Solve Optimization Problem: max_{a'} (u(c_forinf(a')) + EV(a',z'))</a></li><li><a href="#19">Check Tolerance and Continuation</a></li><li><a href="#21">Process Optimal Choices</a></li><li><a href="#22">Post Solution Graph and Table Generation</a></li><li><a href="#23">Display Various Containers</a></li><li><a href="#25">Display 1 support_map</a></li><li><a href="#26">Display 2 armt_map</a></li><li><a href="#27">Display 3 param_map</a></li><li><a href="#28">Display 4 func_map</a></li><li><a href="#29">Display 5 result_map</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> result_map = ff_abz_fibs_vf_vecsv(varargin)
-</pre><h2 id="2">FF_ABZ_FIBS_VF_VECSV solve infinite horizon exo shock + endo asset problem</h2><p>This program solves the infinite horizon dynamic single asset and single shock problem with vectorized codes. <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_fibs_vf.html">ff_abz_fibs_vf</a> shows looped codes. The solution is the same.</p><p>The model could be invoked mainly in sveral ways:</p><div><ol><li>param_map('bl_default') = true;  param_map('bl_bridge') = false; param_map('bl_rollover') = true; Given these, default is possible, bridge loans are not needed because rollover is allowed for formal loans (or informal loans)</li><li>we change param_map('bl_bridge') = true, that means rollover is still allowed, but only allowed using informal sources, formal loans no longer allow for roll-over. Furthermore, if both bl_bridge and bl_rollover are false, that means we are not allowing for rollover at all, so households can not borrow such that they end up with negative cash-on-hand.</li></ol></div><p>Default simulation bl_bridge = false.</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@param func_map container container with function handles for consumption cash-on-hand etc.</p><p>@return result_map container contains policy function matrix, value function matrix, iteration results, and policy function, value function and iteration results tables.</p><p>@example</p><pre>  % Get Default Parameters
+</pre><h2 id="2">FF_ABZ_FIBS_VF_VECSV solve infinite horizon exo shock + endo asset problem</h2><p>The model could be invoked mainly in sveral ways:</p><div><ol><li>param_map('bl_default') = true;  param_map('bl_bridge') = false; param_map('bl_rollover') = true; Given these, default is possible, bridge loans are not needed because rollover is allowed for formal loans (or informal loans)</li><li>we change param_map('bl_bridge') = true, that means rollover is still allowed, but only allowed using informal sources, formal loans no longer allow for roll-over. Furthermore, if both bl_bridge and bl_rollover are false, that means we are not allowing for rollover at all, so households can not borrow such that they end up with negative cash-on-hand.</li></ol></div><p>Default simulation bl_bridge = false.</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@param func_map container container with function handles for consumption cash-on-hand etc.</p><p>@return result_map container contains policy function matrix, value function matrix, iteration results, and policy function, value function and iteration results tables.</p><p>@example</p><pre>  % Get Default Parameters
   it_param_set = 4;
   [param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
   % Chnage param_map keys for borrowing
@@ -93,7 +93,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
   support_map('bl_post') = true;
   support_map('bl_display_final') = false;
   % Call Program with external parameters that override defaults.
-  ff_abz_fibs_vf_vecsv(param_map, support_map);</pre><p>@include</p><div><ul><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_set_default_param.html">ffs_abz_fibs_set_default_param</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_get_funcgrid.html">ffs_abz_fibs_get_funcgrid</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost_bridge.html">ffs_fibs_min_c_cost_bridge</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_inf_bridge.html">ffs_fibs_inf_bridge</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost.html">ffs_fibs_min_c_cost</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_vf_post.html">ff_az_vf_post</a></li></ul></div><p>@seealso</p><div><ul><li>for/inf + save + borr loop: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf.html">ff_abz_fibs_vf</a></li><li>for/inf + borr vectorized: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf_vec.html">ff_abz_fibs_vf_vec</a></li><li>for/inf + borr optimized-vectorized: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf_vecsv.html">ff_abz_fibs_vf_vecsv</a></li></ul></div><h2 id="3">Default</h2><div><ul><li>it_param_set = 1: quick test</li><li>it_param_set = 2: benchmark run</li><li>it_param_set = 3: benchmark profile</li><li>it_param_set = 4: press publish button</li></ul></div><p>go to <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_fibs_set_default_param.html">ffs_abz_fibs_fibs_set_default_param</a> to change parameters in param_map container. The parameters can also be updated here directly after obtaining them from ffs_abz_fibs_set_default_param as we possibly change it_a_n and it_z_n here.</p><pre class="codeinput">it_param_set = 4;
+  ff_abz_fibs_vf_vecsv(param_map, support_map);</pre><p>@include</p><div><ul><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_paramfunc/html/ffs_abz_fibs_set_default_param.html">ffs_abz_fibs_set_default_param</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_paramfunc/html/ffs_abz_fibs_get_funcgrid.html">ffs_abz_fibs_get_funcgrid</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost_bridge.html">ffs_fibs_min_c_cost_bridge</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_inf_bridge.html">ffs_fibs_inf_bridge</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost.html">ffs_fibs_min_c_cost</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_vf_post.html">ff_az_vf_post</a></li></ul></div><p>@seealso</p><div><ul><li>for/inf + save + borr loop: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf.html">ff_abz_fibs_vf</a></li><li>for/inf + borr vectorized: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf_vec.html">ff_abz_fibs_vf_vec</a></li><li>for/inf + borr optimized-vectorized: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf_vecsv.html">ff_abz_fibs_vf_vecsv</a></li></ul></div><h2 id="3">Default</h2><div><ul><li>it_param_set = 1: quick test</li><li>it_param_set = 2: benchmark run</li><li>it_param_set = 3: benchmark profile</li><li>it_param_set = 4: press publish button</li></ul></div><p>go to <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_fibs_set_default_param.html">ffs_abz_fibs_fibs_set_default_param</a> to change parameters in param_map container. The parameters can also be updated here directly after obtaining them from ffs_abz_fibs_set_default_param as we possibly change it_a_n and it_z_n here.</p><pre class="codeinput">it_param_set = 4;
 bl_input_override = true;
 [param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
 
@@ -1302,34 +1302,34 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
                                     i     idx    value
                                     __    ___    _____
 
-    bl_display                       1     1       0  
-    bl_display_dist                  2     2       0  
-    bl_display_final                 3     3       1  
-    bl_display_final_dist            4     4       0  
-    bl_display_final_dist_detail     5     5       0  
-    bl_display_funcgrids             6     6       0  
-    bl_display_infbridge             7     7       0  
-    bl_display_minccost              8     8       0  
-    bl_graph                         9     9       1  
-    bl_graph_coh_t_coh              10    10       1  
-    bl_graph_discrete               11    11       1  
-    bl_graph_forinf_discrete        12    12       1  
-    bl_graph_forinf_pol_lvl         13    13       1  
-    bl_graph_forinf_pol_pct         14    14       1  
-    bl_graph_funcgrids              15    15       0  
-    bl_graph_onebyones              16    16       1  
-    bl_graph_pol_lvl                17    17       1  
-    bl_graph_pol_pct                18    18       1  
-    bl_graph_val                    19    19       1  
-    bl_img_save                     20    20       0  
-    bl_mat                          21    21       0  
-    bl_post                         22    22       1  
-    bl_profile                      23    23       0  
-    bl_profile_dist                 24    24       0  
-    bl_time                         25    25       0  
-    it_display_every                26    26       1  
-    it_display_final_colmax         27    27       1  
-    it_display_final_rowmax         28    28       1  
+    bl_display                       1     1        0 
+    bl_display_dist                  2     2        0 
+    bl_display_final                 3     3        1 
+    bl_display_final_dist            4     4        0 
+    bl_display_final_dist_detail     5     5        0 
+    bl_display_funcgrids             6     6        0 
+    bl_display_infbridge             7     7        0 
+    bl_display_minccost              8     8        0 
+    bl_graph                         9     9        1 
+    bl_graph_coh_t_coh              10    10        1 
+    bl_graph_discrete               11    11        1 
+    bl_graph_forinf_discrete        12    12        1 
+    bl_graph_forinf_pol_lvl         13    13        1 
+    bl_graph_forinf_pol_pct         14    14        1 
+    bl_graph_funcgrids              15    15        0 
+    bl_graph_onebyones              16    16        1 
+    bl_graph_pol_lvl                17    17        1 
+    bl_graph_pol_pct                18    18        1 
+    bl_graph_val                    19    19        1 
+    bl_img_save                     20    20        0 
+    bl_mat                          21    21        0 
+    bl_post                         22    22        1 
+    bl_profile                      23    23        0 
+    bl_profile_dist                 24    24        0 
+    bl_time                         25    25        0 
+    it_display_every                26    26        5 
+    it_display_final_colmax         27    27       12 
+    it_display_final_rowmax         28    28      100 
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -1495,43 +1495,43 @@ pos = 37 ; key = st_model ; val = abz_fibs
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Scalars in Container and Sizes and Basic Statistics
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                           i     idx    value
-                           __    ___    _____
+                           i     idx    value 
+                           __    ___    ______
 
-    bl_b_is_principle       1     1       0  
-    bl_bridge               2     2       1  
-    bl_default              3     3       1  
-    bl_loglin               4     4       0  
-    bl_rollover             5     5       1  
-    fl_a_max                6     6       1  
-    fl_a_min                7     7       0  
-    fl_b_bd                 8     8       1  
-    fl_beta                 9     9       1  
-    fl_c_min               10    10       1  
-    fl_crra                11    11       1  
-    fl_default_aprime      12    12       0  
-    fl_forbrblk_brleast    13    13       1  
-    fl_forbrblk_brmost     14    14       1  
-    fl_forbrblk_gap        15    15       1  
-    fl_loglin_threshold    16    16       1  
-    fl_nan_replace         17    17       1  
-    fl_r_fbr               18    18       1  
-    fl_r_fsv               19    19       1  
-    fl_r_inf               20    20       1  
-    fl_r_inf_bridge        21    21       1  
-    fl_tol_dist            22    22       1  
-    fl_tol_pol             23    23       1  
-    fl_tol_val             24    24       1  
-    fl_w                   25    25       1  
-    fl_z_mu                26    26       0  
-    fl_z_rho               27    27       1  
-    fl_z_sig               28    28       1  
-    it_a_n                 29    29       1  
-    it_maxiter_dist        30    30       1  
-    it_maxiter_val         31    31       1  
-    it_tol_pol_nochange    32    32       1  
-    it_trans_power_dist    33    33       1  
-    it_z_n                 34    34       1  
+    bl_b_is_principle       1     1          0
+    bl_bridge               2     2          1
+    bl_default              3     3          1
+    bl_loglin               4     4          0
+    bl_rollover             5     5          1
+    fl_a_max                6     6         50
+    fl_a_min                7     7          0
+    fl_b_bd                 8     8        -20
+    fl_beta                 9     9       0.94
+    fl_c_min               10    10       0.02
+    fl_crra                11    11        1.5
+    fl_default_aprime      12    12          0
+    fl_forbrblk_brleast    13    13         -1
+    fl_forbrblk_brmost     14    14        -19
+    fl_forbrblk_gap        15    15       -1.5
+    fl_loglin_threshold    16    16          1
+    fl_nan_replace         17    17     -99999
+    fl_r_fbr               18    18      0.065
+    fl_r_fsv               19    19      0.025
+    fl_r_inf               20    20      0.095
+    fl_r_inf_bridge        21    21      0.095
+    fl_tol_dist            22    22      1e-05
+    fl_tol_pol             23    23      1e-05
+    fl_tol_val             24    24      1e-05
+    fl_w                   25    25       1.28
+    fl_z_mu                26    26          0
+    fl_z_rho               27    27        0.8
+    fl_z_sig               28    28        0.2
+    it_a_n                 29    29        750
+    it_maxiter_dist        30    30       1000
+    it_maxiter_val         31    31       1000
+    it_tol_pol_nochange    32    32         25
+    it_trans_power_dist    33    33       1000
+    it_z_n                 34    34         15
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -2000,11 +2000,6 @@ ans =
 %%
 function result_map = ff_abz_fibs_vf_vecsv(varargin)
 %% FF_ABZ_FIBS_VF_VECSV solve infinite horizon exo shock + endo asset problem
-% This program solves the infinite horizon dynamic single asset and single
-% shock problem with vectorized codes.
-% <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_fibs_vf.html
-% ff_abz_fibs_vf> shows looped codes. The solution is the same.
-%
 % The model could be invoked mainly in sveral ways:
 %
 % # param_map('bl_default') = true;  param_map('bl_bridge') = false;
@@ -2067,8 +2062,8 @@ function result_map = ff_abz_fibs_vf_vecsv(varargin)
 %
 % @include
 %
-% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_set_default_param.html ffs_abz_fibs_set_default_param>
-% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_get_funcgrid.html ffs_abz_fibs_get_funcgrid>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_paramfunc/html/ffs_abz_fibs_set_default_param.html ffs_abz_fibs_set_default_param>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_paramfunc/html/ffs_abz_fibs_get_funcgrid.html ffs_abz_fibs_get_funcgrid>
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost_bridge.html ffs_fibs_min_c_cost_bridge>
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_inf_bridge.html ffs_fibs_inf_bridge>
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost.html ffs_fibs_min_c_cost>

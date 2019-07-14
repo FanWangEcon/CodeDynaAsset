@@ -1,4 +1,4 @@
-%% Solve For+Inf+Borr+Save Dynamic Programming Problem (Loop)
+%% Solve For+Inf+Borr+Save+RShock Dynamic Programming Problem (Loop)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
@@ -8,7 +8,7 @@ function result_map = ff_abzr_fibs_vf(varargin)
 %% FF_ABZ_FIBS_VF borr + save one asset formal informal + loop
 % This program solves the infinite horizon dynamic single asset and single
 % shock problem with loops. This file contains codes that processes
-% borrowing and handles formal and informal choices.
+% borrowing and handles formal and informal choices. With R Shock.
 %
 % @param param_map container parameter container
 %
@@ -44,8 +44,8 @@ function result_map = ff_abzr_fibs_vf(varargin)
 %
 % @include
 %
-% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abzr_fibs_set_default_param.html ffs_abzr_fibs_set_default_param>
-% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abzr_fibs_get_funcgrid.html ffs_abzr_fibs_get_funcgrid>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abzr_paramfunc/html/ffs_abzr_fibs_set_default_param.html ffs_abzr_fibs_set_default_param>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abzr_paramfunc/html/ffs_abzr_fibs_get_funcgrid.html ffs_abzr_fibs_get_funcgrid>
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost_bridge.html ffs_fibs_min_c_cost_bridge>
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_inf_bridge.html ffs_fibs_inf_bridge>
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost.html ffs_fibs_min_c_cost>
@@ -64,15 +64,16 @@ function result_map = ff_abzr_fibs_vf(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 1;
+it_param_set = 4;
 [param_map, support_map] = ffs_abzr_fibs_set_default_param(it_param_set);
 
 % Note: param_map and support_map can be adjusted here or outside to override defaults
 % To generate results as if formal informal do not matter
-% param_map('it_a_n') = 75;
-% param_map('fl_z_r_borr_n') = 3;
-% param_map('it_z_wage_n') = 5;
-% param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+param_map('it_a_n') = 35;
+param_map('fl_z_r_infbr_n') = 3;
+param_map('it_z_wage_n') = 3;
+param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_infbr_n');
+param_map('it_maxiter_val') = 20;
 % param_map('fl_r_fsv') = 0.025;
 % param_map('fl_r_fbr') = 0.035;
 % param_map('bl_b_is_principle') = false;
@@ -144,13 +145,6 @@ params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
     st_profile_prefix, st_profile_name_main, st_profile_suffix, ...
     bl_display_minccost, bl_display_infbridge, ...
     bl_time, bl_display_defparam, bl_display, it_display_every, bl_post] = params_group{:};
-
-%% Display Parameters
-
-if (bl_display_defparam)
-    fft_container_map_display(param_map);
-    fft_container_map_display(support_map);
-end
 
 %% Initialize Output Matrixes
 

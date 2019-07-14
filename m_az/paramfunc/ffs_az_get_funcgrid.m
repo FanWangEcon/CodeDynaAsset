@@ -39,12 +39,8 @@ function [armt_map, func_map] = ffs_az_get_funcgrid(varargin)
 %
 
 %% Default
-
-bl_input_override = 0;
-if (length(varargin) == 3)
-    bl_input_override = varargin{3};
-end
-if (bl_input_override)
+if (~isempty(varargin))
+    
     % override when called from outside
     [param_map, support_map, ~] = varargin{:};
 else
@@ -76,6 +72,8 @@ params_group = values(param_map, {'fl_r_save', 'fl_w'});
 
 params_group = values(support_map, {'bl_graph_funcgrids', 'bl_display_funcgrids'});
 [bl_graph_funcgrids, bl_display_funcgrids] = params_group{:};
+params_group = values(support_map, {'it_display_summmat_rowmax', 'it_display_summmat_colmax'});
+[it_display_summmat_rowmax, it_display_summmat_colmax] = params_group{:};
 
 %% Get Asset and Choice Grid
 
@@ -124,12 +122,8 @@ if (bl_display_funcgrids)
     disp(size(mt_z_trans));
     disp(mt_z_trans);
 
-    param_map_keys = keys(func_map);
-    param_map_vals = values(func_map);
-    for i = 1:length(func_map)
-        st_display = strjoin(['pos =' num2str(i) '; key =' string(param_map_keys{i}) '; val =' func2str(param_map_vals{i})]);
-        disp(st_display);
-    end
+    fft_container_map_display(armt_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+    fft_container_map_display(func_map, it_display_summmat_rowmax, it_display_summmat_colmax);
 end
 
 end

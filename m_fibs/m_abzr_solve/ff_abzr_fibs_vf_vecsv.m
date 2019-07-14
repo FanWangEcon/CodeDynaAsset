@@ -1,15 +1,12 @@
-%% Solve For+Inf+Borr+Save Dynamic Programming Problem (Optimized-Vectorized)
+%% Solve For+Inf+Borr+Save+RShock Dynamic Programming Problem (Optimized-Vectorized)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
 %%
 function result_map = ff_abzr_fibs_vf_vecsv(varargin)
-%% FF_ABZ_FIBS_VF_VECSV solve infinite horizon exo shock + endo asset problem
-% This program solves the infinite horizon dynamic single asset and single
-% shock problem with vectorized codes.
-% <https://fanwangecon.github.io/CodeDynaAsset/m_abzr/solve/html/ff_abzr_fibs_vf.html
-% ff_abzr_fibs_vf> shows looped codes. The solution is the same.
+%% FF_ABZR_FIBS_VF_VECSV solve infinite horizon exo shock + endo asset problem
+% With R shock.
 %
 % The model could be invoked mainly in sveral ways:
 %
@@ -71,11 +68,10 @@ function result_map = ff_abzr_fibs_vf_vecsv(varargin)
 %    % Call Program with external parameters that override defaults.
 %    ff_abzr_fibs_vf_vecsv(param_map, support_map);
 %
-%
 % @include
 %
-% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abzr_fibs_set_default_param.html ffs_abzr_fibs_set_default_param>
-% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abzr_fibs_get_funcgrid.html ffs_abzr_fibs_get_funcgrid>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abzr_paramfunc/html/ffs_abzr_fibs_set_default_param.html ffs_abzr_fibs_set_default_param>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abzr_paramfunc/html/ffs_abzr_fibs_get_funcgrid.html ffs_abzr_fibs_get_funcgrid>
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost_bridge.html ffs_fibs_min_c_cost_bridge>
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_inf_bridge.html ffs_fibs_inf_bridge>
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost.html ffs_fibs_min_c_cost>
@@ -184,13 +180,6 @@ params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
     st_profile_prefix, st_profile_name_main, st_profile_suffix, ...
     bl_display_minccost, bl_display_infbridge, ...
     bl_time, bl_display_defparam, bl_display, it_display_every, bl_post] = params_group{:};
-
-%% Display Parameters
-
-if (bl_display_defparam)
-    fft_container_map_display(param_map);
-    fft_container_map_display(support_map);
-end
 
 %% Initialize Output Matrixes
 % include mt_pol_idx which we did not have in looped code
@@ -622,7 +611,6 @@ if (bl_post)
 end
 
 %% Display Various Containers
-bl_display_defparam = true;
 if (bl_display_defparam)
     
     %% Display 1 support_map    

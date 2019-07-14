@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Set Model Functions (ABZ FIBS)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-12"><meta name="DC.source" content="ffs_abz_fibs_set_functions.m"><style type="text/css">
+      --><title>Set Model Functions (ABZ FIBS)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-14"><meta name="DC.source" content="ffs_abz_fibs_set_functions.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -68,16 +68,11 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
   </style></head><body><div class="content"><h1>Set Model Functions (ABZ FIBS)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FFS_ABZ_SET_FIBS_FUNCTIONS setting model functions</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Define Utility Functions</a></li><li><a href="#6">Define Income Equation</a></li><li><a href="#7">Define Cash on Hand Current Period</a></li><li><a href="#8">Define Consumption</a></li><li><a href="#9">Defome Stand-in Utility for Testing</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons_coh_fbis, f_cons_coh_save, f_bprime] = <span class="keyword">...</span>
     ffs_abz_fibs_set_functions(varargin)
-</pre><h2 id="2">FFS_ABZ_SET_FIBS_FUNCTIONS setting model functions</h2><p>Define functions for the abz problem with formal and informal borrowing and savings. See here: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_functions.html">ffs_abz_set_functions</a> for <b>abz</b> function settings without without formal and informal considerations. Note, param_map('bl_b_is_principle') = false for <i>abz_fibs</i>.</p><p>@param fl_crra float crra utility</p><p>@param fl_c_min float minimum consumption</p><p>@param fl_r_fbr float formal borrowing interest rate</p><p>@param fl_r_fsv float savings interest rates</p><p>@param fl_w float wage rate</p><p>@return f_util_log handle log utility</p><p>@return f_util_crra handle crra utility general</p><p>@return f_util_standin handle log utility with coh for testing graphing codes</p><p>@return f_inc income handle equation wage and interests</p><p>@return f_coh_fbis handle cash on hand equation given current period shock and formal and informal borrowing and savings choices.</p><p>@return f_cons_coh_fbis handle consumption given cash on hand and formal and informal borrowing and savings choices.</p><p>@return f_bprime handle aggregate borrowing and savings principles</p><p>@example</p><pre class="language-matlab">[f_util_log, f_util_crra, f_util_standin, f_inc, f_coh_fbis, f_cons_coh_fbis] = <span class="keyword">...</span>
+</pre><h2 id="2">FFS_ABZ_SET_FIBS_FUNCTIONS setting model functions</h2><p>Define functions for the abz problem with formal and informal borrowing and savings. See here: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_functions.html">ffs_abz_set_functions</a> for <b>abz</b> function settings without without formal and informal considerations.</p><p>@param fl_crra float crra utility</p><p>@param fl_c_min float minimum consumption</p><p>@param fl_r_fbr float formal borrowing interest rate</p><p>@param fl_r_fsv float savings interest rates</p><p>@param fl_w float wage rate</p><p>@return f_util_log handle log utility</p><p>@return f_util_crra handle crra utility general</p><p>@return f_util_standin handle log utility with coh for testing graphing codes</p><p>@return f_inc income handle equation wage and interests</p><p>@return f_coh_fbis handle cash on hand equation given current period shock and formal and informal borrowing and savings choices.</p><p>@return f_cons_coh_fbis handle consumption given cash on hand and formal and informal borrowing and savings choices.</p><p>@return f_bprime handle aggregate borrowing and savings principles</p><p>@example</p><pre class="language-matlab">[f_util_log, f_util_crra, f_util_standin, f_inc, f_coh_fbis, f_cons_coh_fbis] = <span class="keyword">...</span>
      ffs_abz_set_functions(fl_crra, fl_c_min, fl_r_fbr, fl_r_fsv, fl_w);
-</pre><h2 id="3">Default</h2><pre class="codeinput"><span class="keyword">if</span> (isempty(varargin))
-    bl_display_setfunc = true;
-<span class="keyword">else</span>
-    bl_display_setfunc = false;
-<span class="keyword">end</span>
-
-[fl_crra, fl_c_min] = deal(1, 0.001);
+</pre><h2 id="3">Default</h2><pre class="codeinput">[fl_crra, fl_c_min] = deal(1, 0.001);
 [fl_r_fbr, fl_r_fsv, fl_w] = deal(0.035, 0.025, 1.28);
+bl_display_setfunc = false;
 bl_b_is_principle = false;
 default_params = {fl_crra fl_c_min fl_r_fbr fl_r_fsv fl_w bl_display_setfunc};
 </pre><h2 id="4">Parse Parameters</h2><pre class="codeinput"><span class="comment">% numvarargs is the number of varagin inputted</span>
@@ -107,11 +102,7 @@ f_util_crra = @(c) (((c).^(1-fl_crra)-1)./(1-fl_crra));
     fprintf(<span class="string">'fl_inc=%.3f\nwith fl_r_inf:%.3f, ar_for_borr:%.3f, ar_inf_borr:%.3f, ar_for_save:%.3f'</span>,<span class="keyword">...</span>
         fl_inc, fl_r_inf, ar_for_borr, ar_inf_borr, ar_for_save);
 <span class="keyword">end</span>
-</pre><pre class="codeoutput">f_inc
-    @(ar_z,fl_r_inf,ar_for_borr,ar_inf_borr,ar_for_save)(ar_z*fl_w+((ar_for_borr./(1+fl_r_fbr))*fl_r_fbr+(ar_inf_borr./(1+fl_r_inf))*fl_r_inf+(ar_for_save./(1+fl_r_fsv))*fl_r_fsv))
-
-fl_inc=1.228
-with fl_r_inf:0.060, ar_for_borr:-1.000, ar_inf_borr:-0.330, ar_for_save:0.000</pre><h2 id="7">Define Cash on Hand Current Period</h2><pre class="codeinput"><span class="keyword">if</span> (bl_b_is_principle)
+</pre><h2 id="7">Define Cash on Hand Current Period</h2><pre class="codeinput"><span class="keyword">if</span> (bl_b_is_principle)
     f_coh = @(ar_z, fl_r_inf, ar_for_borr, ar_inf_borr, ar_for_save) <span class="keyword">...</span>
         (ar_z*fl_w <span class="keyword">...</span>
         + (ar_for_borr.*(1+fl_r_fbr) <span class="keyword">...</span>
@@ -131,9 +122,6 @@ with fl_r_inf:0.060, ar_for_borr:-1.000, ar_inf_borr:-0.330, ar_for_save:0.000</
             fl_coh_fbis, fl_r_inf, ar_for_borr, ar_inf_borr, ar_for_save);
     <span class="keyword">end</span>
 <span class="keyword">end</span>
-</pre><pre class="codeoutput">f_coh_fbis
-    @(ar_z,ar_b)(ar_z*fl_w+ar_b)
-
 </pre><h2 id="8">Define Consumption</h2><pre class="codeinput"><span class="keyword">if</span> (bl_b_is_principle)
 
     <span class="comment">% ar_for_borr, ar_inf_borr, ar_for_save are choices</span>
@@ -177,11 +165,7 @@ with fl_r_inf:0.060, ar_for_borr:-1.000, ar_inf_borr:-0.330, ar_for_save:0.000</
     <span class="keyword">end</span>
 
 <span class="keyword">end</span>
-</pre><pre class="codeoutput">f_cons_coh_fbis
-    @(coh,ar_bprime_in_c)(coh+ar_bprime_in_c)
-
 </pre><h2 id="9">Defome Stand-in Utility for Testing</h2><pre class="codeinput">f_coh_simple = @(ar_z, ar_b) (ar_z*fl_w + ar_b);
-
 f_util_standin = @(z, b) f_util_log(f_coh_simple(z, b).*(f_coh_simple(z, b) &gt; 0) + fl_c_min.*(f_coh_simple(z, b) &lt;= 0));
 </pre><pre class="codeinput"><span class="keyword">end</span>
 </pre><pre class="codeoutput">
@@ -206,8 +190,7 @@ function [f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons_coh_fbis
 % and savings. See here:
 % <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_functions.html
 % ffs_abz_set_functions> for *abz* function settings without without formal
-% and informal considerations. Note, param_map('bl_b_is_principle') =
-% false for _abz_fibs_.
+% and informal considerations.
 %
 % @param fl_crra float crra utility
 %
@@ -243,14 +226,9 @@ function [f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons_coh_fbis
 
 %% Default
 
-if (isempty(varargin))
-    bl_display_setfunc = true;
-else
-    bl_display_setfunc = false;
-end
-
 [fl_crra, fl_c_min] = deal(1, 0.001);
 [fl_r_fbr, fl_r_fsv, fl_w] = deal(0.035, 0.025, 1.28);
+bl_display_setfunc = false;
 bl_b_is_principle = false;
 default_params = {fl_crra fl_c_min fl_r_fbr fl_r_fsv fl_w bl_display_setfunc};
 
@@ -361,11 +339,8 @@ if (bl_display_setfunc)
 end
 
 %% Defome Stand-in Utility for Testing
-
 f_coh_simple = @(ar_z, ar_b) (ar_z*fl_w + ar_b);
-
 f_util_standin = @(z, b) f_util_log(f_coh_simple(z, b).*(f_coh_simple(z, b) > 0) + fl_c_min.*(f_coh_simple(z, b) <= 0));
-
 
 end
 

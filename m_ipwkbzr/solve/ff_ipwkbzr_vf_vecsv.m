@@ -54,7 +54,7 @@ function result_map = ff_ipwkbzr_vf_vecsv(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 2;
+it_param_set = 4;
 [param_map, support_map] = ffs_ipwkbzr_set_default_param(it_param_set);
 
 % parameters can be set inside ffs_ipwkbzr_set_default_param or updated here
@@ -534,6 +534,10 @@ if (bl_post)
     result_map('ar_pol_diff_norm') = ar_pol_diff_norm(1:it_iter_last);
     result_map('mt_pol_perc_change') = mt_pol_perc_change(1:it_iter_last, :);
 
+    armt_map('mt_coh_wkb_ori') = mt_coh_wkb;
+    armt_map('ar_a_meshk_ori') = ar_a_meshk;
+    armt_map('ar_k_mesha_ori') = ar_k_mesha;
+    
     % graphing based on coh_wkb, but that does not match optimal choice
     % matrixes for graphs.
     armt_map('mt_coh_wkb') = mt_interp_coh_grid_mesh_z;

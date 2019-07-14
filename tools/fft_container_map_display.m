@@ -26,6 +26,7 @@ if (isempty(varargin))
     param_map('string_1') = "Table Name";
     param_map('string_int_1') = 1021;
     param_map('string_float_1') = 1021.13;
+    param_map('boolean_1') = true;
     
 else
     
@@ -83,7 +84,7 @@ for i = 1:length(param_map)
             
             it_scalar_ctr = it_scalar_ctr + 1;
             row_scalar_names{it_scalar_ctr} = st_cur_key;
-            ar_scalar_val(it_scalar_ctr) = na_cur_val;
+            ar_scalar_val(it_scalar_ctr) = real(na_cur_val);
             ar_scalar_i(it_scalar_ctr) = i;
             
             st_display = strjoin(['pos =' num2str(i) '; key =' string(st_cur_key) '; val =' string(na_cur_val)]);

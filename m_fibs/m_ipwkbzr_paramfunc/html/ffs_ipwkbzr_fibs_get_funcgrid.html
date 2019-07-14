@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Generate States, Choices and Shocks Grids and Get Functions (Interpolated + Percentage + Risky + Safe Asset + FIBS)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-13"><meta name="DC.source" content="ffs_ipwkbzr_fibs_get_funcgrid.m"><style type="text/css">
+      --><title>Generate States, Choices and Shocks Grids and Get Functions (Interpolated + Percentage + Risky + Safe Asset + FIBS + RShock)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-14"><meta name="DC.source" content="ffs_ipwkbzr_fibs_get_funcgrid.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,8 +66,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Generate States, Choices and Shocks Grids and Get Functions (Interpolated + Percentage + Risky + Safe Asset + FIBS)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FFS_IPWKBZ_FIBS_GET_FUNCGRID get funcs, params, states choices shocks grids</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1a</a></li><li><a href="#5">Parse Parameters 1b</a></li><li><a href="#6">Parse Parameters 2</a></li><li><a href="#7">Parse Parameters 3</a></li><li><a href="#8">G1: Generate Asset and Choice Grid for 2nd stage Problem</a></li><li><a href="#9">G2: Expand A and K Arrays further if bridge is allowed</a></li><li><a href="#10">G3: Flatten Choices to Arrays to be Combined with Shocks as Columns.</a></li><li><a href="#11">F1: Get Shock: Income Shock (ar1)</a></li><li><a href="#12">F2: Get Shock: Interest Rate Shock (iid)</a></li><li><a href="#13">F3: Get Shock: Mesh Shocks Together</a></li><li><a href="#14">FIBS1: Get Equations</a></li><li><a href="#15">FIBS2: Get Formal Borrowing Blocks</a></li><li><a href="#16">Find Formal and Informal Choices for Borrowing points</a></li><li><a href="#17">FIBS3: Generate C cost Matrix when aggregate savings = k'+b' is negative</a></li><li><a href="#18">FIBS3: Generate C cost Cash-on-Hand/State Matrix when aggregate savings is positive</a></li><li><a href="#19">COH1: Combine overall Reachable Cash-on-Hand Levels</a></li><li><a href="#20">COH2: Check if COH is within Borrowing Bounds</a></li><li><a href="#21">COH3: Update Valid 2nd stage choice matrix</a></li><li><a href="#22">COH4: Select only Valid (k(w), a) choices</a></li><li><a href="#23">Generate 1st Stage States: Interpolation Cash-on-hand Interpolation Grid</a></li><li><a href="#24">Generate 1st Stage Choices: Interpolation Cash-on-hand Interpolation Grid</a></li><li><a href="#25">Generate 1st Stage Choices: Percent of W for Covering Bridge Loans</a></li><li><a href="#26">Generate Interpolation Consumption Grid</a></li><li><a href="#27">Initialize armt_map to store, state, choice, shock matrixes</a></li><li><a href="#28">Store armt_map (1): base arrays</a></li><li><a href="#29">Store armt_map (2): 1st stage level coh on hand related arrays</a></li><li><a href="#30">Store armt_map (3): 2nd stage reachable coh(k(w), a(w,k), z', r)</a></li><li><a href="#31">Store armt_map (4): 2nd stage additional arrays</a></li><li><a href="#32">Store armt_map (5): Shock Grids Arrays and Mesh</a></li><li><a href="#33">Store armt_map (6): W Share for Bridge Parameters</a></li><li><a href="#34">Store armt_map (7): Formal Informal Arrays</a></li><li><a href="#35">Store Function Map</a></li><li><a href="#36">Graph</a></li><li><a href="#38">Generate Limited Legends</a></li><li><a href="#39">Graph 1: a and k choice grid graphs</a></li><li><a href="#40">Graph 2: coh by shock</a></li><li><a href="#41">Graph 3: 1st State Aggregate Savings Choices by COH interpolation grids</a></li><li><a href="#43">Graph Details, Generally do Not Run</a></li><li><a href="#45">Graph 1: 2nd stage coh reached by k' b' choices by index</a></li><li><a href="#46">Graph 2: 2nd stage coh reached by k' b' choices  by coh</a></li><li><a href="#48">Display</a></li><li><a href="#49">Display</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [armt_map, func_map] = ffs_ipwkbzr_fibs_get_funcgrid(varargin)
-</pre><h2 id="2">FFS_IPWKBZ_FIBS_GET_FUNCGRID get funcs, params, states choices shocks grids</h2><p>This file is based on <a href="https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/paramfunc/html/ffs_ipwkbzr_get_funcgrid.html">ffs_ipwkbzr_get_funcgrid</a>, see that file for more comments and compare differences in graphs and tables to see how the inclusion of formal and informal choices that consider bridge loans impact choice sets.</p><p>Also compare against <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_paramfunc/html/ffs_abz_fibs_get_funcgrid.html">ffs_abz_fibs_get_funcgrid</a> where the results are also considering formal and informal choices etc in the context of <b>abz fibs</b>.</p><p>In contrast to ff_ipwkbzr_evf.m, here, we need to deal with borrowing and savings formal and informal. These will change how the testing matrix is constructed. When bridge loan is allowed, we also need to construct the output matrixes differently. In ff_ipwkbzr_evf.m, the assumption is that coh today does not matter, so to find optimal k* choice, we only need to know the aggregate savings level. But now, we need to know the coh level as well.</p><p>Below two reachable coh matrixes are constructed, one for when aggregate savings choice w &gt;= 0, and another for when aggregate savings &lt;= 0. Then they are stacked together. And we still have the same outputs as ff_ipwkbzr_evf.m. The difference is that while for savings where w &gt;=0, each row are w levels for the output matrixes, but for w &lt;=0, each row is for w level + coh percentage combinations.</p><div><ul><li><i>ar_w_level</i>: What are the feasible grid of w = k'+b', these are to be interpolated later, these are level grid, not percentage grid</li><li><i>ar_w_level</i>: What are the percentage based choices points for k' and b' given each w. These are <i>ar_a_meshk</i>, <i>ar_k_mesha</i>. Note here these are principles, k + b' is the total aggregate savings in period t. b is be a combination of formal and informal choices, but our percentage point for b is the overall principle of all formal and informal choices</li><li><i>mt_coh_wkb_full</i> : These are the cash-on-hand levels reacheable given the choice percentages of k and b'. The problem here is more complicated than <a href="https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/paramfunc/html/ffs_ipwkbzr_get_funcgrid.html">ffs_ipwkbzr_get_funcgrid</a> because here we can not get to coh tomorrow by multiplying principle by savings or borrowing interest rates, if borrowing, we have to optimize among formal and informal choices. That is computationally trivial because it's a static choice unrelated to the dynamic problem. The slightly more complicated thing is that we also have to consider percentages of b' that has to go to bridge loans due to negative cash-on-hand in period t. That makes the reachable cash-on-hand grid significantly larger than the grid in <a href="https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/paramfunc/html/ffs_ipwkbzr_get_funcgrid.html">ffs_ipwkbzr_get_funcgrid</a>, we have to expand the grid by another percentage dimension--percentages of b' going to bridge--for negative levels of w=k'+b' overall choice.</li></ul></div><h2 id="3">Default</h2><p>Results identical to <a href="https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/paramfunc/html/ffs_ipwkbzr_get_funcgrid.html">ffs_ipwkbzr_get_funcgrid</a> is obtained by running default with: st_param_which = 'ffs_ipwkbzr_get_funcgrid';</p><pre class="codeinput"><span class="keyword">if</span> (~isempty(varargin))
+  </style></head><body><div class="content"><h1>Generate States, Choices and Shocks Grids and Get Functions (Interpolated + Percentage + Risky + Safe Asset + FIBS + RShock)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FFS_IPWKBZR_FIBS_GET_FUNCGRID get funcs, params, states choices shocks grids</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1a</a></li><li><a href="#5">Parse Parameters 1b</a></li><li><a href="#6">Parse Parameters 2</a></li><li><a href="#7">Parse Parameters 3</a></li><li><a href="#8">G1: Generate Asset and Choice Grid for 2nd stage Problem</a></li><li><a href="#9">G2: Expand A and K Arrays further if bridge is allowed</a></li><li><a href="#10">G3: Flatten Choices to Arrays to be Combined with Shocks as Columns.</a></li><li><a href="#11">F1: Get Shock: Income Shock (ar1)</a></li><li><a href="#12">F2: Get Shock: Interest Rate Shock (iid)</a></li><li><a href="#13">F3: Get Shock: Mesh Shocks Together</a></li><li><a href="#14">FIBS1: Get Equations</a></li><li><a href="#15">FIBS2: Get Formal Borrowing Blocks</a></li><li><a href="#16">Find Formal and Informal Choices for Borrowing points</a></li><li><a href="#17">FIBS3: Generate C cost Matrix when aggregate savings = k'+b' is negative</a></li><li><a href="#18">FIBS3: Generate C cost Cash-on-Hand/State Matrix when aggregate savings is positive</a></li><li><a href="#19">COH1: Combine overall Reachable Cash-on-Hand Levels</a></li><li><a href="#20">COH2: Check if COH is within Borrowing Bounds</a></li><li><a href="#21">COH3: Update Valid 2nd stage choice matrix</a></li><li><a href="#22">COH4: Select only Valid (k(w), a) choices</a></li><li><a href="#23">Generate 1st Stage States: Interpolation Cash-on-hand Interpolation Grid</a></li><li><a href="#24">Generate 1st Stage Choices: Interpolation Cash-on-hand Interpolation Grid</a></li><li><a href="#25">Generate 1st Stage Choices: Percent of W for Covering Bridge Loans</a></li><li><a href="#26">Generate Interpolation Consumption Grid</a></li><li><a href="#27">Initialize armt_map to store, state, choice, shock matrixes</a></li><li><a href="#28">Store armt_map (1): base arrays</a></li><li><a href="#29">Store armt_map (2): 1st stage level coh on hand related arrays</a></li><li><a href="#30">Store armt_map (3): 2nd stage reachable coh(k(w), a(w,k), z', r)</a></li><li><a href="#31">Store armt_map (4): 2nd stage additional arrays</a></li><li><a href="#32">Store armt_map (5): Shock Grids Arrays and Mesh</a></li><li><a href="#33">Store armt_map (6): W Share for Bridge Parameters</a></li><li><a href="#34">Store armt_map (7): Formal Informal Arrays</a></li><li><a href="#35">Store Function Map</a></li><li><a href="#36">Graph</a></li><li><a href="#38">Generate Limited Legends</a></li><li><a href="#39">Graph 1: a and k choice grid graphs</a></li><li><a href="#40">Graph 2: coh by shock</a></li><li><a href="#41">Graph 3: 1st State Aggregate Savings Choices by COH interpolation grids</a></li><li><a href="#43">Graph Details, Generally do Not Run</a></li><li><a href="#45">Graph 1: 2nd stage coh reached by k' b' choices by index</a></li><li><a href="#46">Graph 2: 2nd stage coh reached by k' b' choices  by coh</a></li><li><a href="#48">Display</a></li><li><a href="#49">Display</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [armt_map, func_map] = ffs_ipwkbzr_fibs_get_funcgrid(varargin)
+</pre><h2 id="2">FFS_IPWKBZR_FIBS_GET_FUNCGRID get funcs, params, states choices shocks grids</h2><p>This file is based on <a href="https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/paramfunc/html/ffs_ipwkbzr_get_funcgrid.html">ffs_ipwkbzr_get_funcgrid</a>, see that file for more comments and compare differences in graphs and tables to see how the inclusion of formal and informal choices that consider bridge loans impact choice sets.</p><p>Also compare against <a href="https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_paramfunc/html/ffs_abz_fibs_get_funcgrid.html">ffs_abz_fibs_get_funcgrid</a> where the results are also considering formal and informal choices etc in the context of <b>abz fibs</b>.</p><p>In contrast to ff_ipwkbzr_evf.m, here, we need to deal with borrowing and savings formal and informal. These will change how the testing matrix is constructed. When bridge loan is allowed, we also need to construct the output matrixes differently. In ff_ipwkbzr_evf.m, the assumption is that coh today does not matter, so to find optimal k* choice, we only need to know the aggregate savings level. But now, we need to know the coh level as well.</p><p>Below two reachable coh matrixes are constructed, one for when aggregate savings choice w &gt;= 0, and another for when aggregate savings &lt;= 0. Then they are stacked together. And we still have the same outputs as ff_ipwkbzr_evf.m. The difference is that while for savings where w &gt;=0, each row are w levels for the output matrixes, but for w &lt;=0, each row is for w level + coh percentage combinations.</p><div><ul><li><i>ar_w_level</i>: What are the feasible grid of w = k'+b', these are to be interpolated later, these are level grid, not percentage grid</li><li><i>ar_w_level</i>: What are the percentage based choices points for k' and b' given each w. These are <i>ar_a_meshk</i>, <i>ar_k_mesha</i>. Note here these are principles, k + b' is the total aggregate savings in period t. b is be a combination of formal and informal choices, but our percentage point for b is the overall principle of all formal and informal choices</li><li><i>mt_coh_wkb_full</i> : These are the cash-on-hand levels reacheable given the choice percentages of k and b'. The problem here is more complicated than <a href="https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/paramfunc/html/ffs_ipwkbzr_get_funcgrid.html">ffs_ipwkbzr_get_funcgrid</a> because here we can not get to coh tomorrow by multiplying principle by savings or borrowing interest rates, if borrowing, we have to optimize among formal and informal choices. That is computationally trivial because it's a static choice unrelated to the dynamic problem. The slightly more complicated thing is that we also have to consider percentages of b' that has to go to bridge loans due to negative cash-on-hand in period t. That makes the reachable cash-on-hand grid significantly larger than the grid in <a href="https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/paramfunc/html/ffs_ipwkbzr_get_funcgrid.html">ffs_ipwkbzr_get_funcgrid</a>, we have to expand the grid by another percentage dimension--percentages of b' going to bridge--for negative levels of w=k'+b' overall choice.</li></ul></div><h2 id="3">Default</h2><p>Results identical to <a href="https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/paramfunc/html/ffs_ipwkbzr_get_funcgrid.html">ffs_ipwkbzr_get_funcgrid</a> is obtained by running default with: st_param_which = 'ffs_ipwkbzr_get_funcgrid';</p><pre class="codeinput"><span class="keyword">if</span> (~isempty(varargin))
 
     <span class="comment">% override when called from outside</span>
     [param_map, support_map] = varargin{:};
@@ -193,24 +193,24 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
                                i     idx    value
                                __    ___    _____
 
-    bl_b_is_principle           1     1       1  
-    bl_bridge                   2     2       1  
-    bl_default                  3     3       1  
-    bl_rollover                 4     4       1  
-    fl_forbrblk_brleast         5     5       1  
-    fl_forbrblk_brmost          6     6       1  
-    fl_forbrblk_gap             7     7       1  
-    fl_r_fbr                    8     8       1  
-    fl_r_fsv                    9     9       1  
-    fl_z_r_infbr_max           10    10       1  
-    fl_z_r_infbr_min           11    11       1  
-    fl_z_r_infbr_n             12    12       1  
-    fl_z_r_infbr_poiss_mean    13    13       1  
-    fl_z_wage_mu               14    14       0  
-    fl_z_wage_rho              15    15       1  
-    fl_z_wage_sig              16    16       1  
-    it_z_n                     17    17       1  
-    it_z_wage_n                18    18       1  
+    bl_b_is_principle           1     1         1
+    bl_bridge                   2     2         1
+    bl_default                  3     3         1
+    bl_rollover                 4     4         1
+    fl_forbrblk_brleast         5     5        -1
+    fl_forbrblk_brmost          6     6       -19
+    fl_forbrblk_gap             7     7      -1.5
+    fl_r_fbr                    8     8     0.065
+    fl_r_fsv                    9     9     0.025
+    fl_z_r_infbr_max           10    10     0.095
+    fl_z_r_infbr_min           11    11     0.025
+    fl_z_r_infbr_n             12    12         5
+    fl_z_r_infbr_poiss_mean    13    13        20
+    fl_z_wage_mu               14    14         0
+    fl_z_wage_rho              15    15       0.8
+    fl_z_wage_sig              16    16       0.2
+    it_z_n                     17    17        75
+    it_z_wage_n                18    18        15
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -233,7 +233,7 @@ CONTAINER NAME: SUPPORT_MAP
 ----------------------------------------
   Map with properties:
 
-        Count: 8
+        Count: 12
       KeyType: char
     ValueType: any
 
@@ -242,13 +242,17 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ----------------------------------------
 ----------------------------------------
 pos = 1 ; key = bl_display_funcgrids ; val = false
-pos = 2 ; key = bl_display_minccost ; val = false
-pos = 3 ; key = bl_graph_funcgrids ; val = false
-pos = 4 ; key = bl_graph_funcgrids_detail ; val = false
-pos = 5 ; key = st_img_path ; val = C:/Users/fan/CodeDynaAsset//m_fibs//m_ipwkbzr_solve/img/
-pos = 6 ; key = st_mat_path ; val = C:/Users/fan/CodeDynaAsset//m_fibs//m_ipwkbzr_solve/mat/
-pos = 7 ; key = st_matimg_path_root ; val = C:/Users/fan/CodeDynaAsset//m_fibs/
-pos = 8 ; key = st_profile_path ; val = C:/Users/fan/CodeDynaAsset//m_fibs//m_ipwkbzr_solve/profile/
+pos = 2 ; key = bl_display_infbridge ; val = false
+pos = 3 ; key = bl_display_minccost ; val = false
+pos = 4 ; key = bl_graph_forinf_discrete ; val = true
+pos = 5 ; key = bl_graph_forinf_pol_lvl ; val = true
+pos = 6 ; key = bl_graph_forinf_pol_pct ; val = true
+pos = 7 ; key = bl_graph_funcgrids ; val = false
+pos = 8 ; key = bl_graph_funcgrids_detail ; val = false
+pos = 9 ; key = st_img_path ; val = C:/Users/fan/CodeDynaAsset//m_fibs//m_ipwkbzr_solve/img/
+pos = 10 ; key = st_mat_path ; val = C:/Users/fan/CodeDynaAsset//m_fibs//m_ipwkbzr_solve/mat/
+pos = 11 ; key = st_matimg_path_root ; val = C:/Users/fan/CodeDynaAsset//m_fibs/
+pos = 12 ; key = st_profile_path ; val = C:/Users/fan/CodeDynaAsset//m_fibs//m_ipwkbzr_solve/profile/
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Scalars in Container and Sizes and Basic Statistics
@@ -257,9 +261,13 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
                                  _    ___    _____
 
     bl_display_funcgrids         1     1       0  
-    bl_display_minccost          2     2       0  
-    bl_graph_funcgrids           3     3       0  
-    bl_graph_funcgrids_detail    4     4       0  
+    bl_display_infbridge         2     2       0  
+    bl_display_minccost          3     3       0  
+    bl_graph_forinf_discrete     4     4       1  
+    bl_graph_forinf_pol_lvl      5     5       1  
+    bl_graph_forinf_pol_pct      6     6       1  
+    bl_graph_funcgrids           7     7       0  
+    bl_graph_funcgrids_detail    8     8       0  
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -268,10 +276,10 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
                            i    idx
                            _    ___
 
-    st_img_path            1     5 
-    st_mat_path            2     6 
-    st_matimg_path_root    3     7 
-    st_profile_path        4     8 
+    st_img_path            1     9 
+    st_mat_path            2    10 
+    st_matimg_path_root    3    11 
+    st_profile_path        4    12 
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -347,53 +355,53 @@ pos = 49 ; key = st_z_r_infbr_drv_prb_type ; val = poiss
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Scalars in Container and Sizes and Basic Statistics
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                               i     idx    value
-                               __    ___    _____
+                               i     idx     value 
+                               __    ___    _______
 
-    bl_b_is_principle           1     1       1  
-    bl_bridge                   2     2       1  
-    bl_default                  3     3       1  
-    bl_rollover                 4     4       1  
-    fl_Amean                    5     5       1  
-    fl_alpha                    6     6       1  
-    fl_b_bd                     7     7       1  
-    fl_beta                     8     8       1  
-    fl_c_min                    9     9       1  
-    fl_coh_interp_grid_gap     10    10       1  
-    fl_crra                    11    11       1  
-    fl_default_wprime          12    12       0  
-    fl_delta                   13    13       1  
-    fl_forbrblk_brleast        14    14       1  
-    fl_forbrblk_brmost         15    15       1  
-    fl_forbrblk_gap            16    16       1  
-    fl_k_max                   17    17       1  
-    fl_k_min                   18    18       0  
-    fl_nan_replace             19    19       1  
-    fl_r_fbr                   20    20       1  
-    fl_r_fsv                   21    21       1  
-    fl_tol_dist                22    22       1  
-    fl_tol_pol                 23    23       1  
-    fl_tol_val                 24    24       1  
-    fl_w                       25    25       1  
-    fl_w_interp_grid_gap       26    26       1  
-    fl_w_max                   27    27       1  
-    fl_w_min                   28    28       1  
-    fl_z_r_infbr_max           29    29       1  
-    fl_z_r_infbr_min           30    30       1  
-    fl_z_r_infbr_n             31    31       1  
-    fl_z_r_infbr_poiss_mean    32    32       1  
-    fl_z_wage_mu               33    33       0  
-    fl_z_wage_rho              34    34       1  
-    fl_z_wage_sig              35    35       1  
-    it_ak_perc_n               36    36       1  
-    it_c_interp_grid_gap       37    37       1  
-    it_coh_bridge_perc_n       38    38       1  
-    it_maxiter_dist            39    39       1  
-    it_maxiter_val             40    40       1  
-    it_tol_pol_nochange        41    41       1  
-    it_w_perc_n                42    42       1  
-    it_z_n                     43    43       1  
-    it_z_wage_n                44    44       1  
+    bl_b_is_principle           1     1           1
+    bl_bridge                   2     2           1
+    bl_default                  3     3           1
+    bl_rollover                 4     4           1
+    fl_Amean                    5     5           1
+    fl_alpha                    6     6        0.36
+    fl_b_bd                     7     7         -20
+    fl_beta                     8     8        0.94
+    fl_c_min                    9     9        0.02
+    fl_coh_interp_grid_gap     10    10         0.1
+    fl_crra                    11    11         1.5
+    fl_default_wprime          12    12           0
+    fl_delta                   13    13        0.08
+    fl_forbrblk_brleast        14    14          -1
+    fl_forbrblk_brmost         15    15         -19
+    fl_forbrblk_gap            16    16        -1.5
+    fl_k_max                   17    17          70
+    fl_k_min                   18    18           0
+    fl_nan_replace             19    19       -9999
+    fl_r_fbr                   20    20       0.065
+    fl_r_fsv                   21    21       0.025
+    fl_tol_dist                22    22       1e-05
+    fl_tol_pol                 23    23       1e-05
+    fl_tol_val                 24    24       1e-05
+    fl_w                       25    25     0.44365
+    fl_w_interp_grid_gap       26    26         0.1
+    fl_w_max                   27    27          50
+    fl_w_min                   28    28         -20
+    fl_z_r_infbr_max           29    29       0.095
+    fl_z_r_infbr_min           30    30       0.025
+    fl_z_r_infbr_n             31    31           5
+    fl_z_r_infbr_poiss_mean    32    32          20
+    fl_z_wage_mu               33    33           0
+    fl_z_wage_rho              34    34         0.8
+    fl_z_wage_sig              35    35         0.2
+    it_ak_perc_n               36    36          50
+    it_c_interp_grid_gap       37    37      0.0001
+    it_coh_bridge_perc_n       38    38          50
+    it_maxiter_dist            39    39        1000
+    it_maxiter_val             40    40         250
+    it_tol_pol_nochange        41    41          25
+    it_w_perc_n                42    42          50
+    it_z_n                     43    43          75
+    it_z_wage_n                44    44          15
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -417,7 +425,7 @@ CONTAINER NAME: SUPPORT_MAP
 ----------------------------------------
   Map with properties:
 
-        Count: 43
+        Count: 47
       KeyType: char
     ValueType: any
 
@@ -433,41 +441,45 @@ pos = 5 ; key = bl_display_final ; val = true
 pos = 6 ; key = bl_display_final_dist ; val = false
 pos = 7 ; key = bl_display_final_dist_detail ; val = false
 pos = 8 ; key = bl_display_funcgrids ; val = false
-pos = 9 ; key = bl_display_minccost ; val = false
-pos = 10 ; key = bl_graph ; val = true
-pos = 11 ; key = bl_graph_coh_t_coh ; val = true
-pos = 12 ; key = bl_graph_evf ; val = false
-pos = 13 ; key = bl_graph_funcgrids ; val = false
-pos = 14 ; key = bl_graph_funcgrids_detail ; val = false
-pos = 15 ; key = bl_graph_onebyones ; val = true
-pos = 16 ; key = bl_graph_pol_lvl ; val = true
-pos = 17 ; key = bl_graph_pol_pct ; val = true
-pos = 18 ; key = bl_graph_val ; val = true
-pos = 19 ; key = bl_img_save ; val = false
-pos = 20 ; key = bl_mat ; val = false
-pos = 21 ; key = bl_post ; val = true
-pos = 22 ; key = bl_profile ; val = false
-pos = 23 ; key = bl_profile_dist ; val = false
-pos = 24 ; key = bl_time ; val = false
-pos = 25 ; key = it_display_every ; val = 5
-pos = 26 ; key = it_display_final_colmax ; val = 12
-pos = 27 ; key = it_display_final_rowmax ; val = 100
-pos = 28 ; key = it_display_summmat_colmax ; val = 5
-pos = 29 ; key = it_display_summmat_rowmax ; val = 5
-pos = 30 ; key = st_img_name_main ; val = _default
-pos = 31 ; key = st_img_path ; val = C:/Users/fan/CodeDynaAsset//m_fibs//m_ipwkbzr_solve/img/
-pos = 32 ; key = st_img_prefix ; val = 
-pos = 33 ; key = st_img_suffix ; val = _p4.png
-pos = 34 ; key = st_mat_name_main ; val = _default
-pos = 35 ; key = st_mat_path ; val = C:/Users/fan/CodeDynaAsset//m_fibs//m_ipwkbzr_solve/mat/
-pos = 36 ; key = st_mat_prefix ; val = 
-pos = 37 ; key = st_mat_suffix ; val = _p4
-pos = 38 ; key = st_matimg_path_root ; val = C:/Users/fan/CodeDynaAsset//m_fibs/
-pos = 39 ; key = st_profile_name_main ; val = _default
-pos = 40 ; key = st_profile_path ; val = C:/Users/fan/CodeDynaAsset//m_fibs//m_ipwkbzr_solve/profile/
-pos = 41 ; key = st_profile_prefix ; val = 
-pos = 42 ; key = st_profile_suffix ; val = _p4
-pos = 43 ; key = st_title_prefix ; val = 
+pos = 9 ; key = bl_display_infbridge ; val = false
+pos = 10 ; key = bl_display_minccost ; val = false
+pos = 11 ; key = bl_graph ; val = true
+pos = 12 ; key = bl_graph_coh_t_coh ; val = true
+pos = 13 ; key = bl_graph_evf ; val = false
+pos = 14 ; key = bl_graph_forinf_discrete ; val = true
+pos = 15 ; key = bl_graph_forinf_pol_lvl ; val = true
+pos = 16 ; key = bl_graph_forinf_pol_pct ; val = true
+pos = 17 ; key = bl_graph_funcgrids ; val = false
+pos = 18 ; key = bl_graph_funcgrids_detail ; val = false
+pos = 19 ; key = bl_graph_onebyones ; val = true
+pos = 20 ; key = bl_graph_pol_lvl ; val = true
+pos = 21 ; key = bl_graph_pol_pct ; val = true
+pos = 22 ; key = bl_graph_val ; val = true
+pos = 23 ; key = bl_img_save ; val = false
+pos = 24 ; key = bl_mat ; val = false
+pos = 25 ; key = bl_post ; val = true
+pos = 26 ; key = bl_profile ; val = false
+pos = 27 ; key = bl_profile_dist ; val = false
+pos = 28 ; key = bl_time ; val = false
+pos = 29 ; key = it_display_every ; val = 5
+pos = 30 ; key = it_display_final_colmax ; val = 12
+pos = 31 ; key = it_display_final_rowmax ; val = 100
+pos = 32 ; key = it_display_summmat_colmax ; val = 5
+pos = 33 ; key = it_display_summmat_rowmax ; val = 5
+pos = 34 ; key = st_img_name_main ; val = _default
+pos = 35 ; key = st_img_path ; val = C:/Users/fan/CodeDynaAsset//m_fibs//m_ipwkbzr_solve/img/
+pos = 36 ; key = st_img_prefix ; val = 
+pos = 37 ; key = st_img_suffix ; val = _p4.png
+pos = 38 ; key = st_mat_name_main ; val = _default
+pos = 39 ; key = st_mat_path ; val = C:/Users/fan/CodeDynaAsset//m_fibs//m_ipwkbzr_solve/mat/
+pos = 40 ; key = st_mat_prefix ; val = 
+pos = 41 ; key = st_mat_suffix ; val = _p4
+pos = 42 ; key = st_matimg_path_root ; val = C:/Users/fan/CodeDynaAsset//m_fibs/
+pos = 43 ; key = st_profile_name_main ; val = _default
+pos = 44 ; key = st_profile_path ; val = C:/Users/fan/CodeDynaAsset//m_fibs//m_ipwkbzr_solve/profile/
+pos = 45 ; key = st_profile_prefix ; val = 
+pos = 46 ; key = st_profile_suffix ; val = _p4
+pos = 47 ; key = st_title_prefix ; val = 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Scalars in Container and Sizes and Basic Statistics
@@ -475,35 +487,39 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
                                     i     idx    value
                                     __    ___    _____
 
-    bl_display                       1     1       0  
-    bl_display_defparam              2     2       1  
-    bl_display_dist                  3     3       0  
-    bl_display_evf                   4     4       0  
-    bl_display_final                 5     5       1  
-    bl_display_final_dist            6     6       0  
-    bl_display_final_dist_detail     7     7       0  
-    bl_display_funcgrids             8     8       0  
-    bl_display_minccost              9     9       0  
-    bl_graph                        10    10       1  
-    bl_graph_coh_t_coh              11    11       1  
-    bl_graph_evf                    12    12       0  
-    bl_graph_funcgrids              13    13       0  
-    bl_graph_funcgrids_detail       14    14       0  
-    bl_graph_onebyones              15    15       1  
-    bl_graph_pol_lvl                16    16       1  
-    bl_graph_pol_pct                17    17       1  
-    bl_graph_val                    18    18       1  
-    bl_img_save                     19    19       0  
-    bl_mat                          20    20       0  
-    bl_post                         21    21       1  
-    bl_profile                      22    22       0  
-    bl_profile_dist                 23    23       0  
-    bl_time                         24    24       0  
-    it_display_every                25    25       1  
-    it_display_final_colmax         26    26       1  
-    it_display_final_rowmax         27    27       1  
-    it_display_summmat_colmax       28    28       1  
-    it_display_summmat_rowmax       29    29       1  
+    bl_display                       1     1        0 
+    bl_display_defparam              2     2        1 
+    bl_display_dist                  3     3        0 
+    bl_display_evf                   4     4        0 
+    bl_display_final                 5     5        1 
+    bl_display_final_dist            6     6        0 
+    bl_display_final_dist_detail     7     7        0 
+    bl_display_funcgrids             8     8        0 
+    bl_display_infbridge             9     9        0 
+    bl_display_minccost             10    10        0 
+    bl_graph                        11    11        1 
+    bl_graph_coh_t_coh              12    12        1 
+    bl_graph_evf                    13    13        0 
+    bl_graph_forinf_discrete        14    14        1 
+    bl_graph_forinf_pol_lvl         15    15        1 
+    bl_graph_forinf_pol_pct         16    16        1 
+    bl_graph_funcgrids              17    17        0 
+    bl_graph_funcgrids_detail       18    18        0 
+    bl_graph_onebyones              19    19        1 
+    bl_graph_pol_lvl                20    20        1 
+    bl_graph_pol_pct                21    21        1 
+    bl_graph_val                    22    22        1 
+    bl_img_save                     23    23        0 
+    bl_mat                          24    24        0 
+    bl_post                         25    25        1 
+    bl_profile                      26    26        0 
+    bl_profile_dist                 27    27        0 
+    bl_time                         28    28        0 
+    it_display_every                29    29        5 
+    it_display_final_colmax         30    30       12 
+    it_display_final_rowmax         31    31      100 
+    it_display_summmat_colmax       32    32        5 
+    it_display_summmat_rowmax       33    33        5 
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -512,20 +528,20 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
                             i     idx
                             __    ___
 
-    st_img_name_main         1    30 
-    st_img_path              2    31 
-    st_img_prefix            3    32 
-    st_img_suffix            4    33 
-    st_mat_name_main         5    34 
-    st_mat_path              6    35 
-    st_mat_prefix            7    36 
-    st_mat_suffix            8    37 
-    st_matimg_path_root      9    38 
-    st_profile_name_main    10    39 
-    st_profile_path         11    40 
-    st_profile_prefix       12    41 
-    st_profile_suffix       13    42 
-    st_title_prefix         14    43 
+    st_img_name_main         1    34 
+    st_img_path              2    35 
+    st_img_prefix            3    36 
+    st_img_suffix            4    37 
+    st_mat_name_main         5    38 
+    st_mat_path              6    39 
+    st_mat_prefix            7    40 
+    st_mat_suffix            8    41 
+    st_matimg_path_root      9    42 
+    st_profile_name_main    10    43 
+    st_profile_path         11    44 
+    st_profile_prefix       12    45 
+    st_profile_suffix       13    46 
+    st_title_prefix         14    47 
 
 </pre><h2 id="4">Parse Parameters 1a</h2><pre class="codeinput">params_group = values(param_map, {<span class="string">'bl_bridge'</span>, <span class="string">'fl_b_bd'</span>, <span class="string">'fl_w_min'</span>, <span class="string">'fl_w_max'</span>});
 [bl_bridge, fl_b_bd, fl_w_min, fl_w_max] = params_group{:};
@@ -2536,14 +2552,14 @@ ans =
 
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
-%% Generate States, Choices and Shocks Grids and Get Functions (Interpolated + Percentage + Risky + Safe Asset + FIBS)
+%% Generate States, Choices and Shocks Grids and Get Functions (Interpolated + Percentage + Risky + Safe Asset + FIBS + RShock)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
 %%
 function [armt_map, func_map] = ffs_ipwkbzr_fibs_get_funcgrid(varargin)
-%% FFS_IPWKBZ_FIBS_GET_FUNCGRID get funcs, params, states choices shocks grids
+%% FFS_IPWKBZR_FIBS_GET_FUNCGRID get funcs, params, states choices shocks grids
 % This file is based on
 % <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/paramfunc/html/ffs_ipwkbzr_get_funcgrid.html
 % ffs_ipwkbzr_get_funcgrid>, see that file for more comments and compare

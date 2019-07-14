@@ -169,6 +169,10 @@ support_map('bl_display_final_dist') = false; % print finalized results
 support_map('bl_display_final_dist_detail') = false; % print finalized results
 support_map('it_display_final_rowmax') = 100; % max row to print (states/iters)
 support_map('it_display_final_colmax') = 15; % max col to print (shocks)
+it_display_summmat_rowmax = 5;
+it_display_summmat_colmax = 5;
+support_map('it_display_summmat_rowmax') = it_display_summmat_rowmax;
+support_map('it_display_summmat_colmax') = it_display_summmat_colmax;
 % Mat File Controls
 support_map('bl_mat') = false;
 support_map('st_mat_path') = [st_matimg_path_root '/solve/mat/'];
@@ -193,6 +197,7 @@ support_map('st_img_suffix') = ['_p' num2str(it_subset) '.png'];
 % Sub-function graphing controls
 support_map('bl_graph_funcgrids') = false;
 support_map('bl_display_funcgrids') = false;
+support_map('bl_display_defparam') = false;
 
 %% Subset Options
 %
@@ -335,6 +340,12 @@ if (bl_display_defparam)
         st_display = strjoin(['pos =' num2str(i) '; key =' string(param_map_keys{i}) '; val =' string(param_map_vals{i})]);
         disp(st_display);
     end
+end
+
+%% Display
+if (bl_display_defparam)
+    fft_container_map_display(param_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+    fft_container_map_display(support_map, it_display_summmat_rowmax, it_display_summmat_colmax);
 end
 
 end

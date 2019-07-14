@@ -6,11 +6,6 @@
 %%
 function result_map = ff_abz_fibs_vf_vec(varargin)
 %% FF_ABZ_FIBS_VF_VEC solve infinite horizon exo shock + endo asset problem
-% This program solves the infinite horizon dynamic single asset and single
-% shock problem with vectorized codes.
-% <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_fibs_vf.html
-% ff_abz_fibs_vf> shows looped codes. The solution is the same.
-%
 % The model could be invoked mainly in sveral ways:
 %
 % # param_map('bl_default') = true;  param_map('bl_bridge') = false;
@@ -75,8 +70,8 @@ function result_map = ff_abz_fibs_vf_vec(varargin)
 %
 % @include
 %
-% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_set_default_param.html ffs_abz_fibs_set_default_param>
-% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_get_funcgrid.html ffs_abz_fibs_get_funcgrid>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_paramfunc/html/ffs_abz_fibs_set_default_param.html ffs_abz_fibs_set_default_param>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_paramfunc/html/ffs_abz_fibs_get_funcgrid.html ffs_abz_fibs_get_funcgrid>
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost_bridge.html ffs_fibs_min_c_cost_bridge>
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_inf_bridge.html ffs_fibs_inf_bridge>
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost.html ffs_fibs_min_c_cost>
@@ -95,7 +90,7 @@ function result_map = ff_abz_fibs_vf_vec(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 1;
+it_param_set = 3;
 bl_input_override = true;
 [param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
 
@@ -577,6 +572,27 @@ if (bl_post)
 
     % Graphs for results_map with FIBS contents
     result_map = ff_az_fibs_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+end
+
+%% Display Various Containers
+bl_display_defparam = true;
+if (bl_display_defparam)
+    
+    %% Display 1 support_map    
+    fft_container_map_display(support_map);
+        
+    %% Display 2 armt_map
+    fft_container_map_display(armt_map);
+
+    %% Display 3 param_map
+    fft_container_map_display(param_map);
+    
+    %% Display 4 func_map
+    fft_container_map_display(func_map);
+    
+    %% Display 5 result_map
+    fft_container_map_display(result_map);
+    
 end
 
 end

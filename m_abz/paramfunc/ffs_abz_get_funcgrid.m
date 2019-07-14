@@ -50,16 +50,12 @@ function [armt_map, func_map] = ffs_abz_get_funcgrid(varargin)
 % * gateway function processing grid, paramters, functions: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
 %
 
-
 %% Default
-
-bl_input_override = 0;
-if (length(varargin) == 3)
-    bl_input_override = varargin{3};
-end
-if (bl_input_override)
+if (~isempty(varargin))
+    
     % override when called from outside
-    [param_map, support_map, ~] = varargin{:};
+    [param_map, support_map] = varargin{:};
+    
 else
     close all
     % default internal run
@@ -106,6 +102,8 @@ params_group = values(param_map, {'st_z_r_borr_drv_ele_type', 'st_z_r_borr_drv_p
 % support_map controls
 params_group = values(support_map, {'bl_graph_funcgrids', 'bl_display_funcgrids'});
 [bl_graph_funcgrids, bl_display_funcgrids] = params_group{:};
+params_group = values(support_map, {'it_display_summmat_rowmax', 'it_display_summmat_colmax'});
+[it_display_summmat_rowmax, it_display_summmat_colmax] = params_group{:};
 
 %% Get Shock: Income Shock (ar1)
 
@@ -430,12 +428,8 @@ if (bl_display_funcgrids)
     disp(size(ar_z_r_borr));
     disp(ar_z_r_borr);
     
-    param_map_keys = keys(func_map);
-    param_map_vals = values(func_map);
-    for i = 1:length(func_map)
-        st_display = strjoin(['pos =' num2str(i) '; key =' string(param_map_keys{i}) '; val =' func2str(param_map_vals{i})]);
-        disp(st_display);
-    end
+    fft_container_map_display(armt_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+    fft_container_map_display(func_map, it_display_summmat_rowmax, it_display_summmat_colmax);
 end
 
 end

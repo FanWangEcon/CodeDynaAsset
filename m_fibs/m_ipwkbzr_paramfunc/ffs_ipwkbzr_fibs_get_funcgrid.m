@@ -1,11 +1,11 @@
-%% Generate States, Choices and Shocks Grids and Get Functions (Interpolated + Percentage + Risky + Safe Asset + FIBS)
+%% Generate States, Choices and Shocks Grids and Get Functions (Interpolated + Percentage + Risky + Safe Asset + FIBS + RShock)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
 %%
 function [armt_map, func_map] = ffs_ipwkbzr_fibs_get_funcgrid(varargin)
-%% FFS_IPWKBZ_FIBS_GET_FUNCGRID get funcs, params, states choices shocks grids
+%% FFS_IPWKBZR_FIBS_GET_FUNCGRID get funcs, params, states choices shocks grids
 % This file is based on
 % <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/paramfunc/html/ffs_ipwkbzr_get_funcgrid.html
 % ffs_ipwkbzr_get_funcgrid>, see that file for more comments and compare

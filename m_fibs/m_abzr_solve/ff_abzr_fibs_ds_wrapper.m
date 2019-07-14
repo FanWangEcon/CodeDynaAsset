@@ -1,4 +1,4 @@
-%% Derive Distributions for For+Inf+Borr+Save One Asset (Wrapper)
+%% Derive Distributions for For+Inf+Borr+Save+RShock One Asset (Wrapper)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*

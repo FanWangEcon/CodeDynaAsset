@@ -1,4 +1,4 @@
-%% Risky + Safe Asset (Save + Borr + FIBS) Interpolated-Percentage (Optimized-Vectorized)
+%% Risky + Safe Asset (Save + Borr + FIBS + RShock) Interpolated-Percentage (Optimized-Vectorized)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
@@ -715,6 +715,10 @@ if (bl_post)
     result_map('ar_val_diff_norm') = ar_val_diff_norm(1:it_iter_last);
     result_map('ar_pol_diff_norm') = ar_pol_diff_norm(1:it_iter_last);
     result_map('mt_pol_perc_change') = mt_pol_perc_change(1:it_iter_last, :);
+    
+    armt_map('mt_coh_wkb_ori') = mt_coh_wkb;
+    armt_map('ar_a_meshk_ori') = ar_a_meshk;
+    armt_map('ar_k_mesha_ori') = ar_k_mesha;
     
     armt_map('mt_coh_wkb') = mt_interp_coh_grid_mesh_z;
     armt_map('it_ameshk_n') = length(ar_interp_coh_grid);

@@ -5,10 +5,10 @@
 
 %%
 function result_map = ff_abz_fibs_vf(varargin)
-%% FF_ABZ_FIBS_VF borr + save one asset formal informal + loop
+%% FF_ABZR_FIBS_VF borr + save one asset formal informal + loop
 % This program solves the infinite horizon dynamic single asset and single
 % shock problem with loops. This file contains codes that processes
-% borrowing and handles formal and informal choices.
+% borrowing and handles formal and informal choices. R shock.
 %
 % @param param_map container parameter container
 %
@@ -44,8 +44,8 @@ function result_map = ff_abz_fibs_vf(varargin)
 %
 % @include
 %
-% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_set_default_param.html ffs_abz_fibs_set_default_param>
-% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abz_fibs_get_funcgrid.html ffs_abz_fibs_get_funcgrid>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_paramfunc/html/ffs_abz_fibs_set_default_param.html ffs_abz_fibs_set_default_param>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_paramfunc/html/ffs_abz_fibs_get_funcgrid.html ffs_abz_fibs_get_funcgrid>
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost_bridge.html ffs_fibs_min_c_cost_bridge>
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_inf_bridge.html ffs_fibs_inf_bridge>
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost.html ffs_fibs_min_c_cost>
@@ -64,12 +64,15 @@ function result_map = ff_abz_fibs_vf(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 1;
+it_param_set = 4;
 bl_input_override = true;
 [param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
 
 % Note: param_map and support_map can be adjusted here or outside to override defaults
 % To generate results as if formal informal do not matter
+param_map('it_a_n') = 35;
+param_map('it_z_n') = 7;
+param_map('it_maxiter_val') = 20;
 % param_map('fl_r_fsv') = 0.025;
 % param_map('fl_r_inf') = 0.035;
 % param_map('fl_r_inf_bridge') = 0.035;
@@ -80,8 +83,6 @@ bl_input_override = true;
 % param_map('fl_forbrblk_brleast') = -1;
 % param_map('fl_forbrblk_gap') = -1.5;
 % param_map('bl_b_is_principle') = false;
-% param_map('it_a_n') = 750;
-% param_map('it_z_n') = 15;
 
 [armt_map, func_map] = ffs_abz_fibs_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 default_params = {param_map support_map armt_map func_map};

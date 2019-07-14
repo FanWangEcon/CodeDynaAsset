@@ -1,3 +1,8 @@
+# Issues 2019-07-14
+
+- [] 2019-07-14 11:36
+  + below zero -20 consumption for ikwpkz + fibs, happens to be cmin/default proportion as well. 
+
 # To do 2019-07-11
 
 - [] 2019-07-11 14:24

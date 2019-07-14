@@ -1,15 +1,12 @@
-%% Solve For+Inf+Borr+Save Dynamic Programming Problem (Vectorized)
+%% Solve For+Inf+Borr+Save+RShock Dynamic Programming Problem (Vectorized)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
 %%
 function result_map = ff_abzr_fibs_vf_vec(varargin)
-%% FF_ABZ_FIBS_VF_VEC solve infinite horizon exo shock + endo asset problem
-% This program solves the infinite horizon dynamic single asset and single
-% shock problem with vectorized codes.
-% <https://fanwangecon.github.io/CodeDynaAsset/m_abzr/solve/html/ff_abzr_fibs_vf.html
-% ff_abzr_fibs_vf> shows looped codes. The solution is the same.
+%% FF_ABZR_FIBS_VF_VEC solve infinite horizon exo shock + endo asset problem
+% With R shock.
 %
 % The model could be invoked mainly in sveral ways:
 %
@@ -77,8 +74,8 @@ function result_map = ff_abzr_fibs_vf_vec(varargin)
 %
 % @include
 %
-% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abzr_fibs_set_default_param.html ffs_abzr_fibs_set_default_param>
-% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc/html/ffs_abzr_fibs_get_funcgrid.html ffs_abzr_fibs_get_funcgrid>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abzr_paramfunc/html/ffs_abzr_fibs_set_default_param.html ffs_abzr_fibs_set_default_param>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abzr_paramfunc/html/ffs_abzr_fibs_get_funcgrid.html ffs_abzr_fibs_get_funcgrid>
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost_bridge.html ffs_fibs_min_c_cost_bridge>
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_inf_bridge.html ffs_fibs_inf_bridge>
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/paramfunc_fibs/html/ffs_fibs_min_c_cost.html ffs_fibs_min_c_cost>
@@ -91,13 +88,14 @@ function result_map = ff_abzr_fibs_vf_vec(varargin)
 % * for/inf + borr optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abzr_solve/html/ff_abzr_fibs_vf_vecsv.html ff_abzr_fibs_vf_vecsv>
 %
 
+
 %% Default
 % * it_param_set = 1: quick test
 % * it_param_set = 2: benchmark run
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 1;
+it_param_set = 4;
 bl_input_override = true;
 [param_map, support_map] = ffs_abzr_fibs_set_default_param(it_param_set);
 
@@ -178,13 +176,6 @@ params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
     st_profile_prefix, st_profile_name_main, st_profile_suffix, ...
     bl_display_minccost, bl_display_infbridge, ...
     bl_time, bl_display_defparam, bl_display, it_display_every, bl_post] = params_group{:};
-
-%% Display Parameters
-
-if (bl_display_defparam)
-    fft_container_map_display(param_map);
-    fft_container_map_display(support_map);
-end
 
 %% Initialize Output Matrixes
 % include mt_pol_idx which we did not have in looped code
@@ -590,6 +581,26 @@ if (bl_post)
 
     % Graphs for results_map with FIBS contents
     result_map = ff_az_fibs_vf_post(param_map, support_map, armt_map, func_map, result_map);
+end
+
+%% Display Various Containers
+if (bl_display_defparam)
+    
+    %% Display 1 support_map    
+    fft_container_map_display(support_map);
+        
+    %% Display 2 armt_map
+    fft_container_map_display(armt_map);
+
+    %% Display 3 param_map
+    fft_container_map_display(param_map);
+    
+    %% Display 4 func_map
+    fft_container_map_display(func_map);
+    
+    %% Display 5 result_map
+    fft_container_map_display(result_map);
+    
 end
 
 end
