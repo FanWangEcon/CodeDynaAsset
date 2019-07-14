@@ -128,6 +128,9 @@ elseif (ismember(st_model, ["ipwkbz_fibs"]))
 elseif (ismember(st_model, ["abz_fibs"]))    
     params_group = values(armt_map, {'ar_z'});
     [ar_z] = params_group{:};
+elseif (ismember(st_model, ["ipwkbz"]))
+    params_group = values(armt_map, {'ar_z'});
+    [ar_z] = params_group{:};
 end
 
 % support_map

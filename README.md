@@ -367,7 +367,7 @@ We have three sets of interpolations now:
 
 In section 3.4 below, I show how solution results change for *ipwkz* as we increase aggregate savings grid points, shock grid points, reduce the interpolation gaps, or change production function parameters from decreasing to constant return to scale.
 
-## 4.2 Percentage Interpolation with Savings DP
+## 4.2 Perc. Interp. Savings DP (IPWKZ)
 
 Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/paramfunc/html/ffs_ipwkz_set_default_param.html), for the benchmark simulation, same as *3.3*, but we introduce several additional measures of precision:
 
@@ -392,7 +392,7 @@ Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_
     * interpolate u(c), interpolate v(coh,z), interpolate EV(w,z)
     * store u(c) in cells, update when k*(w,z) changes
 
-## 4.2 Percentage Interpolation with Borrowing DP
+## 4.3 Perc. Interp. Save + Borrow DP (IPWKBZ)
 
 The code from *4.1* are modified to allow for default. Set up for default is the same as in the *abz* model discussed in section *2*. Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_set_default_param.html), for the benchmark simulation, same parameters as *4.1*.
 
@@ -400,8 +400,15 @@ The code from *4.1* are modified to allow for default. Set up for default is the
 2. *ipwkbz* model [optimized vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_vf_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/solve/ff_ipwkbz_vf_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_vf_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/profile/ff_ipwkbz_vf_vecsv_default_p3/file0.html)    
     * speed: **2.5** seconds
 
+## 4.4 Perc. Interp. Borrow R Shock DP (IPWKBZR)
 
-## 4.4 Asset Distributions
+The code from *4.2* are modified to allow for interest rate shock for borrowing. Set up for default and interest rate shock is the same as in the *abz* model discussed in section *2*. Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/paramfunc/html/ffs_ipwkbzr_set_default_param.html), for the benchmark simulation, same parameters as *4.1*.
+
+1. Second Stage with borrowing *ipwkbzr* [2nd stage solution](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/solve/html/ff_ipwkbzr_evf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbzr/solve/ff_ipwkbzr_evf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/solve/html/ff_ipwkbzr_evf.html)
+2. *ipwkbzr* model [optimized vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/solve/html/ff_ipwkbzr_vf_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbzr/solve/ff_ipwkbzr_vf_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/solve/html/ff_ipwkbzr_vf_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/solve/profile/ff_ipwkbzr_vf_vecsv_default_p3/file0.html)    
+    * speed: **54.4** seconds
+
+## 4.5 Asset Distributions
 
 This is the wrapper file for *abz* that invokes the [looped](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_ds.html), [vectorized](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_ds_vec.html), and [semi-analytical](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_ds_vecsv.html) distributional programs from *3.4.b*:
 
@@ -409,8 +416,10 @@ This is the wrapper file for *abz* that invokes the [looped](https://fanwangecon
     * speed (dynamic programming + distribution): **2.5** seconds
 2. *ipWKBZ* distributional [wrapper](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_ds_wrapper.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/solve/ff_ipwkbz_ds_wrapper.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_ds_wrapper.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/profile/ff_ipwkbz_ds_wrapper_default_p7/file0.html)   
     * speed (dynamic programming + distribution): **4.2** seconds  
+3. *ipWKBZR* distributional [wrapper](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/solve/html/ff_ipwkbzr_ds_wrapper.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbzr/solve/ff_ipwkbzr_ds_wrapper.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/solve/html/ff_ipwkbzr_ds_wrapper.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/solve/profile/ff_ipwkbzr_ds_wrapper_default_p7/file0.html)   
+    * speed (dynamic programming + distribution): **73.6** seconds  
 
-## 4.5 Solution Support (ipWKZ + ipWKBZ)
+## 4.6 Solution Support (ipWKZ + ipWKBZ + ipWKBZR)
 
 All solution algorithms share the same support files.
 
@@ -424,11 +433,17 @@ All solution algorithms share the same support files.
 2. *ipwkbz* model [set functions](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_set_functions.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/paramfunc/ffs_ipwkbz_set_functions.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_set_functions.html)
 3. *ipwkbz* model [generate states, choices, and shocks grids](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_get_funcgrid.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/paramfunc/ffs_ipwkbz_get_funcgrid.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_get_funcgrid.html)
 
-**Output Analysis**:
-1. *ipwkz+ipwkbz* shares with *akz+wkz+iwkz* models [solution results processing](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_vf_post.html) codes.
-2. *ipwkz+ipwkbz* shares with *akz+wkz+iwkz* models [solution results graphing](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_vf_post_graph.html) codes.
+**Parameters and Function Definitions (ipwkbzr)**:
+1. *ipwkbzr* model [set default parameters](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/paramfunc/html/ffs_ipwkbzr_set_default_param.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbzr/paramfunc/ffs_ipwkbzr_set_default_param.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/paramfunc/html/ffs_ipwkbzr_set_default_param.html)
+2. *ipwkbzr* model [set functions](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/paramfunc/html/ffs_ipwkbzr_set_functions.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbzr/paramfunc/ffs_ipwkbzr_set_functions.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/paramfunc/html/ffs_ipwkbzr_set_functions.html)
+3. *ipwkbzr* model [generate states, choices, and shocks grids](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/paramfunc/html/ffs_ipwkbzr_get_funcgrid.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbzr/paramfunc/ffs_ipwkbzr_get_funcgrid.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/paramfunc/html/ffs_ipwkbzr_get_funcgrid.html)
 
-## 4.6 Parameter Testing (ipWKZ + ipWKBZ)
+
+**Output Analysis**:
+1. *ipwkz+ipwkbz+ipwkbzr* shares with *akz+wkz+iwkz* models [solution results processing](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_vf_post.html) codes.
+2. *ipwkz+ipwkbz+ipwkbzr* shares with *akz+wkz+iwkz* models [solution results graphing](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solvepost/html/ff_akz_vf_post_graph.html) codes.
+
+## 4.7 Parameter Testing (ipWKZ + ipWKBZ)
 
 **Savings Testing (ipWKZ)**
 

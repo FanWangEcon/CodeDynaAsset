@@ -195,10 +195,10 @@ if (bl_graph_coh_t_coh)
 
     % 2. COH Next Period
     % 2. COH Next Period
-    if (ismember(st_model, ['ipwkbzr']))
+    if (ismember(st_model, ["ipwkbzr"]))
         mt_coh_next = f_coh(ar_z_r_borr_mesh_wage_w1r2, ar_z_wage_mesh_r_borr_w1r2, ...
                             ar_pol_a_full, ar_pol_k_full);
-    elseif (ismember(st_model, ['ipwkbz_fibs']))
+    elseif (ismember(st_model, ["ipwkbz_fibs"]))
         mt_coh_next = f_coh(ar_z_wage_mesh_r_borr_w1r2, ...
                             ar_pol_a_full, ar_pol_k_full);
     else

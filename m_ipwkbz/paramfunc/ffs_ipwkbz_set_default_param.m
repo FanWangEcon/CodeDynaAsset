@@ -5,7 +5,7 @@
 
 %%
 function [param_map, support_map] = ffs_ipwkbz_set_default_param(varargin)
-%% FFS_IPKZ_SET_DEFAULT_PARAM setting model default parameters
+%% FFS_IPKBZ_SET_DEFAULT_PARAM setting model default parameters
 % Define model parameters, similar to
 % <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html
 % ffs_akz_set_default_param> see that file for descriptions.
@@ -30,7 +30,7 @@ function [param_map, support_map] = ffs_ipwkbz_set_default_param(varargin)
 
 %% Default
 
-it_subset = 0;
+it_subset = 4;
 if (isempty(varargin))
     bl_display_defparam = true;
 else
@@ -40,12 +40,12 @@ default_params = {it_subset bl_display_defparam};
 [default_params{1:length(varargin)}] = varargin{:};
 [it_subset, bl_display_defparam] = default_params{:};
 
-%% 1a. Initiate Param_map
+%% Setting param_map container
 
 param_map = containers.Map('KeyType','char', 'ValueType','any');
 
 % model name
-param_map('st_model') = 'ipwkbzr';
+param_map('st_model') = 'ipwkbz';
 
 % Preferences
 param_map('fl_crra') = 1.5;
@@ -121,37 +121,21 @@ param_map('fl_w_interp_grid_gap') = 0.1;
 % param_map('fl_w_interp_grid_gap') = (param_map('fl_w_max') - param_map('fl_w_min'))/param_map('it_w_perc_n');
 
 %% 3. Set Interest Rates non-Shock Parameters
+% Prices
+% shock is on k, not on labor, fl_w is fixed wage income
 
+param_map('fl_w') = 1.28*0.3466; % min(z*w) from benchmark az model
 param_map('fl_r_save') = 0.025;
+param_map('fl_r_borr') = 0.095;
 
-%% 4a. Set Shock 1 Borrowing Interest Rate Parameters
-% See
-% <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_gen_discrete_var.html
-% fft_gen_discrete_var> for how these parameters will be used to generate a
-% discrete random variable for the interest rate.
-
-param_map('st_z_r_borr_drv_ele_type') = 'unif';
-param_map('st_z_r_borr_drv_prb_type') = 'poiss';
-param_map('fl_z_r_borr_poiss_mean') = 1.75;
-param_map('fl_z_r_borr_max') = 0.095;
-param_map('fl_z_r_borr_min') = 0.025;
-param_map('fl_z_r_borr_n') = 5;
-% param_map('fl_z_r_borr_max') = 0.095;
-% param_map('fl_z_r_borr_min') = 0.095;
-% param_map('fl_z_r_borr_n') = 1;
-
-%% 4b. Set Shock 2 Productivity Shock Parameters
+%% 4. Set Shock 2 Productivity Shock Parameters
 
 % Production Function
 % Productivity Shock Parameters
-param_map('it_z_wage_n') = 15;
-param_map('fl_z_wage_mu') = 0;
-param_map('fl_z_wage_rho') = 0.8;
-param_map('fl_z_wage_sig') = 0.2;
-
-%% 4c. Set Overall Shock Grid Count
-
-param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+param_map('it_z_n') = 15;
+param_map('fl_z_mu') = 0;
+param_map('fl_z_rho') = 0.8;
+param_map('fl_z_sig') = 0.2;
 
 %% 5. Set Solution Control Parameters
 % Solution Accuracy
@@ -163,7 +147,7 @@ param_map('fl_tol_pol') = 10^-5;
 param_map('fl_tol_dist') = 10^-5;
 param_map('it_tol_pol_nochange') = 25; % number of iterations where policy does not change
 
-%% 6. Setting support_map container
+%% Setting support_map container
 
 support_map = containers.Map('KeyType','char', 'ValueType','any');
 
@@ -176,7 +160,6 @@ support_map('st_matimg_path_root') = st_matimg_path_root;
 support_map('bl_time') = true;
 
 % Print Controls
-support_map('bl_display_defparam') = false;
 support_map('bl_display') = true;
 support_map('bl_display_dist') = false;
 support_map('it_display_every') = 5; % how often to print results
@@ -197,6 +180,10 @@ support_map('bl_display_final_dist') = false; % print finalized results
 support_map('bl_display_final_dist_detail') = false;
 support_map('it_display_final_rowmax') = 100; % max row to print (states/iters)
 support_map('it_display_final_colmax') = 12; % max col to print (shocks)
+it_display_summmat_rowmax = 5;
+it_display_summmat_colmax = 5;
+support_map('it_display_summmat_rowmax') = it_display_summmat_rowmax;
+support_map('it_display_summmat_colmax') = it_display_summmat_colmax;
 
 % Mat File Controls
 support_map('bl_mat') = false;
@@ -227,7 +214,7 @@ support_map('bl_graph_funcgrids_detail') = false;
 support_map('bl_display_funcgrids') = false;
 support_map('bl_graph_evf') = false;
 support_map('bl_display_evf') = false;
-
+support_map('bl_display_defparam') = false;
 
 %% Subset Options
 %
@@ -265,9 +252,7 @@ elseif (ismember(it_subset, [1,2,4]))
         % TEST quick
         param_map('it_w_perc_n') = 20;
         param_map('it_ak_perc_n') = param_map('it_w_perc_n');
-        param_map('it_z_wage_n') = 5;
-        param_map('fl_z_r_borr_n') = 3;
-        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+        param_map('it_z_n') = 5;
 
         param_map('fl_coh_interp_grid_gap') = 0.25;
         param_map('it_c_interp_grid_gap') = 0.001;
@@ -289,6 +274,7 @@ elseif (ismember(it_subset, [1,2,4]))
     end
 
 end
+
 
 %% Subset Options for Distribution solutions
 %
@@ -334,10 +320,7 @@ elseif (ismember(it_subset, [5,6,8,9]))
         % TEST quick (need to enough to have distribution)
         param_map('it_w_perc_n') = 40;
         param_map('it_ak_perc_n') = param_map('it_w_perc_n');
-
-        param_map('it_z_wage_n') = 5;
-        param_map('fl_z_r_borr_n') = 3;
-        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+        param_map('it_z_n') = 5;
 
         param_map('fl_coh_interp_grid_gap') = 0.25;
         param_map('it_c_interp_grid_gap') = 0.001;
@@ -367,16 +350,14 @@ elseif (ismember(it_subset, [5,6,8,9]))
             support_map('bl_display_final_dist_detail') = false;
             support_map('bl_graph_coh_t_coh') = false;
         end
-
     end
-
 end
 
 %% Display
 
 if (bl_display_defparam)
-    fft_container_map_display(param_map);
-    fft_container_map_display(support_map);
+    fft_container_map_display(param_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+    fft_container_map_display(support_map, it_display_summmat_rowmax, it_display_summmat_colmax);
 end
 
 end

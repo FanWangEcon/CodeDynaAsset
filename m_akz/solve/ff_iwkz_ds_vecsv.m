@@ -133,7 +133,7 @@ params_group = values(func_map, {'f_coh'});
 % armt_map
 params_group = values(armt_map, {'mt_z_trans', 'ar_interp_coh_grid'});
 [mt_z_trans, ar_interp_coh_grid] = params_group{:};
-if (ismember(st_model, ['ipwkbzr', 'ipwkbzr_fibs']))
+if (ismember(st_model, ["ipwkbzr", "ipwkbzr_fibs"]))
     params_group = values(armt_map, {'ar_z_r_borr_mesh_wage_w1r2', 'ar_z_wage_mesh_r_borr_w1r2'});
     [ar_z_r_borr_mesh_wage_w1r2, ar_z_wage_mesh_r_borr_w1r2] = params_group{:};
     params_group = values(param_map, {'it_z_wage_n', 'fl_z_r_borr_n'});
@@ -189,10 +189,10 @@ it_exostates_n = it_z_n;
 
 % 1. *mt_coh_prime* is (coh_n x z_n) by (z_n)
 % coh'(z', a'(coh,z), k'(coh,z))
-if (ismember(st_model, ['ipwkbzr']))
+if (ismember(st_model, ["ipwkbzr"]))
     mt_coh_prime = f_coh(ar_z_r_borr_mesh_wage_w1r2, ar_z_wage_mesh_r_borr_w1r2, ...
                         mt_pol_a(:), mt_pol_k(:));
-elseif (ismember(st_model, ['ipwkbzr_fibs']))
+elseif (ismember(st_model, ["ipwkbzr_fibs"]))
     % mt_pol_a includes interest rates
     mt_coh_prime = f_coh(ar_z_wage_mesh_r_borr_w1r2, mt_pol_a(:), mt_pol_k(:));
 else
