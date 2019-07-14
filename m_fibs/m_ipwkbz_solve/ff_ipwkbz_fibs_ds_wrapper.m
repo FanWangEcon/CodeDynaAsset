@@ -15,67 +15,24 @@ function [result_map] = ff_ipwkbz_fibs_ds_wrapper(varargin)
 % # it_subset = 8 is matlab publish
 % # it_subset = 9 is invoke operational (only final stats) and coh graph
 
-it_param_set = 7;
+it_param_set = 8;
 bl_input_override = true;
 [param_map, support_map] = ffs_ipwkbz_fibs_set_default_param(it_param_set);
 
-%% Change Parameter to Main Options
-
-% Set Parameter Types
-st_param_which = 'default';
-
-if (ismember(st_param_which, ["default"]))
-    
-    % default
-
-elseif ismember(st_param_which, ["ff_ipwkbz_ds_wrapper", "ff_ipwkbzr_ds_wrapper"])
-
-    param_map('fl_r_save') = 0.025;
-    
-    param_map('fl_r_fsv') = 0.025;
-    param_map('fl_r_fbr') = 1.000;
-    param_map('bl_bridge') = false;
-    param_map('it_coh_bridge_perc_n') = 1;
-    
-    if ismember(st_param_which, ["ff_ipwkbz_ds_wrapper"])
-
-        % ff_ipwkbz_evf default
-        param_map('fl_z_r_borr_min') = 0.025;
-        param_map('fl_z_r_borr_max') = 0.025;
-        param_map('fl_z_r_borr_n') = 1;
-   
-    end
-    
-    param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');    
-    
-end
-
-%% Adjust Parametesr
-
 % Note: param_map and support_map can be adjusted here or outside to override defaults
-% param_map('it_w_perc_n') = 50;
-% param_map('it_ak_perc_n') = param_map('it_w_perc_n');
+% param_map('it_a_n') = 750;
 % param_map('it_z_n') = 15;
-% param_map('fl_coh_interp_grid_gap') = 0.025;
-% param_map('it_c_interp_grid_gap') = 0.001;
-% param_map('fl_w_interp_grid_gap') = 0.25;
-% param_map('it_w_perc_n') = 100;
-% param_map('it_ak_perc_n') = param_map('it_w_perc_n');
-% param_map('it_z_n') = 11;
-% param_map('fl_coh_interp_grid_gap') = 0.1;
-% param_map('it_c_interp_grid_gap') = 10^-4;
-% param_map('fl_w_interp_grid_gap') = 0.1;
-% param_map('it_w_perc_n') = 100;
-% param_map('fl_r_save') = 0.025;
-% param_map('fl_c_min') = 0.02;
 
-%% Set Distribution Derivation Types
+% Note: below to for identical results as benchmark ff_ipwkbz_ds_wrapper.m
+% param_map('fl_r_fsv') = 0.025;
+% param_map('fl_r_inf') = 0.085;
+% param_map('fl_r_inf_bridge') = 0.085;
+% param_map('fl_r_fbr') = 0.085;
+% param_map('bl_bridge') = true;
 
 % param_map('st_analytical_stationary_type') = 'loop';
 % param_map('st_analytical_stationary_type') = 'vector';
 param_map('st_analytical_stationary_type') = 'eigenvector';
-
-%% Generate Grids
 
 % get armt and func map
 [armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
@@ -91,7 +48,8 @@ support_map = [support_map; default_params{2}];
 if params_len >= 1 && params_len <= 2
     % If override param_map, re-generate armt and func if they are not
     % provided
-    [armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(param_map, support_map);
+    bl_input_override = true;
+    [armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(param_map, support_map, bl_input_override);
 else
     % Override all
     armt_map = [armt_map; default_params{3}];
@@ -139,17 +97,17 @@ result_map = ff_ipwkbz_fibs_vf_vecsv(param_map, support_map, armt_map, func_map)
 %% Derive Distribution
 
 if (strcmp(st_analytical_stationary_type, 'loop'))
-    
+
     result_map = ff_iwkz_ds(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
-    
+
 elseif (strcmp(st_analytical_stationary_type, 'vector'))
-    
+
     result_map = ff_iwkz_ds_vec(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
-    
+
 elseif (strcmp(st_analytical_stationary_type, 'eigenvector'))
-    
+
     result_map = ff_iwkz_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
-    
+
 end
 
 %% End Profiler and Timer

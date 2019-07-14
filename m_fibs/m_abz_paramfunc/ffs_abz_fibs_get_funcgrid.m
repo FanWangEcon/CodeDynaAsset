@@ -38,18 +38,16 @@ function [armt_map, func_map] = ffs_abz_fibs_get_funcgrid(varargin)
 % * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/ffto_gen_tauchen_jhl.m ffto_gen_tauchen_jhl>
 % * <https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/fft_gen_grid_loglin.m fft_gen_grid_loglin>
 %
-% @seealso
-%
-% * <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
-%
 
 %% Default
 
-if (~isempty(varargin))
-    
+bl_input_override = 0;
+if (length(varargin) == 3)
+    bl_input_override = varargin{3};
+end
+if (bl_input_override)
     % override when called from outside
-    [param_map, support_map] = varargin{:};
-    
+    [param_map, support_map, ~] = varargin{:};
 else
     close all
     % default internal run
@@ -65,151 +63,29 @@ else
     support_map = [support_map; default_maps{2}];
 end
 
-%% Parse Parameters 1
+%% Parse Parameters
 
-% param_map asset grid
+params_group = values(param_map, {'it_z_n', 'fl_z_mu', 'fl_z_rho', 'fl_z_sig'});
+[it_z_n, fl_z_mu, fl_z_rho, fl_z_sig] = params_group{:};
+
 params_group = values(param_map, {'fl_b_bd', 'bl_default', 'fl_a_min', 'fl_a_max', 'bl_loglin', 'fl_loglin_threshold', 'it_a_n'});
 [fl_b_bd, bl_default, fl_a_min, fl_a_max, bl_loglin, fl_loglin_threshold, it_a_n] = params_group{:};
 
-% param_map preference
 params_group = values(param_map, {'fl_crra', 'fl_c_min'});
 [fl_crra, fl_c_min] = params_group{:};
 
-% param_map borrowing and price
-params_group = values(param_map, {'bl_b_is_principle', 'fl_r_fbr', 'fl_r_fsv', 'fl_w'});
-[bl_b_is_principle, fl_r_fbr, fl_r_fsv, fl_w] = params_group{:};
+params_group = values(param_map, {'bl_b_is_principle', 'fl_r_fbr', 'fl_r_fsv', 'fl_r_inf', 'fl_w'});
+[bl_b_is_principle, fl_r_fbr, fl_r_fsv, fl_r_inf, fl_w] = params_group{:};
 
-%% Parse Parameters 2
-
-% param_map shock income
-params_group = values(param_map, {'it_z_wage_n', 'fl_z_wage_mu', 'fl_z_wage_rho', 'fl_z_wage_sig'});
-[it_z_wage_n, fl_z_wage_mu, fl_z_wage_rho, fl_z_wage_sig] = params_group{:};
-
-% param_map shock borrowing interest
-params_group = values(param_map, {'st_z_r_infbr_drv_ele_type', 'st_z_r_infbr_drv_prb_type', 'fl_z_r_infbr_poiss_mean', ...
-    'fl_z_r_infbr_max', 'fl_z_r_infbr_min', 'fl_z_r_infbr_n'});
-[st_z_r_infbr_drv_ele_type, st_z_r_infbr_drv_prb_type, fl_z_r_infbr_poiss_mean, ...
-    fl_z_r_infbr_max, fl_z_r_infbr_min, fl_z_r_infbr_n] = params_group{:};
-
-% param_map formal menu
 params_group = values(param_map, {'st_forbrblk_type', 'fl_forbrblk_brmost', 'fl_forbrblk_brleast', 'fl_forbrblk_gap'});
 [st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap] = params_group{:};
-
-%% Parse Parameters 3
 
 params_group = values(support_map, {'bl_graph_funcgrids', 'bl_display_funcgrids'});
 [bl_graph_funcgrids, bl_display_funcgrids] = params_group{:};
 
-%% Get Shock: Income Shock (ar1)
+%% Get Shock Grids
 
-[~, mt_z_wage_trans, ar_wage_stationary, ar_z_wage] = ffto_gen_tauchen_jhl(fl_z_wage_mu,fl_z_wage_rho,fl_z_wage_sig,it_z_wage_n);
-
-%% Get Shock: Interest Rate Shock (iid)
-
-% get borrowing grid and probabilities
-param_dsv_map = containers.Map('KeyType','char', 'ValueType','any');
-param_dsv_map('st_drv_ele_type') = st_z_r_infbr_drv_ele_type;
-param_dsv_map('st_drv_prb_type') = st_z_r_infbr_drv_prb_type;
-param_dsv_map('fl_poiss_mean') = fl_z_r_infbr_poiss_mean;
-param_dsv_map('fl_max') = fl_z_r_infbr_max;
-param_dsv_map('fl_min') = fl_z_r_infbr_min;
-param_dsv_map('fl_n') = fl_z_r_infbr_n;
-[ar_z_r_infbr, ar_z_r_inf_prob] = fft_gen_discrete_var(param_dsv_map, true);
-
-% iid transition matrix
-mt_z_r_infbr_prob_trans = repmat(ar_z_r_inf_prob, [length(ar_z_r_inf_prob), 1]);
-
-%% Get Shock: Mesh Shocks Together
-
-% Kronecker product to get full transition matrix for the two shocks
-mt_z_trans = kron(mt_z_r_infbr_prob_trans, mt_z_wage_trans);
-
-% mesh the shock vectors
-[mt_z_wage_mesh_r_infbr, mt_z_r_infbr_mesh_wage] = ndgrid(ar_z_wage, ar_z_r_infbr);
-ar_z_r_infbr_mesh_wage = mt_z_r_infbr_mesh_wage(:)';
-ar_z_wage_mesh_r_infbr = mt_z_wage_mesh_r_infbr(:)';
-
-if (bl_display_funcgrids)
-    
-    disp('----------------------------------------');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp('Borrow R Shock: ar_z_r_inf_mesh_wage');
-    disp('Prod/Wage Shock: mt_z_wage_mesh_r_infbr');
-    disp('show which shock is inner and which is outter');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    
-    tb_two_shocks = array2table([ar_z_r_infbr_mesh_wage;...
-        ar_z_wage_mesh_r_infbr]');
-    cl_col_names = ["Borrow R Shock (Meshed)", "Wage R Shock (Meshed)"];
-    cl_row_names = strcat('zi=', string((1:length(ar_z_r_infbr_mesh_wage))));
-    tb_two_shocks.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
-    tb_two_shocks.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
-    
-    it_row_display = it_z_wage_n*2;
-    
-    disp(size(tb_two_shocks));
-    disp(head(tb_two_shocks, it_row_display));
-    disp(tail(tb_two_shocks, it_row_display));
-    
-    
-    disp('----------------------------------------');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp('Borrow Rate Transition Matrix: mt_z_r_infbr_prob_trans');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    it_col_n_keep = 15;
-    it_row_n_keep = 15;    
-    [it_row_n, it_col_n] = size(mt_z_r_infbr_prob_trans);
-    [ar_it_cols, ar_it_rows] = fft_row_col_subset(it_col_n, it_col_n_keep, it_row_n, it_row_n_keep);    
-    cl_st_full_rowscols = cellstr([num2str(ar_z_r_infbr', 'r%3.2f')]);
-    tb_z_r_infbr_prob_trans = array2table(round(mt_z_r_infbr_prob_trans(ar_it_rows, ar_it_cols), 6));
-    cl_col_names = strcat('zi=', num2str(ar_it_cols'), ':', cl_st_full_rowscols(ar_it_cols));
-    cl_row_names = strcat('zi=', num2str(ar_it_rows'), ':', cl_st_full_rowscols(ar_it_cols));
-    tb_z_r_infbr_prob_trans.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
-    tb_z_r_infbr_prob_trans.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
-       
-    disp(size(tb_z_r_infbr_prob_trans));
-    disp(tb_z_r_infbr_prob_trans);
-    
-    
-    disp('----------------------------------------');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp('Wage Prod Shock Transition Matrix: mt_z_r_infbr_prob_trans');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    it_col_n_keep = 15;
-    it_row_n_keep = 15;    
-    [it_row_n, it_col_n] = size(mt_z_wage_trans);
-    [ar_it_cols, ar_it_rows] = fft_row_col_subset(it_col_n, it_col_n_keep, it_row_n, it_row_n_keep);    
-    cl_st_full_rowscols = cellstr([num2str(ar_z_wage', 'w%3.2f')]);
-    tb_z_wage_trans = array2table(round(mt_z_wage_trans(ar_it_rows, ar_it_cols),6));    
-    cl_col_names = strcat('zi=', num2str(ar_it_cols'), ':', cl_st_full_rowscols(ar_it_cols));
-    cl_row_names = strcat('zi=', num2str(ar_it_rows'), ':', cl_st_full_rowscols(ar_it_cols));
-    tb_z_wage_trans.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
-    tb_z_wage_trans.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
-       
-    disp(size(tb_z_wage_trans));
-    disp(tb_z_wage_trans);
-    
-    
-    disp('----------------------------------------');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp('Full Transition Matrix: mt_z_trans');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    it_col_n_keep = it_z_wage_n*3;
-    it_row_n_keep = it_z_wage_n*3;
-    [it_row_n, it_col_n] = size(mt_z_trans);
-    [ar_it_cols, ar_it_rows] = fft_row_col_subset(it_col_n, it_col_n_keep, it_row_n, it_row_n_keep);    
-    cl_st_full_rowscols = cellstr([num2str(ar_z_r_infbr_mesh_wage', 'r%3.2f;'), ...
-                                   num2str(ar_z_wage_mesh_r_infbr', 'w%3.2f')]);
-    tb_mt_z_trans = array2table(round(mt_z_trans(ar_it_rows, ar_it_cols),6));
-    cl_col_names = strcat('i', num2str(ar_it_cols'), ':', cl_st_full_rowscols(ar_it_cols));
-    cl_row_names = strcat('i', num2str(ar_it_rows'), ':', cl_st_full_rowscols(ar_it_cols));
-    tb_mt_z_trans.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
-    tb_mt_z_trans.Properties.RowNames = matlab.lang.makeValidName(cl_row_names);
-       
-    disp(size(tb_mt_z_trans));
-    disp(tb_mt_z_trans);
-    
-end
+[~, mt_z_trans, ar_stationary, ar_z] = ffto_gen_tauchen_jhl(fl_z_mu,fl_z_rho,fl_z_sig,it_z_n);
 
 %% Get Equations
 
@@ -228,14 +104,12 @@ if (bl_loglin)
     % C:\Users\fan\M4Econ\asset\grid\ff_grid_loglin.m
     ar_a = fft_gen_grid_loglin(it_a_n, fl_a_max, fl_a_min, fl_loglin_threshold);
 else
-    fl_r_inf_max = max(ar_z_r_infbr);
-    
     [ar_a_inf, fl_borr_yminbd_inf, fl_borr_ymaxbd_inf] = ffs_abz_gen_borrsave_grid(...
-        fl_b_bd, bl_default, ar_z_wage, fl_w, ...
-        bl_b_is_principle, fl_r_inf_max, fl_a_min, fl_a_max, it_a_n);
+        fl_b_bd, bl_default, ar_z, fl_w, ...
+        bl_b_is_principle, fl_r_inf, fl_a_min, fl_a_max, it_a_n);
 
     [ar_a_for, fl_borr_yminbd_for, fl_borr_ymaxbd_for] = ffs_abz_gen_borrsave_grid(...
-        fl_b_bd, bl_default, ar_z_wage, fl_w, ...
+        fl_b_bd, bl_default, ar_z, fl_w, ...
         bl_b_is_principle, fl_r_fbr, fl_a_min, fl_a_max, it_a_n);
 
     if (min(ar_a_for) <= min(ar_a_inf))
@@ -256,8 +130,8 @@ end
 armt_map = containers.Map('KeyType','char', 'ValueType','any');
 armt_map('ar_a') = ar_a;
 armt_map('mt_z_trans') = mt_z_trans;
-armt_map('ar_z_r_infbr_mesh_wage') = ar_z_r_infbr_mesh_wage;
-armt_map('ar_z_wage_mesh_r_infbr') = ar_z_wage_mesh_r_infbr;
+armt_map('ar_stationary') = ar_stationary;
+armt_map('ar_z') = ar_z;
 armt_map('ar_forbrblk') = ar_forbrblk;
 armt_map('ar_forbrblk_r') = ar_forbrblk_r;
 
@@ -280,7 +154,7 @@ func_map('f_bprime') = f_bprime;
 if (bl_graph_funcgrids)
 
     % mesh a and and z
-    [mt_a_mesh_z, mt_z_mesh_a] = ndgrid(ar_a, ar_z_wage);
+    [mt_a_mesh_z, mt_z_mesh_a] = ndgrid(ar_a, ar_z);
 
     % cash-on-hand given a and z
     mt_coh = f_coh(mt_z_mesh_a, mt_a_mesh_z);
@@ -351,7 +225,7 @@ if (bl_graph_funcgrids)
         grid minor;
 
         legend2plot = fliplr([1 round(numel(chart)/3) round((2*numel(chart))/4)  numel(chart)]);
-        legendCell = cellstr(num2str(ar_z_wage', 'z=%3.2f'));
+        legendCell = cellstr(num2str(ar_z', 'z=%3.2f'));
         chart(length(chart)+1) = hline;
         legendCell{length(legendCell) + 1} = 'if coh(a,z) >= a';
         legend2plot = [legend2plot length(legendCell)];
@@ -438,10 +312,10 @@ end
 
 if (bl_display_funcgrids)
 
-    disp('ar_z_wage');
-    disp(size(ar_z_wage));
-    disp(ar_z_wage);
-    
+    disp('ar_z');
+    disp(size(ar_z));
+    disp(ar_z);
+
     disp('mt_z_trans');
     disp(size(mt_z_trans));
     disp(mt_z_trans);

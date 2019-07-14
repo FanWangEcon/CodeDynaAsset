@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Set Model Parameters (Interpolated + Percentage + Risky + Safe Asset + FIBS)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-10"><meta name="DC.source" content="ffs_ipwkbz_fibs_set_default_param.m"><style type="text/css">
+      --><title>Set Model Parameters (Interpolated + Percentage + Risky + Safe Asset + FIBS)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-13"><meta name="DC.source" content="ffs_ipwkbz_fibs_set_default_param.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,343 +66,234 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Set Model Parameters (Interpolated + Percentage + Risky + Safe Asset + FIBS)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FFS_IPWKBZ_FIBS_SET_DEFAULT_PARAM setting model default parameters</a></li><li><a href="#3">Default</a></li><li><a href="#4">1a. Initiate Param_map</a></li><li><a href="#5">1b. Production Function Parameters</a></li><li><a href="#6">2a. Set Borrowing Control Parameters</a></li><li><a href="#7">2b. Set Asset Grid Parameters</a></li><li><a href="#8">2c. Set Asset Interpolation Parameters</a></li><li><a href="#9">3. Set Interest Rates non-Shock Parameters</a></li><li><a href="#10">4a. Set Shock 1 Borrowing Interest Rate Parameters</a></li><li><a href="#11">4b. Set Shock 2 Productivity Shock Parameters</a></li><li><a href="#12">4c. Set Overall Shock Grid Count</a></li><li><a href="#13">5. Set Solution Control Parameters</a></li><li><a href="#14">Setting support_map container</a></li><li><a href="#15">Subset Options</a></li><li><a href="#16">Subset Options for Distribution solutions</a></li><li><a href="#17">Display</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [param_map, support_map] = ffs_ipwkbz_fibs_set_default_param(varargin)
-</pre><h2 id="2">FFS_IPWKBZ_FIBS_SET_DEFAULT_PARAM setting model default parameters</h2><h2 id="3">Default</h2><pre class="codeinput">it_subset = 0;
+  </style></head><body><div class="content"><h1>Set Model Parameters (Interpolated + Percentage + Risky + Safe Asset + FIBS)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FFS_IPWKBZ_FIBS_SET_DEFAULT_PARAM setting model default parameters</a></li><li><a href="#3">Default</a></li><li><a href="#4">1. Initiate Param_map</a></li><li><a href="#5">2. Set Borrowing Control Parameters</a></li><li><a href="#6">3. Set Interest Rates non-Shock Parameters</a></li><li><a href="#7">Setting support_map container</a></li><li><a href="#8">Display New Parameters</a></li><li><a href="#9">3. Merge Parameters Import</a></li><li><a href="#10">Add on based on existing</a></li><li><a href="#11">Subset Options Adjustments</a></li><li><a href="#12">Subset Options for Distribution solutions</a></li><li><a href="#13">Display All Parameters</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [param_map, support_map] = ffs_ipwkbz_fibs_set_default_param(varargin)
+</pre><h2 id="2">FFS_IPWKBZ_FIBS_SET_DEFAULT_PARAM setting model default parameters</h2><h2 id="3">Default</h2><pre class="codeinput">it_subset = 4;
 <span class="keyword">if</span> (isempty(varargin))
     bl_display_defparam = true;
 <span class="keyword">else</span>
     bl_display_defparam = false;
 <span class="keyword">end</span>
-
 default_params = {it_subset bl_display_defparam};
 [default_params{1:length(varargin)}] = varargin{:};
 [it_subset, bl_display_defparam] = default_params{:};
-</pre><h2 id="4">1a. Initiate Param_map</h2><pre class="codeinput">param_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
+</pre><h2 id="4">1. Initiate Param_map</h2><pre class="codeinput">param_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
 
 <span class="comment">% model name</span>
 param_map(<span class="string">'st_model'</span>) = <span class="string">'ipwkbz_fibs'</span>;
-
-<span class="comment">% Preferences</span>
-param_map(<span class="string">'fl_crra'</span>) = 1.5;
-param_map(<span class="string">'fl_beta'</span>) = 0.94;
-param_map(<span class="string">'fl_nan_replace'</span>) = -9999;
-</pre><h2 id="5">1b. Production Function Parameters</h2><pre class="codeinput"><span class="comment">% CD Production Function Parameters</span>
-param_map(<span class="string">'fl_Amean'</span>) = 1;
-param_map(<span class="string">'fl_alpha'</span>) = 0.36;
-param_map(<span class="string">'fl_delta'</span>) = 0.08;
-</pre><h2 id="6">2a. Set Borrowing Control Parameters</h2><pre class="codeinput"><span class="comment">% Borrowing</span>
-<span class="comment">% fl_default_aprime is the next period asset level</span>
-<span class="comment">% households face if they default.</span>
-param_map(<span class="string">'fl_b_bd'</span>) = -20; <span class="comment">% borrow bound, = 0 if save only</span>
-param_map(<span class="string">'fl_default_wprime'</span>) = 0; <span class="comment">% wprime not a prime</span>
-
-<span class="comment">% Borrowing Setting 1: Default Allowed, Bridge True, bl_rollover does not matter</span>
-<span class="comment">% Borrowing Setting 2: Default Allowed, Bridge False, bl_rollover matter</span>
-param_map(<span class="string">'bl_default'</span>) = true; <span class="comment">% if borrowing is default allowed</span>
+</pre><h2 id="5">2. Set Borrowing Control Parameters</h2><p>Borrowing Setting 1: Default Allowed, Bridge True, bl_rollover does not matter Borrowing Setting 2: Default Allowed, Bridge False, bl_rollover matter</p><pre class="codeinput">param_map(<span class="string">'bl_default'</span>) = true; <span class="comment">% if borrowing is default allowed</span>
 param_map(<span class="string">'bl_bridge'</span>) = true;
 param_map(<span class="string">'bl_rollover'</span>) = true;
-
-<span class="comment">% is save/borr choice principle or principle + interest, matters for</span>
-<span class="comment">% borrowing grid generation program. the *abz* problem is written with</span>
-<span class="comment">% asset choice as principle only, the _abz_fibs_ problems are written as</span>
-<span class="comment">% priniple + interest as the state, so there this should be false.</span>
 param_map(<span class="string">'bl_b_is_principle'</span>) = true;
-
-<span class="comment">% Minimum Consumption, utility lower bound. The cmin parameter and</span>
-<span class="comment">% fl_nan_replace parameter have no effects on value function, just for</span>
-<span class="comment">% resetting invalid choice grid values. fl_nan_replace reset invalid k</span>
-<span class="comment">% choice given w. fl_c_min resets invalid consumption levels due to w</span>
-<span class="comment">% choices that are invalid. But this is the case when fl_w &gt; 0.</span>
-param_map(<span class="string">'fl_c_min'</span>) = 0.02;
-</pre><h2 id="7">2b. Set Asset Grid Parameters</h2><pre class="codeinput"><span class="comment">% Asset Grids</span>
-<span class="comment">% Toal savings aggregate grid (see discussion on top). 35 points picked for</span>
-<span class="comment">% for this problem w_max is overall for everyone, but each individual coh</span>
-<span class="comment">% levle has associated w_max. Unlike before, when we had it_w_n, now we</span>
-<span class="comment">% have it_w_perc_n which is how many percentage grid points to have. We</span>
-<span class="comment">% also now include fl_w_interp_grid_gap, the grip gap for interpolation.</span>
-param_map(<span class="string">'fl_w_min'</span>) = param_map(<span class="string">'fl_b_bd'</span>); <span class="comment">% but b_bd overrides this</span>
-param_map(<span class="string">'fl_w_max'</span>) = 50;
-param_map(<span class="string">'it_w_perc_n'</span>) = 50;
-
-<span class="comment">% Risky Capital Asset Vector</span>
-<span class="comment">% see graph below for how it looks graphically</span>
-<span class="comment">% in principle keep it_k_n the same as it_w_n to have equi-distance points</span>
-<span class="comment">% in triangle choice grid. For the ipwkz this k_max is the overall max, not</span>
-<span class="comment">% the individual max given coh. we have it_ak_perc_n rather than it_ak_n</span>
-<span class="comment">% for percentage.</span>
-param_map(<span class="string">'fl_k_min'</span>) = 0;
-param_map(<span class="string">'fl_k_max'</span>) = (param_map(<span class="string">'fl_w_max'</span>) - param_map(<span class="string">'fl_b_bd'</span>));
-param_map(<span class="string">'it_ak_perc_n'</span>) = param_map(<span class="string">'it_w_perc_n'</span>); <span class="comment">% grid for a and k the same</span>
-
-<span class="comment">% Percentage of w that is not for bridge loan, when param_map('bl_bridge') = false</span>
-<span class="comment">% ar_coh_bridge_perc = [1]</span>
-param_map(<span class="string">'it_coh_bridge_perc_n'</span>) = param_map(<span class="string">'it_w_perc_n'</span>);
-
-<span class="comment">% Prices</span>
-<span class="comment">% shock is on k, not on labor, fl_w is fixed wage income</span>
-param_map(<span class="string">'fl_w'</span>) = 1.28*0.3466; <span class="comment">% min(z*w) from benchmark az model</span>
-</pre><h2 id="8">2c. Set Asset Interpolation Parameters</h2><pre class="codeinput"><span class="comment">% Interpolation</span>
-<span class="comment">% fl_coh_interp_grid_gap controls the number of coh points at which to solve the model</span>
-<span class="comment">% it_c_interp_grid_gap determines the gap between consumption terpolation</span>
-<span class="comment">% points. For consumption interpolation 10^-4 is extremely accurate, there</span>
-<span class="comment">% should be no perceptible differences in value and policy functions when the</span>
-<span class="comment">% it_c_interp_grid_gap &lt;= 0.001 compared to actual evaluation. Also include</span>
-<span class="comment">% now fl_w_interp_grid_gap above, which is for interpolation over w.</span>
-param_map(<span class="string">'fl_coh_interp_grid_gap'</span>) = 0.1;
-
-<span class="comment">% param_map('it_coh_interp_n') = 500;</span>
-param_map(<span class="string">'it_c_interp_grid_gap'</span>) = 10^-4;
-
-<span class="comment">% Interpolation gap second stage w</span>
-<span class="comment">% previously only it_w_n, now two grids control w it_w_perc_n for 2nd stage</span>
-<span class="comment">% fl_w_interp_grid_gap for first stage, make them the same length for</span>
-<span class="comment">% default.</span>
-param_map(<span class="string">'fl_w_interp_grid_gap'</span>) = 0.1;
-<span class="comment">% param_map('fl_w_interp_grid_gap') = (param_map('fl_w_max') - param_map('fl_w_min'))/param_map('it_w_perc_n');</span>
-</pre><h2 id="9">3. Set Interest Rates non-Shock Parameters</h2><pre class="codeinput"><span class="comment">% formal informal parameters</span>
+</pre><h2 id="6">3. Set Interest Rates non-Shock Parameters</h2><pre class="codeinput"><span class="comment">% formal informal parameters</span>
 <span class="comment">% fl_for_br_block are the formal borrowing grid block sizes.</span>
 param_map(<span class="string">'fl_r_fsv'</span>) = 0.025;
-<span class="comment">% param_map('fl_r_inf') = 0.095;</span>
-<span class="comment">% param_map('fl_r_inf_bridge') = 0.095;</span>
+param_map(<span class="string">'fl_r_inf'</span>) = 0.095;
 param_map(<span class="string">'fl_r_fbr'</span>) = 0.065;
+param_map(<span class="string">'bl_b_is_principle'</span>) = true;
 <span class="comment">% see: ffs_for_br_block.m</span>
 param_map(<span class="string">'st_forbrblk_type'</span>) = <span class="string">'seg3'</span>;
 param_map(<span class="string">'fl_forbrblk_brmost'</span>) = -19;
 param_map(<span class="string">'fl_forbrblk_brleast'</span>) = -1;
 param_map(<span class="string">'fl_forbrblk_gap'</span>) = -1.5;
-</pre><h2 id="10">4a. Set Shock 1 Borrowing Interest Rate Parameters</h2><p>See <a href="https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_gen_discrete_var.html">fft_gen_discrete_var</a> for how these parameters will be used to generate a discrete random variable for the interest rate.</p><pre class="codeinput">param_map(<span class="string">'st_z_r_borr_drv_ele_type'</span>) = <span class="string">'unif'</span>;
-param_map(<span class="string">'st_z_r_borr_drv_prb_type'</span>) = <span class="string">'poiss'</span>;
-param_map(<span class="string">'fl_z_r_borr_poiss_mean'</span>) = 1.75;
-param_map(<span class="string">'fl_z_r_borr_max'</span>) = 0.095;
-param_map(<span class="string">'fl_z_r_borr_min'</span>) = 0.025;
-param_map(<span class="string">'fl_z_r_borr_n'</span>) = 5;
-<span class="comment">% param_map('fl_z_r_borr_max') = 0.095;</span>
-<span class="comment">% param_map('fl_z_r_borr_min') = 0.095;</span>
-<span class="comment">% param_map('fl_z_r_borr_n') = 1;</span>
-</pre><h2 id="11">4b. Set Shock 2 Productivity Shock Parameters</h2><pre class="codeinput"><span class="comment">% Production Function</span>
-<span class="comment">% Productivity Shock Parameters</span>
-param_map(<span class="string">'it_z_wage_n'</span>) = 15;
-param_map(<span class="string">'fl_z_wage_mu'</span>) = 0;
-param_map(<span class="string">'fl_z_wage_rho'</span>) = 0.8;
-param_map(<span class="string">'fl_z_wage_sig'</span>) = 0.2;
-</pre><h2 id="12">4c. Set Overall Shock Grid Count</h2><pre class="codeinput">param_map(<span class="string">'it_z_n'</span>) = param_map(<span class="string">'it_z_wage_n'</span>) * param_map(<span class="string">'fl_z_r_borr_n'</span>);
-</pre><h2 id="13">5. Set Solution Control Parameters</h2><pre class="codeinput"><span class="comment">% Solution Accuracy</span>
-param_map(<span class="string">'it_maxiter_val'</span>) = 250;
-param_map(<span class="string">'it_maxiter_dist'</span>) = 1000;
-param_map(<span class="string">'st_analytical_stationary_type'</span>) = <span class="string">'eigenvector'</span>; <span class="comment">% could be eigenvector, projection, power</span>
-param_map(<span class="string">'fl_tol_val'</span>) = 10^-5;
-param_map(<span class="string">'fl_tol_pol'</span>) = 10^-5;
-param_map(<span class="string">'fl_tol_dist'</span>) = 10^-5;
-param_map(<span class="string">'it_tol_pol_nochange'</span>) = 25; <span class="comment">% number of iterations where policy does not change</span>
-</pre><h2 id="14">Setting support_map container</h2><pre class="codeinput">support_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
+</pre><h2 id="7">Setting support_map container</h2><pre class="codeinput">support_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
+
+<span class="comment">% Additional Controls</span>
+support_map(<span class="string">'bl_display_minccost'</span>) = false;
+support_map(<span class="string">'bl_graph_funcgrids'</span>) = false;
+support_map(<span class="string">'bl_graph_funcgrids_detail'</span>) = false;
+support_map(<span class="string">'bl_display_funcgrids'</span>) = false;
 
 <span class="comment">% root directory</span>
 [st_root_path] = preamble(false);
 st_matimg_path_root = [st_root_path <span class="string">'/m_fibs/'</span>];
 support_map(<span class="string">'st_matimg_path_root'</span>) = st_matimg_path_root;
-
-<span class="comment">% timer</span>
-support_map(<span class="string">'bl_time'</span>) = true;
-
-<span class="comment">% Print Controls</span>
-support_map(<span class="string">'bl_display_defparam'</span>) = false;
-support_map(<span class="string">'bl_display'</span>) = true;
-support_map(<span class="string">'bl_display_dist'</span>) = false;
-support_map(<span class="string">'it_display_every'</span>) = 5; <span class="comment">% how often to print results</span>
-
-<span class="comment">% Profile Controls</span>
-support_map(<span class="string">'bl_profile'</span>) = false;
-support_map(<span class="string">'bl_profile_dist'</span>) = false; <span class="comment">% distribution profile</span>
-support_map(<span class="string">'bl_display_final_dist_detail'</span>) = false; <span class="comment">% print finalized results</span>
 support_map(<span class="string">'st_profile_path'</span>) = [st_matimg_path_root <span class="string">'/m_ipwkbz_solve/profile/'</span>];
-support_map(<span class="string">'st_profile_prefix'</span>) = [<span class="string">''</span>];
-support_map(<span class="string">'st_profile_name_main'</span>) = [<span class="string">'_default'</span>];
-support_map(<span class="string">'st_profile_suffix'</span>) = [<span class="string">'_p'</span> num2str(it_subset)];
-
-support_map(<span class="string">'bl_post'</span>) = false;
-
-<span class="comment">% Final Print</span>
-support_map(<span class="string">'bl_display_final'</span>) = false; <span class="comment">% print finalized results</span>
-support_map(<span class="string">'bl_display_final_dist'</span>) = false; <span class="comment">% print finalized results</span>
-support_map(<span class="string">'it_display_final_rowmax'</span>) = 100; <span class="comment">% max row to print (states/iters)</span>
-support_map(<span class="string">'it_display_final_colmax'</span>) = 12; <span class="comment">% max col to print (shocks)</span>
-
-<span class="comment">% Mat File Controls</span>
-support_map(<span class="string">'bl_mat'</span>) = false;
 support_map(<span class="string">'st_mat_path'</span>) = [st_matimg_path_root <span class="string">'/m_ipwkbz_solve/mat/'</span>];
-support_map(<span class="string">'st_mat_prefix'</span>) = [<span class="string">''</span>];
-support_map(<span class="string">'st_mat_name_main'</span>) = [<span class="string">'_default'</span>];
-support_map(<span class="string">'st_mat_suffix'</span>) = [<span class="string">'_p'</span> num2str(it_subset)];
-
-<span class="comment">% Graphing Controls</span>
-support_map(<span class="string">'bl_graph'</span>) = false;
-support_map(<span class="string">'bl_graph_onebyones'</span>) = true;
-support_map(<span class="string">'bl_graph_val'</span>) = true;
-support_map(<span class="string">'bl_graph_pol_lvl'</span>) = true;
-support_map(<span class="string">'bl_graph_pol_pct'</span>) = true;
-support_map(<span class="string">'bl_graph_coh_t_coh'</span>) = true;
-support_map(<span class="string">'bl_graph_discrete'</span>) = true;
-<span class="comment">% Formal Informal Specific Graphs</span>
-support_map(<span class="string">'bl_graph_forinf_discrete'</span>) = true;
-support_map(<span class="string">'bl_graph_forinf_pol_lvl'</span>) = true;
-support_map(<span class="string">'bl_graph_forinf_pol_pct'</span>) = true;
-
-
-<span class="comment">% Image Saving Controls (given graphing)</span>
-support_map(<span class="string">'st_title_prefix'</span>) = <span class="string">''</span>;
-support_map(<span class="string">'bl_img_save'</span>) = false;
 support_map(<span class="string">'st_img_path'</span>) = [st_matimg_path_root <span class="string">'/m_ipwkbz_solve/img/'</span>];
-support_map(<span class="string">'st_img_prefix'</span>) = [<span class="string">''</span>];
-support_map(<span class="string">'st_img_name_main'</span>) = [<span class="string">'_default'</span>];
-support_map(<span class="string">'st_img_suffix'</span>) = [<span class="string">'_p'</span> num2str(it_subset) <span class="string">'.png'</span>];
+</pre><h2 id="8">Display New Parameters</h2><pre class="codeinput"><span class="keyword">if</span> (bl_display_defparam)
 
-<span class="comment">% Sub-function graphing controls</span>
-support_map(<span class="string">'bl_graph_funcgrids'</span>) = false;
-support_map(<span class="string">'bl_graph_funcgrids_detail'</span>) = false;
-support_map(<span class="string">'bl_display_funcgrids'</span>) = false;
-support_map(<span class="string">'bl_graph_evf'</span>) = false;
-support_map(<span class="string">'bl_display_evf'</span>) = false;
-support_map(<span class="string">'bl_display_minccost'</span>) = false;
-support_map(<span class="string">'bl_display_infbridge'</span>) = false;
-</pre><h2 id="15">Subset Options</h2><div><ol><li>it_subset = 1 is basic invoke quick test</li><li>it_subset = 2 is main invoke</li><li>it_subset = 3 is profiling invoke</li><li>it_subset = 4 is matlab publish.</li></ol></div><pre class="codeinput"><span class="keyword">if</span> (ismember(it_subset, [1,2,3,4]))
-    <span class="keyword">if</span> (ismember(it_subset, [1]))
-        <span class="comment">% TEST quick</span>
-        param_map(<span class="string">'it_w_perc_n'</span>) = 20;
-        param_map(<span class="string">'it_ak_perc_n'</span>) = param_map(<span class="string">'it_w_perc_n'</span>);
-        param_map(<span class="string">'it_z_n'</span>) = 3;
+    disp(<span class="string">'----------------------------------------'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp(<span class="string">'Display Parameters Specific to IPWKBZ_FIBS'</span>)
+    disp(<span class="string">'it_coh_bridge_perc_n ADDED ON NEXT'</span>)
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
 
-        param_map(<span class="string">'fl_coh_interp_grid_gap'</span>) = 0.25;
-        param_map(<span class="string">'it_c_interp_grid_gap'</span>) = 0.001;
-        param_map(<span class="string">'fl_w_interp_grid_gap'</span>) = 1;
-
-        param_map(<span class="string">'it_maxiter_val'</span>) = 50;
-        param_map(<span class="string">'it_tol_pol_nochange'</span>) = 1000;
-        support_map(<span class="string">'bl_display'</span>) = true;
-        support_map(<span class="string">'it_display_every'</span>) = 1;
-    <span class="keyword">end</span>
-    <span class="keyword">if</span> (ismember(it_subset, [2, 4]))
-        <span class="comment">% close figures</span>
-        close <span class="string">all</span>;
-        <span class="comment">% Main Run</span>
-        support_map(<span class="string">'bl_time'</span>) = true;
-        support_map(<span class="string">'bl_display_defparam'</span>) = true;
-        support_map(<span class="string">'bl_display'</span>) = true;
-        support_map(<span class="string">'it_display_every'</span>) = 5;
-
-        support_map(<span class="string">'bl_post'</span>) = true;
-        support_map(<span class="string">'bl_display_final'</span>) = true;
-        support_map(<span class="string">'bl_mat'</span>) = false;
-        support_map(<span class="string">'bl_graph'</span>) = true;
-        support_map(<span class="string">'bl_graph_onebyones'</span>) = false;
-        support_map(<span class="string">'bl_img_save'</span>) = true;
-        <span class="keyword">if</span> (ismember(it_subset, [4]))
-            support_map(<span class="string">'bl_time'</span>) = false;
-            support_map(<span class="string">'bl_display'</span>) = false;
-            support_map(<span class="string">'bl_graph_onebyones'</span>) = true;
-            support_map(<span class="string">'bl_img_save'</span>) = false;
-        <span class="keyword">end</span>
-    <span class="keyword">end</span>
-    <span class="keyword">if</span> (ismember(it_subset, [3]))
-        <span class="comment">% Profile run</span>
-        support_map(<span class="string">'bl_profile'</span>) = true;
-        support_map(<span class="string">'bl_display'</span>) = false; <span class="comment">% don't print</span>
-        support_map(<span class="string">'bl_time'</span>) = true;
-    <span class="keyword">end</span>
+    fft_container_map_display(param_map);
+    fft_container_map_display(support_map);
 <span class="keyword">end</span>
-</pre><h2 id="16">Subset Options for Distribution solutions</h2><div><ol><li>it_subset = 5 is basic invoke quick test</li><li>it_subset = 6 is invoke full test</li><li>it_subset = 7 is profiling invoke</li><li>it_subset = 8 is matlab publish</li><li>it_subset = 9 is invoke operational (only final stats) and coh graph</li></ol></div><pre class="codeinput"><span class="keyword">if</span> (ismember(it_subset, [5,6,7,8,9]))
-    <span class="keyword">if</span> (ismember(it_subset, [5]))
-        <span class="comment">% TEST quick (need to enough to have distribution)</span>
-        param_map(<span class="string">'it_w_perc_n'</span>) = 40;
-        param_map(<span class="string">'it_ak_perc_n'</span>) = param_map(<span class="string">'it_w_perc_n'</span>);
-        param_map(<span class="string">'it_z_n'</span>) = 5;
-
-        param_map(<span class="string">'fl_coh_interp_grid_gap'</span>) = 0.25;
-        param_map(<span class="string">'it_c_interp_grid_gap'</span>) = 0.001;
-        param_map(<span class="string">'fl_w_interp_grid_gap'</span>) = 1;
-
-        param_map(<span class="string">'it_maxiter_val'</span>) = 50;
-        param_map(<span class="string">'it_tol_pol_nochange'</span>) = 1000;
-        support_map(<span class="string">'bl_display'</span>) = true;
-        support_map(<span class="string">'it_display_every'</span>) = 1;
-
-        support_map(<span class="string">'bl_display_dist'</span>) = true;
-    <span class="keyword">end</span>
-    <span class="keyword">if</span> (ismember(it_subset, [6, 8, 9]))
-        <span class="comment">% close all</span>
-        close <span class="string">all</span>;
-        <span class="comment">% Main Run</span>
-        support_map(<span class="string">'bl_time'</span>) = true;
-        support_map(<span class="string">'bl_display_defparam'</span>) = true;
-        support_map(<span class="string">'bl_display'</span>) = true;
-        support_map(<span class="string">'bl_display_dist'</span>) = true;
-        support_map(<span class="string">'it_display_every'</span>) = 20;
-
-        support_map(<span class="string">'bl_post'</span>) = true;
-        support_map(<span class="string">'bl_display_final_dist'</span>) = true;
-        support_map(<span class="string">'bl_mat'</span>) = false;
-        support_map(<span class="string">'bl_graph'</span>) = true;
-        support_map(<span class="string">'bl_graph_onebyones'</span>) = false;
-        support_map(<span class="string">'bl_img_save'</span>) = true;
-
-        <span class="comment">% do not generate all graphs when solving for distribution</span>
-        support_map(<span class="string">'bl_graph_val'</span>) = false;
-        support_map(<span class="string">'bl_graph_pol_lvl'</span>) = false;
-        support_map(<span class="string">'bl_graph_pol_pct'</span>) = false;
-        support_map(<span class="string">'bl_graph_coh_t_coh'</span>) = true;
-        support_map(<span class="string">'bl_graph_forinf_discrete'</span>) = false;
-        support_map(<span class="string">'bl_graph_forinf_pol_lvl'</span>) = false;
-        support_map(<span class="string">'bl_graph_forinf_pol_pct'</span>) = true;
-
-        <span class="keyword">if</span> (ismember(it_subset, [8, 9]))
-            support_map(<span class="string">'bl_time'</span>) = false;
-            support_map(<span class="string">'bl_display'</span>) = false;
-            support_map(<span class="string">'bl_display_dist'</span>) = false;
-            support_map(<span class="string">'bl_display_final_dist_detail'</span>) = true;
-            support_map(<span class="string">'bl_graph_onebyones'</span>) = true;
-            support_map(<span class="string">'bl_img_save'</span>) = false;
-            <span class="keyword">if</span> (ismember(it_subset, [9]))
-                support_map(<span class="string">'bl_display_defparam'</span>) = false;
-                support_map(<span class="string">'bl_display_final_dist_detail'</span>) = false;
-                support_map(<span class="string">'bl_graph_coh_t_coh'</span>) = false;
-                support_map(<span class="string">'bl_graph_forinf_pol_pct'</span>) = false;
-            <span class="keyword">end</span>
-        <span class="keyword">end</span>
-
-    <span class="keyword">end</span>
-    <span class="keyword">if</span> (ismember(it_subset, [7]))
-        <span class="comment">% Profile run</span>
-        support_map(<span class="string">'bl_profile_dist'</span>) = true;
-        support_map(<span class="string">'bl_display'</span>) = false; <span class="comment">% don't print</span>
-        support_map(<span class="string">'bl_display_dist'</span>) = false; <span class="comment">% don't print</span>
-        support_map(<span class="string">'bl_time'</span>) = true;
-    <span class="keyword">end</span>
-<span class="keyword">end</span>
-</pre><h2 id="17">Display</h2><pre class="codeinput"><span class="keyword">if</span> (bl_display_defparam)
-    disp(<span class="string">'param_map'</span>);
-    disp(param_map);
-    param_map_keys = keys(param_map);
-    param_map_vals = values(param_map);
-    <span class="keyword">for</span> i = 1:length(param_map)
-        st_display = strjoin([<span class="string">'pos ='</span> num2str(i) <span class="string">'; key ='</span> string(param_map_keys{i}) <span class="string">'; val ='</span> string(param_map_vals{i})]);
-        disp(st_display);
-    <span class="keyword">end</span>
-
-    disp(<span class="string">'support_map'</span>)
-    disp(support_map);
-    param_map_keys = keys(support_map);
-    param_map_vals = values(support_map);
-    <span class="keyword">for</span> i = 1:length(support_map)
-        st_display = strjoin([<span class="string">'pos ='</span> num2str(i) <span class="string">'; key ='</span> string(param_map_keys{i}) <span class="string">'; val ='</span> string(param_map_vals{i})]);
-        disp(st_display);
-    <span class="keyword">end</span>
-<span class="keyword">end</span>
-</pre><pre class="codeoutput">param_map
+</pre><pre class="codeoutput">----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Display Parameters Specific to IPWKBZ_FIBS
+it_coh_bridge_perc_n ADDED ON NEXT
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Begin: Show all key and value pairs from container
+CONTAINER NAME: PARAM_MAP
+----------------------------------------
   Map with properties:
 
-        Count: 49
+        Count: 12
       KeyType: char
     ValueType: any
 
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+----------------------------------------
+pos = 1 ; key = bl_b_is_principle ; val = true
+pos = 2 ; key = bl_bridge ; val = true
+pos = 3 ; key = bl_default ; val = true
+pos = 4 ; key = bl_rollover ; val = true
+pos = 5 ; key = fl_forbrblk_brleast ; val = -1
+pos = 6 ; key = fl_forbrblk_brmost ; val = -19
+pos = 7 ; key = fl_forbrblk_gap ; val = -1.5
+pos = 8 ; key = fl_r_fbr ; val = 0.065
+pos = 9 ; key = fl_r_fsv ; val = 0.025
+pos = 10 ; key = fl_r_inf ; val = 0.095
+pos = 11 ; key = st_forbrblk_type ; val = seg3
+pos = 12 ; key = st_model ; val = ipwkbz_fibs
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Scalars in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                           i    idx    value
+                           _    ___    _____
+
+    fl_forbrblk_brleast    1     5        -1
+    fl_forbrblk_brmost     2     6       -19
+    fl_forbrblk_gap        3     7      -1.5
+    fl_r_fbr               4     8     0.065
+    fl_r_fsv               5     9     0.025
+    fl_r_inf               6    10     0.095
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Strings in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                         i    idx
+                         _    ___
+
+    bl_b_is_principle    1     1 
+    bl_bridge            2     2 
+    bl_default           3     3 
+    bl_rollover          4     4 
+    st_forbrblk_type     5    11 
+    st_model             6    12 
+
+----------------------------------------
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Begin: Show all key and value pairs from container
+CONTAINER NAME: SUPPORT_MAP
+----------------------------------------
+  Map with properties:
+
+        Count: 8
+      KeyType: char
+    ValueType: any
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+----------------------------------------
+pos = 1 ; key = bl_display_funcgrids ; val = false
+pos = 2 ; key = bl_display_minccost ; val = false
+pos = 3 ; key = bl_graph_funcgrids ; val = false
+pos = 4 ; key = bl_graph_funcgrids_detail ; val = false
+pos = 5 ; key = st_img_path ; val = C:/Users/fan/CodeDynaAsset//m_fibs//m_ipwkbz_solve/img/
+pos = 6 ; key = st_mat_path ; val = C:/Users/fan/CodeDynaAsset//m_fibs//m_ipwkbz_solve/mat/
+pos = 7 ; key = st_matimg_path_root ; val = C:/Users/fan/CodeDynaAsset//m_fibs/
+pos = 8 ; key = st_profile_path ; val = C:/Users/fan/CodeDynaAsset//m_fibs//m_ipwkbz_solve/profile/
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Strings in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                                 i    idx
+                                 _    ___
+
+    bl_display_funcgrids         1     1 
+    bl_display_minccost          2     2 
+    bl_graph_funcgrids           3     3 
+    bl_graph_funcgrids_detail    4     4 
+    st_img_path                  5     5 
+    st_mat_path                  6     6 
+    st_matimg_path_root          7     7 
+    st_profile_path              8     8 
+
+</pre><h2 id="9">3. Merge Parameters Import</h2><pre class="codeinput">[param_map_ipwkbz_fibs, support_map_ipwkbz_fibs] = ffs_ipwkbz_set_default_param(it_subset);
+
+<span class="comment">% Remove Keys not Relevant for the Interest Rate Shock Model</span>
+cl_st_ipwkbz_keysdrop = {<span class="string">'fl_r_borr'</span>, <span class="string">'fl_r_save'</span>};
+remove(param_map_ipwkbz_fibs, cl_st_ipwkbz_keysdrop);
+
+<span class="comment">% Merge</span>
+param_map = [param_map_ipwkbz_fibs; param_map];
+support_map = [support_map_ipwkbz_fibs; support_map];
+</pre><h2 id="10">Add on based on existing</h2><pre class="codeinput"><span class="comment">% Percentage of w that is not for bridge loan, when param_map('bl_bridge') = false</span>
+<span class="comment">% ar_coh_bridge_perc = [1]</span>
+param_map(<span class="string">'it_coh_bridge_perc_n'</span>) = param_map(<span class="string">'it_w_perc_n'</span>);
+</pre><h2 id="11">Subset Options Adjustments</h2><pre class="codeinput"><span class="comment">% close all</span>
+close <span class="string">all</span>;
+
+<span class="keyword">if</span> (ismember(it_subset, [3]))
+    <span class="comment">% Profile run</span>
+<span class="keyword">elseif</span> (ismember(it_subset, [1,2,4]))
+    <span class="comment">% Main Run</span>
+    <span class="keyword">if</span> (ismember(it_subset, [1]))
+        param_map(<span class="string">'it_coh_bridge_perc_n'</span>) = param_map(<span class="string">'it_w_perc_n'</span>);
+    <span class="keyword">end</span>
+    <span class="keyword">if</span> (ismember(it_subset, [4]))
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><h2 id="12">Subset Options for Distribution solutions</h2><pre class="codeinput"><span class="keyword">if</span> (ismember(it_subset, [7]))
+    <span class="comment">% Profile run</span>
+<span class="keyword">elseif</span> (ismember(it_subset, [5,6,8,9]))
+    <span class="comment">% Main Run</span>
+        <span class="keyword">if</span> (it_subset == 5)
+        param_map(<span class="string">'it_coh_bridge_perc_n'</span>) = param_map(<span class="string">'it_w_perc_n'</span>);
+    <span class="keyword">end</span>
+    <span class="keyword">if</span> (ismember(it_subset, [8, 9]))
+        <span class="keyword">if</span> (ismember(it_subset, [9]))
+        <span class="keyword">end</span>
+
+    <span class="keyword">end</span>
+
+<span class="keyword">end</span>
+</pre><h2 id="13">Display All Parameters</h2><pre class="codeinput"><span class="keyword">if</span> (bl_display_defparam)
+
+    disp(<span class="string">'----------------------------------------'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp(<span class="string">'Display All Parameters with IPWKBZR overriding IPWKBZR'</span>)
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+
+    fft_container_map_display(param_map);
+    fft_container_map_display(support_map);
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Display All Parameters with IPWKBZR overriding IPWKBZR
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Begin: Show all key and value pairs from container
+CONTAINER NAME: PARAM_MAP
+----------------------------------------
+  Map with properties:
+
+        Count: 43
+      KeyType: char
+    ValueType: any
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+----------------------------------------
 pos = 1 ; key = bl_b_is_principle ; val = true
 pos = 2 ; key = bl_bridge ; val = true
 pos = 3 ; key = bl_default ; val = true
@@ -424,94 +315,213 @@ pos = 18 ; key = fl_k_min ; val = 0
 pos = 19 ; key = fl_nan_replace ; val = -9999
 pos = 20 ; key = fl_r_fbr ; val = 0.065
 pos = 21 ; key = fl_r_fsv ; val = 0.025
-pos = 22 ; key = fl_tol_dist ; val = 1e-05
-pos = 23 ; key = fl_tol_pol ; val = 1e-05
-pos = 24 ; key = fl_tol_val ; val = 1e-05
-pos = 25 ; key = fl_w ; val = 0.44365
-pos = 26 ; key = fl_w_interp_grid_gap ; val = 0.1
-pos = 27 ; key = fl_w_max ; val = 50
-pos = 28 ; key = fl_w_min ; val = -20
-pos = 29 ; key = fl_z_r_borr_max ; val = 0.095
-pos = 30 ; key = fl_z_r_borr_min ; val = 0.025
-pos = 31 ; key = fl_z_r_borr_n ; val = 5
-pos = 32 ; key = fl_z_r_borr_poiss_mean ; val = 1.75
-pos = 33 ; key = fl_z_wage_mu ; val = 0
-pos = 34 ; key = fl_z_wage_rho ; val = 0.8
-pos = 35 ; key = fl_z_wage_sig ; val = 0.2
-pos = 36 ; key = it_ak_perc_n ; val = 50
-pos = 37 ; key = it_c_interp_grid_gap ; val = 0.0001
-pos = 38 ; key = it_coh_bridge_perc_n ; val = 50
-pos = 39 ; key = it_maxiter_dist ; val = 1000
-pos = 40 ; key = it_maxiter_val ; val = 250
-pos = 41 ; key = it_tol_pol_nochange ; val = 25
-pos = 42 ; key = it_w_perc_n ; val = 50
-pos = 43 ; key = it_z_n ; val = 75
-pos = 44 ; key = it_z_wage_n ; val = 15
-pos = 45 ; key = st_analytical_stationary_type ; val = eigenvector
-pos = 46 ; key = st_forbrblk_type ; val = seg3
-pos = 47 ; key = st_model ; val = ipwkbz_fibs
-pos = 48 ; key = st_z_r_borr_drv_ele_type ; val = unif
-pos = 49 ; key = st_z_r_borr_drv_prb_type ; val = poiss
-support_map
+pos = 22 ; key = fl_r_inf ; val = 0.095
+pos = 23 ; key = fl_tol_dist ; val = 1e-05
+pos = 24 ; key = fl_tol_pol ; val = 1e-05
+pos = 25 ; key = fl_tol_val ; val = 1e-05
+pos = 26 ; key = fl_w ; val = 0.44365
+pos = 27 ; key = fl_w_interp_grid_gap ; val = 0.1
+pos = 28 ; key = fl_w_max ; val = 50
+pos = 29 ; key = fl_w_min ; val = -20
+pos = 30 ; key = fl_z_mu ; val = 0
+pos = 31 ; key = fl_z_rho ; val = 0.8
+pos = 32 ; key = fl_z_sig ; val = 0.2
+pos = 33 ; key = it_ak_perc_n ; val = 50
+pos = 34 ; key = it_c_interp_grid_gap ; val = 0.0001
+pos = 35 ; key = it_coh_bridge_perc_n ; val = 50
+pos = 36 ; key = it_maxiter_dist ; val = 1000
+pos = 37 ; key = it_maxiter_val ; val = 250
+pos = 38 ; key = it_tol_pol_nochange ; val = 25
+pos = 39 ; key = it_w_perc_n ; val = 50
+pos = 40 ; key = it_z_n ; val = 15
+pos = 41 ; key = st_analytical_stationary_type ; val = eigenvector
+pos = 42 ; key = st_forbrblk_type ; val = seg3
+pos = 43 ; key = st_model ; val = ipwkbz_fibs
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Scalars in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                              i     idx     value 
+                              __    ___    _______
+
+    fl_Amean                   1     5           1
+    fl_alpha                   2     6        0.36
+    fl_b_bd                    3     7         -20
+    fl_beta                    4     8        0.94
+    fl_c_min                   5     9        0.02
+    fl_coh_interp_grid_gap     6    10         0.1
+    fl_crra                    7    11         1.5
+    fl_default_wprime          8    12           0
+    fl_delta                   9    13        0.08
+    fl_forbrblk_brleast       10    14          -1
+    fl_forbrblk_brmost        11    15         -19
+    fl_forbrblk_gap           12    16        -1.5
+    fl_k_max                  13    17          70
+    fl_k_min                  14    18           0
+    fl_nan_replace            15    19       -9999
+    fl_r_fbr                  16    20       0.065
+    fl_r_fsv                  17    21       0.025
+    fl_r_inf                  18    22       0.095
+    fl_tol_dist               19    23       1e-05
+    fl_tol_pol                20    24       1e-05
+    fl_tol_val                21    25       1e-05
+    fl_w                      22    26     0.44365
+    fl_w_interp_grid_gap      23    27         0.1
+    fl_w_max                  24    28          50
+    fl_w_min                  25    29         -20
+    fl_z_mu                   26    30           0
+    fl_z_rho                  27    31         0.8
+    fl_z_sig                  28    32         0.2
+    it_ak_perc_n              29    33          50
+    it_c_interp_grid_gap      30    34      0.0001
+    it_coh_bridge_perc_n      31    35          50
+    it_maxiter_dist           32    36        1000
+    it_maxiter_val            33    37         250
+    it_tol_pol_nochange       34    38          25
+    it_w_perc_n               35    39          50
+    it_z_n                    36    40          15
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Strings in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                                     i    idx
+                                     _    ___
+
+    bl_b_is_principle                1     1 
+    bl_bridge                        2     2 
+    bl_default                       3     3 
+    bl_rollover                      4     4 
+    st_analytical_stationary_type    5    41 
+    st_forbrblk_type                 6    42 
+    st_model                         7    43 
+
+----------------------------------------
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Begin: Show all key and value pairs from container
+CONTAINER NAME: SUPPORT_MAP
+----------------------------------------
   Map with properties:
 
-        Count: 46
+        Count: 43
       KeyType: char
     ValueType: any
 
-pos = 1 ; key = bl_display ; val = true
-pos = 2 ; key = bl_display_defparam ; val = false
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+----------------------------------------
+pos = 1 ; key = bl_display ; val = false
+pos = 2 ; key = bl_display_defparam ; val = true
 pos = 3 ; key = bl_display_dist ; val = false
 pos = 4 ; key = bl_display_evf ; val = false
-pos = 5 ; key = bl_display_final ; val = false
+pos = 5 ; key = bl_display_final ; val = true
 pos = 6 ; key = bl_display_final_dist ; val = false
 pos = 7 ; key = bl_display_final_dist_detail ; val = false
 pos = 8 ; key = bl_display_funcgrids ; val = false
-pos = 9 ; key = bl_display_infbridge ; val = false
-pos = 10 ; key = bl_display_minccost ; val = false
-pos = 11 ; key = bl_graph ; val = false
-pos = 12 ; key = bl_graph_coh_t_coh ; val = true
-pos = 13 ; key = bl_graph_discrete ; val = true
-pos = 14 ; key = bl_graph_evf ; val = false
-pos = 15 ; key = bl_graph_forinf_discrete ; val = true
-pos = 16 ; key = bl_graph_forinf_pol_lvl ; val = true
-pos = 17 ; key = bl_graph_forinf_pol_pct ; val = true
-pos = 18 ; key = bl_graph_funcgrids ; val = false
-pos = 19 ; key = bl_graph_funcgrids_detail ; val = false
-pos = 20 ; key = bl_graph_onebyones ; val = true
-pos = 21 ; key = bl_graph_pol_lvl ; val = true
-pos = 22 ; key = bl_graph_pol_pct ; val = true
-pos = 23 ; key = bl_graph_val ; val = true
-pos = 24 ; key = bl_img_save ; val = false
-pos = 25 ; key = bl_mat ; val = false
-pos = 26 ; key = bl_post ; val = false
-pos = 27 ; key = bl_profile ; val = false
-pos = 28 ; key = bl_profile_dist ; val = false
-pos = 29 ; key = bl_time ; val = true
-pos = 30 ; key = it_display_every ; val = 5
-pos = 31 ; key = it_display_final_colmax ; val = 12
-pos = 32 ; key = it_display_final_rowmax ; val = 100
-pos = 33 ; key = st_img_name_main ; val = _default
-pos = 34 ; key = st_img_path ; val = C:/Users/fan/CodeDynaAsset//m_fibs//m_ipwkbz_solve/img/
-pos = 35 ; key = st_img_prefix ; val = 
-pos = 36 ; key = st_img_suffix ; val = _p0.png
-pos = 37 ; key = st_mat_name_main ; val = _default
-pos = 38 ; key = st_mat_path ; val = C:/Users/fan/CodeDynaAsset//m_fibs//m_ipwkbz_solve/mat/
-pos = 39 ; key = st_mat_prefix ; val = 
-pos = 40 ; key = st_mat_suffix ; val = _p0
-pos = 41 ; key = st_matimg_path_root ; val = C:/Users/fan/CodeDynaAsset//m_fibs/
-pos = 42 ; key = st_profile_name_main ; val = _default
-pos = 43 ; key = st_profile_path ; val = C:/Users/fan/CodeDynaAsset//m_fibs//m_ipwkbz_solve/profile/
-pos = 44 ; key = st_profile_prefix ; val = 
-pos = 45 ; key = st_profile_suffix ; val = _p0
-pos = 46 ; key = st_title_prefix ; val = 
+pos = 9 ; key = bl_display_minccost ; val = false
+pos = 10 ; key = bl_graph ; val = true
+pos = 11 ; key = bl_graph_coh_t_coh ; val = true
+pos = 12 ; key = bl_graph_evf ; val = false
+pos = 13 ; key = bl_graph_funcgrids ; val = false
+pos = 14 ; key = bl_graph_funcgrids_detail ; val = false
+pos = 15 ; key = bl_graph_onebyones ; val = true
+pos = 16 ; key = bl_graph_pol_lvl ; val = true
+pos = 17 ; key = bl_graph_pol_pct ; val = true
+pos = 18 ; key = bl_graph_val ; val = true
+pos = 19 ; key = bl_img_save ; val = false
+pos = 20 ; key = bl_mat ; val = false
+pos = 21 ; key = bl_post ; val = true
+pos = 22 ; key = bl_profile ; val = false
+pos = 23 ; key = bl_profile_dist ; val = false
+pos = 24 ; key = bl_time ; val = false
+pos = 25 ; key = it_display_every ; val = 5
+pos = 26 ; key = it_display_final_colmax ; val = 12
+pos = 27 ; key = it_display_final_rowmax ; val = 100
+pos = 28 ; key = it_display_summmat_colmax ; val = 5
+pos = 29 ; key = it_display_summmat_rowmax ; val = 5
+pos = 30 ; key = st_img_name_main ; val = _default
+pos = 31 ; key = st_img_path ; val = C:/Users/fan/CodeDynaAsset//m_fibs//m_ipwkbz_solve/img/
+pos = 32 ; key = st_img_prefix ; val = 
+pos = 33 ; key = st_img_suffix ; val = _p4.png
+pos = 34 ; key = st_mat_name_main ; val = _default
+pos = 35 ; key = st_mat_path ; val = C:/Users/fan/CodeDynaAsset//m_fibs//m_ipwkbz_solve/mat/
+pos = 36 ; key = st_mat_prefix ; val = 
+pos = 37 ; key = st_mat_suffix ; val = _p4
+pos = 38 ; key = st_matimg_path_root ; val = C:/Users/fan/CodeDynaAsset//m_fibs/
+pos = 39 ; key = st_profile_name_main ; val = _default
+pos = 40 ; key = st_profile_path ; val = C:/Users/fan/CodeDynaAsset//m_fibs//m_ipwkbz_solve/profile/
+pos = 41 ; key = st_profile_prefix ; val = 
+pos = 42 ; key = st_profile_suffix ; val = _p4
+pos = 43 ; key = st_title_prefix ; val = 
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Scalars in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                                 i    idx    value
+                                 _    ___    _____
+
+    it_display_every             1    25        5 
+    it_display_final_colmax      2    26       12 
+    it_display_final_rowmax      3    27      100 
+    it_display_summmat_colmax    4    28        5 
+    it_display_summmat_rowmax    5    29        5 
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Strings in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                                    i     idx
+                                    __    ___
+
+    bl_display                       1     1 
+    bl_display_defparam              2     2 
+    bl_display_dist                  3     3 
+    bl_display_evf                   4     4 
+    bl_display_final                 5     5 
+    bl_display_final_dist            6     6 
+    bl_display_final_dist_detail     7     7 
+    bl_display_funcgrids             8     8 
+    bl_display_minccost              9     9 
+    bl_graph                        10    10 
+    bl_graph_coh_t_coh              11    11 
+    bl_graph_evf                    12    12 
+    bl_graph_funcgrids              13    13 
+    bl_graph_funcgrids_detail       14    14 
+    bl_graph_onebyones              15    15 
+    bl_graph_pol_lvl                16    16 
+    bl_graph_pol_pct                17    17 
+    bl_graph_val                    18    18 
+    bl_img_save                     19    19 
+    bl_mat                          20    20 
+    bl_post                         21    21 
+    bl_profile                      22    22 
+    bl_profile_dist                 23    23 
+    bl_time                         24    24 
+    st_img_name_main                25    30 
+    st_img_path                     26    31 
+    st_img_prefix                   27    32 
+    st_img_suffix                   28    33 
+    st_mat_name_main                29    34 
+    st_mat_path                     30    35 
+    st_mat_prefix                   31    36 
+    st_mat_suffix                   32    37 
+    st_matimg_path_root             33    38 
+    st_profile_name_main            34    39 
+    st_profile_path                 35    40 
+    st_profile_prefix               36    41 
+    st_profile_suffix               37    42 
+    st_title_prefix                 38    43 
+
 </pre><pre class="codeinput"><span class="keyword">end</span>
 </pre><pre class="codeoutput">
 ans = 
 
   Map with properties:
 
-        Count: 49
+        Count: 43
       KeyType: char
     ValueType: any
 
@@ -528,396 +538,139 @@ function [param_map, support_map] = ffs_ipwkbz_fibs_set_default_param(varargin)
 
 %% Default
 
-it_subset = 0;
+it_subset = 4;
 if (isempty(varargin))
     bl_display_defparam = true;
 else
     bl_display_defparam = false;
 end
-
 default_params = {it_subset bl_display_defparam};
 [default_params{1:length(varargin)}] = varargin{:};
 [it_subset, bl_display_defparam] = default_params{:};
 
-%% 1a. Initiate Param_map
+%% 1. Initiate Param_map
 
 param_map = containers.Map('KeyType','char', 'ValueType','any');
 
 % model name
 param_map('st_model') = 'ipwkbz_fibs';
 
-% Preferences
-param_map('fl_crra') = 1.5;
-param_map('fl_beta') = 0.94;
-param_map('fl_nan_replace') = -9999;
-
-%% 1b. Production Function Parameters
-
-% CD Production Function Parameters
-param_map('fl_Amean') = 1;
-param_map('fl_alpha') = 0.36;
-param_map('fl_delta') = 0.08;
-
-%% 2a. Set Borrowing Control Parameters
-
-% Borrowing
-% fl_default_aprime is the next period asset level
-% households face if they default.
-param_map('fl_b_bd') = -20; % borrow bound, = 0 if save only
-param_map('fl_default_wprime') = 0; % wprime not a prime
-
+%% 2. Set Borrowing Control Parameters
 % Borrowing Setting 1: Default Allowed, Bridge True, bl_rollover does not matter
 % Borrowing Setting 2: Default Allowed, Bridge False, bl_rollover matter
 param_map('bl_default') = true; % if borrowing is default allowed
 param_map('bl_bridge') = true;
 param_map('bl_rollover') = true;
-
-% is save/borr choice principle or principle + interest, matters for
-% borrowing grid generation program. the *abz* problem is written with
-% asset choice as principle only, the _abz_fibs_ problems are written as
-% priniple + interest as the state, so there this should be false.
 param_map('bl_b_is_principle') = true;
-
-% Minimum Consumption, utility lower bound. The cmin parameter and
-% fl_nan_replace parameter have no effects on value function, just for
-% resetting invalid choice grid values. fl_nan_replace reset invalid k
-% choice given w. fl_c_min resets invalid consumption levels due to w
-% choices that are invalid. But this is the case when fl_w > 0.
-param_map('fl_c_min') = 0.02;
-
-%% 2b. Set Asset Grid Parameters
-
-% Asset Grids
-% Toal savings aggregate grid (see discussion on top). 35 points picked for
-% for this problem w_max is overall for everyone, but each individual coh
-% levle has associated w_max. Unlike before, when we had it_w_n, now we
-% have it_w_perc_n which is how many percentage grid points to have. We
-% also now include fl_w_interp_grid_gap, the grip gap for interpolation.
-param_map('fl_w_min') = param_map('fl_b_bd'); % but b_bd overrides this
-param_map('fl_w_max') = 50;
-param_map('it_w_perc_n') = 50;
-
-% Risky Capital Asset Vector
-% see graph below for how it looks graphically
-% in principle keep it_k_n the same as it_w_n to have equi-distance points
-% in triangle choice grid. For the ipwkz this k_max is the overall max, not
-% the individual max given coh. we have it_ak_perc_n rather than it_ak_n
-% for percentage.
-param_map('fl_k_min') = 0;
-param_map('fl_k_max') = (param_map('fl_w_max') - param_map('fl_b_bd'));
-param_map('it_ak_perc_n') = param_map('it_w_perc_n'); % grid for a and k the same
-
-% Percentage of w that is not for bridge loan, when param_map('bl_bridge') = false
-% ar_coh_bridge_perc = [1]
-param_map('it_coh_bridge_perc_n') = param_map('it_w_perc_n');
-
-% Prices
-% shock is on k, not on labor, fl_w is fixed wage income
-param_map('fl_w') = 1.28*0.3466; % min(z*w) from benchmark az model
-
-%% 2c. Set Asset Interpolation Parameters
-
-% Interpolation
-% fl_coh_interp_grid_gap controls the number of coh points at which to solve the model
-% it_c_interp_grid_gap determines the gap between consumption terpolation
-% points. For consumption interpolation 10^-4 is extremely accurate, there
-% should be no perceptible differences in value and policy functions when the
-% it_c_interp_grid_gap <= 0.001 compared to actual evaluation. Also include
-% now fl_w_interp_grid_gap above, which is for interpolation over w.
-param_map('fl_coh_interp_grid_gap') = 0.1;
-
-% param_map('it_coh_interp_n') = 500;
-param_map('it_c_interp_grid_gap') = 10^-4;
-
-% Interpolation gap second stage w
-% previously only it_w_n, now two grids control w it_w_perc_n for 2nd stage
-% fl_w_interp_grid_gap for first stage, make them the same length for
-% default.
-param_map('fl_w_interp_grid_gap') = 0.1;
-% param_map('fl_w_interp_grid_gap') = (param_map('fl_w_max') - param_map('fl_w_min'))/param_map('it_w_perc_n');
 
 %% 3. Set Interest Rates non-Shock Parameters
 
 % formal informal parameters
 % fl_for_br_block are the formal borrowing grid block sizes.
 param_map('fl_r_fsv') = 0.025;
-% param_map('fl_r_inf') = 0.095;
-% param_map('fl_r_inf_bridge') = 0.095;
+param_map('fl_r_inf') = 0.095;
 param_map('fl_r_fbr') = 0.065;
+param_map('bl_b_is_principle') = true;
 % see: ffs_for_br_block.m
 param_map('st_forbrblk_type') = 'seg3';
 param_map('fl_forbrblk_brmost') = -19;
 param_map('fl_forbrblk_brleast') = -1;
 param_map('fl_forbrblk_gap') = -1.5;
 
-%% 4a. Set Shock 1 Borrowing Interest Rate Parameters
-% See
-% <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_gen_discrete_var.html
-% fft_gen_discrete_var> for how these parameters will be used to generate a
-% discrete random variable for the interest rate.
-
-param_map('st_z_r_borr_drv_ele_type') = 'unif';
-param_map('st_z_r_borr_drv_prb_type') = 'poiss';
-param_map('fl_z_r_borr_poiss_mean') = 1.75;
-param_map('fl_z_r_borr_max') = 0.095;
-param_map('fl_z_r_borr_min') = 0.025;
-param_map('fl_z_r_borr_n') = 5;
-% param_map('fl_z_r_borr_max') = 0.095;
-% param_map('fl_z_r_borr_min') = 0.095;
-% param_map('fl_z_r_borr_n') = 1;
-
-%% 4b. Set Shock 2 Productivity Shock Parameters
-
-% Production Function
-% Productivity Shock Parameters
-param_map('it_z_wage_n') = 15;
-param_map('fl_z_wage_mu') = 0;
-param_map('fl_z_wage_rho') = 0.8;
-param_map('fl_z_wage_sig') = 0.2;
-
-%% 4c. Set Overall Shock Grid Count
-
-param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
-
-%% 5. Set Solution Control Parameters
-
-% Solution Accuracy
-param_map('it_maxiter_val') = 250;
-param_map('it_maxiter_dist') = 1000;
-param_map('st_analytical_stationary_type') = 'eigenvector'; % could be eigenvector, projection, power
-param_map('fl_tol_val') = 10^-5;
-param_map('fl_tol_pol') = 10^-5;
-param_map('fl_tol_dist') = 10^-5;
-param_map('it_tol_pol_nochange') = 25; % number of iterations where policy does not change
-
 %% Setting support_map container
 
 support_map = containers.Map('KeyType','char', 'ValueType','any');
+
+% Additional Controls
+support_map('bl_display_minccost') = false;
+support_map('bl_graph_funcgrids') = false;
+support_map('bl_graph_funcgrids_detail') = false;
+support_map('bl_display_funcgrids') = false;
 
 % root directory
 [st_root_path] = preamble(false);
 st_matimg_path_root = [st_root_path '/m_fibs/'];
 support_map('st_matimg_path_root') = st_matimg_path_root;
-
-% timer
-support_map('bl_time') = true;
-
-% Print Controls
-support_map('bl_display_defparam') = false;
-support_map('bl_display') = true;
-support_map('bl_display_dist') = false;
-support_map('it_display_every') = 5; % how often to print results
-
-% Profile Controls
-support_map('bl_profile') = false;
-support_map('bl_profile_dist') = false; % distribution profile
-support_map('bl_display_final_dist_detail') = false; % print finalized results
 support_map('st_profile_path') = [st_matimg_path_root '/m_ipwkbz_solve/profile/'];
-support_map('st_profile_prefix') = [''];
-support_map('st_profile_name_main') = ['_default'];
-support_map('st_profile_suffix') = ['_p' num2str(it_subset)];
-
-support_map('bl_post') = false;
-
-% Final Print
-support_map('bl_display_final') = false; % print finalized results
-support_map('bl_display_final_dist') = false; % print finalized results
-support_map('it_display_final_rowmax') = 100; % max row to print (states/iters)
-support_map('it_display_final_colmax') = 12; % max col to print (shocks)
-
-% Mat File Controls
-support_map('bl_mat') = false;
 support_map('st_mat_path') = [st_matimg_path_root '/m_ipwkbz_solve/mat/'];
-support_map('st_mat_prefix') = [''];
-support_map('st_mat_name_main') = ['_default'];
-support_map('st_mat_suffix') = ['_p' num2str(it_subset)];
-
-% Graphing Controls
-support_map('bl_graph') = false;
-support_map('bl_graph_onebyones') = true;
-support_map('bl_graph_val') = true;
-support_map('bl_graph_pol_lvl') = true;
-support_map('bl_graph_pol_pct') = true;
-support_map('bl_graph_coh_t_coh') = true;
-support_map('bl_graph_discrete') = true;
-% Formal Informal Specific Graphs
-support_map('bl_graph_forinf_discrete') = true;
-support_map('bl_graph_forinf_pol_lvl') = true;
-support_map('bl_graph_forinf_pol_pct') = true;
-
-
-% Image Saving Controls (given graphing)
-support_map('st_title_prefix') = '';
-support_map('bl_img_save') = false;
 support_map('st_img_path') = [st_matimg_path_root '/m_ipwkbz_solve/img/'];
-support_map('st_img_prefix') = [''];
-support_map('st_img_name_main') = ['_default'];
-support_map('st_img_suffix') = ['_p' num2str(it_subset) '.png'];
 
-% Sub-function graphing controls
-support_map('bl_graph_funcgrids') = false;
-support_map('bl_graph_funcgrids_detail') = false;
-support_map('bl_display_funcgrids') = false;
-support_map('bl_graph_evf') = false;
-support_map('bl_display_evf') = false;
-support_map('bl_display_minccost') = false;
-support_map('bl_display_infbridge') = false;
-
-
-%% Subset Options
-%
-% # it_subset = 1 is basic invoke quick test
-% # it_subset = 2 is main invoke
-% # it_subset = 3 is profiling invoke
-% # it_subset = 4 is matlab publish.
-%
-
-if (ismember(it_subset, [1,2,3,4]))
-    if (ismember(it_subset, [1]))
-        % TEST quick
-        param_map('it_w_perc_n') = 20;
-        param_map('it_ak_perc_n') = param_map('it_w_perc_n');
-        param_map('it_z_n') = 3;
-
-        param_map('fl_coh_interp_grid_gap') = 0.25;
-        param_map('it_c_interp_grid_gap') = 0.001;
-        param_map('fl_w_interp_grid_gap') = 1;
-
-        param_map('it_maxiter_val') = 50;
-        param_map('it_tol_pol_nochange') = 1000;
-        support_map('bl_display') = true;
-        support_map('it_display_every') = 1;
-    end
-    if (ismember(it_subset, [2, 4]))
-        % close figures
-        close all;
-        % Main Run
-        support_map('bl_time') = true;
-        support_map('bl_display_defparam') = true;
-        support_map('bl_display') = true;
-        support_map('it_display_every') = 5;
-
-        support_map('bl_post') = true;
-        support_map('bl_display_final') = true;
-        support_map('bl_mat') = false;
-        support_map('bl_graph') = true;
-        support_map('bl_graph_onebyones') = false;
-        support_map('bl_img_save') = true;
-        if (ismember(it_subset, [4]))
-            support_map('bl_time') = false;
-            support_map('bl_display') = false;
-            support_map('bl_graph_onebyones') = true;
-            support_map('bl_img_save') = false;
-        end
-    end
-    if (ismember(it_subset, [3]))
-        % Profile run
-        support_map('bl_profile') = true;
-        support_map('bl_display') = false; % don't print
-        support_map('bl_time') = true;
-    end
-end
-
-
-%% Subset Options for Distribution solutions
-%
-% # it_subset = 5 is basic invoke quick test
-% # it_subset = 6 is invoke full test
-% # it_subset = 7 is profiling invoke
-% # it_subset = 8 is matlab publish
-% # it_subset = 9 is invoke operational (only final stats) and coh graph
-%
-
-if (ismember(it_subset, [5,6,7,8,9]))
-    if (ismember(it_subset, [5]))
-        % TEST quick (need to enough to have distribution)
-        param_map('it_w_perc_n') = 40;
-        param_map('it_ak_perc_n') = param_map('it_w_perc_n');
-        param_map('it_z_n') = 5;
-
-        param_map('fl_coh_interp_grid_gap') = 0.25;
-        param_map('it_c_interp_grid_gap') = 0.001;
-        param_map('fl_w_interp_grid_gap') = 1;
-
-        param_map('it_maxiter_val') = 50;
-        param_map('it_tol_pol_nochange') = 1000;
-        support_map('bl_display') = true;
-        support_map('it_display_every') = 1;
-
-        support_map('bl_display_dist') = true;
-    end
-    if (ismember(it_subset, [6, 8, 9]))
-        % close all
-        close all;
-        % Main Run
-        support_map('bl_time') = true;
-        support_map('bl_display_defparam') = true;
-        support_map('bl_display') = true;
-        support_map('bl_display_dist') = true;
-        support_map('it_display_every') = 20;
-
-        support_map('bl_post') = true;
-        support_map('bl_display_final_dist') = true;
-        support_map('bl_mat') = false;
-        support_map('bl_graph') = true;
-        support_map('bl_graph_onebyones') = false;
-        support_map('bl_img_save') = true;
-
-        % do not generate all graphs when solving for distribution
-        support_map('bl_graph_val') = false;
-        support_map('bl_graph_pol_lvl') = false;
-        support_map('bl_graph_pol_pct') = false;
-        support_map('bl_graph_coh_t_coh') = true;
-        support_map('bl_graph_forinf_discrete') = false;
-        support_map('bl_graph_forinf_pol_lvl') = false;
-        support_map('bl_graph_forinf_pol_pct') = true;
-
-        if (ismember(it_subset, [8, 9]))
-            support_map('bl_time') = false;
-            support_map('bl_display') = false;
-            support_map('bl_display_dist') = false;
-            support_map('bl_display_final_dist_detail') = true;
-            support_map('bl_graph_onebyones') = true;
-            support_map('bl_img_save') = false;
-            if (ismember(it_subset, [9]))
-                support_map('bl_display_defparam') = false;
-                support_map('bl_display_final_dist_detail') = false;
-                support_map('bl_graph_coh_t_coh') = false;
-                support_map('bl_graph_forinf_pol_pct') = false;
-            end
-        end
-
-    end
-    if (ismember(it_subset, [7]))
-        % Profile run
-        support_map('bl_profile_dist') = true;
-        support_map('bl_display') = false; % don't print
-        support_map('bl_display_dist') = false; % don't print
-        support_map('bl_time') = true;
-    end
-end
-
-
-%% Display
+%% Display New Parameters
 
 if (bl_display_defparam)
-    disp('param_map');
-    disp(param_map);
-    param_map_keys = keys(param_map);
-    param_map_vals = values(param_map);
-    for i = 1:length(param_map)
-        st_display = strjoin(['pos =' num2str(i) '; key =' string(param_map_keys{i}) '; val =' string(param_map_vals{i})]);
-        disp(st_display);
+
+    disp('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('Display Parameters Specific to IPWKBZ_FIBS')
+    disp('it_coh_bridge_perc_n ADDED ON NEXT')
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+
+    fft_container_map_display(param_map);
+    fft_container_map_display(support_map);
+end
+
+%% 3. Merge Parameters Import
+
+[param_map_ipwkbz_fibs, support_map_ipwkbz_fibs] = ffs_ipwkbz_set_default_param(it_subset);
+
+% Remove Keys not Relevant for the Interest Rate Shock Model
+cl_st_ipwkbz_keysdrop = {'fl_r_borr', 'fl_r_save'};
+remove(param_map_ipwkbz_fibs, cl_st_ipwkbz_keysdrop);
+
+% Merge
+param_map = [param_map_ipwkbz_fibs; param_map];
+support_map = [support_map_ipwkbz_fibs; support_map];
+
+%% Add on based on existing
+
+% Percentage of w that is not for bridge loan, when param_map('bl_bridge') = false
+% ar_coh_bridge_perc = [1]
+param_map('it_coh_bridge_perc_n') = param_map('it_w_perc_n');
+
+%% Subset Options Adjustments
+
+% close all
+close all;
+
+if (ismember(it_subset, [3]))
+    % Profile run
+elseif (ismember(it_subset, [1,2,4]))
+    % Main Run
+    if (ismember(it_subset, [1]))
+        param_map('it_coh_bridge_perc_n') = param_map('it_w_perc_n');
+    end
+    if (ismember(it_subset, [4]))
+    end
+end
+
+%% Subset Options for Distribution solutions
+
+if (ismember(it_subset, [7]))
+    % Profile run
+elseif (ismember(it_subset, [5,6,8,9]))
+    % Main Run
+        if (it_subset == 5)
+        param_map('it_coh_bridge_perc_n') = param_map('it_w_perc_n');
+    end
+    if (ismember(it_subset, [8, 9]))
+        if (ismember(it_subset, [9]))
+        end
+
     end
 
-    disp('support_map')
-    disp(support_map);
-    param_map_keys = keys(support_map);
-    param_map_vals = values(support_map);
-    for i = 1:length(support_map)
-        st_display = strjoin(['pos =' num2str(i) '; key =' string(param_map_keys{i}) '; val =' string(param_map_vals{i})]);
-        disp(st_display);
-    end
+end
+
+%% Display All Parameters
+
+if (bl_display_defparam)
+
+    disp('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('Display All Parameters with IPWKBZR overriding IPWKBZR')
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+
+    fft_container_map_display(param_map);
+    fft_container_map_display(support_map);
 end
 
 end

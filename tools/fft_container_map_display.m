@@ -18,6 +18,7 @@ if (isempty(varargin))
     rng(123);
     param_map('mat_1') = rand(3,4);
     param_map('mat_2') = rand(50,53);
+    param_map('mat_2boolean') = (rand(50,53) > 0.5);
     param_map('mat_3') = rand(2,2);
     param_map('mat_4') = rand(1,1);
     param_map('list_string_1') = ["col1", "col2", "col3", "col4"];
@@ -25,7 +26,7 @@ if (isempty(varargin))
     param_map('string_1') = "Table Name";
     param_map('string_int_1') = 1021;
     param_map('string_float_1') = 1021.13;
-        
+    
 else
     
     if (length(varargin) == 1)
@@ -71,11 +72,10 @@ for i = 1:length(param_map)
         na_cur_val = na_cur_val{1};
     end
     if(istable(na_cur_val))
-        na_cur_val = table2array(na_cur_val);        
+        na_cur_val = table2array(na_cur_val);
     end
-    
-    
-    if (ismatrix(na_cur_val) && isnumeric(na_cur_val))
+        
+    if (ismatrix(na_cur_val) && (isnumeric(na_cur_val) || islogical(na_cur_val)))
         
         [it_row_n, it_col_n] = size(na_cur_val);
         
@@ -84,28 +84,28 @@ for i = 1:length(param_map)
             it_scalar_ctr = it_scalar_ctr + 1;
             row_scalar_names{it_scalar_ctr} = st_cur_key;
             ar_scalar_val(it_scalar_ctr) = na_cur_val;
-            ar_scalar_i(it_scalar_ctr) = i;            
-                        
-%             st_display = strjoin(['pos =' num2str(i) '; key =' string(st_cur_key) '; val =' string(na_cur_val)]);
-%             disp(st_display);
+            ar_scalar_i(it_scalar_ctr) = i;
+            
+            st_display = strjoin(['pos =' num2str(i) '; key =' string(st_cur_key) '; val =' string(na_cur_val)]);
+            disp(st_display);
             
         else
-
+            
             it_mat_ctr = it_mat_ctr + 1;
             row_mat_names{it_mat_ctr} = st_cur_key;
-
+            
             fl_mean = mean(na_cur_val, 'all');
             fl_std = std(na_cur_val, [], 'all');
             fl_min = min(na_cur_val, [], 'all');
             fl_max = max(na_cur_val, [], 'all');
-
+            
             ar_rows_n(it_mat_ctr) = it_row_n;
             ar_cols_n(it_mat_ctr) = it_col_n;
             ar_mean(it_mat_ctr) = fl_mean;
             ar_std(it_mat_ctr) = fl_std;
             ar_min(it_mat_ctr) = fl_min;
             ar_max(it_mat_ctr) = fl_max;
-            ar_mat_i(it_mat_ctr) = i;            
+            ar_mat_i(it_mat_ctr) = i;
             
             st_display = strjoin(['pos =' num2str(i) '; key =' string(st_cur_key) ...
                 ';rown=' num2str(it_row_n) ',coln=' num2str(it_col_n)]);
@@ -119,7 +119,7 @@ for i = 1:length(param_map)
             [ar_it_cols, ar_it_rows] = fft_row_col_subset(it_col_n, it_col_n_keep, it_row_n, it_row_n_keep);
             cl_st_full_rows = cellstr([num2str((1:it_row_n)', 'r%d')]);
             cl_st_full_cols = cellstr([num2str((1:it_col_n)', 'c%d')]);
-            tb_data_subset = array2table(round(na_cur_val(ar_it_rows, ar_it_cols), 6));
+            tb_data_subset = array2table(na_cur_val(ar_it_rows, ar_it_cols));
             cl_row_names = strcat('zi=', num2str(ar_it_rows'), ':', cl_st_full_rows(ar_it_rows));
             cl_col_names = strcat('zi=', num2str(ar_it_cols'), ':', cl_st_full_cols(ar_it_cols));
             tb_data_subset.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
@@ -144,7 +144,7 @@ for i = 1:length(param_map)
         it_string_ctr = it_string_ctr + 1;
         row_string_names{it_string_ctr} = st_cur_key;
         ar_string_i(it_string_ctr) = i;
-        
+                
         st_display = strjoin(['pos =' num2str(i) '; key =' string(st_cur_key) '; val =' string(na_cur_val)]);
         disp(st_display);
         

@@ -54,7 +54,7 @@ function result_map = ff_ipwkbzr_vf_vecsv(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 3;
+it_param_set = 2;
 [param_map, support_map] = ffs_ipwkbzr_set_default_param(it_param_set);
 
 % parameters can be set inside ffs_ipwkbzr_set_default_param or updated here

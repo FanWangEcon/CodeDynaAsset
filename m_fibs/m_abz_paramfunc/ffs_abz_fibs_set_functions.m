@@ -11,8 +11,7 @@ function [f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons_coh_fbis
 % and savings. See here:
 % <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_functions.html
 % ffs_abz_set_functions> for *abz* function settings without without formal
-% and informal considerations. Note, param_map('bl_b_is_principle') =
-% false for _abz_fibs_.
+% and informal considerations.
 %
 % @param fl_crra float crra utility
 %
@@ -48,14 +47,9 @@ function [f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons_coh_fbis
 
 %% Default
 
-if (isempty(varargin))
-    bl_display_setfunc = true;
-else
-    bl_display_setfunc = false;
-end
-
 [fl_crra, fl_c_min] = deal(1, 0.001);
 [fl_r_fbr, fl_r_fsv, fl_w] = deal(0.035, 0.025, 1.28);
+bl_display_setfunc = false;
 bl_b_is_principle = false;
 default_params = {fl_crra fl_c_min fl_r_fbr fl_r_fsv fl_w bl_display_setfunc};
 
@@ -166,10 +160,7 @@ if (bl_display_setfunc)
 end
 
 %% Defome Stand-in Utility for Testing
-
 f_coh_simple = @(ar_z, ar_b) (ar_z*fl_w + ar_b);
-
 f_util_standin = @(z, b) f_util_log(f_coh_simple(z, b).*(f_coh_simple(z, b) > 0) + fl_c_min.*(f_coh_simple(z, b) <= 0));
-
 
 end

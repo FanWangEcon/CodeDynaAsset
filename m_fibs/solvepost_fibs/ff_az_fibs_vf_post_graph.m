@@ -66,8 +66,8 @@ else
     bl_input_override = true;
 
     % 2. Get Parameters
-    [param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
-    [armt_map, func_map] = ffs_abz_fibs_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
+    [param_map, support_map] = ffs_abzr_fibs_set_default_param(it_param_set);
+    [armt_map, func_map] = ffs_abzr_fibs_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 
     % 3. Get Arrays and Functions
     params_group = values(param_map, {'it_a_n', 'it_z_n'});
@@ -174,23 +174,24 @@ params_group = values(support_map, {'st_title_prefix'});
 params_group = values(armt_map, {'ar_a'});
 [ar_a] = params_group{:};
 
-
-if (ismember(st_model, ["ipwkbz_fibs", "abz_fibs"]))
+if (ismember(st_model, ["ipwkbzr_fibs", "abzr_fibs"]))
     params_group = values(param_map, {'fl_z_r_infbr_n'});
     [fl_z_r_borr_n] = params_group{:};
-    if (ismember(st_model, ["ipwkbz_fibs"]))
-        params_group = values(armt_map, {'ar_z_r_inf_mesh_wage_w1r2', 'ar_z_wage_mesh_r_inf_w1r2'});
-    elseif (ismember(st_model, ["abz_fibs"]))
+    if (ismember(st_model, ["ipwkbzr_fibs"]))
+        params_group = values(armt_map, {'ar_z_r_infbr_mesh_wage_w1r2', 'ar_z_wage_mesh_r_infbr_w1r2'});
+    elseif (ismember(st_model, ["abzr_fibs"]))
         params_group = values(armt_map, {'ar_z_r_infbr_mesh_wage', 'ar_z_wage_mesh_r_infbr'});
     end    
+    [ar_z_r_inf_mesh_wage, ar_z_wage_mesh_r_inf] = params_group{:};    
+    params_group = values(param_map, {'it_z_wage_n'});
+    [it_z_wage_n] = params_group{:};    
 else
-    params_group = values(param_map, {'fl_z_r_borr_n'});
-    [fl_z_r_borr_n] = params_group{:};
-    params_group = values(armt_map, {'ar_z_r_inf_mesh_wage', 'ar_z_wage_mesh_r_inf'});
+    fl_z_r_borr_n = 1;
+    params_group = values(armt_map, {'ar_z'});
+    [ar_z_wage_mesh_r_inf] = params_group{:};
+    params_group = values(param_map, {'it_z_n'});
+    [it_z_wage_n] = params_group{:};
 end
-[ar_z_r_inf_mesh_wage, ar_z_wage_mesh_r_inf] = params_group{:};
-params_group = values(param_map, {'it_z_wage_n'});
-[it_z_wage_n] = params_group{:};
 
 % result_map standards
 params_group = values(result_map, {'cl_mt_pol_a'});
@@ -226,8 +227,12 @@ ar_it_z_graph = mt_it_z_graph(:)';
 % legends index final
 ar_it_legend2plot = ar_it_z_graph;
 ar_it_legend2plot_lth = ar_it_z_graph;
-cl_st_legendCell = cellstr([num2str(ar_z_r_inf_mesh_wage', 'zr=%3.2f;'), ...
-                      num2str(ar_z_wage_mesh_r_inf', 'zw=%3.2f')]);
+if (ismember(st_model, ["ipwkbzr_fibs", "abzr_fibs"]))
+    cl_st_legendCell = cellstr([num2str(ar_z_r_inf_mesh_wage', 'zr=%3.2f;'), ...
+                                num2str(ar_z_wage_mesh_r_inf', 'zw=%3.2f')]);
+else
+    cl_st_legendCell = cellstr([num2str(ar_z_wage_mesh_r_inf', 'zw=%3.2f')]);
+end
 
 %% Graph Optimal Discrete
 % States: cash-on-hand, shock

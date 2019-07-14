@@ -103,19 +103,19 @@ params_group = values(param_map, {'st_model'});
 [st_model] = params_group{:};
 
 % armt_map
-if (strcmp(st_model, 'az'))
-    params_group = values(armt_map, {'ar_z'});
-    [ar_z] = params_group{:};
-elseif (ismember(st_model, ["abz"]))
+if (ismember(st_model, ["abz"]))
     params_group = values(armt_map, {'ar_z_r_borr_mesh_wage', 'ar_z_wage_mesh_r_borr'});
     [ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
     params_group = values(param_map, {'fl_z_r_borr_n'});
     [fl_z_r_borr_n] = params_group{:};    
-elseif (ismember(st_model, ["abz_fibs"]))
+elseif (ismember(st_model, ["abzr_fibs"]))
     params_group = values(armt_map, {'ar_z_r_infbr_mesh_wage', 'ar_z_wage_mesh_r_infbr'});
     [ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
     params_group = values(param_map, {'fl_z_r_infbr_n'});
     [fl_z_r_borr_n] = params_group{:};
+else
+    params_group = values(armt_map, {'ar_z'});
+    [ar_z] = params_group{:};
 end
 
 % support_map
@@ -168,9 +168,7 @@ if (bl_display_final)
     ar_it_cols = unique(ar_it_cols);
     
     % Column Z Names
-    if (strcmp(st_model, 'az'))
-        ar_st_col_zs = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));
-    elseif (ismember(st_model, ['abz', 'abz_fibs']))
+    if (ismember(st_model, ["abz", "abzr_fibs"]))
         if (fl_z_r_borr_n == 1)
             ar_st_col_zs = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z_wage_mesh_r_borr(ar_it_cols))));
         else
@@ -178,6 +176,8 @@ if (bl_display_final)
                                                             ':zr=', string(ar_z_r_borr_mesh_wage(ar_it_cols)), ...
                                                             ';zw=', string(ar_z_wage_mesh_r_borr(ar_it_cols))));                          
         end
+    else
+        ar_st_col_zs = matlab.lang.makeValidName(strcat('z', string(ar_it_cols), '=', string(ar_z(ar_it_cols))));
     end
     
     

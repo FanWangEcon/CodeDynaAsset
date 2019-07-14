@@ -133,10 +133,15 @@ params_group = values(func_map, {'f_coh'});
 % armt_map
 params_group = values(armt_map, {'mt_z_trans', 'ar_interp_coh_grid'});
 [mt_z_trans, ar_interp_coh_grid] = params_group{:};
-if (ismember(st_model, ["ipwkbzr", "ipwkbzr_fibs"]))
+if (ismember(st_model, ["ipwkbzr"]))
     params_group = values(armt_map, {'ar_z_r_borr_mesh_wage_w1r2', 'ar_z_wage_mesh_r_borr_w1r2'});
     [ar_z_r_borr_mesh_wage_w1r2, ar_z_wage_mesh_r_borr_w1r2] = params_group{:};
     params_group = values(param_map, {'it_z_wage_n', 'fl_z_r_borr_n'});
+    [it_z_wage_n, fl_z_r_borr_n] = params_group{:};
+elseif (ismember(st_model, ["ipwkbzr_fibs"]))
+    params_group = values(armt_map, {'ar_z_r_infbr_mesh_wage_w1r2', 'ar_z_wage_mesh_r_infbr_w1r2'});
+    [ar_z_r_borr_mesh_wage_w1r2, ar_z_wage_mesh_r_borr_w1r2] = params_group{:};
+    params_group = values(param_map, {'it_z_wage_n', 'fl_z_r_infbr_n'});
     [it_z_wage_n, fl_z_r_borr_n] = params_group{:};
 else
     params_group = values(armt_map, {'ar_z'});

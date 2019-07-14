@@ -96,19 +96,19 @@ params_group = values(support_map, {'st_title_prefix'});
 % armt_map
 params_group = values(armt_map, {'ar_a'});
 [ar_a] = params_group{:};
-if (strcmp(st_model, 'az'))
-    params_group = values(armt_map, {'ar_z'});
-    [ar_z] = params_group{:};
-elseif (ismember(st_model, ["abz"]))
+if (ismember(st_model, ["abz"]))
     params_group = values(armt_map, {'ar_z_r_borr_mesh_wage', 'ar_z_wage_mesh_r_borr'});
     [ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
     params_group = values(param_map, {'it_z_wage_n', 'fl_z_r_borr_n'});
     [it_z_wage_n, fl_z_r_borr_n] = params_group{:};    
-elseif (ismember(st_model, ["abz_fibs"]))
+elseif (ismember(st_model, ["abzr_fibs"]))
     params_group = values(armt_map, {'ar_z_r_infbr_mesh_wage', 'ar_z_wage_mesh_r_infbr'});
     [ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
     params_group = values(param_map, {'it_z_wage_n', 'fl_z_r_infbr_n'});
     [it_z_wage_n, fl_z_r_borr_n] = params_group{:};    
+else
+    params_group = values(armt_map, {'ar_z'});
+    [ar_z] = params_group{:};    
 end
 
 % func_map
@@ -124,14 +124,7 @@ params_group = values(result_map, {'mt_val', 'cl_mt_pol_c', 'cl_mt_coh', 'cl_mt_
 
 %% Generate Limited Legends
 
-if (strcmp(st_model, 'az'))
-    
-    ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)) (it_z_n)]);
-    ar_it_legend2plot = fliplr(ar_it_z_graph);
-    ar_it_legend2plot_lth = ar_it_z_graph;
-    cl_st_legendCell = cellstr(num2str(ar_z', 'shock next=%3.2f'));
-    
-elseif (ismember(st_model, ['abz', 'abz_fibs']))    
+if (ismember(st_model, ["abz", "abzr_fibs"]))
     
     % 8 graph points, 2 levels of borrow rates, and 4 levels of rbr rates
     ar_it_z_r_borr = ([1 round((fl_z_r_borr_n)/2) (fl_z_r_borr_n)]);
@@ -146,6 +139,11 @@ elseif (ismember(st_model, ['abz', 'abz_fibs']))
     ar_it_legend2plot_lth = ar_it_z_graph;
     cl_st_legendCell = cellstr([num2str(ar_z_r_borr_mesh_wage', 'zr=%3.2f;'), ...
                           num2str(ar_z_wage_mesh_r_borr', 'zw=%3.2f')]);
+else
+    ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)) (it_z_n)]);
+    ar_it_legend2plot = fliplr(ar_it_z_graph);
+    ar_it_legend2plot_lth = ar_it_z_graph;
+    cl_st_legendCell = cellstr(num2str(ar_z', 'shock next=%3.2f'));
 end
 
 %% Graphing COH today vs COH tomorrow
@@ -187,12 +185,12 @@ if (bl_graph_coh_t_coh)
     ar_coh_full = mt_coh(:);
 
     % 2. COH Next Period
-    if (strcmp(st_model, 'az'))
-        mt_coh_next = f_coh(ar_z, ar_pol_a_full);
-    elseif (ismember(st_model, ['abz']))
+    if (ismember(st_model, ["abz"]))
         mt_coh_next = f_coh(ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr, ar_pol_a_full);
-    elseif (ismember(st_model, ['abz_fibs']))
+    elseif (ismember(st_model, ["abzr_fibs"]))
         mt_coh_next = f_coh(ar_z_wage_mesh_r_borr, ar_pol_a_full);
+    else
+        mt_coh_next = f_coh(ar_z, ar_pol_a_full);
     end
     
 

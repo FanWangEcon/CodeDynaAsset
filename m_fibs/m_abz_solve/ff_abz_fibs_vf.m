@@ -65,15 +65,14 @@ function result_map = ff_abz_fibs_vf(varargin)
 % * it_param_set = 4: press publish button
 
 it_param_set = 1;
+bl_input_override = true;
 [param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
 
 % Note: param_map and support_map can be adjusted here or outside to override defaults
 % To generate results as if formal informal do not matter
-% param_map('it_a_n') = 75;
-% param_map('fl_z_r_borr_n') = 3;
-% param_map('it_z_wage_n') = 5;
-% param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
 % param_map('fl_r_fsv') = 0.025;
+% param_map('fl_r_inf') = 0.035;
+% param_map('fl_r_inf_bridge') = 0.035;
 % param_map('fl_r_fbr') = 0.035;
 % param_map('bl_b_is_principle') = false;
 % param_map('st_forbrblk_type') = 'seg3';
@@ -81,6 +80,8 @@ it_param_set = 1;
 % param_map('fl_forbrblk_brleast') = -1;
 % param_map('fl_forbrblk_gap') = -1.5;
 % param_map('bl_b_is_principle') = false;
+% param_map('it_a_n') = 750;
+% param_map('it_z_n') = 15;
 
 [armt_map, func_map] = ffs_abz_fibs_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 default_params = {param_map support_map armt_map func_map};
@@ -112,8 +113,8 @@ support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')]
 %% Parse Parameters 2
 
 % armt_map
-params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z_r_inf_mesh_wage', 'ar_z_wage_mesh_r_inf'});
-[ar_a, mt_z_trans, ar_z_r_inf_mesh_wage, ar_z_wage_mesh_r_inf] = params_group{:};
+params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z'});
+[ar_a, mt_z_trans, ar_z] = params_group{:};
 
 % Formal choice Menu/Grid and Interest Rate Menu/Grid
 params_group = values(armt_map, {'ar_forbrblk_r', 'ar_forbrblk'});
@@ -132,39 +133,32 @@ params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol', 
 [it_maxiter_val, fl_tol_val, fl_tol_pol, it_tol_pol_nochange] = params_group{:};
 
 % param_map, Formal informal
-params_group = values(param_map, {'fl_r_fsv', 'bl_b_is_principle'});
-[fl_r_fsv, bl_b_is_principle] = params_group{:};
+params_group = values(param_map, {'fl_r_inf', 'fl_r_fsv', 'bl_b_is_principle'});
+[fl_r_inf, fl_r_fsv, bl_b_is_principle] = params_group{:};
 
 % support_map
 params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
     'st_profile_prefix', 'st_profile_name_main', 'st_profile_suffix',...
     'bl_display_minccost', 'bl_display_infbridge', ...
-    'bl_time', 'bl_display_defparam', 'bl_display', 'it_display_every', 'bl_post'});
+    'bl_time', 'bl_display', 'it_display_every', 'bl_post'});
 [bl_profile, st_profile_path, ...
     st_profile_prefix, st_profile_name_main, st_profile_suffix, ...
     bl_display_minccost, bl_display_infbridge, ...
-    bl_time, bl_display_defparam, bl_display, it_display_every, bl_post] = params_group{:};
-
-%% Display Parameters
-
-if (bl_display_defparam)
-    fft_container_map_display(param_map);
-    fft_container_map_display(support_map);
-end
+    bl_time, bl_display, it_display_every, bl_post] = params_group{:};
 
 %% Initialize Output Matrixes
 
-mt_val_cur = zeros(it_a_n,it_z_n);
+mt_val_cur = zeros(length(ar_a),length(ar_z));
 mt_val = mt_val_cur - 1;
-mt_pol_a = zeros(it_a_n,it_z_n);
+mt_pol_a = zeros(length(ar_a),length(ar_z));
 mt_pol_a_cur = mt_pol_a - 1;
-mt_pol_cons = zeros(it_a_n,it_z_n);
+mt_pol_cons = zeros(length(ar_a),length(ar_z));
 
 % collect optimal borrowing formal and informal choices
-mt_pol_b_bridge = zeros(it_a_n,it_z_n);
-mt_pol_inf_borr_nobridge = zeros(it_a_n,it_z_n);
-mt_pol_for_borr = zeros(it_a_n,it_z_n);
-mt_pol_for_save = zeros(it_a_n,it_z_n);
+mt_pol_b_bridge = zeros(length(ar_a),length(ar_z));
+mt_pol_inf_borr_nobridge = zeros(length(ar_a),length(ar_z));
+mt_pol_for_borr = zeros(length(ar_a),length(ar_z));
+mt_pol_for_save = zeros(length(ar_a),length(ar_z));
 
 %% Initialize Convergence Conditions
 
@@ -211,13 +205,11 @@ while bl_vfi_continue
     % handling borrowing and default possibility
 
     % loop 1: over exogenous states
-    for it_z_i = 1:it_z_n
-        
-        fl_z_r_borr = ar_z_r_inf_mesh_wage(it_z_i);
-        fl_z_wage = ar_z_wage_mesh_r_inf(it_z_i);
+    for it_z_i = 1:length(ar_z)
+        fl_z = ar_z(it_z_i);
 
         % loop 2: over endogenous states
-        for it_a_j = 1:it_a_n
+        for it_a_j = 1:length(ar_a)
 
             % Get asset state
             fl_a = ar_a(it_a_j);
@@ -231,10 +223,10 @@ while bl_vfi_continue
             ar_for_save = zeros(size(ar_a));
 
             % calculate cash on hand
-            fl_coh = f_coh(fl_z_wage, fl_a);
+            fl_coh = f_coh(fl_z, fl_a);
 
             % loop 3: over choices
-            for it_ap_k = 1:it_a_n
+            for it_ap_k = 1:length(ar_a)
 
                 % get next period asset choice
                 fl_ap = ar_a(it_ap_k);
@@ -265,7 +257,7 @@ while bl_vfi_continue
 
                         bl_input_override = true;
                         [fl_aprime_nobridge, fl_b_bridge, fl_c_bridge] = ffs_fibs_inf_bridge(...
-                            bl_b_is_principle, fl_z_r_borr, fl_ap, fl_coh, ...
+                            bl_b_is_principle, fl_r_inf, fl_ap, fl_coh, ...
                             bl_display_infbridge, bl_input_override);
 
                     else
@@ -282,7 +274,7 @@ while bl_vfi_continue
                     bl_input_override = true;
                     [fl_max_c_nobridge, fl_inf_borr_nobridge, fl_for_borr, fl_for_save] = ...
                         ffs_fibs_min_c_cost(...
-                        bl_b_is_principle, fl_z_r_borr, fl_r_fsv, ...
+                        bl_b_is_principle, fl_r_inf, fl_r_fsv, ...
                         ar_forbrblk_r, ar_forbrblk, ...
                         fl_aprime_nobridge, bl_display_minccost, bl_input_override);
 
@@ -315,7 +307,7 @@ while bl_vfi_continue
                         % current utility: only today u(cmin)
                         ar_val_cur(it_ap_k) = fl_u_cmin;
                         % transition out next period, debt wiped out
-                        for it_az_q = 1:it_z_n
+                        for it_az_q = 1:length(ar_z)
                             ar_val_cur(it_ap_k) = ar_val_cur(it_ap_k) + ...
                                 fl_beta*mt_z_trans(it_z_i, it_az_q)*mt_val_cur((ar_a == fl_default_aprime), it_az_q);
                         end
@@ -347,7 +339,7 @@ while bl_vfi_continue
                         ar_val_cur(it_ap_k) = f_util_crra(fl_c);
                     end
                     % loop 4: add future utility, integration--loop over future shocks
-                    for it_az_q = 1:it_z_n
+                    for it_az_q = 1:length(ar_z)
                         ar_val_cur(it_ap_k) = ar_val_cur(it_ap_k) + ...
                             fl_beta*mt_z_trans(it_z_i, it_az_q)*mt_val_cur(it_ap_k, it_az_q);
                     end
@@ -477,7 +469,7 @@ result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
 
 result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
-result_map('cl_mt_coh') = {f_coh(ar_z_r_inf_mesh_wage, ar_a'), zeros(1)};
+result_map('cl_mt_coh') = {f_coh(ar_z, ar_a'), zeros(1)};
 
 result_map('cl_mt_pol_c') = {mt_pol_cons, zeros(1)};
 result_map('cl_mt_pol_b_bridge') = {mt_pol_b_bridge, zeros(1)};
@@ -485,7 +477,7 @@ result_map('cl_mt_pol_inf_borr_nobridge') = {mt_pol_inf_borr_nobridge, zeros(1)}
 result_map('cl_mt_pol_for_borr') = {mt_pol_for_borr, zeros(1)};
 result_map('cl_mt_pol_for_save') = {mt_pol_for_save, zeros(1)};
 
-result_map('ar_st_pol_names') = ["cl_mt_pol_a", "cl_mt_pol_coh", "cl_mt_pol_c", ...
+result_map('ar_st_pol_names') = ["cl_mt_pol_a", "cl_mt_coh", "cl_mt_pol_c", ...
     "cl_mt_pol_b_bridge", "cl_mt_pol_inf_borr_nobridge", "cl_mt_pol_for_borr", "cl_mt_pol_for_save"];
 
 % Get Discrete Choice Outcomes

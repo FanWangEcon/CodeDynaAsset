@@ -51,11 +51,10 @@ function result_map = ff_abz_fibs_vf_vecsv(varargin)
 %    param_map('fl_c_min') = 0.0001; % u(c_min) when default
 %    % Change Keys in param_map
 %    param_map('it_a_n') = 500;
-%    param_map('fl_z_r_infbr_n') = 5;
-%    param_map('it_z_wage_n') = 15;
-%    param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_infbr_n');
+%    param_map('it_z_n') = 11;
 %    param_map('fl_a_max') = 100;
 %    param_map('fl_w') = 1.3;
+%    param_map('fl_r_inf') = 0.06;
 %    param_map('fl_r_fsv') = 0.01;
 %    param_map('fl_r_fbr') = 0.035;
 %    param_map('bl_b_is_principle') = false;
@@ -101,15 +100,16 @@ function result_map = ff_abz_fibs_vf_vecsv(varargin)
 % The parameters can also be updated here directly after obtaining them
 % from ffs_abz_fibs_set_default_param as we possibly change it_a_n and it_z_n
 % here.
-%
 
-it_param_set = 1;
+it_param_set = 4;
 bl_input_override = true;
 [param_map, support_map] = ffs_abz_fibs_set_default_param(it_param_set);
 
 % Note: param_map and support_map can be adjusted here or outside to override defaults
 % To generate results as if formal informal do not matter
 % param_map('fl_r_fsv') = 0.025;
+% param_map('fl_r_inf') = 0.035;
+% param_map('fl_r_inf_bridge') = 0.035;
 % param_map('fl_r_fbr') = 0.035;
 % param_map('bl_b_is_principle') = false;
 % param_map('st_forbrblk_type') = 'seg3';
@@ -118,9 +118,7 @@ bl_input_override = true;
 % param_map('fl_forbrblk_gap') = -1.5;
 % param_map('bl_b_is_principle') = false;
 % param_map('it_a_n') = 750;
-% param_map('fl_z_r_infbr_n') = 5;
-% param_map('it_z_wage_n') = 15;
-% param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_infbr_n');
+% param_map('it_z_n') = 15;
 
 [armt_map, func_map] = ffs_abz_fibs_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 default_params = {param_map support_map armt_map func_map};
@@ -152,8 +150,8 @@ support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')]
 %% Parse Parameters 2
 
 % armt_map
-params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z_r_infbr_mesh_wage', 'ar_z_wage_mesh_r_infbr'});
-[ar_a, mt_z_trans, ar_z_r_infbr_mesh_wage, ar_z_wage_mesh_r_infbr] = params_group{:};
+params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z'});
+[ar_a, mt_z_trans, ar_z] = params_group{:};
 
 % Formal choice Menu/Grid and Interest Rate Menu/Grid
 params_group = values(armt_map, {'ar_forbrblk_r', 'ar_forbrblk'});
@@ -172,41 +170,34 @@ params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol', 
 [it_maxiter_val, fl_tol_val, fl_tol_pol, it_tol_pol_nochange] = params_group{:};
 
 % param_map, Formal informal
-params_group = values(param_map, {'fl_r_fsv', 'bl_b_is_principle'});
-[fl_r_fsv, bl_b_is_principle] = params_group{:};
+params_group = values(param_map, {'fl_r_inf', 'fl_r_fsv', 'bl_b_is_principle'});
+[fl_r_inf, fl_r_fsv, bl_b_is_principle] = params_group{:};
 
 % support_map
 params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
     'st_profile_prefix', 'st_profile_name_main', 'st_profile_suffix',...
     'bl_display_minccost', 'bl_display_infbridge', ...
-    'bl_time', 'bl_display_defparam', 'bl_display', 'it_display_every', 'bl_post'});
+    'bl_time', 'bl_display', 'it_display_every', 'bl_post'});
 [bl_profile, st_profile_path, ...
     st_profile_prefix, st_profile_name_main, st_profile_suffix, ...
     bl_display_minccost, bl_display_infbridge, ...
-    bl_time, bl_display_defparam, bl_display, it_display_every, bl_post] = params_group{:};
-
-%% Display Parameters
-
-if (bl_display_defparam)
-    fft_container_map_display(param_map);
-    fft_container_map_display(support_map);
-end
+    bl_time, bl_display, it_display_every, bl_post] = params_group{:};
 
 %% Initialize Output Matrixes
 % include mt_pol_idx which we did not have in looped code
 
-mt_val_cur = zeros(it_a_n,it_z_n);
+mt_val_cur = zeros(length(ar_a),length(ar_z));
 mt_val = mt_val_cur - 1;
-mt_pol_a = zeros(it_a_n,it_z_n);
+mt_pol_a = zeros(length(ar_a),length(ar_z));
 mt_pol_a_cur = mt_pol_a - 1;
-mt_pol_idx = zeros(it_a_n,it_z_n);
-mt_pol_cons = zeros(it_a_n,it_z_n);
+mt_pol_idx = zeros(length(ar_a),length(ar_z));
+mt_pol_cons = zeros(length(ar_a),length(ar_z));
 
 % collect optimal borrowing formal and informal choices
-mt_pol_b_bridge = zeros(it_a_n,it_z_n);
-mt_pol_inf_borr_nobridge = zeros(it_a_n,it_z_n);
-mt_pol_for_borr = zeros(it_a_n,it_z_n);
-mt_pol_for_save = zeros(it_a_n,it_z_n);
+mt_pol_b_bridge = zeros(length(ar_a),length(ar_z));
+mt_pol_inf_borr_nobridge = zeros(length(ar_a),length(ar_z));
+mt_pol_for_borr = zeros(length(ar_a),length(ar_z));
+mt_pol_for_save = zeros(length(ar_a),length(ar_z));
 
 % We did not need these in ff_abz_vf or ff_abz_vf_vec
 % see
@@ -252,7 +243,7 @@ while bl_vfi_continue
     %% Solve Optimization Problem Current Iteration
 
     % loop 1: over exogenous states
-    for it_z_i = 1:it_z_n
+    for it_z_i = 1:length(ar_z)
 
         %% Solve the Formal Informal Problem for each a' and coh: c_forinf(a')
         % find the today's consumption maximizing formal and informal
@@ -274,11 +265,10 @@ while bl_vfi_continue
         %
 
         % 1. Current Shock
-        fl_z_r_infbr = ar_z_r_infbr_mesh_wage(it_z_i);
-        fl_z_wage = ar_z_wage_mesh_r_infbr(it_z_i);
+        fl_z = ar_z(it_z_i);
 
         % 2. cash-on-hand
-        ar_coh = f_coh(fl_z_wage, ar_a);
+        ar_coh = f_coh(fl_z, ar_a);
 
         % Consumption and u(c) only need to be evaluated once
         if (it_iter == 1)
@@ -314,7 +304,7 @@ while bl_vfi_continue
 
                 % 6. *CASE B* Solve for: if (fl_ap < 0) and if (fl_coh < 0)
                 [mt_aprime_nobridge_negcoh, ~, mt_c_bridge_negcoh] = ffs_fibs_inf_bridge(...
-                    bl_b_is_principle, fl_z_r_infbr, ...
+                    bl_b_is_principle, fl_r_inf, ...
                     mt_neg_aprime_mesh_coh_negp1(:,ar_coh_forinfsolve_a_neg_idx), ...
                     mt_coh_negp1_mesh_neg_aprime(:,ar_coh_forinfsolve_a_neg_idx), ...
                     bl_display_infbridge, bl_input_override);
@@ -330,7 +320,7 @@ while bl_vfi_continue
             bl_input_override = true;
             [ar_max_c_nobridge, ~, ~, ~] = ...
                 ffs_fibs_min_c_cost(...
-                bl_b_is_principle, fl_z_r_infbr, fl_r_fsv, ...
+                bl_b_is_principle, fl_r_inf, fl_r_fsv, ...
                 ar_forbrblk_r, ar_forbrblk, ...
                 mt_neg_aprime_mesh_coh_negp1(:), ...
                 bl_display_minccost, bl_input_override);
@@ -539,16 +529,12 @@ result_map('mt_pol_idx') = mt_pol_idx;
 
 % Find optimal Formal Informal Choices. Could have saved earlier, but was
 % wasteful of resources
-for it_z_i = 1:it_z_n
-    for it_a_j = 1:it_a_n
-        fl_z_r_infbr = ar_z_r_infbr_mesh_wage(it_z_i);
-        fl_z_wage = ar_z_wage_mesh_r_infbr(it_z_i);
-
+for it_z_i = 1:length(ar_z)
+    for it_a_j = 1:length(ar_a)
+        fl_z = ar_z(it_z_i);
         fl_a = ar_a(it_a_j);
-        fl_coh = f_coh(fl_z_wage, fl_a);
+        fl_coh = f_coh(fl_z, fl_a);
         fl_a_opti = mt_pol_a(it_a_j, it_z_i);
-
-        param_map('fl_r_inf') = fl_z_r_infbr;
 
         % call formal and informal function.
         [~, fl_opti_b_bridge, fl_opti_inf_borr_nobridge, fl_opti_for_borr, fl_opti_for_save] = ...
@@ -565,7 +551,7 @@ for it_z_i = 1:it_z_n
 end
 
 result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
-result_map('cl_mt_coh') = {f_coh(ar_z_r_infbr_mesh_wage, ar_a'), zeros(1)};
+result_map('cl_mt_coh') = {f_coh(ar_z, ar_a'), zeros(1)};
 
 result_map('cl_mt_pol_c') = {mt_pol_cons, zeros(1)};
 result_map('cl_mt_pol_b_bridge') = {mt_pol_b_bridge, zeros(1)};
@@ -619,6 +605,27 @@ if (bl_post)
 
     % Graphs for results_map with FIBS contents
     result_map = ff_az_fibs_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+end
+
+%% Display Various Containers
+bl_display_defparam = true;
+if (bl_display_defparam)
+    
+    %% Display 1 support_map    
+    fft_container_map_display(support_map);
+        
+    %% Display 2 armt_map
+    fft_container_map_display(armt_map);
+
+    %% Display 3 param_map
+    fft_container_map_display(param_map);
+    
+    %% Display 4 func_map
+    fft_container_map_display(func_map);
+    
+    %% Display 5 result_map
+    fft_container_map_display(result_map);
+    
 end
 
 end

@@ -105,10 +105,15 @@ params_group = values(support_map, {'st_title_prefix'});
 % armt_map
 params_group = values(armt_map, {'mt_coh_wkb', 'ar_a_meshk'});
 [mt_coh_wkb, ar_a_meshk] = params_group{:};
-if (ismember(st_model, ["ipwkbzr", "ipwkbz_fibs"]))
+if (ismember(st_model, ["ipwkbzr"]))
     params_group = values(armt_map, {'ar_z_r_borr_mesh_wage_w1r2', 'ar_z_wage_mesh_r_borr_w1r2'});
     [ar_z_r_borr_mesh_wage_w1r2, ar_z_wage_mesh_r_borr_w1r2] = params_group{:};
     params_group = values(param_map, {'it_z_wage_n', 'fl_z_r_borr_n'});
+    [it_z_wage_n, fl_z_r_borr_n] = params_group{:};
+elseif (ismember(st_model, ["ipwkbzr_fibs"]))
+    params_group = values(armt_map, {'ar_z_r_infbr_mesh_wage_w1r2', 'ar_z_wage_mesh_r_infbr_w1r2'});
+    [ar_z_r_borr_mesh_wage_w1r2, ar_z_wage_mesh_r_borr_w1r2] = params_group{:};
+    params_group = values(param_map, {'it_z_wage_n', 'fl_z_r_infbr_n'});
     [it_z_wage_n, fl_z_r_borr_n] = params_group{:};
 else
     params_group = values(armt_map, {'ar_z'});
@@ -126,7 +131,7 @@ params_group = values(result_map, {'mt_val', 'cl_mt_cons', 'cl_mt_coh', 'cl_mt_p
 
 %% Generate Limited Legends
 
-if (ismember(st_model, ["ipwkbzr", "ipwkbz_fibs"]))
+if (ismember(st_model, ["ipwkbzr", "ipwkbzr_fibs"]))
 
     % 8 graph points, 2 levels of borrow rates, and 4 levels of rbr rates
     ar_it_z_r_borr = ([1 round((fl_z_r_borr_n)/2) (fl_z_r_borr_n)]);
@@ -198,7 +203,7 @@ if (bl_graph_coh_t_coh)
     if (ismember(st_model, ["ipwkbzr"]))
         mt_coh_next = f_coh(ar_z_r_borr_mesh_wage_w1r2, ar_z_wage_mesh_r_borr_w1r2, ...
                             ar_pol_a_full, ar_pol_k_full);
-    elseif (ismember(st_model, ["ipwkbz_fibs"]))
+    elseif (ismember(st_model, ["ipwkbzr_fibs"]))
         mt_coh_next = f_coh(ar_z_wage_mesh_r_borr_w1r2, ...
                             ar_pol_a_full, ar_pol_k_full);
     else

@@ -1,4 +1,4 @@
-%% 2nd Stage Optimization (Interpolated + Percentage + Risky + Safe Asse + Save + Borr + FIBS)
+%% 2nd Stage Optimization (Interpolated + Percentage + Risky + Safe Asse + Save + Borr + FIBSt)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
@@ -81,15 +81,16 @@ if (~isempty(varargin))
     [mt_val, param_map, support_map, armt_map] = varargin{:};
     
 else
-    
+    clear all;
     close all;
+
     % Not default parameters, but parameters that generate defaults
     it_param_set = 4;
+    bl_input_override = true;
     [param_map, support_map] = ffs_ipwkbz_fibs_set_default_param(it_param_set);
 
     support_map('bl_graph_evf') = true;
-    bl_display_evf = true;    
-    support_map('bl_display_evf') = bl_display_evf;
+    support_map('bl_display_evf') = true;
 
     st_param_which = 'default';
 
@@ -97,163 +98,113 @@ else
 
         param_map('it_ak_perc_n') = 250;
         param_map('bl_bridge') = true;
-        
+
     elseif (strcmp(st_param_which, 'small'))
 
-        param_map('fl_z_r_infbr_n') = 2;
-        param_map('it_z_wage_n') = 3;
-        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_infbr_n');
-        
-        param_map('fl_b_bd') = -20; % borrow bound, = 0 if save only
-        param_map('fl_default_aprime') = 0;
-        param_map('bl_default') = 0; % if borrowing is default allowed
-
-        param_map('fl_w_min') = param_map('fl_b_bd');
         param_map('it_w_perc_n') = 7;
         param_map('it_ak_perc_n') = 7;
         param_map('it_coh_bridge_perc_n') = 3;
-        
         param_map('fl_w_interp_grid_gap') = 2;
         param_map('fl_coh_interp_grid_gap') = 2;
-                
-        param_map('fl_z_r_infbr_min') = 0.025;
-        param_map('fl_z_r_infbr_max') = 0.95;
-        param_map('fl_z_r_infbr_n') = 3;
-        
+
         param_map('bl_bridge') = true;
-        
-    elseif (strcmp(st_param_which, 'ff_ipwkbzr_evf'))
-        
-        % ff_ipwkbzr_evf default
-        param_map('fl_r_fsv') = 0.0;
-        param_map('fl_r_fbr') = 1.000;
-        param_map('it_ak_perc_n') = 250;
-        param_map('bl_bridge') = false;
-        param_map('it_coh_bridge_perc_n') = 1;
-        
+        param_map('it_coh_bridge_perc_n') = 3;
+
     elseif (strcmp(st_param_which, 'ff_ipwkbz_evf'))
-        
-        % ff_ipwkbz_evf default
+
         param_map('fl_r_fsv') = 0.025;
-        param_map('fl_z_r_infbr_min') = 0.025;
-        param_map('fl_z_r_infbr_max') = 0.025;
-        param_map('fl_z_r_infbr_n') = 1;
+        param_map('fl_r_inf') = 0.025;
+        param_map('fl_r_inf_bridge') = 0.025;
         param_map('fl_r_fbr') = 0.025;
         param_map('it_ak_perc_n') = 250;
 
         param_map('bl_bridge') = false;
         param_map('it_coh_bridge_perc_n') = 1;
-        
-    end
-    
-    % Dimension Adjustments
-    param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_infbr_n');       
-    param_map('fl_w_interp_grid_gap') = (param_map('fl_w_max')-param_map('fl_b_bd'))/param_map('it_ak_perc_n');    
-    
-    % Generate Grids
-    [armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(param_map, support_map);
 
-    % Get Defaults
-    params_group = values(param_map, {'it_z_n'});
-    [it_z_n] = params_group{:};
-    params_group = values(armt_map, {'mt_coh_wkb', 'ar_z_r_infbr'});
-    [mt_coh_wkb, ar_z_r_infbr] = params_group{:};    
-    params_group = values(armt_map, {'ar_ameshk_tnext_with_r', 'ar_k_mesha'});
-    [ar_ameshk_tnext_with_r, ar_k_mesha] = params_group{:};
-    params_group = values(func_map, {'f_util_standin_coh'});
-    [f_util_standin_coh] = params_group{:};
-
-    % mt_coh_wkb is: ((P^{k}_{a>=0} + P^{k}_{a<0} x P^{w frac bridge} ) x I^w x M^r) by (M^z) matrix
-    % mt_coh_wkb(:): ((P^{k}_{a>=0} + P^{k}_{a<0} x P^{w frac bridge} ) x I^w x M^r x M^z) by 1
-    % ar_z_r_infbr is: (1 x M^r)
-    % mt_val: ((P^{k}_{a>=0} + P^{k}_{a<0} x P^{w frac bridge} ) x I^w x M^r x M^z) by (M^r)
-    mt_val = f_util_standin_coh(mt_coh_wkb(:), ar_z_r_infbr);
-    % mt_val is: (I^k x I^w x M^r) by (M^z x M^r)
-    mt_val = reshape(mt_val, [size(mt_coh_wkb, 1), it_z_n]);
-        
-    % Display Parameters
-    if (bl_display_evf)
-        fft_container_map_display(param_map);
-        fft_container_map_display(support_map);
     end
-    
+
+    param_map('fl_w_interp_grid_gap') = (param_map('fl_w_max')-param_map('fl_b_bd'))/param_map('it_ak_perc_n');
+
+    [armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
+
+    % Generating Defaults
+    params_group = values(armt_map, {'ar_ameshk_tnext_with_r', 'ar_k_mesha', 'ar_z'});
+    [ar_ameshk_tnext_with_r, ar_k_mesha, ar_z] = params_group{:};
+    params_group = values(func_map, {'f_util_standin'});
+    [f_util_standin] = params_group{:};
+
+    % works with replicating ff_ipwkbz_evf.m result
+    mt_val = f_util_standin(ar_z, ar_ameshk_tnext_with_r, ar_k_mesha);
+
 end
 
 %% Parse Parameters
 
 % armt_map
-params_group = values(armt_map, {'ar_z_r_infbr_mesh_wage_w1r2', 'ar_z_wage_mesh_r_infbr_w1r2'});
-[ar_z_r_infbr_mesh_wage_w1r2, ar_z_wage_mesh_r_infbr_w1r2] = params_group{:};
-params_group = values(armt_map, {'mt_z_trans', 'ar_ak_perc', 'ar_w_level', 'ar_k_mesha', 'ar_a_meshk', 'ar_aplusk_mesh'});
-[mt_z_trans, ar_ak_perc, ar_w_level, ar_k_mesha, ar_a_meshk, ar_aplusk_mesh] = params_group{:};
-params_group = values(armt_map, {'ar_w_level_full'});
-[ar_w_level_full] = params_group{:};
+params_group = values(armt_map, {'mt_z_trans', 'ar_z',...
+    'ar_w_level', 'ar_w_level_full', 'ar_coh_bridge_perc', ...
+    'ar_k_mesha', 'ar_a_meshk', 'ar_ameshk_tnext_with_r', 'mt_k'});
+[mt_z_trans, ar_z, ...
+    ar_w_level, ar_w_level_full, ar_coh_bridge_perc, ...
+    ar_k_mesha, ar_a_meshk, ar_ameshk_tnext_with_r, mt_k] = params_group{:};
 
 % param_map
-params_group = values(param_map, {'it_z_n', 'fl_z_r_infbr_n', 'it_z_wage_n'});
-[it_z_n, fl_z_r_infbr_n, it_z_wage_n] = params_group{:};
-params_group = values(param_map, {'fl_nan_replace', 'fl_b_bd'});
-[fl_nan_replace, fl_b_bd] = params_group{:};
+params_group = values(param_map, {'it_z_n', 'fl_nan_replace', 'fl_b_bd'});
+[it_z_n, fl_nan_replace, fl_b_bd] = params_group{:};
+params_group = values(param_map, {'bl_bridge'});
+[bl_bridge] = params_group{:};
 
 % support_map
 params_group = values(support_map, {'bl_graph_onebyones','bl_display_evf', 'bl_graph_evf'});
 [bl_graph_onebyones, bl_display_evf, bl_graph_evf] = params_group{:};
 params_group = values(support_map, {'bl_img_save', 'st_img_path', 'st_img_prefix', 'st_img_name_main', 'st_img_suffix'});
 [bl_img_save, st_img_path, st_img_prefix, st_img_name_main, st_img_suffix] = params_group{:};
+params_group = values(support_map, {'it_display_summmat_rowmax', 'it_display_summmat_colmax'});
+[it_display_summmat_rowmax, it_display_summmat_colmax] = params_group{:};
 
 % append function name
-st_func_name = 'ff_ipwkbz_fibs_evf';
+st_func_name = 'ff_ipwkbz_evf';
 st_img_name_main = [st_func_name st_img_name_main];
 
-%% Integrate *E(V(coh(k',forinf(b',zr)),zw',zr')|zw,zr)*
-% Start with E(V(coh(k',forinf(b',zr)),zw',zr')|zw,zr), integrate to find
-% EV(k',b';zw,zr).
-% 
-% Note that mt_ev_condi_z rows are less by length of r rate shock times.
+%% Integrate *E(V(coh(k',b'), z')|z, w)*
+% Each column for a different state z, each value *E(V(coh,z')|z)* integrated already
+% Here, each column is a current z, more to right higher EV
+% dim(mt_ev_condi_z): *Q by M*
+% Note that: mt_ev_condi_z = mt_val*mt_z_trans' is a mistake, that would be
+% what we do in the
+% <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_set_functions.html
+% ffs_ipwkbz_set_functions> code where we loop over current z, and for each
+% current z, grab out a particular row from the mt_z_trans that corresponds
+% to a current shock's transition into all future states.
 %
-% # mt_val = (it_w_interp_n*it_ak_perc_n*length(fl_z_r_infbr_n)) by (it_z_wage_n*length(fl_z_r_infbr_n))
-% # mt_ev_condi_z = (it_w_interp_n*it_ak_perc_n) by (it_z_wage_n*length(fl_z_r_infbr_n))
+% here, each column of mt_val corresponds to a state z, think of that as
+% future state z. The input mt_val is *V(coh, z)*, we need to integrate to
+% get *E(V(coh,z')|z)*.
 %
 
-% 1. Number of W/B/K Choice Combinations
-it_ak_perc_n = length(ar_ak_perc);
-it_w_interp_n = length(ar_w_level_full);
-it_wak_n = it_w_interp_n*it_ak_perc_n;
-
-% 2. Initialize mt_ev_condi_z = E(V(coh(k',b',zr'),zw',zr')|zw,zr)
-% rows = it_wak_n
-% cols = it_z_n
-mt_ev_condi_z = zeros([it_wak_n, it_z_n]);
-
-for it_z_r_infbr_ctr = 1:1:fl_z_r_infbr_n
-    
-    % Transition Row Subset: ((M^z) by (M^z x M^r))' for one m^r
-    it_mt_z_trans_row_start = it_z_wage_n*(it_z_r_infbr_ctr-1) + 1;
-    it_mt_z_trans_row_end = it_mt_z_trans_row_start + it_z_wage_n - 1;    
-    mt_z_trans_cur_z_r_infbr = mt_z_trans(it_mt_z_trans_row_start:it_mt_z_trans_row_end, :);
-
-    % Val Segment : ((M^z) by (M^z x M^r))' for one m^r
-    it_mt_val_row_start = it_wak_n*(it_z_r_infbr_ctr-1) + 1;
-    it_mt_val_row_end = it_mt_val_row_start + it_wak_n - 1;
-    mt_val_cur_z_r_infbr = mt_val(it_mt_val_row_start:it_mt_val_row_end, :);
-    
-    % E(V(coh(k',b',zr'),zw',zr')|zw,zr) for one zr and all zw
-    mt_ev_condi_z(:, it_mt_z_trans_row_start:it_mt_z_trans_row_end) = ...
-        mt_val_cur_z_r_infbr*mt_z_trans_cur_z_r_infbr';
-    
+mt_ev_condi_z = mt_val*mt_z_trans';
+if(bl_display_evf)
+    disp('----------------------------------------');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('mt_ev_condi_z: Q by M');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp(size(mt_ev_condi_z));
+    disp(head(array2table(mt_ev_condi_z), 20));
+    disp(tail(array2table(mt_ev_condi_z), 20));
 end
 
 %% Reshape *E(V(coh,z'|z,w))* to allow for maxing
 % dim(mt_ev_condi_z): *IxJ by M*
 
-mt_ev_condi_z_full = reshape(mt_ev_condi_z, [it_ak_perc_n, it_w_interp_n*it_z_n]);
+[it_mt_bp_rown, it_mt_bp_coln] = size(mt_k);
+mt_ev_condi_z_full = reshape(mt_ev_condi_z, [it_mt_bp_rown, it_mt_bp_coln*it_z_n]);
 
 %% Maximize *max_{k'}(E(V(coh(k',b'=w-k'),z'|z,w))* optimal value and index
 % Maximization, find optimal k'/b' combination given z and w=k'+b'
 
 [ar_ev_condi_z_max, ar_ev_condi_z_max_idx] = max(mt_ev_condi_z_full);
-mt_ev_condi_z_max = reshape(ar_ev_condi_z_max, [it_w_interp_n, it_z_n]);
-mt_ev_condi_z_max_idx = reshape(ar_ev_condi_z_max_idx, [it_w_interp_n, it_z_n]);
+mt_ev_condi_z_max = reshape(ar_ev_condi_z_max, [it_mt_bp_coln, it_z_n]);
+mt_ev_condi_z_max_idx = reshape(ar_ev_condi_z_max_idx, [it_mt_bp_coln, it_z_n]);
 if(bl_display_evf)
 
     disp('----------------------------------------');
@@ -264,6 +215,7 @@ if(bl_display_evf)
 %     disp(head(array2table(mt_ev_condi_z_full), 20));
 %     disp(tail(array2table(mt_ev_condi_z_full), 20));
 
+
     disp('----------------------------------------');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_ev_condi_z_max: I by M');
@@ -271,6 +223,7 @@ if(bl_display_evf)
     disp(size(mt_ev_condi_z_max));
     disp(head(array2table(mt_ev_condi_z_max), 20));
     disp(tail(array2table(mt_ev_condi_z_max), 20));
+
 
     disp('----------------------------------------');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
@@ -285,7 +238,7 @@ end
 %% Reindex K' and B' Choices for each State at the Optimal *w'=k'+b'* choice
 % The K' and B' Optimal Choices Associated with EV opti
 % dim(mt_ev_condi_z_max_kp): *I by M*
-ar_add_grid = linspace(0, it_ak_perc_n*(it_w_interp_n-1), it_w_interp_n);
+ar_add_grid = linspace(0, it_mt_bp_rown*(it_mt_bp_coln-1), it_mt_bp_coln);
 mt_ev_condi_z_max_idx = mt_ev_condi_z_max_idx + ar_add_grid';
 
 if(bl_display_evf)
@@ -298,8 +251,8 @@ if(bl_display_evf)
     disp(tail(array2table(mt_ev_condi_z_max_idx), 20));
 end
 
-mt_ev_condi_z_max_kp = reshape(ar_k_mesha(mt_ev_condi_z_max_idx), [it_w_interp_n, it_z_n]);
-mt_ev_condi_z_max_bp = reshape(ar_a_meshk(mt_ev_condi_z_max_idx), [it_w_interp_n, it_z_n]);
+mt_ev_condi_z_max_kp = reshape(ar_k_mesha(mt_ev_condi_z_max_idx), [it_mt_bp_coln, it_z_n]);
+mt_ev_condi_z_max_bp = reshape(ar_a_meshk(mt_ev_condi_z_max_idx), [it_mt_bp_coln, it_z_n]);
 
 if(bl_display_evf)
     disp('----------------------------------------');
@@ -323,19 +276,6 @@ end
 
 if (bl_graph_evf)
 
-    %% Generate Limited Legends
-    % 8 graph points, 2 levels of borrow rates, and 4 levels of rbr rates
-    ar_it_z_r_infbr = ([1 round((fl_z_r_infbr_n)/2) (fl_z_r_infbr_n)]);
-    ar_it_z_wage = ([1 round((it_z_wage_n)/2) (it_z_wage_n)]);
-
-    % combine by index
-    mt_it_z_graph = ar_it_z_wage' + it_z_wage_n*(ar_it_z_r_infbr-1);
-    ar_it_z_graph = mt_it_z_graph(:)';
-
-    % legends index final
-    cl_st_legendCell = cellstr([num2str(ar_z_r_infbr_mesh_wage_w1r2', 'zr=%3.2f;'), ...
-                                num2str(ar_z_wage_mesh_r_infbr_w1r2', 'zw=%3.2f')]);
-    
     %% Graph 1, V and EV
     if (~bl_graph_onebyones)
         figure('PaperPosition', [0 0 14 4]);
@@ -363,8 +303,10 @@ if (bl_graph_evf)
             set(chart(m),'Color',clr(m,:))
         end
 
-        legend(chart(ar_it_z_graph), cl_st_legendCell(ar_it_z_graph), 'Location','southeast');
-        
+        legend2plot = fliplr([1 round(numel(chart)/3) round((2*numel(chart))/3)  numel(chart)]);
+        legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
+        legend(chart(legend2plot), legendCell(legend2plot), 'Location','southeast');
+
         if (subplot_j==1)
             title('V(coh,zp); w(k+b),k,z');
         end
@@ -412,6 +354,7 @@ if (bl_graph_evf)
         end
         hold on;
 
+        ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)) (it_z_n)]);
         clr = jet(length(ar_it_z_graph));
         i_ctr = 0;
         for i = ar_it_z_graph
@@ -429,10 +372,10 @@ if (bl_graph_evf)
         ylabel(st_y_label)
         xlabel({'Aggregate Savings'})
 
-        legendCell_here = cl_st_legendCell;
-        legendCell_here{length(legendCell_here) + 1} = 'max-agg-save';
-        legend(legendCell_here([ar_it_z_graph length(legendCell_here)]), 'Location','southeast');
-        
+        legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
+        legendCell{length(legendCell) + 1} = 'max-agg-save';
+        legend(legendCell([ar_it_z_graph length(legendCell)]), 'Location','southeast');
+
         xline0 = xline(0);
         xline0.HandleVisibility = 'off';
         yline0 = yline(0);
@@ -450,7 +393,7 @@ if (bl_graph_evf)
     %% Graph 3, at max(EV) optimal choice category, color regions, borrow save
 
     % Borrow Vs Save
-    [ar_z_mw, ar_w_mz] = meshgrid(ar_z_wage_mesh_r_infbr_w1r2, ar_w_level_full);
+    [ar_z_mw, ar_w_mz] = meshgrid(ar_z, ar_w_level_full);
     mt_it_borr_idx = (mt_ev_condi_z_max_bp < 0);
     mt_it_riskyhalf_idx = ((mt_ev_condi_z_max_kp./mt_ev_condi_z_max_bp) > 0.5);
     mt_it_kzero_idx = (mt_ev_condi_z_max_kp == 0);
@@ -506,7 +449,7 @@ if (bl_graph_evf)
     % to households using informal choices to complement formal choices.
     %
 
-    [~, ar_w_mz] = meshgrid(ar_z_wage_mesh_r_infbr_w1r2, ar_w_level_full);
+    [~, ar_w_mz] = meshgrid(ar_z, ar_w_level_full);
     for sub_j=1:1:4
 
         if (bl_graph_onebyones)
@@ -545,16 +488,16 @@ if (bl_graph_evf)
         end
 
         hold on;
-        clr = jet(it_z_n);
-        for m = 1:it_z_n
+        clr = jet(length(ar_z));
+        for m = 1:length(ar_z)
             chart(m) = scatter(ar_w_level_full, mt_y(:, m), 3, ...
                 'Marker', 'O', ...
                 'MarkerEdgeColor', clr(m,:), 'MarkerFaceAlpha', 0.75, ...
                 'MarkerFaceColor', clr(m,:), 'MarkerEdgeAlpha', 0.75);
         end
 
-        legend2plot = fliplr(ar_it_z_graph);
-        legendCell = cl_st_legendCell;
+        legend2plot = fliplr([1 round(numel(chart)/3) round((2*numel(chart))/3)  numel(chart)]);
+        legendCell = cellstr(num2str(ar_z', 'shock=%3.2f'));
 
         xline0 = xline(0);
         xline0.HandleVisibility = 'off';
@@ -607,6 +550,23 @@ if (bl_graph_evf)
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
 
+end
+
+%% Display Various Containers
+
+if (bl_display_evf)
+
+    %% Display 1 support_map
+    fft_container_map_display(support_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+        
+    %% Display 2 armt_map
+    fft_container_map_display(armt_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+
+    %% Display 3 param_map
+    fft_container_map_display(param_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+    
+    %% Display 4 func_map
+    fft_container_map_display(func_map, it_display_summmat_rowmax, it_display_summmat_colmax);
 end
 
 end
