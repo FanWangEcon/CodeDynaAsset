@@ -47,6 +47,9 @@ param_map = containers.Map('KeyType','char', 'ValueType','any');
 % model name
 param_map('st_model') = 'ipwkbzr';
 
+% v(coh, z) interpolation method
+param_map('st_v_coh_z_interp_method') = 'method_cell';
+
 %% 2a. Set Shock 1 Borrowing Interest Rate Parameters
 % See
 % <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_gen_discrete_var.html

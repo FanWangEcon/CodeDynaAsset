@@ -78,7 +78,7 @@ function [mt_ev_condi_z_max, mt_ev_condi_z_max_idx, mt_ev_condi_z_max_kp, mt_ev_
 if (~isempty(varargin))
     
     % override when called from outside
-    [mt_val, param_map, support_map, armt_map] = varargin{:};
+    [clmt_val_wkb_interpolated, param_map, support_map, armt_map] = varargin{:};
     
 else
     
@@ -153,11 +153,13 @@ else
     % Generate Grids
     [armt_map, func_map] = ffs_ipwkbzr_fibs_get_funcgrid(param_map, support_map);
 
-    % Get Defaults
-    params_group = values(param_map, {'it_z_n'});
-    [it_z_n] = params_group{:};
-    params_group = values(armt_map, {'mt_coh_wkb', 'ar_z_r_infbr'});
-    [mt_coh_wkb, ar_z_r_infbr] = params_group{:};    
+    % Get Defaults    
+    params_group = values(param_map, {'it_z_n', 'fl_z_r_infbr_n'});
+    [it_z_n, fl_z_r_infbr_n] = params_group{:};
+    params_group = values(param_map, {'st_v_coh_z_interp_method'});
+    [st_v_coh_z_interp_method] = params_group{:};        
+    params_group = values(armt_map, {'mt_coh_wkb', 'ar_z_r_infbr', 'ar_ak_perc', 'ar_w_level_full'});
+    [mt_coh_wkb, ar_z_r_infbr, ar_ak_perc, ar_w_level_full] = params_group{:};
     params_group = values(armt_map, {'ar_ameshk_tnext_with_r', 'ar_k_mesha'});
     [ar_ameshk_tnext_with_r, ar_k_mesha] = params_group{:};
     params_group = values(func_map, {'f_util_standin_coh'});
@@ -170,7 +172,26 @@ else
     mt_val = f_util_standin_coh(mt_coh_wkb(:), ar_z_r_infbr);
     % mt_val is: (I^k x I^w x M^r) by (M^z x M^r)
     mt_val = reshape(mt_val, [size(mt_coh_wkb, 1), it_z_n]);
+
+    if (ismember(st_v_coh_z_interp_method, ["method_idx_a", "method_idx_b", "method_cell"]))
+    
+        it_ak_perc_n = length(ar_ak_perc);
+        it_w_interp_n = length(ar_w_level_full);
+        it_wak_n = it_w_interp_n*it_ak_perc_n;
+        clmt_val_wkb_interpolated = cell([fl_z_r_infbr_n, 1]);
+        for it_z_r_infbr_ctr = 1:1:fl_z_r_infbr_n
+            it_mt_val_row_start = it_wak_n*(it_z_r_infbr_ctr-1) + 1;
+            it_mt_val_row_end = it_mt_val_row_start + it_wak_n - 1;
+            clmt_val_wkb_interpolated{it_z_r_infbr_ctr} = ...
+                mt_val(it_mt_val_row_start:it_mt_val_row_end, :);
+        end
+    
+    elseif (ismember(st_v_coh_z_interp_method, ["method_matrix", "method_mat_seg"]))
         
+        clmt_val_wkb_interpolated = mt_val;
+        
+    end
+    
     % Display Parameters
     if (bl_display_evf)
         fft_container_map_display(param_map);
@@ -194,6 +215,8 @@ params_group = values(param_map, {'it_z_n', 'fl_z_r_infbr_n', 'it_z_wage_n'});
 [it_z_n, fl_z_r_infbr_n, it_z_wage_n] = params_group{:};
 params_group = values(param_map, {'fl_nan_replace', 'fl_b_bd'});
 [fl_nan_replace, fl_b_bd] = params_group{:};
+params_group = values(param_map, {'st_v_coh_z_interp_method'});
+[st_v_coh_z_interp_method] = params_group{:};
 
 % support_map
 params_group = values(support_map, {'bl_graph_onebyones','bl_display_evf', 'bl_graph_evf'});
@@ -232,16 +255,25 @@ for it_z_r_infbr_ctr = 1:1:fl_z_r_infbr_n
     % Transition Row Subset: ((M^z) by (M^z x M^r))' for one m^r
     it_mt_z_trans_row_start = it_z_wage_n*(it_z_r_infbr_ctr-1) + 1;
     it_mt_z_trans_row_end = it_mt_z_trans_row_start + it_z_wage_n - 1;    
-    mt_z_trans_cur_z_r_infbr = mt_z_trans(it_mt_z_trans_row_start:it_mt_z_trans_row_end, :);
-
-    % Val Segment : ((M^z) by (M^z x M^r))' for one m^r
-    it_mt_val_row_start = it_wak_n*(it_z_r_infbr_ctr-1) + 1;
-    it_mt_val_row_end = it_mt_val_row_start + it_wak_n - 1;
-    mt_val_cur_z_r_infbr = mt_val(it_mt_val_row_start:it_mt_val_row_end, :);
+    mt_z_trans_cur_z_r_borr = mt_z_trans(it_mt_z_trans_row_start:it_mt_z_trans_row_end, :);
     
-    % E(V(coh(k',b',zr'),zw',zr')|zw,zr) for one zr and all zw
-    mt_ev_condi_z(:, it_mt_z_trans_row_start:it_mt_z_trans_row_end) = ...
-        mt_val_cur_z_r_infbr*mt_z_trans_cur_z_r_infbr';
+    if (ismember(st_v_coh_z_interp_method, ["method_idx_a", "method_idx_b", "method_cell"]))
+        
+        mt_ev_condi_z(:, it_mt_z_trans_row_start:it_mt_z_trans_row_end) = ...
+            clmt_val_wkb_interpolated{it_z_r_infbr_ctr}*mt_z_trans_cur_z_r_borr';
+        
+    elseif (ismember(st_v_coh_z_interp_method, ["method_matrix", "method_mat_seg"]))
+        
+        % Val Segment : ((M^z) by (M^z x M^r))' for one m^r
+        it_mt_val_row_start = it_wak_n*(it_z_r_infbr_ctr-1) + 1;
+        it_mt_val_row_end = it_mt_val_row_start + it_wak_n - 1;
+        mt_val_cur_z_r_borr = clmt_val_wkb_interpolated(it_mt_val_row_start:it_mt_val_row_end, :);
+
+        % EV(k',b';zw,zr) = E(V(coh(k',b',zr),zw',zr')|zw,zr) for one zr and all zw
+        mt_ev_condi_z(:, it_mt_z_trans_row_start:it_mt_z_trans_row_end) = ...
+            mt_val_cur_z_r_borr*mt_z_trans_cur_z_r_borr';
+        
+    end
     
 end
 

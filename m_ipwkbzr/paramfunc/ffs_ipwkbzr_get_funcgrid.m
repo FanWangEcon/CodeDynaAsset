@@ -220,6 +220,9 @@ params_group = values(param_map, {...
 [it_w_perc_n, it_ak_perc_n,...
     it_c_interp_grid_gap, fl_w_interp_grid_gap, fl_coh_interp_grid_gap] = params_group{:};
 
+params_group = values(param_map, {'st_v_coh_z_interp_method'});
+[st_v_coh_z_interp_method] = params_group{:};
+
 %% Parse Parameters 2
 
 % param_map shock income
@@ -568,17 +571,57 @@ fl_w_level_min_valid = min(ar_w_level_full_dup(~ar_bl_w_level_invalid));
 % ar_a_meshk = mt_a(:);
 % ar_k_mesha = mt_k(:);
 
-%% Select only Valid (k(w), a) choices
+%% Generate 2nd Stage Cash-on-Hand Points for Interpolation
+
+% it_ak_perc_n = length(ar_ak_perc);
+% it_w_interp_n = length(ar_w_level);
+it_wak_n = it_w_interp_n*it_ak_perc_n;
 
 % mt_coh_wkb = mt_coh_wkb_full(~ar_bl_wkb_invalid, :);
 mt_coh_wkb = mt_coh_wkb_full;
+
+
+mt_coh_wkb_mesh_z_r_borr = repmat(mt_coh_wkb_full, [1, fl_z_r_borr_n]);
 mt_z_r_borr_mesh_coh_wkb = repmat(ar_z_r_borr, [size(mt_coh_wkb,1),1]);
+
 mt_z_wage_mesh_coh_wkb = repmat(ar_z_wage, [size(mt_coh_wkb,1),1]);
+mt_z_mesh_coh_wkb = repmat((1:it_z_n), [size(mt_coh_wkb,1), 1]);
+mt_z_mesh_coh_wkb_seg = repmat((1:it_z_n), [it_wak_n, 1]);
+
+if (ismember(st_v_coh_z_interp_method, ["method_cell"]))
+    
+    cl_mt_coh_wkb_mesh_z_r_borr = cell([fl_z_r_borr_n, 1]);
+    for it_z_r_borr_ctr = 1:1:fl_z_r_borr_n
+        it_mt_val_row_start = it_wak_n*(it_z_r_borr_ctr-1) + 1;
+        it_mt_val_row_end = it_mt_val_row_start + it_wak_n - 1;
+        cl_mt_coh_wkb_mesh_z_r_borr{it_z_r_borr_ctr} = ...
+            mt_coh_wkb_mesh_z_r_borr(it_mt_val_row_start:it_mt_val_row_end, :);
+    end
+    
+elseif (ismember(st_v_coh_z_interp_method, ["method_idx_a", "method_idx_b"]))
+
+    % This is borrowing with default or not condition
+    fl_min_mt_coh = fl_b_bd;
+
+    cl_mt_coh_wkb_mesh_z_r_borr = cell([fl_z_r_borr_n, 1]);
+    for it_z_r_borr_ctr = 1:1:fl_z_r_borr_n
+        it_mt_val_row_start = it_wak_n*(it_z_r_borr_ctr-1) + 1;
+        it_mt_val_row_end = it_mt_val_row_start + it_wak_n - 1;
+
+        mt_coh_wkb_mesh_z_r_borr_seg = ...
+            1 + ((mt_coh_wkb_mesh_z_r_borr(it_mt_val_row_start:it_mt_val_row_end, :) - fl_min_mt_coh)/fl_coh_interp_grid_gap);
+
+        cl_mt_coh_wkb_mesh_z_r_borr{it_z_r_borr_ctr} = mt_coh_wkb_mesh_z_r_borr_seg;
+
+    end
+    
+end
 
 %% Generate 1st Stage States: Interpolation Cash-on-hand Interpolation Grid
 % For the iwkz problems, we solve the problem along a grid of cash-on-hand
 % values, the interpolate to find v(k',b',z) at (k',b') choices. Crucially,
 % we have to coh matrxies
+fl_min_mt_coh = fl_b_bd;
 
 fl_max_mt_coh = max(max(mt_coh_wkb));
 
@@ -588,16 +631,17 @@ fl_max_mt_coh = max(max(mt_coh_wkb));
 % This could be condition if no defaults are allowed
 % fl_min_mt_coh = fl_w_level_min_valid;
 
-% This is borrowing with default or not condition
-fl_min_mt_coh = fl_b_bd;
 
 it_coh_interp_n = (fl_max_mt_coh-fl_min_mt_coh)/(fl_coh_interp_grid_gap);
 ar_interp_coh_grid = fft_array_add_zero(linspace(fl_min_mt_coh, fl_max_mt_coh, it_coh_interp_n), true);
 mt_interp_coh_grid_mesh_w_perc = repmat(ar_interp_coh_grid, [it_w_perc_n, 1]);
+it_coh_interp_n = length(ar_interp_coh_grid);
 
 [mt_interp_coh_grid_mesh_z_wage, mt_z_wage_mesh_interp_coh_grid] = ndgrid(ar_interp_coh_grid, ar_z_wage);
 
 mt_interp_coh_grid_mesh_z = repmat(ar_interp_coh_grid', [1, it_z_n]);
+% This is meshed index, 1:it_z_n index for, common value each column
+mt_z_mesh_interp_coh_grid = repmat((1:it_z_n), [it_coh_interp_n, 1]);
 
 %% Generate 1st Stage Choices: Interpolation Cash-on-hand Interpolation Grid
 % previously, our ar_w was the first stage choice grid, the grid was the
@@ -689,6 +733,7 @@ armt_map('mt_interp_coh_grid_mesh_w_perc') = mt_interp_coh_grid_mesh_w_perc;
 armt_map('mt_w_perc_mesh_interp_coh_grid') = mt_w_perc_mesh_interp_coh_grid;
 
 armt_map('mt_interp_coh_grid_mesh_z') = mt_interp_coh_grid_mesh_z;
+armt_map('mt_z_mesh_interp_coh_grid') = mt_z_mesh_interp_coh_grid;
 
 %% Store armt_map (3): 2nd stage reachable coh(k(w), a(w,k), z', r)
 % Dimensions of Various Grids: I for level grid, M for shock grid, P for
@@ -699,7 +744,14 @@ armt_map('mt_interp_coh_grid_mesh_z') = mt_interp_coh_grid_mesh_z;
 %
 
 armt_map('mt_coh_wkb') = mt_coh_wkb_full;
+armt_map('mt_coh_wkb_mesh_z_r_borr') = mt_coh_wkb_mesh_z_r_borr;
+
+armt_map('mt_z_mesh_coh_wkb') = mt_z_mesh_coh_wkb;
 armt_map('mt_z_wage_mesh_coh_wkb') = mt_z_wage_mesh_coh_wkb;
+
+armt_map('cl_mt_coh_wkb_mesh_z_r_borr') = cl_mt_coh_wkb_mesh_z_r_borr;
+armt_map('mt_z_mesh_coh_wkb_seg') = mt_z_mesh_coh_wkb_seg;
+
 % armt_map('mt_z_r_borr_mesh_coh_wkb') = mt_z_r_borr_mesh_coh_wkb;
 
 %% Store armt_map (4): 2nd stage additional arrays
@@ -968,74 +1020,11 @@ if (bl_display_funcgrids)
 
     disp('----------------------------------------');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp('mt_w_perc_mesh_interp_coh_grid');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp(size(mt_w_perc_mesh_interp_coh_grid));
-    disp(head(array2table(mt_w_perc_mesh_interp_coh_grid), 10));
-    disp(tail(array2table(mt_w_perc_mesh_interp_coh_grid), 10));
-
-    disp('----------------------------------------');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_z_trans');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(mt_z_trans));
     disp(head(array2table(mt_z_trans), 10));
     disp(tail(array2table(mt_z_trans), 10));
-
-    disp('----------------------------------------');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp('ar_interp_coh_grid');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    summary(array2table(ar_interp_coh_grid'));
-
-    disp('----------------------------------------');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp('ar_interp_c_grid');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    summary(array2table(ar_interp_c_grid'));
-
-    disp('----------------------------------------');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp('mt_interp_coh_grid_mesh_z');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp(size(mt_interp_coh_grid_mesh_z_wage));
-    disp(head(array2table(mt_interp_coh_grid_mesh_z_wage), 10));
-    disp(tail(array2table(mt_interp_coh_grid_mesh_z_wage), 10));
-
-    disp('----------------------------------------');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp('mt_a');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp(size(mt_a));
-    disp(head(array2table(mt_a), 10));
-    disp(tail(array2table(mt_a), 10));
-
-    disp('----------------------------------------');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp('ar_a_meshk');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    summary(array2table(ar_a_meshk));
-
-    disp('----------------------------------------');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp('mt_k');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp(size(mt_k));
-    disp(head(array2table(mt_k), 10));
-    disp(tail(array2table(mt_k), 10));
-
-    disp('----------------------------------------');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp('ar_k_mesha');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    summary(array2table(ar_k_mesha));
-
-    param_map_keys = keys(func_map);
-    param_map_vals = values(func_map);
-    for i = 1:length(func_map)
-        st_display = strjoin(['pos =' num2str(i) '; key =' string(param_map_keys{i}) '; val =' func2str(param_map_vals{i})]);
-        disp(st_display);
-    end
 
 end
 

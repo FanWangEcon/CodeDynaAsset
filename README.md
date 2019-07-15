@@ -408,7 +408,7 @@ The code from *4.2* are modified to allow for interest rate shock for borrowing.
 
 1. Second Stage with borrowing *ipwkbzr* [2nd stage solution](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/solve/html/ff_ipwkbzr_evf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbzr/solve/ff_ipwkbzr_evf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/solve/html/ff_ipwkbzr_evf.html)
 2. *ipwkbzr* model [optimized vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/solve/html/ff_ipwkbzr_vf_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbzr/solve/ff_ipwkbzr_vf_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/solve/html/ff_ipwkbzr_vf_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/solve/profile/ff_ipwkbzr_vf_vecsv_default_p3/file0.html)    
-    * speed: **54.4** seconds
+    * speed: **30.0** seconds
 
 ## 4.5 Asset Distributions
 
@@ -419,7 +419,7 @@ This is the wrapper file for *abz* that invokes the [looped](https://fanwangecon
 2. *ipWKBZ* distributional [wrapper](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_ds_wrapper.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/solve/ff_ipwkbz_ds_wrapper.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_ds_wrapper.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/profile/ff_ipwkbz_ds_wrapper_default_p7/file0.html)   
     * speed (dynamic programming + distribution): **4.2** seconds  
 3. *ipWKBZR* distributional [wrapper](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/solve/html/ff_ipwkbzr_ds_wrapper.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbzr/solve/ff_ipwkbzr_ds_wrapper.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/solve/html/ff_ipwkbzr_ds_wrapper.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/solve/profile/ff_ipwkbzr_ds_wrapper_default_p7/file0.html)   
-    * speed (dynamic programming + distribution): **73.6** seconds  
+    * speed (dynamic programming + distribution): **51.1** seconds  
 
 ## 4.6 Solution Support (ipWKZ + ipWKBZ + ipWKBZR)
 
@@ -528,7 +528,7 @@ Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_
 
 Using three algorithm that provide identical solutions:
 
-1. *abz fibs* model looped solution: [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_abz_solve/ff_abz_fibs_vf.m) \| publish html \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/profile/ff_abz_fibs_vf_default_p3/file0.html)
+1. *abz fibs* model [looped solution](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_abz_solve/ff_abz_fibs_vf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/profile/ff_abz_fibs_vf_default_p3/file0.html)
     * small grid demonstration
 2. *abz fibs* model [vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf_vec.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_abz_solve/ff_abz_fibs_vf_vec.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/html/ff_abz_fibs_vf_vec.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abz_solve/profile/ff_abz_fibs_vf_vec_default_p3/file0.html)    
     * speed: **50.2** seconds
@@ -543,7 +543,7 @@ Same as *5.2*, but now include interest rate shock. Parameters can be adjusted [
 
 Using three algorithm that provide identical solutions:
 
-1. *abzr fibs* model looped solution: [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_abzr_solve/ff_abzr_fibs_vf.m) \| publish html \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abzr_solve/profile/ff_abzr_fibs_vf_default_p3/file0.html)
+1. *abzr fibs* model [looped solution](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abzr_solve/html/ff_abzr_fibs_vf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_abzr_solve/ff_abzr_fibs_vf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abzr_solve/html/ff_abzr_fibs_vf.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abzr_solve/profile/ff_abzr_fibs_vf_default_p3/file0.html)
     * small grid demonstration
 2. *abzr fibs* model [vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abzr_solve/html/ff_abzr_fibs_vf_vec.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_abzr_solve/ff_abzr_fibs_vf_vec.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abzr_solve/html/ff_abzr_fibs_vf_vec.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abzr_solve/profile/ff_abzr_fibs_vf_vec_default_p3/file0.html)    
     * speed: **272.5** seconds
@@ -624,18 +624,18 @@ An application of the codes developed in sections (1) through (5) is the paper: 
 
 1. Use *ipwkbzr+fibs* [2nd stage solution with Formal Informal and Bridge](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbzr_solve/html/ff_ipwkbzr_fibs_evf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_ipwkbzr_solve/ff_ipwkbzr_fibs_evf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbzr_solve/html/ff_ipwkbzr_fibs_evf.html)    
 2. *ipwkbzr* model [optimized vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbzr_solve/html/ff_ipwkbzr_fibs_vf_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_ipwkbzr_solve/ff_ipwkbzr_fibs_vf_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbzr_solve/html/ff_ipwkbzr_fibs_vf_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbzr_solve/profile/ff_ipwkbzr_fibs_vf_vecsv_default_p3/file0.html)    
-    * speed: **603.1** seconds
+    * speed: **452.1** seconds
 
-## 6.2 Asset Distributions (ipWKBZ+FIBS)
+## 6.2 Asset Distributions
 
 This are the wrapper files for *ipwkbz+fibs* and *ipwkbzr+fibs* that invokes the [looped](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_ds.html), [vectorized](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_ds_vec.html), and [semi-analytical](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_ds_vecsv.html) distributional programs from *3.4.b*:
 
 * *ipwkbz+fibs* distributional [wrapper](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbz_solve/html/ff_ipwkbz_fibs_ds_wrapper.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_ipwkbz_solve/ff_ipwkbz_fibs_ds_wrapper.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbz_solve/html/ff_ipwkbz_fibs_ds_wrapper.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbz_solve/profile/ff_ipwkbz_fibs_ds_wrapper_default_p7/file0.html)   
     * speed (dynamic programming + distribution): **23.0** seconds
 * *ipwkbzr+fibs* distributional [wrapper](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbzr_solve/html/ff_ipwkbzr_fibs_ds_wrapper.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_ipwkbzr_solve/ff_ipwkbzr_fibs_ds_wrapper.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbzr_solve/html/ff_ipwkbzr_fibs_ds_wrapper.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbzr_solve/profile/ff_ipwkbzr_fibs_ds_wrapper_default_p7/file0.html)   
-    * speed (dynamic programming + distribution): **644.0** seconds
+    * speed (dynamic programming + distribution): **471.1** seconds
 
-## 6.4 Solution Support (ipWKBZ+FIBS)
+## 6.4 Solution Support
 
 All solution algorithms share the same support files.
 

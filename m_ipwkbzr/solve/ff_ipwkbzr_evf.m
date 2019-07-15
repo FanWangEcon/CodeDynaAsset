@@ -57,7 +57,7 @@ function [mt_ev_condi_z_max, mt_ev_condi_z_max_idx, mt_ev_condi_z_max_kp, mt_ev_
 if (~isempty(varargin))
     
     % override when called from outside
-    [mt_val, param_map, support_map, armt_map] = varargin{:};
+    [clmt_val_wkb_interpolated, param_map, support_map, armt_map] = varargin{:};
     
 else
     
@@ -117,10 +117,12 @@ else
     [armt_map, func_map] = ffs_ipwkbzr_get_funcgrid(param_map, support_map);
     
     % Get Defaults
-    params_group = values(param_map, {'it_z_n'});
-    [it_z_n] = params_group{:};    
-    params_group = values(armt_map, {'mt_coh_wkb', 'ar_z_r_borr'});
-    [mt_coh_wkb, ar_z_r_borr] = params_group{:};
+    params_group = values(param_map, {'it_z_n', 'fl_z_r_borr_n'});
+    [it_z_n, fl_z_r_borr_n] = params_group{:};    
+    params_group = values(param_map, {'st_v_coh_z_interp_method'});
+    [st_v_coh_z_interp_method] = params_group{:};    
+    params_group = values(armt_map, {'mt_coh_wkb', 'ar_z_r_borr', 'ar_ak_perc', 'ar_w_level'});
+    [mt_coh_wkb, ar_z_r_borr, ar_ak_perc, ar_w_level] = params_group{:};
     params_group = values(func_map, {'f_util_standin_coh'});
     [f_util_standin_coh] = params_group{:};
     
@@ -140,6 +142,25 @@ else
     mt_val = f_util_standin_coh(mt_coh_wkb(:), ar_z_r_borr);
     % mt_val is: (I^k x I^w x M^r) by (M^z x M^r)
     mt_val = reshape(mt_val, [size(mt_coh_wkb, 1), it_z_n]);
+
+    if (ismember(st_v_coh_z_interp_method, ["method_idx_a", "method_idx_b", "method_cell"]))
+    
+        it_ak_perc_n = length(ar_ak_perc);
+        it_w_interp_n = length(ar_w_level);
+        it_wak_n = it_w_interp_n*it_ak_perc_n;
+        clmt_val_wkb_interpolated = cell([fl_z_r_borr_n, 1]);
+        for it_z_r_borr_ctr = 1:1:fl_z_r_borr_n
+            it_mt_val_row_start = it_wak_n*(it_z_r_borr_ctr-1) + 1;
+            it_mt_val_row_end = it_mt_val_row_start + it_wak_n - 1;
+            clmt_val_wkb_interpolated{it_z_r_borr_ctr} = ...
+                mt_val(it_mt_val_row_start:it_mt_val_row_end, :);
+        end
+    
+    elseif (ismember(st_v_coh_z_interp_method, ["method_matrix", "method_mat_seg"]))
+        
+        clmt_val_wkb_interpolated = mt_val;
+        
+    end
         
     % Display Parameters
     if (bl_display_evf)
@@ -162,6 +183,8 @@ params_group = values(param_map, {'it_z_n', 'fl_z_r_borr_n', 'it_z_wage_n'});
 [it_z_n, fl_z_r_borr_n, it_z_wage_n] = params_group{:};
 params_group = values(param_map, {'fl_nan_replace', 'fl_b_bd'});
 [fl_nan_replace, fl_b_bd] = params_group{:};
+params_group = values(param_map, {'st_v_coh_z_interp_method'});
+[st_v_coh_z_interp_method] = params_group{:};
 
 % support_map
 params_group = values(support_map, {'bl_graph_onebyones','bl_display_evf', 'bl_graph_evf'});
@@ -225,15 +248,24 @@ for it_z_r_borr_ctr = 1:1:fl_z_r_borr_n
     it_mt_z_trans_row_start = it_z_wage_n*(it_z_r_borr_ctr-1) + 1;
     it_mt_z_trans_row_end = it_mt_z_trans_row_start + it_z_wage_n - 1;    
     mt_z_trans_cur_z_r_borr = mt_z_trans(it_mt_z_trans_row_start:it_mt_z_trans_row_end, :);
-
-    % Val Segment : ((M^z) by (M^z x M^r))' for one m^r
-    it_mt_val_row_start = it_wak_n*(it_z_r_borr_ctr-1) + 1;
-    it_mt_val_row_end = it_mt_val_row_start + it_wak_n - 1;
-    mt_val_cur_z_r_borr = mt_val(it_mt_val_row_start:it_mt_val_row_end, :);
     
-    % EV(k',b';zw,zr) = E(V(coh(k',b',zr),zw',zr')|zw,zr) for one zr and all zw
-    mt_ev_condi_z(:, it_mt_z_trans_row_start:it_mt_z_trans_row_end) = ...
-        mt_val_cur_z_r_borr*mt_z_trans_cur_z_r_borr';
+    if (ismember(st_v_coh_z_interp_method, ["method_idx_a", "method_idx_b", "method_cell"]))
+        
+        mt_ev_condi_z(:, it_mt_z_trans_row_start:it_mt_z_trans_row_end) = ...
+            clmt_val_wkb_interpolated{it_z_r_borr_ctr}*mt_z_trans_cur_z_r_borr';
+        
+    elseif (ismember(st_v_coh_z_interp_method, ["method_matrix", "method_mat_seg"]))
+        
+        % Val Segment : ((M^z) by (M^z x M^r))' for one m^r
+        it_mt_val_row_start = it_wak_n*(it_z_r_borr_ctr-1) + 1;
+        it_mt_val_row_end = it_mt_val_row_start + it_wak_n - 1;
+        mt_val_cur_z_r_borr = clmt_val_wkb_interpolated(it_mt_val_row_start:it_mt_val_row_end, :);
+
+        % EV(k',b';zw,zr) = E(V(coh(k',b',zr),zw',zr')|zw,zr) for one zr and all zw
+        mt_ev_condi_z(:, it_mt_z_trans_row_start:it_mt_z_trans_row_end) = ...
+            mt_val_cur_z_r_borr*mt_z_trans_cur_z_r_borr';
+        
+    end
     
 end
 
@@ -376,60 +408,61 @@ if (bl_graph_evf)
 
     
     %% Graph 1, V and EV
-    if (~bl_graph_onebyones)
-        figure('PaperPosition', [0 0 14 4]);
-        hold on;
-    end
-    
-    
-    for subplot_j=1:1:2
-        
-        if (~bl_graph_onebyones)
-            hAxis(subplot_j) = subplot(1,2,subplot_j);
-        else
-            figure('PaperPosition', [0 0 7 4]);
-        end
-        
-        if (subplot_j==1)
-            chart = plot(mt_val);
-        end
-        if (subplot_j==2)
-            chart = plot(mt_ev_condi_z);
-        end
-        
-        clr = jet(numel(chart));
-        for m = 1:numel(chart)
-            set(chart(m),'Color',clr(m,:))
-        end
-        
-        legend(chart(ar_it_z_graph), cl_st_legendCell(ar_it_z_graph), 'Location','southeast');
-        
-        if (subplot_j==1)
-            title('V(coh,zp); w(k+b),k,z');
-        end
-        if (subplot_j==2)
-            title('E_z(V(coh,zp|z))');
-        end
-        
-        ylabel('Next Period Value');
-        xlabel({'Index of Cash-on-Hand Discrete Point'...
-            'Each Segment is a w=k+b; within segment increasing k'...
-            'EV and V identical if shock is fully persistent'});
-        grid on;
-        grid minor;
-    end
-    
-    % Share y axis
-    if (~bl_graph_onebyones)
-        linkaxes(hAxis,'y');
-    end
-    
-    % save file
-    if (bl_img_save)
-        mkdir(support_map('st_img_path'));
-        st_file_name = [st_img_prefix st_img_name_main '_vev' st_img_suffix];
-        saveas(gcf, strcat(st_img_path, st_file_name));
-    end
+%     if (~bl_graph_onebyones)
+%         figure('PaperPosition', [0 0 14 4]);
+%         hold on;
+%     end
+%     
+%     
+%     for subplot_j=1:1:2
+%         
+%         if (~bl_graph_onebyones)
+%             hAxis(subplot_j) = subplot(1,2,subplot_j);
+%         else
+%             figure('PaperPosition', [0 0 7 4]);
+%         end
+%         
+% %         cl_val_wkb_interpolated
+%         if (subplot_j==1)
+%             chart = plot(mt_val);
+%         end
+%         if (subplot_j==2)
+%             chart = plot(mt_ev_condi_z);
+%         end
+%         
+%         clr = jet(numel(chart));
+%         for m = 1:numel(chart)
+%             set(chart(m),'Color',clr(m,:))
+%         end
+%         
+%         legend(chart(ar_it_z_graph), cl_st_legendCell(ar_it_z_graph), 'Location','southeast');
+%         
+%         if (subplot_j==1)
+%             title('V(coh,zp); w(k+b),k,z');
+%         end
+%         if (subplot_j==2)
+%             title('E_z(V(coh,zp|z))');
+%         end
+%         
+%         ylabel('Next Period Value');
+%         xlabel({'Index of Cash-on-Hand Discrete Point'...
+%             'Each Segment is a w=k+b; within segment increasing k'...
+%             'EV and V identical if shock is fully persistent'});
+%         grid on;
+%         grid minor;
+%     end
+%     
+%     % Share y axis
+%     if (~bl_graph_onebyones)
+%         linkaxes(hAxis,'y');
+%     end
+%     
+%     % save file
+%     if (bl_img_save)
+%         mkdir(support_map('st_img_path'));
+%         st_file_name = [st_img_prefix st_img_name_main '_vev' st_img_suffix];
+%         saveas(gcf, strcat(st_img_path, st_file_name));
+%     end
     
     %% Graph 2, max(EV)
     

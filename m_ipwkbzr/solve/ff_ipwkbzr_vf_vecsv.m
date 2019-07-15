@@ -159,12 +159,14 @@ params_group = values(armt_map, {...
     'mt_interp_coh_grid_mesh_w_perc', ...
     'mt_z_wage_mesh_interp_coh_grid', ...
     'mt_w_perc_mesh_interp_coh_grid', ...
-    'mt_interp_coh_grid_mesh_z'});
+    'mt_interp_coh_grid_mesh_z', 'mt_z_mesh_interp_coh_grid', ...
+    'cl_mt_coh_wkb_mesh_z_r_borr', 'mt_z_mesh_coh_wkb_seg'});
 [mt_interp_coh_grid_mesh_z_wage, ...
     mt_interp_coh_grid_mesh_w_perc, ...
     mt_z_wage_mesh_interp_coh_grid, ...
     mt_w_perc_mesh_interp_coh_grid, ...
-    mt_interp_coh_grid_mesh_z] = params_group{:};
+    mt_interp_coh_grid_mesh_z, mt_z_mesh_interp_coh_grid, ...
+    cl_mt_coh_wkb_mesh_z_r_borr, mt_z_mesh_coh_wkb_seg] = params_group{:};
 
 %% Parse Parameters 3, reachable cash-on-hand
 % Dimensions of Various Grids: I for level grid, M for shock grid, P for
@@ -174,8 +176,9 @@ params_group = values(armt_map, {...
 % # mt_z_wage_mesh_coh_wkb: (I^k x I^w x M^r) by (M^z)
 %
 
-params_group = values(armt_map, {'mt_coh_wkb', 'mt_z_wage_mesh_coh_wkb'});
-[mt_coh_wkb, mt_z_wage_mesh_coh_wkb] = params_group{:};
+params_group = values(armt_map, {...
+    'mt_coh_wkb', 'mt_coh_wkb_mesh_z_r_borr', 'mt_z_mesh_coh_wkb', 'mt_z_wage_mesh_coh_wkb'});
+[mt_coh_wkb, mt_coh_wkb_mesh_z_r_borr, mt_z_mesh_coh_wkb, mt_z_wage_mesh_coh_wkb] = params_group{:};
 
 %% Parse Parameters 4, other asset arrays
 
@@ -196,6 +199,8 @@ params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol', 
 [it_maxiter_val, fl_tol_val, fl_tol_pol, it_tol_pol_nochange] = params_group{:};
 params_group = values(param_map, {'it_z_n', 'fl_z_r_borr_n', 'it_z_wage_n'});
 [it_z_n, fl_z_r_borr_n, it_z_wage_n] = params_group{:};
+params_group = values(param_map, {'st_v_coh_z_interp_method'});
+[st_v_coh_z_interp_method] = params_group{:};
 
 % support_map
 params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
@@ -227,6 +232,8 @@ cl_w_kstar_interp_z = cell([it_z_n, 1]);
 for it_z_i = 1:it_z_n
     cl_w_kstar_interp_z{it_z_i} = zeros([length(ar_w_perc), length(ar_interp_coh_grid)]) - 1;
 end
+
+clmt_val_wkb_interpolated = cell([fl_z_r_borr_n, 1]);
 
 %% Initialize Convergence Conditions
 
@@ -277,53 +284,113 @@ end
 
 % Value Function Iteration
 while bl_vfi_continue
-    it_iter = it_iter + 1;
+    it_iter = it_iter + 1;    
+    
+    %% Interpolate V(coh, Z) 1: Splinterp2 
+    % Interpolate reacahble V(coh(k'(w),b'(w),zr,zw'),zw',zr')) given v(coh, z)
+    
+    if (strcmp(st_v_coh_z_interp_method, 'method_idx_a'))
+        for it_z_r_borr_ctr = 1:1:fl_z_r_borr_n
+            clmt_val_wkb_interpolated{it_z_r_borr_ctr} = ...
+                splinterp2(mt_val_cur,mt_z_mesh_coh_wkb_seg,cl_mt_coh_wkb_mesh_z_r_borr{it_z_r_borr_ctr});
+        end        
+    end
+    
+    %% Interpolate V(coh, Z) 2: griddedInterpolant(V) 
+    % Interpolate reacahble V(coh(k'(w),b'(w),zr,zw'),zw',zr')) given v(coh, z)
+    
+    if (strcmp(st_v_coh_z_interp_method, 'method_idx_b'))
+        % Generate Interpolant for v(coh,z)
+        % mt_z_wage_mesh_interp_coh_grid is: (I^{coh_interp}) by (M^z)
+        f_grid_interpolant_value = griddedInterpolant(mt_val_cur', 'linear', 'nearest');
+        for it_z_r_borr_ctr = 1:1:fl_z_r_borr_n
+            clmt_val_wkb_interpolated{it_z_r_borr_ctr} = ...
+                f_grid_interpolant_value(mt_z_mesh_coh_wkb_seg,...
+                                         cl_mt_coh_wkb_mesh_z_r_borr{it_z_r_borr_ctr});
+        end    
+    end
+    
+    %% Interpolate V(coh, Z) 3: Store in Cell
+    % Interpolate reacahble V(coh(k'(w),b'(w),zr,zw'),zw',zr')) given v(coh, z)
+    
+    if (strcmp(st_v_coh_z_interp_method, 'method_cell'))
+        f_grid_interpolant_value = griddedInterpolant(...
+            mt_z_mesh_interp_coh_grid', mt_interp_coh_grid_mesh_z', ...
+            mt_val_cur', 'linear', 'nearest');
 
-    %% Interpolate reacahble V(coh(k'(w),b'(w),zr,zw'),zw',zr')) given v(coh, z)
+        for it_z_r_borr_ctr = 1:1:fl_z_r_borr_n
 
-    % 1. Number of W/B/K Choice Combinations
-    it_ak_perc_n = length(ar_ak_perc);
-    it_w_interp_n = length(ar_w_level);
-    it_wak_n = it_w_interp_n*it_ak_perc_n;
-
-    % 2. Initialize V(coh(k'(w),b'(w),zr,zw'),zw',zr'))
-    % mt_val_wkb_interpolated is: (I^k x I^w x M^r) by (M^z x M^r)
-    % reachable cash-on-hand (as rows) and shocks next period given choices
-    % and shocks next period.
-    mt_val_wkb_interpolated = zeros([it_wak_n*fl_z_r_borr_n, it_z_n]);
-
-    % 3. Loop over possible shocks over interest rate
-    for it_z_r_borr_ctr = 1:1:fl_z_r_borr_n
-
-        % 4. Interpolate V(coh(k',b',z',r),z',r') for a specific r'
-        % v(coh,z) solved on ar_interp_coh_grid, ar_z grids, see
-        % ffs_ipwkbzr_get_funcgrid.m. Generate interpolant based on that, Then
-        % interpolate for the coh reachable levels given the k(w,z) percentage
-        % choice grids in the second stage of the problem.
-        %
-        % Note mt_val_cur/mt_val dimension is based on interpolant
-        % cash-on-hand for rows, and meshed shocks for columns. The meshed
-        % shock structure, see
-        % <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/paramfunc/html/ffs_ipwkbzr_get_funcgrid.html
-        % ffs_ipwkbzr_get_funcgrid> for details on how the shock grids are
-        % formed.
-
-        % Get current z_r_borr from mt_val
-        it_mt_val_col_start = it_z_wage_n*(it_z_r_borr_ctr-1) + 1;
-        it_mt_val_col_end   = it_mt_val_col_start + it_z_wage_n - 1;
-        mt_val_cur_rcolseg =  mt_val_cur(:, it_mt_val_col_start:it_mt_val_col_end);
-
+            clmt_val_wkb_interpolated{it_z_r_borr_ctr} = ...
+                f_grid_interpolant_value(mt_z_mesh_coh_wkb_seg,...
+                                         cl_mt_coh_wkb_mesh_z_r_borr{it_z_r_borr_ctr});
+        end
+    end        
+       
+    
+    %% Interpolate V(coh, Z) 4: Single Call Full Matrix
+    % Interpolate reacahble V(coh(k'(w),b'(w),zr,zw'),zw',zr')) given v(coh, z)
+    
+    if (strcmp(st_v_coh_z_interp_method, 'method_matrix'))
         % Generate Interpolant for v(coh,z)
         % mt_z_wage_mesh_interp_coh_grid is: (I^{coh_interp}) by (M^z)
         f_grid_interpolant_value = griddedInterpolant(...
-            mt_z_wage_mesh_interp_coh_grid', mt_interp_coh_grid_mesh_z_wage', ...
-            mt_val_cur_rcolseg', 'linear', 'nearest');
+            mt_z_mesh_interp_coh_grid', mt_interp_coh_grid_mesh_z', ...
+            mt_val_cur', 'linear', 'nearest');
 
         % Interpolate V(coh(k',b',z',r),z',r') for a specific r'
         % mt_z_wage_mesh_coh_wkb and mt_coh_wkb are: (I^k x I^w x M^r) by (M^z)
-        mt_val_wkb_interpolated_seg = f_grid_interpolant_value(mt_z_wage_mesh_coh_wkb, mt_coh_wkb);
-        mt_val_wkb_interpolated(:, it_mt_val_col_start:it_mt_val_col_end) = mt_val_wkb_interpolated_seg;
+        clmt_val_wkb_interpolated = f_grid_interpolant_value(mt_z_mesh_coh_wkb, mt_coh_wkb_mesh_z_r_borr);
+    end
+    
+    %% Interpolate V(coh, Z) 5: Matrix Store
+    % Interpolate reacahble V(coh(k'(w),b'(w),zr,zw'),zw',zr')) given v(coh, z)
 
+    if (strcmp(st_v_coh_z_interp_method, 'method_mat_seg'))
+    
+        % 1. Number of W/B/K Choice Combinations
+        it_ak_perc_n = length(ar_ak_perc);
+        it_w_interp_n = length(ar_w_level);
+        it_wak_n = it_w_interp_n*it_ak_perc_n;
+
+        % 2. Initialize V(coh(k'(w),b'(w),zr,zw'),zw',zr'))
+        % mt_val_wkb_interpolated is: (I^k x I^w x M^r) by (M^z x M^r)
+        % reachable cash-on-hand (as rows) and shocks next period given choices
+        % and shocks next period.
+        clmt_val_wkb_interpolated = zeros([it_wak_n*fl_z_r_borr_n, it_z_n]);
+
+        % 3. Loop over possible shocks over interest rate
+        for it_z_r_borr_ctr = 1:1:fl_z_r_borr_n
+
+            % 4. Interpolate V(coh(k',b',z',r),z',r') for a specific r'
+            % v(coh,z) solved on ar_interp_coh_grid, ar_z grids, see
+            % ffs_ipwkbzr_get_funcgrid.m. Generate interpolant based on that, Then
+            % interpolate for the coh reachable levels given the k(w,z) percentage
+            % choice grids in the second stage of the problem.
+            %
+            % Note mt_val_cur/mt_val dimension is based on interpolant
+            % cash-on-hand for rows, and meshed shocks for columns. The meshed
+            % shock structure, see
+            % <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/paramfunc/html/ffs_ipwkbzr_get_funcgrid.html
+            % ffs_ipwkbzr_get_funcgrid> for details on how the shock grids are
+            % formed.
+
+            % Get current z_r_borr from mt_val
+            it_mt_val_col_start = it_z_wage_n*(it_z_r_borr_ctr-1) + 1;
+            it_mt_val_col_end   = it_mt_val_col_start + it_z_wage_n - 1;
+            mt_val_cur_rcolseg =  mt_val_cur(:, it_mt_val_col_start:it_mt_val_col_end);
+
+            % Generate Interpolant for v(coh,z)
+            % mt_z_wage_mesh_interp_coh_grid is: (I^{coh_interp}) by (M^z)
+            f_grid_interpolant_value = griddedInterpolant(...
+                mt_z_wage_mesh_interp_coh_grid', mt_interp_coh_grid_mesh_z_wage', ...
+                mt_val_cur_rcolseg', 'linear', 'nearest');
+
+            % Interpolate V(coh(k',b',z',r),z',r') for a specific r'
+            % mt_z_wage_mesh_coh_wkb and mt_coh_wkb are: (I^k x I^w x M^r) by (M^z)
+            mt_val_wkb_interpolated_seg = f_grid_interpolant_value(mt_z_wage_mesh_coh_wkb, mt_coh_wkb);
+            clmt_val_wkb_interpolated(:, it_mt_val_col_start:it_mt_val_col_end) = mt_val_wkb_interpolated_seg;
+
+        end
     end
 
     %% Solve Second Stage Problem k*(w,z)
@@ -338,7 +405,7 @@ while bl_vfi_continue
     end
     bl_input_override = true;
     [mt_ev_condi_z_max, ~, mt_ev_condi_z_max_kp, ~] = ...
-        ff_ipwkbzr_evf(mt_val_wkb_interpolated, param_map, support_map, armt_map, bl_input_override);
+        ff_ipwkbzr_evf(clmt_val_wkb_interpolated, param_map, support_map, armt_map, bl_input_override);
 
     %% Solve First Stage Problem w*(z) given k*(w,z)
 

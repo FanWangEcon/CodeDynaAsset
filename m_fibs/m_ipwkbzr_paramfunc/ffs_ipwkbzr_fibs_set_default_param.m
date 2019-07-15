@@ -27,6 +27,8 @@ param_map = containers.Map('KeyType','char', 'ValueType','any');
 % model name
 param_map('st_model') = 'ipwkbzr_fibs';
 
+% v(coh, z) interpolation method
+param_map('st_v_coh_z_interp_method') = 'method_cell';
 
 %% 2a. Set Borrowing Control Parameters
 % Borrowing Setting 1: Default Allowed, Bridge True, bl_rollover does not matter

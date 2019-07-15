@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>2nd Stage Optimization for Risky + Safe Asset (Save + Borr + R Shock) Interpolated-Percentage</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-13"><meta name="DC.source" content="ff_ipwkbzr_evf.m"><style type="text/css">
+      --><title>2nd Stage Optimization for Risky + Safe Asset (Save + Borr + R Shock) Interpolated-Percentage</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-14"><meta name="DC.source" content="ff_ipwkbzr_evf.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -70,7 +70,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 </pre><h2 id="2">FF_IPWKBZR_EVF solves the k' vs b' problem given aggregate savings</h2><p>This function follows the structure set up here: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_wkz_evf.html">ff_wkz_evf</a> but now we solve the second stage with percentage choice grid</p><p>We solve along a vector of w_n vector, that is an interpolation vector, not a vector of actual w choices picked in the first stage. k' choices are in terms of percentages. Compared to ff_wkz_evf where we only had an upper triangle of choices, now we have a full matrix of percentage choices.</p><p>@param mt_val matrix state_n I^2 by shock_n. This is the value matrix each row is a feasible reachable state given the choice vectors/matrix and each column is a shock state.</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@return mt_ev_condi_z_max matrix choice_w_n by shock_n max_{k'}(E(V(coh(k',b'=w-k'),z'|z,w)) conditional on z and w, at the optimal k' choice (w=k'+b') what is the expected utility? This is the value result from the 2nd stage problem. Note the result integrates over z'.</p><p>@return mt_ev_condi_z_max_idx matrix choice_w_n by shock_n this is the argmax from max_{k'}(E(V(coh(k',b'=w-k'),z'|z,w)). Given the vector of k' choices, which index maximized conditional on z and w integrating over z'/</p><p>@return mt_ev_condi_z_max_kp matrix choice_w_level_n by shock_n the k' choice at max_{k'}(E(V(coh(k',b'=w-k'),z'|z,w))</p><p>@return mt_ev_condi_z_max_bp matrix choice_w_n by shock_n the b'=w-k' choice at max_{k'}(E(V(coh(k',b'=w-k'),z'|z,w))</p><p>@example</p><p>@include</p><div><ul><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbzr/paramfunc/ffs_ipwkbzr_set_default_param.m">ffs_ipwkbzr_set_default_param</a></li><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbzr/paramfunc/ffs_ipwkbzr_get_funcgrid.m">ffs_ipwkbzr_get_funcgrid</a></li></ul></div><h2 id="3">Default</h2><pre class="codeinput"><span class="keyword">if</span> (~isempty(varargin))
 
     <span class="comment">% override when called from outside</span>
-    [mt_val, param_map, support_map, armt_map] = varargin{:};
+    [clmt_val_wkb_interpolated, param_map, support_map, armt_map] = varargin{:};
 
 <span class="keyword">else</span>
 
@@ -130,10 +130,12 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
     [armt_map, func_map] = ffs_ipwkbzr_get_funcgrid(param_map, support_map);
 
     <span class="comment">% Get Defaults</span>
-    params_group = values(param_map, {<span class="string">'it_z_n'</span>});
-    [it_z_n] = params_group{:};
-    params_group = values(armt_map, {<span class="string">'mt_coh_wkb'</span>, <span class="string">'ar_z_r_borr'</span>});
-    [mt_coh_wkb, ar_z_r_borr] = params_group{:};
+    params_group = values(param_map, {<span class="string">'it_z_n'</span>, <span class="string">'fl_z_r_borr_n'</span>});
+    [it_z_n, fl_z_r_borr_n] = params_group{:};
+    params_group = values(param_map, {<span class="string">'st_v_coh_z_interp_method'</span>});
+    [st_v_coh_z_interp_method] = params_group{:};
+    params_group = values(armt_map, {<span class="string">'mt_coh_wkb'</span>, <span class="string">'ar_z_r_borr'</span>, <span class="string">'ar_ak_perc'</span>, <span class="string">'ar_w_level'</span>});
+    [mt_coh_wkb, ar_z_r_borr, ar_ak_perc, ar_w_level] = params_group{:};
     params_group = values(func_map, {<span class="string">'f_util_standin_coh'</span>});
     [f_util_standin_coh] = params_group{:};
 
@@ -153,6 +155,25 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
     mt_val = f_util_standin_coh(mt_coh_wkb(:), ar_z_r_borr);
     <span class="comment">% mt_val is: (I^k x I^w x M^r) by (M^z x M^r)</span>
     mt_val = reshape(mt_val, [size(mt_coh_wkb, 1), it_z_n]);
+
+    <span class="keyword">if</span> (ismember(st_v_coh_z_interp_method, [<span class="string">"method_idx_a"</span>, <span class="string">"method_idx_b"</span>, <span class="string">"method_cell"</span>]))
+
+        it_ak_perc_n = length(ar_ak_perc);
+        it_w_interp_n = length(ar_w_level);
+        it_wak_n = it_w_interp_n*it_ak_perc_n;
+        clmt_val_wkb_interpolated = cell([fl_z_r_borr_n, 1]);
+        <span class="keyword">for</span> it_z_r_borr_ctr = 1:1:fl_z_r_borr_n
+            it_mt_val_row_start = it_wak_n*(it_z_r_borr_ctr-1) + 1;
+            it_mt_val_row_end = it_mt_val_row_start + it_wak_n - 1;
+            clmt_val_wkb_interpolated{it_z_r_borr_ctr} = <span class="keyword">...</span>
+                mt_val(it_mt_val_row_start:it_mt_val_row_end, :);
+        <span class="keyword">end</span>
+
+    <span class="keyword">elseif</span> (ismember(st_v_coh_z_interp_method, [<span class="string">"method_matrix"</span>, <span class="string">"method_mat_seg"</span>]))
+
+        clmt_val_wkb_interpolated = mt_val;
+
+    <span class="keyword">end</span>
 
     <span class="comment">% Display Parameters</span>
     <span class="keyword">if</span> (bl_display_evf)
@@ -174,7 +195,7 @@ CONTAINER NAME: PARAM_MAP
 ----------------------------------------
   Map with properties:
 
-        Count: 12
+        Count: 13
       KeyType: char
     ValueType: any
 
@@ -182,9 +203,19 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ----------------------------------------
 ----------------------------------------
+pos = 1 ; key = fl_z_r_borr_max ; val = 0.095
+pos = 2 ; key = fl_z_r_borr_min ; val = 0.025
+pos = 3 ; key = fl_z_r_borr_n ; val = 5
+pos = 4 ; key = fl_z_r_borr_poiss_mean ; val = 20
+pos = 5 ; key = fl_z_wage_mu ; val = 0
+pos = 6 ; key = fl_z_wage_rho ; val = 0.8
+pos = 7 ; key = fl_z_wage_sig ; val = 0.2
+pos = 8 ; key = it_z_n ; val = 75
+pos = 9 ; key = it_z_wage_n ; val = 15
 pos = 10 ; key = st_model ; val = ipwkbzr
-pos = 11 ; key = st_z_r_borr_drv_ele_type ; val = unif
-pos = 12 ; key = st_z_r_borr_drv_prb_type ; val = poiss
+pos = 11 ; key = st_v_coh_z_interp_method ; val = method_cell
+pos = 12 ; key = st_z_r_borr_drv_ele_type ; val = unif
+pos = 13 ; key = st_z_r_borr_drv_prb_type ; val = poiss
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Scalars in Container and Sizes and Basic Statistics
@@ -210,8 +241,9 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
                                 _    ___
 
     st_model                    1    10 
-    st_z_r_borr_drv_ele_type    2    11 
-    st_z_r_borr_drv_prb_type    3    12 
+    st_v_coh_z_interp_method    2    11 
+    st_z_r_borr_drv_ele_type    3    12 
+    st_z_r_borr_drv_prb_type    4    13 
 
 ----------------------------------------
 ----------------------------------------
@@ -259,7 +291,7 @@ CONTAINER NAME: PARAM_MAP
 ----------------------------------------
   Map with properties:
 
-        Count: 40
+        Count: 41
       KeyType: char
     ValueType: any
 
@@ -268,10 +300,46 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ----------------------------------------
 ----------------------------------------
 pos = 1 ; key = bl_default ; val = true
+pos = 2 ; key = fl_Amean ; val = 1
+pos = 3 ; key = fl_alpha ; val = 0.36
+pos = 4 ; key = fl_b_bd ; val = -20
+pos = 5 ; key = fl_beta ; val = 0.94
+pos = 6 ; key = fl_c_min ; val = 0.02
+pos = 7 ; key = fl_coh_interp_grid_gap ; val = 0.1
+pos = 8 ; key = fl_crra ; val = 1.5
+pos = 9 ; key = fl_default_wprime ; val = 0
+pos = 10 ; key = fl_delta ; val = 0.08
+pos = 11 ; key = fl_k_max ; val = 70
+pos = 12 ; key = fl_k_min ; val = 0
+pos = 13 ; key = fl_nan_replace ; val = -9999
+pos = 14 ; key = fl_r_save ; val = 0.025
+pos = 15 ; key = fl_tol_dist ; val = 1e-05
+pos = 16 ; key = fl_tol_pol ; val = 1e-05
+pos = 17 ; key = fl_tol_val ; val = 1e-05
+pos = 18 ; key = fl_w ; val = 0.44365
+pos = 19 ; key = fl_w_interp_grid_gap ; val = 0.1
+pos = 20 ; key = fl_w_max ; val = 50
+pos = 21 ; key = fl_w_min ; val = -20
+pos = 22 ; key = fl_z_r_borr_max ; val = 0.095
+pos = 23 ; key = fl_z_r_borr_min ; val = 0.025
+pos = 24 ; key = fl_z_r_borr_n ; val = 5
+pos = 25 ; key = fl_z_r_borr_poiss_mean ; val = 20
+pos = 26 ; key = fl_z_wage_mu ; val = 0
+pos = 27 ; key = fl_z_wage_rho ; val = 0.8
+pos = 28 ; key = fl_z_wage_sig ; val = 0.2
+pos = 29 ; key = it_ak_perc_n ; val = 50
+pos = 30 ; key = it_c_interp_grid_gap ; val = 0.0001
+pos = 31 ; key = it_maxiter_dist ; val = 1000
+pos = 32 ; key = it_maxiter_val ; val = 250
+pos = 33 ; key = it_tol_pol_nochange ; val = 25
+pos = 34 ; key = it_w_perc_n ; val = 50
+pos = 35 ; key = it_z_n ; val = 75
+pos = 36 ; key = it_z_wage_n ; val = 15
 pos = 37 ; key = st_analytical_stationary_type ; val = eigenvector
 pos = 38 ; key = st_model ; val = ipwkbzr
-pos = 39 ; key = st_z_r_borr_drv_ele_type ; val = unif
-pos = 40 ; key = st_z_r_borr_drv_prb_type ; val = poiss
+pos = 39 ; key = st_v_coh_z_interp_method ; val = method_cell
+pos = 40 ; key = st_z_r_borr_drv_ele_type ; val = unif
+pos = 41 ; key = st_z_r_borr_drv_prb_type ; val = poiss
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Scalars in Container and Sizes and Basic Statistics
@@ -279,41 +347,42 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
                               i     idx     value 
                               __    ___    _______
 
-    fl_Amean                   1     2           1
-    fl_alpha                   2     3        0.36
-    fl_b_bd                    3     4         -20
-    fl_beta                    4     5        0.94
-    fl_c_min                   5     6        0.02
-    fl_coh_interp_grid_gap     6     7         0.1
-    fl_crra                    7     8         1.5
-    fl_default_wprime          8     9           0
-    fl_delta                   9    10        0.08
-    fl_k_max                  10    11          70
-    fl_k_min                  11    12           0
-    fl_nan_replace            12    13       -9999
-    fl_r_save                 13    14       0.025
-    fl_tol_dist               14    15       1e-05
-    fl_tol_pol                15    16       1e-05
-    fl_tol_val                16    17       1e-05
-    fl_w                      17    18     0.44365
-    fl_w_interp_grid_gap      18    19         0.1
-    fl_w_max                  19    20          50
-    fl_w_min                  20    21         -20
-    fl_z_r_borr_max           21    22       0.095
-    fl_z_r_borr_min           22    23       0.025
-    fl_z_r_borr_n             23    24           5
-    fl_z_r_borr_poiss_mean    24    25          20
-    fl_z_wage_mu              25    26           0
-    fl_z_wage_rho             26    27         0.8
-    fl_z_wage_sig             27    28         0.2
-    it_ak_perc_n              28    29          50
-    it_c_interp_grid_gap      29    30      0.0001
-    it_maxiter_dist           30    31        1000
-    it_maxiter_val            31    32         250
-    it_tol_pol_nochange       32    33          25
-    it_w_perc_n               33    34          50
-    it_z_n                    34    35          75
-    it_z_wage_n               35    36          15
+    bl_default                 1     1           1
+    fl_Amean                   2     2           1
+    fl_alpha                   3     3        0.36
+    fl_b_bd                    4     4         -20
+    fl_beta                    5     5        0.94
+    fl_c_min                   6     6        0.02
+    fl_coh_interp_grid_gap     7     7         0.1
+    fl_crra                    8     8         1.5
+    fl_default_wprime          9     9           0
+    fl_delta                  10    10        0.08
+    fl_k_max                  11    11          70
+    fl_k_min                  12    12           0
+    fl_nan_replace            13    13       -9999
+    fl_r_save                 14    14       0.025
+    fl_tol_dist               15    15       1e-05
+    fl_tol_pol                16    16       1e-05
+    fl_tol_val                17    17       1e-05
+    fl_w                      18    18     0.44365
+    fl_w_interp_grid_gap      19    19         0.1
+    fl_w_max                  20    20          50
+    fl_w_min                  21    21         -20
+    fl_z_r_borr_max           22    22       0.095
+    fl_z_r_borr_min           23    23       0.025
+    fl_z_r_borr_n             24    24           5
+    fl_z_r_borr_poiss_mean    25    25          20
+    fl_z_wage_mu              26    26           0
+    fl_z_wage_rho             27    27         0.8
+    fl_z_wage_sig             28    28         0.2
+    it_ak_perc_n              29    29          50
+    it_c_interp_grid_gap      30    30      0.0001
+    it_maxiter_dist           31    31        1000
+    it_maxiter_val            32    32         250
+    it_tol_pol_nochange       33    33          25
+    it_w_perc_n               34    34          50
+    it_z_n                    35    35          75
+    it_z_wage_n               36    36          15
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -322,11 +391,11 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
                                      i    idx
                                      _    ___
 
-    bl_default                       1     1 
-    st_analytical_stationary_type    2    37 
-    st_model                         3    38 
-    st_z_r_borr_drv_ele_type         4    39 
-    st_z_r_borr_drv_prb_type         5    40 
+    st_analytical_stationary_type    1    37 
+    st_model                         2    38 
+    st_v_coh_z_interp_method         3    39 
+    st_z_r_borr_drv_ele_type         4    40 
+    st_z_r_borr_drv_prb_type         5    41 
 
 ----------------------------------------
 ----------------------------------------
@@ -368,6 +437,11 @@ pos = 20 ; key = bl_post ; val = true
 pos = 21 ; key = bl_profile ; val = false
 pos = 22 ; key = bl_profile_dist ; val = false
 pos = 23 ; key = bl_time ; val = false
+pos = 24 ; key = it_display_every ; val = 5
+pos = 25 ; key = it_display_final_colmax ; val = 12
+pos = 26 ; key = it_display_final_rowmax ; val = 100
+pos = 27 ; key = it_display_summmat_colmax ; val = 5
+pos = 28 ; key = it_display_summmat_rowmax ; val = 5
 pos = 29 ; key = st_img_name_main ; val = _default
 pos = 30 ; key = st_img_path ; val = C:/Users/fan/CodeDynaAsset//m_ipwkbzr//solve/img/
 pos = 31 ; key = st_img_prefix ; val = 
@@ -386,59 +460,59 @@ pos = 42 ; key = st_title_prefix ; val =
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Scalars in Container and Sizes and Basic Statistics
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                                 i    idx    value
-                                 _    ___    _____
+                                    i     idx    value
+                                    __    ___    _____
 
-    it_display_every             1    24        5 
-    it_display_final_colmax      2    25       12 
-    it_display_final_rowmax      3    26      100 
-    it_display_summmat_colmax    4    27        5 
-    it_display_summmat_rowmax    5    28        5 
+    bl_display                       1     1        0 
+    bl_display_defparam              2     2        1 
+    bl_display_dist                  3     3        0 
+    bl_display_evf                   4     4        0 
+    bl_display_final                 5     5        1 
+    bl_display_final_dist            6     6        0 
+    bl_display_final_dist_detail     7     7        0 
+    bl_display_funcgrids             8     8        0 
+    bl_graph                         9     9        1 
+    bl_graph_coh_t_coh              10    10        1 
+    bl_graph_evf                    11    11        0 
+    bl_graph_funcgrids              12    12        0 
+    bl_graph_funcgrids_detail       13    13        0 
+    bl_graph_onebyones              14    14        1 
+    bl_graph_pol_lvl                15    15        1 
+    bl_graph_pol_pct                16    16        1 
+    bl_graph_val                    17    17        1 
+    bl_img_save                     18    18        0 
+    bl_mat                          19    19        0 
+    bl_post                         20    20        1 
+    bl_profile                      21    21        0 
+    bl_profile_dist                 22    22        0 
+    bl_time                         23    23        0 
+    it_display_every                24    24        5 
+    it_display_final_colmax         25    25       12 
+    it_display_final_rowmax         26    26      100 
+    it_display_summmat_colmax       27    27        5 
+    it_display_summmat_rowmax       28    28        5 
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Strings in Container and Sizes and Basic Statistics
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                                    i     idx
-                                    __    ___
+                            i     idx
+                            __    ___
 
-    bl_display                       1     1 
-    bl_display_defparam              2     2 
-    bl_display_dist                  3     3 
-    bl_display_evf                   4     4 
-    bl_display_final                 5     5 
-    bl_display_final_dist            6     6 
-    bl_display_final_dist_detail     7     7 
-    bl_display_funcgrids             8     8 
-    bl_graph                         9     9 
-    bl_graph_coh_t_coh              10    10 
-    bl_graph_evf                    11    11 
-    bl_graph_funcgrids              12    12 
-    bl_graph_funcgrids_detail       13    13 
-    bl_graph_onebyones              14    14 
-    bl_graph_pol_lvl                15    15 
-    bl_graph_pol_pct                16    16 
-    bl_graph_val                    17    17 
-    bl_img_save                     18    18 
-    bl_mat                          19    19 
-    bl_post                         20    20 
-    bl_profile                      21    21 
-    bl_profile_dist                 22    22 
-    bl_time                         23    23 
-    st_img_name_main                24    29 
-    st_img_path                     25    30 
-    st_img_prefix                   26    31 
-    st_img_suffix                   27    32 
-    st_mat_name_main                28    33 
-    st_mat_path                     29    34 
-    st_mat_prefix                   30    35 
-    st_mat_suffix                   31    36 
-    st_matimg_path_root             32    37 
-    st_profile_name_main            33    38 
-    st_profile_path                 34    39 
-    st_profile_prefix               35    40 
-    st_profile_suffix               36    41 
-    st_title_prefix                 37    42 
+    st_img_name_main         1    29 
+    st_img_path              2    30 
+    st_img_prefix            3    31 
+    st_img_suffix            4    32 
+    st_mat_name_main         5    33 
+    st_mat_path              6    34 
+    st_mat_prefix            7    35 
+    st_mat_suffix            8    36 
+    st_matimg_path_root      9    37 
+    st_profile_name_main    10    38 
+    st_profile_path         11    39 
+    st_profile_prefix       12    40 
+    st_profile_suffix       13    41 
+    st_title_prefix         14    42 
 
 ----------------------------------------
 ----------------------------------------
@@ -449,7 +523,7 @@ CONTAINER NAME: PARAM_MAP
 ----------------------------------------
   Map with properties:
 
-        Count: 40
+        Count: 41
       KeyType: char
     ValueType: any
 
@@ -458,10 +532,46 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ----------------------------------------
 ----------------------------------------
 pos = 1 ; key = bl_default ; val = true
+pos = 2 ; key = fl_Amean ; val = 1
+pos = 3 ; key = fl_alpha ; val = 0.36
+pos = 4 ; key = fl_b_bd ; val = -20
+pos = 5 ; key = fl_beta ; val = 0.94
+pos = 6 ; key = fl_c_min ; val = 0.02
+pos = 7 ; key = fl_coh_interp_grid_gap ; val = 0.1
+pos = 8 ; key = fl_crra ; val = 1.5
+pos = 9 ; key = fl_default_wprime ; val = 0
+pos = 10 ; key = fl_delta ; val = 0.08
+pos = 11 ; key = fl_k_max ; val = 70
+pos = 12 ; key = fl_k_min ; val = 0
+pos = 13 ; key = fl_nan_replace ; val = -9999
+pos = 14 ; key = fl_r_save ; val = 0.025
+pos = 15 ; key = fl_tol_dist ; val = 1e-05
+pos = 16 ; key = fl_tol_pol ; val = 1e-05
+pos = 17 ; key = fl_tol_val ; val = 1e-05
+pos = 18 ; key = fl_w ; val = 0.44365
+pos = 19 ; key = fl_w_interp_grid_gap ; val = 0.28
+pos = 20 ; key = fl_w_max ; val = 50
+pos = 21 ; key = fl_w_min ; val = -20
+pos = 22 ; key = fl_z_r_borr_max ; val = 0.095
+pos = 23 ; key = fl_z_r_borr_min ; val = 0.025
+pos = 24 ; key = fl_z_r_borr_n ; val = 5
+pos = 25 ; key = fl_z_r_borr_poiss_mean ; val = 20
+pos = 26 ; key = fl_z_wage_mu ; val = 0
+pos = 27 ; key = fl_z_wage_rho ; val = 0.8
+pos = 28 ; key = fl_z_wage_sig ; val = 0.2
+pos = 29 ; key = it_ak_perc_n ; val = 250
+pos = 30 ; key = it_c_interp_grid_gap ; val = 0.0001
+pos = 31 ; key = it_maxiter_dist ; val = 1000
+pos = 32 ; key = it_maxiter_val ; val = 250
+pos = 33 ; key = it_tol_pol_nochange ; val = 25
+pos = 34 ; key = it_w_perc_n ; val = 50
+pos = 35 ; key = it_z_n ; val = 75
+pos = 36 ; key = it_z_wage_n ; val = 15
 pos = 37 ; key = st_analytical_stationary_type ; val = eigenvector
 pos = 38 ; key = st_model ; val = ipwkbzr
-pos = 39 ; key = st_z_r_borr_drv_ele_type ; val = unif
-pos = 40 ; key = st_z_r_borr_drv_prb_type ; val = poiss
+pos = 39 ; key = st_v_coh_z_interp_method ; val = method_cell
+pos = 40 ; key = st_z_r_borr_drv_ele_type ; val = unif
+pos = 41 ; key = st_z_r_borr_drv_prb_type ; val = poiss
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Scalars in Container and Sizes and Basic Statistics
@@ -469,41 +579,42 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
                               i     idx     value 
                               __    ___    _______
 
-    fl_Amean                   1     2           1
-    fl_alpha                   2     3        0.36
-    fl_b_bd                    3     4         -20
-    fl_beta                    4     5        0.94
-    fl_c_min                   5     6        0.02
-    fl_coh_interp_grid_gap     6     7         0.1
-    fl_crra                    7     8         1.5
-    fl_default_wprime          8     9           0
-    fl_delta                   9    10        0.08
-    fl_k_max                  10    11          70
-    fl_k_min                  11    12           0
-    fl_nan_replace            12    13       -9999
-    fl_r_save                 13    14       0.025
-    fl_tol_dist               14    15       1e-05
-    fl_tol_pol                15    16       1e-05
-    fl_tol_val                16    17       1e-05
-    fl_w                      17    18     0.44365
-    fl_w_interp_grid_gap      18    19        0.28
-    fl_w_max                  19    20          50
-    fl_w_min                  20    21         -20
-    fl_z_r_borr_max           21    22       0.095
-    fl_z_r_borr_min           22    23       0.025
-    fl_z_r_borr_n             23    24           5
-    fl_z_r_borr_poiss_mean    24    25          20
-    fl_z_wage_mu              25    26           0
-    fl_z_wage_rho             26    27         0.8
-    fl_z_wage_sig             27    28         0.2
-    it_ak_perc_n              28    29         250
-    it_c_interp_grid_gap      29    30      0.0001
-    it_maxiter_dist           30    31        1000
-    it_maxiter_val            31    32         250
-    it_tol_pol_nochange       32    33          25
-    it_w_perc_n               33    34          50
-    it_z_n                    34    35          75
-    it_z_wage_n               35    36          15
+    bl_default                 1     1           1
+    fl_Amean                   2     2           1
+    fl_alpha                   3     3        0.36
+    fl_b_bd                    4     4         -20
+    fl_beta                    5     5        0.94
+    fl_c_min                   6     6        0.02
+    fl_coh_interp_grid_gap     7     7         0.1
+    fl_crra                    8     8         1.5
+    fl_default_wprime          9     9           0
+    fl_delta                  10    10        0.08
+    fl_k_max                  11    11          70
+    fl_k_min                  12    12           0
+    fl_nan_replace            13    13       -9999
+    fl_r_save                 14    14       0.025
+    fl_tol_dist               15    15       1e-05
+    fl_tol_pol                16    16       1e-05
+    fl_tol_val                17    17       1e-05
+    fl_w                      18    18     0.44365
+    fl_w_interp_grid_gap      19    19        0.28
+    fl_w_max                  20    20          50
+    fl_w_min                  21    21         -20
+    fl_z_r_borr_max           22    22       0.095
+    fl_z_r_borr_min           23    23       0.025
+    fl_z_r_borr_n             24    24           5
+    fl_z_r_borr_poiss_mean    25    25          20
+    fl_z_wage_mu              26    26           0
+    fl_z_wage_rho             27    27         0.8
+    fl_z_wage_sig             28    28         0.2
+    it_ak_perc_n              29    29         250
+    it_c_interp_grid_gap      30    30      0.0001
+    it_maxiter_dist           31    31        1000
+    it_maxiter_val            32    32         250
+    it_tol_pol_nochange       33    33          25
+    it_w_perc_n               34    34          50
+    it_z_n                    35    35          75
+    it_z_wage_n               36    36          15
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -512,11 +623,11 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
                                      i    idx
                                      _    ___
 
-    bl_default                       1     1 
-    st_analytical_stationary_type    2    37 
-    st_model                         3    38 
-    st_z_r_borr_drv_ele_type         4    39 
-    st_z_r_borr_drv_prb_type         5    40 
+    st_analytical_stationary_type    1    37 
+    st_model                         2    38 
+    st_v_coh_z_interp_method         3    39 
+    st_z_r_borr_drv_ele_type         4    40 
+    st_z_r_borr_drv_prb_type         5    41 
 
 ----------------------------------------
 ----------------------------------------
@@ -558,6 +669,11 @@ pos = 20 ; key = bl_post ; val = true
 pos = 21 ; key = bl_profile ; val = false
 pos = 22 ; key = bl_profile_dist ; val = false
 pos = 23 ; key = bl_time ; val = false
+pos = 24 ; key = it_display_every ; val = 5
+pos = 25 ; key = it_display_final_colmax ; val = 12
+pos = 26 ; key = it_display_final_rowmax ; val = 100
+pos = 27 ; key = it_display_summmat_colmax ; val = 5
+pos = 28 ; key = it_display_summmat_rowmax ; val = 5
 pos = 29 ; key = st_img_name_main ; val = _default
 pos = 30 ; key = st_img_path ; val = C:/Users/fan/CodeDynaAsset//m_ipwkbzr//solve/img/
 pos = 31 ; key = st_img_prefix ; val = 
@@ -576,59 +692,59 @@ pos = 42 ; key = st_title_prefix ; val =
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Scalars in Container and Sizes and Basic Statistics
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                                 i    idx    value
-                                 _    ___    _____
+                                    i     idx    value
+                                    __    ___    _____
 
-    it_display_every             1    24        5 
-    it_display_final_colmax      2    25       12 
-    it_display_final_rowmax      3    26      100 
-    it_display_summmat_colmax    4    27        5 
-    it_display_summmat_rowmax    5    28        5 
+    bl_display                       1     1        0 
+    bl_display_defparam              2     2        1 
+    bl_display_dist                  3     3        0 
+    bl_display_evf                   4     4        1 
+    bl_display_final                 5     5        1 
+    bl_display_final_dist            6     6        0 
+    bl_display_final_dist_detail     7     7        0 
+    bl_display_funcgrids             8     8        0 
+    bl_graph                         9     9        1 
+    bl_graph_coh_t_coh              10    10        1 
+    bl_graph_evf                    11    11        1 
+    bl_graph_funcgrids              12    12        0 
+    bl_graph_funcgrids_detail       13    13        0 
+    bl_graph_onebyones              14    14        1 
+    bl_graph_pol_lvl                15    15        1 
+    bl_graph_pol_pct                16    16        1 
+    bl_graph_val                    17    17        1 
+    bl_img_save                     18    18        0 
+    bl_mat                          19    19        0 
+    bl_post                         20    20        1 
+    bl_profile                      21    21        0 
+    bl_profile_dist                 22    22        0 
+    bl_time                         23    23        0 
+    it_display_every                24    24        5 
+    it_display_final_colmax         25    25       12 
+    it_display_final_rowmax         26    26      100 
+    it_display_summmat_colmax       27    27        5 
+    it_display_summmat_rowmax       28    28        5 
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Strings in Container and Sizes and Basic Statistics
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                                    i     idx
-                                    __    ___
+                            i     idx
+                            __    ___
 
-    bl_display                       1     1 
-    bl_display_defparam              2     2 
-    bl_display_dist                  3     3 
-    bl_display_evf                   4     4 
-    bl_display_final                 5     5 
-    bl_display_final_dist            6     6 
-    bl_display_final_dist_detail     7     7 
-    bl_display_funcgrids             8     8 
-    bl_graph                         9     9 
-    bl_graph_coh_t_coh              10    10 
-    bl_graph_evf                    11    11 
-    bl_graph_funcgrids              12    12 
-    bl_graph_funcgrids_detail       13    13 
-    bl_graph_onebyones              14    14 
-    bl_graph_pol_lvl                15    15 
-    bl_graph_pol_pct                16    16 
-    bl_graph_val                    17    17 
-    bl_img_save                     18    18 
-    bl_mat                          19    19 
-    bl_post                         20    20 
-    bl_profile                      21    21 
-    bl_profile_dist                 22    22 
-    bl_time                         23    23 
-    st_img_name_main                24    29 
-    st_img_path                     25    30 
-    st_img_prefix                   26    31 
-    st_img_suffix                   27    32 
-    st_mat_name_main                28    33 
-    st_mat_path                     29    34 
-    st_mat_prefix                   30    35 
-    st_mat_suffix                   31    36 
-    st_matimg_path_root             32    37 
-    st_profile_name_main            33    38 
-    st_profile_path                 34    39 
-    st_profile_prefix               35    40 
-    st_profile_suffix               36    41 
-    st_title_prefix                 37    42 
+    st_img_name_main         1    29 
+    st_img_path              2    30 
+    st_img_prefix            3    31 
+    st_img_suffix            4    32 
+    st_mat_name_main         5    33 
+    st_mat_path              6    34 
+    st_mat_prefix            7    35 
+    st_mat_suffix            8    36 
+    st_matimg_path_root      9    37 
+    st_profile_name_main    10    38 
+    st_profile_path         11    39 
+    st_profile_prefix       12    40 
+    st_profile_suffix       13    41 
+    st_title_prefix         14    42 
 
 </pre><h2 id="4">Parse Parameters</h2><pre class="codeinput"><span class="comment">% armt_map</span>
 params_group = values(armt_map, {<span class="string">'ar_z_r_borr_mesh_wage_w1r2'</span>, <span class="string">'ar_z_wage_mesh_r_borr_w1r2'</span>});
@@ -641,6 +757,8 @@ params_group = values(param_map, {<span class="string">'it_z_n'</span>, <span cl
 [it_z_n, fl_z_r_borr_n, it_z_wage_n] = params_group{:};
 params_group = values(param_map, {<span class="string">'fl_nan_replace'</span>, <span class="string">'fl_b_bd'</span>});
 [fl_nan_replace, fl_b_bd] = params_group{:};
+params_group = values(param_map, {<span class="string">'st_v_coh_z_interp_method'</span>});
+[st_v_coh_z_interp_method] = params_group{:};
 
 <span class="comment">% support_map</span>
 params_group = values(support_map, {<span class="string">'bl_graph_onebyones'</span>,<span class="string">'bl_display_evf'</span>, <span class="string">'bl_graph_evf'</span>});
@@ -670,14 +788,23 @@ mt_ev_condi_z = zeros([it_wak_n, it_z_n]);
     it_mt_z_trans_row_end = it_mt_z_trans_row_start + it_z_wage_n - 1;
     mt_z_trans_cur_z_r_borr = mt_z_trans(it_mt_z_trans_row_start:it_mt_z_trans_row_end, :);
 
-    <span class="comment">% Val Segment : ((M^z) by (M^z x M^r))' for one m^r</span>
-    it_mt_val_row_start = it_wak_n*(it_z_r_borr_ctr-1) + 1;
-    it_mt_val_row_end = it_mt_val_row_start + it_wak_n - 1;
-    mt_val_cur_z_r_borr = mt_val(it_mt_val_row_start:it_mt_val_row_end, :);
+    <span class="keyword">if</span> (ismember(st_v_coh_z_interp_method, [<span class="string">"method_idx_a"</span>, <span class="string">"method_idx_b"</span>, <span class="string">"method_cell"</span>]))
 
-    <span class="comment">% EV(k',b';zw,zr) = E(V(coh(k',b',zr),zw',zr')|zw,zr) for one zr and all zw</span>
-    mt_ev_condi_z(:, it_mt_z_trans_row_start:it_mt_z_trans_row_end) = <span class="keyword">...</span>
-        mt_val_cur_z_r_borr*mt_z_trans_cur_z_r_borr';
+        mt_ev_condi_z(:, it_mt_z_trans_row_start:it_mt_z_trans_row_end) = <span class="keyword">...</span>
+            clmt_val_wkb_interpolated{it_z_r_borr_ctr}*mt_z_trans_cur_z_r_borr';
+
+    <span class="keyword">elseif</span> (ismember(st_v_coh_z_interp_method, [<span class="string">"method_matrix"</span>, <span class="string">"method_mat_seg"</span>]))
+
+        <span class="comment">% Val Segment : ((M^z) by (M^z x M^r))' for one m^r</span>
+        it_mt_val_row_start = it_wak_n*(it_z_r_borr_ctr-1) + 1;
+        it_mt_val_row_end = it_mt_val_row_start + it_wak_n - 1;
+        mt_val_cur_z_r_borr = clmt_val_wkb_interpolated(it_mt_val_row_start:it_mt_val_row_end, :);
+
+        <span class="comment">% EV(k',b';zw,zr) = E(V(coh(k',b',zr),zw',zr')|zw,zr) for one zr and all zw</span>
+        mt_ev_condi_z(:, it_mt_z_trans_row_start:it_mt_z_trans_row_end) = <span class="keyword">...</span>
+            mt_val_cur_z_r_borr*mt_z_trans_cur_z_r_borr';
+
+    <span class="keyword">end</span>
 
 <span class="keyword">end</span>
 
@@ -2623,61 +2750,36 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     <span class="comment">% legends index final</span>
     cl_st_legendCell = cellstr([num2str(ar_z_r_borr_mesh_wage_w1r2', <span class="string">'zr=%3.2f;'</span>), <span class="keyword">...</span>
                                 num2str(ar_z_wage_mesh_r_borr_w1r2', <span class="string">'zw=%3.2f'</span>)]);
-</pre><h2 id="12">Graph 1, V and EV</h2><pre class="codeinput">    <span class="keyword">if</span> (~bl_graph_onebyones)
-        figure(<span class="string">'PaperPosition'</span>, [0 0 14 4]);
-        hold <span class="string">on</span>;
-    <span class="keyword">end</span>
-
-
-    <span class="keyword">for</span> subplot_j=1:1:2
-
-        <span class="keyword">if</span> (~bl_graph_onebyones)
-            hAxis(subplot_j) = subplot(1,2,subplot_j);
-        <span class="keyword">else</span>
-            figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
-        <span class="keyword">end</span>
-
-        <span class="keyword">if</span> (subplot_j==1)
-            chart = plot(mt_val);
-        <span class="keyword">end</span>
-        <span class="keyword">if</span> (subplot_j==2)
-            chart = plot(mt_ev_condi_z);
-        <span class="keyword">end</span>
-
-        clr = jet(numel(chart));
-        <span class="keyword">for</span> m = 1:numel(chart)
-            set(chart(m),<span class="string">'Color'</span>,clr(m,:))
-        <span class="keyword">end</span>
-
-        legend(chart(ar_it_z_graph), cl_st_legendCell(ar_it_z_graph), <span class="string">'Location'</span>,<span class="string">'southeast'</span>);
-
-        <span class="keyword">if</span> (subplot_j==1)
-            title(<span class="string">'V(coh,zp); w(k+b),k,z'</span>);
-        <span class="keyword">end</span>
-        <span class="keyword">if</span> (subplot_j==2)
-            title(<span class="string">'E_z(V(coh,zp|z))'</span>);
-        <span class="keyword">end</span>
-
-        ylabel(<span class="string">'Next Period Value'</span>);
-        xlabel({<span class="string">'Index of Cash-on-Hand Discrete Point'</span><span class="keyword">...</span>
-            <span class="string">'Each Segment is a w=k+b; within segment increasing k'</span><span class="keyword">...</span>
-            <span class="string">'EV and V identical if shock is fully persistent'</span>});
-        grid <span class="string">on</span>;
-        grid <span class="string">minor</span>;
-    <span class="keyword">end</span>
-
-    <span class="comment">% Share y axis</span>
-    <span class="keyword">if</span> (~bl_graph_onebyones)
-        linkaxes(hAxis,<span class="string">'y'</span>);
-    <span class="keyword">end</span>
-
-    <span class="comment">% save file</span>
-    <span class="keyword">if</span> (bl_img_save)
-        mkdir(support_map(<span class="string">'st_img_path'</span>));
-        st_file_name = [st_img_prefix st_img_name_main <span class="string">'_vev'</span> st_img_suffix];
-        saveas(gcf, strcat(st_img_path, st_file_name));
-    <span class="keyword">end</span>
-</pre><img vspace="5" hspace="5" src="ff_ipwkbzr_evf_01.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_evf_02.png" alt=""> <h2 id="13">Graph 2, max(EV)</h2><pre class="codeinput">    <span class="keyword">if</span>(~bl_graph_onebyones)
+</pre><h2 id="12">Graph 1, V and EV</h2><pre>   if (~bl_graph_onebyones)
+       figure('PaperPosition', [0 0 14 4]);
+       hold on;
+   end</pre><pre>   for subplot_j=1:1:2</pre><pre>       if (~bl_graph_onebyones)
+           hAxis(subplot_j) = subplot(1,2,subplot_j);
+       else
+           figure('PaperPosition', [0 0 7 4]);
+       end</pre><p>%         cl_val_wkb_interpolated         if (subplot_j==1)             chart = plot(mt_val);         end         if (subplot_j==2)             chart = plot(mt_ev_condi_z);         end</p><pre>       clr = jet(numel(chart));
+       for m = 1:numel(chart)
+           set(chart(m),'Color',clr(m,:))
+       end</pre><pre>       legend(chart(ar_it_z_graph), cl_st_legendCell(ar_it_z_graph), 'Location','southeast');</pre><pre>       if (subplot_j==1)
+           title('V(coh,zp); w(k+b),k,z');
+       end
+       if (subplot_j==2)
+           title('E_z(V(coh,zp|z))');
+       end</pre><pre>       ylabel('Next Period Value');
+       xlabel({'Index of Cash-on-Hand Discrete Point'...
+           'Each Segment is a w=k+b; within segment increasing k'...
+           'EV and V identical if shock is fully persistent'});
+       grid on;
+       grid minor;
+   end</pre><pre>   % Share y axis
+   if (~bl_graph_onebyones)
+       linkaxes(hAxis,'y');
+   end</pre><pre>   % save file
+   if (bl_img_save)
+       mkdir(support_map('st_img_path'));
+       st_file_name = [st_img_prefix st_img_name_main '_vev' st_img_suffix];
+       saveas(gcf, strcat(st_img_path, st_file_name));
+   end</pre><h2 id="13">Graph 2, max(EV)</h2><pre class="codeinput">    <span class="keyword">if</span>(~bl_graph_onebyones)
         figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
     <span class="keyword">end</span>
 
@@ -2730,7 +2832,7 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
         saveas(gcf, strcat(st_img_path, st_file_name));
     <span class="keyword">end</span>
 </pre><pre class="codeoutput">Warning: Ignoring extra legend entries. 
-</pre><img vspace="5" hspace="5" src="ff_ipwkbzr_evf_03.png" alt=""> <h2 id="14">Graph 3, at max(EV) optimal choice category, color regions, borrow save</h2><pre class="codeinput">    <span class="comment">% Borrow Vs Save</span>
+</pre><img vspace="5" hspace="5" src="ff_ipwkbzr_evf_01.png" alt=""> <h2 id="14">Graph 3, at max(EV) optimal choice category, color regions, borrow save</h2><pre class="codeinput">    <span class="comment">% Borrow Vs Save</span>
     [ar_z_mw, ar_w_mz] = meshgrid(ar_z_wage_mesh_r_borr_w1r2, ar_w_level);
     mt_it_borr_idx = (mt_ev_condi_z_max_bp &lt; 0);
     mt_it_riskyhalf_idx = ((mt_ev_condi_z_max_kp./mt_ev_condi_z_max_bp) &gt; 0.5);
@@ -2770,7 +2872,7 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
         st_file_name = [st_img_prefix st_img_name_main <span class="string">'_maxbrsv'</span> st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     <span class="keyword">end</span>
-</pre><img vspace="5" hspace="5" src="ff_ipwkbzr_evf_04.png" alt=""> <h2 id="15">Graph 4, Optimal K' and B' Levels</h2><pre class="codeinput">    [~, ar_w_mz] = meshgrid(ar_z_wage_mesh_r_borr_w1r2, ar_w_level);
+</pre><img vspace="5" hspace="5" src="ff_ipwkbzr_evf_02.png" alt=""> <h2 id="15">Graph 4, Optimal K' and B' Levels</h2><pre class="codeinput">    [~, ar_w_mz] = meshgrid(ar_z_wage_mesh_r_borr_w1r2, ar_w_level);
     <span class="keyword">for</span> sub_j=1:1:4
 
         <span class="keyword">if</span> (bl_graph_onebyones)
@@ -2873,7 +2975,7 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
         st_file_name = [st_img_prefix st_img_name_main <span class="string">'_wkbopti'</span> st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     <span class="keyword">end</span>
-</pre><img vspace="5" hspace="5" src="ff_ipwkbzr_evf_05.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_evf_06.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_evf_07.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_evf_08.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="ff_ipwkbzr_evf_03.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_evf_04.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_evf_05.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_evf_06.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
 </pre><h2 id="17">Display Various Containers</h2><pre class="codeinput"><span class="keyword">if</span> (bl_display_evf)
 </pre><h2 id="19">Display 1 support_map</h2><pre class="codeinput">    fft_container_map_display(support_map, it_display_summmat_rowmax, it_display_summmat_colmax);
 </pre><pre class="codeoutput">----------------------------------------
@@ -2916,6 +3018,11 @@ pos = 20 ; key = bl_post ; val = true
 pos = 21 ; key = bl_profile ; val = false
 pos = 22 ; key = bl_profile_dist ; val = false
 pos = 23 ; key = bl_time ; val = false
+pos = 24 ; key = it_display_every ; val = 5
+pos = 25 ; key = it_display_final_colmax ; val = 12
+pos = 26 ; key = it_display_final_rowmax ; val = 100
+pos = 27 ; key = it_display_summmat_colmax ; val = 5
+pos = 28 ; key = it_display_summmat_rowmax ; val = 5
 pos = 29 ; key = st_img_name_main ; val = _default
 pos = 30 ; key = st_img_path ; val = C:/Users/fan/CodeDynaAsset//m_ipwkbzr//solve/img/
 pos = 31 ; key = st_img_prefix ; val = 
@@ -2934,59 +3041,59 @@ pos = 42 ; key = st_title_prefix ; val =
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Scalars in Container and Sizes and Basic Statistics
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                                 i    idx    value
-                                 _    ___    _____
+                                    i     idx    value
+                                    __    ___    _____
 
-    it_display_every             1    24        5 
-    it_display_final_colmax      2    25       12 
-    it_display_final_rowmax      3    26      100 
-    it_display_summmat_colmax    4    27        5 
-    it_display_summmat_rowmax    5    28        5 
+    bl_display                       1     1        0 
+    bl_display_defparam              2     2        1 
+    bl_display_dist                  3     3        0 
+    bl_display_evf                   4     4        1 
+    bl_display_final                 5     5        1 
+    bl_display_final_dist            6     6        0 
+    bl_display_final_dist_detail     7     7        0 
+    bl_display_funcgrids             8     8        0 
+    bl_graph                         9     9        1 
+    bl_graph_coh_t_coh              10    10        1 
+    bl_graph_evf                    11    11        1 
+    bl_graph_funcgrids              12    12        0 
+    bl_graph_funcgrids_detail       13    13        0 
+    bl_graph_onebyones              14    14        1 
+    bl_graph_pol_lvl                15    15        1 
+    bl_graph_pol_pct                16    16        1 
+    bl_graph_val                    17    17        1 
+    bl_img_save                     18    18        0 
+    bl_mat                          19    19        0 
+    bl_post                         20    20        1 
+    bl_profile                      21    21        0 
+    bl_profile_dist                 22    22        0 
+    bl_time                         23    23        0 
+    it_display_every                24    24        5 
+    it_display_final_colmax         25    25       12 
+    it_display_final_rowmax         26    26      100 
+    it_display_summmat_colmax       27    27        5 
+    it_display_summmat_rowmax       28    28        5 
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Strings in Container and Sizes and Basic Statistics
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                                    i     idx
-                                    __    ___
+                            i     idx
+                            __    ___
 
-    bl_display                       1     1 
-    bl_display_defparam              2     2 
-    bl_display_dist                  3     3 
-    bl_display_evf                   4     4 
-    bl_display_final                 5     5 
-    bl_display_final_dist            6     6 
-    bl_display_final_dist_detail     7     7 
-    bl_display_funcgrids             8     8 
-    bl_graph                         9     9 
-    bl_graph_coh_t_coh              10    10 
-    bl_graph_evf                    11    11 
-    bl_graph_funcgrids              12    12 
-    bl_graph_funcgrids_detail       13    13 
-    bl_graph_onebyones              14    14 
-    bl_graph_pol_lvl                15    15 
-    bl_graph_pol_pct                16    16 
-    bl_graph_val                    17    17 
-    bl_img_save                     18    18 
-    bl_mat                          19    19 
-    bl_post                         20    20 
-    bl_profile                      21    21 
-    bl_profile_dist                 22    22 
-    bl_time                         23    23 
-    st_img_name_main                24    29 
-    st_img_path                     25    30 
-    st_img_prefix                   26    31 
-    st_img_suffix                   27    32 
-    st_mat_name_main                28    33 
-    st_mat_path                     29    34 
-    st_mat_prefix                   30    35 
-    st_mat_suffix                   31    36 
-    st_matimg_path_root             32    37 
-    st_profile_name_main            33    38 
-    st_profile_path                 34    39 
-    st_profile_prefix               35    40 
-    st_profile_suffix               36    41 
-    st_title_prefix                 37    42 
+    st_img_name_main         1    29 
+    st_img_path              2    30 
+    st_img_prefix            3    31 
+    st_img_suffix            4    32 
+    st_mat_name_main         5    33 
+    st_mat_path              6    34 
+    st_mat_prefix            7    35 
+    st_mat_suffix            8    36 
+    st_matimg_path_root      9    37 
+    st_profile_name_main    10    38 
+    st_profile_path         11    39 
+    st_profile_prefix       12    40 
+    st_profile_suffix       13    41 
+    st_title_prefix         14    42 
 
 </pre><h2 id="20">Display 2 armt_map</h2><pre class="codeinput">    fft_container_map_display(armt_map, it_display_summmat_rowmax, it_display_summmat_colmax);
 </pre><pre class="codeoutput">----------------------------------------
@@ -2998,7 +3105,7 @@ CONTAINER NAME: ARMT_MAP
 ----------------------------------------
   Map with properties:
 
-        Count: 26
+        Count: 31
       KeyType: char
     ValueType: any
 
@@ -3097,10 +3204,10 @@ ar_z_r_borr_mesh_wage_w1r2 :mu= 0.06 ,sd= 0.024915 ,min= 0.025 ,max= 0.095
 
 pos = 12 ; key = ar_z_r_borr_prob ;rown= 1 ,coln= 5
 ar_z_r_borr_prob :mu= 0.2 ,sd= 0.34803 ,min= 0.00012164 ,max= 0.81093
-               zi_1_c1     zi_2_c2     zi_3_c3     zi_4_c4    zi_5_c5
-               ________    ________    ________    _______    _______
+                zi_1_c1       zi_2_c2     zi_3_c3     zi_4_c4    zi_5_c5
+               __________    _________    ________    _______    _______
 
-    zi_1_r1    0.000122    0.002433    0.024328    0.16219    0.81093
+    zi_1_r1    0.00012164    0.0024328    0.024328    0.16219    0.81093
 
 pos = 13 ; key = ar_z_wage ;rown= 1 ,coln= 15
 ar_z_wage :mu= 1.1347 ,sd= 0.69878 ,min= 0.34741 ,max= 2.567
@@ -3125,12 +3232,24 @@ ar_z_wage_mesh_r_borr_w1r2 :mu= 1.1347 ,sd= 0.67963 ,min= 0.34741 ,max= 2.567
 
 pos = 16 ; key = ar_z_wage_prob ;rown= 1 ,coln= 15
 ar_z_wage_prob :mu= 0.066667 ,sd= 0.060897 ,min= 0.0027089 ,max= 0.16757
-               zi_1_C1     zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
-               ________    _______    _______    _________    _________
+                zi_1_C1      zi_2_C2     zi_8_C8    zi_14_c14    zi_15_c15
+               _________    _________    _______    _________    _________
 
-    zi_1_r1    0.002709    0.00695    0.16757     0.00695     0.002709 
+    zi_1_r1    0.0027089    0.0069499    0.16757    0.0069499    0.0027089
 
-pos = 18 ; key = mt_coh_wkb ;rown= 311250 ,coln= 15
+pos = 17 ; key = cl_mt_coh_wkb_mesh_z_r_borr ;rown= 62250 ,coln= 75
+cl_mt_coh_wkb_mesh_z_r_borr :mu= 16.747 ,sd= 20.5567 ,min= -20.0564 ,max= 57.2773
+                       zi_1_C1    zi_2_C2    zi_38_c38    zi_74_c74    zi_75_c75
+                       _______    _______    _________    _________    _________
+
+    zi_1_R1            -20.056    -20.056     -20.056      -20.056      -20.056 
+    zi_2_R2            -20.056    -20.056     -20.056      -20.056      -20.056 
+    zi_31125_r31125     14.821      14.97      16.489       20.068       21.023 
+    zi_62249_r62249     45.981     46.227      48.731       54.633       56.208 
+    zi_62250_r62250     45.954       46.2      48.708       54.619       56.195 
+
+pos = 18 ; key = it_ameshk_n ; val = 62250
+pos = 19 ; key = mt_coh_wkb ;rown= 311250 ,coln= 15
 mt_coh_wkb :mu= 16.4707 ,sd= 20.7264 ,min= -21.4564 ,max= 57.2773
                          zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                          _______    _______    _______    _________    _________
@@ -3141,7 +3260,18 @@ mt_coh_wkb :mu= 16.4707 ,sd= 20.7264 ,min= -21.4564 ,max= 57.2773
     zi_311249_r311249     44.606     44.851     47.356      53.258       54.832 
     zi_311250_r311250     44.559     44.805     47.313      53.223         54.8 
 
-pos = 19 ; key = mt_interp_coh_grid_mesh_w_perc ;rown= 50 ,coln= 772
+pos = 20 ; key = mt_coh_wkb_mesh_z_r_borr ;rown= 311250 ,coln= 75
+mt_coh_wkb_mesh_z_r_borr :mu= 16.4707 ,sd= 20.7264 ,min= -21.4564 ,max= 57.2773
+                         zi_1_C1    zi_2_C2    zi_38_c38    zi_74_c74    zi_75_c75
+                         _______    _______    _________    _________    _________
+
+    zi_1_R1              -20.056    -20.056     -20.056      -20.056      -20.056 
+    zi_2_R2              -20.056    -20.056     -20.056      -20.056      -20.056 
+    zi_155625_r155625     14.734     14.883      16.402       19.981       20.936 
+    zi_311249_r311249     44.606     44.851      47.356       53.258       54.832 
+    zi_311250_r311250     44.559     44.805      47.313       53.223         54.8 
+
+pos = 21 ; key = mt_interp_coh_grid_mesh_w_perc ;rown= 50 ,coln= 772
 mt_interp_coh_grid_mesh_w_perc :mu= 18.6145 ,sd= 22.3329 ,min= -20 ,max= 57.2773
                  zi_1_C1    zi_2_C2    zi_386_c386    zi_771_c771    zi_772_c772
                  _______    _______    ___________    ___________    ___________
@@ -3152,7 +3282,7 @@ mt_interp_coh_grid_mesh_w_perc :mu= 18.6145 ,sd= 22.3329 ,min= -20 ,max= 57.2773
     zi_49_r49      -20       -19.9       18.538         57.177         57.277   
     zi_50_r50      -20       -19.9       18.538         57.177         57.277   
 
-pos = 20 ; key = mt_interp_coh_grid_mesh_z ;rown= 772 ,coln= 75
+pos = 22 ; key = mt_interp_coh_grid_mesh_z ;rown= 772 ,coln= 75
 mt_interp_coh_grid_mesh_z :mu= 18.6145 ,sd= 22.3328 ,min= -20 ,max= 57.2773
                    zi_1_C1    zi_2_C2    zi_38_c38    zi_74_c74    zi_75_c75
                    _______    _______    _________    _________    _________
@@ -3163,7 +3293,7 @@ mt_interp_coh_grid_mesh_z :mu= 18.6145 ,sd= 22.3328 ,min= -20 ,max= 57.2773
     zi_771_r771    57.177     57.177      57.177       57.177       57.177  
     zi_772_r772    57.277     57.277      57.277       57.277       57.277  
 
-pos = 21 ; key = mt_interp_coh_grid_mesh_z_wage ;rown= 772 ,coln= 15
+pos = 23 ; key = mt_interp_coh_grid_mesh_z_wage ;rown= 772 ,coln= 15
 mt_interp_coh_grid_mesh_z_wage :mu= 18.6145 ,sd= 22.3335 ,min= -20 ,max= 57.2773
                    zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                    _______    _______    _______    _________    _________
@@ -3174,18 +3304,18 @@ mt_interp_coh_grid_mesh_z_wage :mu= 18.6145 ,sd= 22.3335 ,min= -20 ,max= 57.2773
     zi_771_r771    57.177     57.177     57.177      57.177       57.177  
     zi_772_r772    57.277     57.277     57.277      57.277       57.277  
 
-pos = 22 ; key = mt_k ;rown= 250 ,coln= 249
+pos = 24 ; key = mt_k ;rown= 250 ,coln= 249
 mt_k :mu= 17.4699 ,sd= 15.4675 ,min= 0 ,max= 69.93
-                   zi_1_C1    zi_2_C2     zi_125_c125    zi_248_c248    zi_249_c249
-                   _______    ________    ___________    ___________    ___________
+                   zi_1_C1     zi_2_C2     zi_125_c125    zi_248_c248    zi_249_c249
+                   _______    _________    ___________    ___________    ___________
 
-    zi_1_R1           0       0.000283     0.034858       0.069717           0.07  
-    zi_2_R2           0       0.001419      0.17457        0.34914        0.35056  
-    zi_125_r125       0        0.14113       17.359         34.719          34.86  
-    zi_249_r249       0        0.28198       34.684         69.367         69.649  
-    zi_250_r250       0        0.28312       34.823         69.647          69.93  
+    zi_1_R1           0       0.0002834     0.034858       0.069717           0.07  
+    zi_2_R2           0       0.0014193      0.17457        0.34914        0.35056  
+    zi_125_r125       0         0.14113       17.359         34.719          34.86  
+    zi_249_r249       0         0.28198       34.684         69.367         69.649  
+    zi_250_r250       0         0.28312       34.823         69.647          69.93  
 
-pos = 23 ; key = mt_w_perc_mesh_interp_coh_grid ;rown= 50 ,coln= 772
+pos = 25 ; key = mt_w_perc_mesh_interp_coh_grid ;rown= 50 ,coln= 772
 mt_w_perc_mesh_interp_coh_grid :mu= -0.69276 ,sd= 17.2218 ,min= -20 ,max= 57.2
                  zi_1_C1    zi_2_C2    zi_386_c386    zi_771_c771    zi_772_c772
                  _______    _______    ___________    ___________    ___________
@@ -3196,18 +3326,51 @@ mt_w_perc_mesh_interp_coh_grid :mu= -0.69276 ,sd= 17.2218 ,min= -20 ,max= 57.2
     zi_49_r49      -20      -19.902       17.715         55.528         55.626  
     zi_50_r50      -20        -19.9         18.5           57.1           57.2  
 
-pos = 24 ; key = mt_z_trans ;rown= 75 ,coln= 75
+pos = 26 ; key = mt_z_mesh_coh_wkb ;rown= 311250 ,coln= 75
+mt_z_mesh_coh_wkb :mu= 38 ,sd= 21.6487 ,min= 1 ,max= 75
+                         zi_1_C1    zi_2_C2    zi_38_c38    zi_74_c74    zi_75_c75
+                         _______    _______    _________    _________    _________
+
+    zi_1_R1                 1          2          38           74           75    
+    zi_2_R2                 1          2          38           74           75    
+    zi_155625_r155625       1          2          38           74           75    
+    zi_311249_r311249       1          2          38           74           75    
+    zi_311250_r311250       1          2          38           74           75    
+
+pos = 27 ; key = mt_z_mesh_coh_wkb_seg ;rown= 62250 ,coln= 75
+mt_z_mesh_coh_wkb_seg :mu= 38 ,sd= 21.6487 ,min= 1 ,max= 75
+                       zi_1_C1    zi_2_C2    zi_38_c38    zi_74_c74    zi_75_c75
+                       _______    _______    _________    _________    _________
+
+    zi_1_R1               1          2          38           74           75    
+    zi_2_R2               1          2          38           74           75    
+    zi_31125_r31125       1          2          38           74           75    
+    zi_62249_r62249       1          2          38           74           75    
+    zi_62250_r62250       1          2          38           74           75    
+
+pos = 28 ; key = mt_z_mesh_interp_coh_grid ;rown= 772 ,coln= 75
+mt_z_mesh_interp_coh_grid :mu= 38 ,sd= 21.6489 ,min= 1 ,max= 75
+                   zi_1_C1    zi_2_C2    zi_38_c38    zi_74_c74    zi_75_c75
+                   _______    _______    _________    _________    _________
+
+    zi_1_R1           1          2          38           74           75    
+    zi_2_R2           1          2          38           74           75    
+    zi_386_r386       1          2          38           74           75    
+    zi_771_r771       1          2          38           74           75    
+    zi_772_r772       1          2          38           74           75    
+
+pos = 29 ; key = mt_z_trans ;rown= 75 ,coln= 75
 mt_z_trans :mu= 0.013333 ,sd= 0.040863 ,min= 0 ,max= 0.22626
-                 zi_1_C1    zi_2_C2    zi_38_c38    zi_74_c74    zi_75_c75
-                 _______    _______    _________    _________    _________
+                  zi_1_C1       zi_2_C2      zi_38_c38     zi_74_c74     zi_75_c75 
+                 __________    __________    __________    __________    __________
 
-    zi_1_R1      3.2e-05    3.3e-05       3e-06            0            0 
-    zi_2_R2      1.4e-05    2.4e-05     2.4e-05            0            0 
-    zi_38_r38          0          0    0.006788      3.3e-05        1e-06 
-    zi_74_r74          0          0     2.4e-05      0.15912     0.091083 
-    zi_75_r75          0          0       3e-06      0.21758      0.21097 
+    zi_1_R1      3.1646e-05    3.2638e-05    3.1195e-06    9.0031e-16             0
+    zi_2_R2      1.3662e-05    2.3868e-05    2.4049e-05    7.5897e-14    2.7009e-16
+    zi_38_r38    2.0899e-10    4.9882e-09     0.0067879    3.3255e-05    1.3933e-06
+    zi_74_r74    4.2258e-20    1.1385e-17    2.4049e-05       0.15912      0.091083
+    zi_75_r75    3.3344e-22    1.3449e-19    3.1195e-06       0.21758       0.21097
 
-pos = 25 ; key = mt_z_wage_mesh_coh_wkb ;rown= 311250 ,coln= 15
+pos = 30 ; key = mt_z_wage_mesh_coh_wkb ;rown= 311250 ,coln= 15
 mt_z_wage_mesh_coh_wkb :mu= 1.1347 ,sd= 0.67508 ,min= 0.34741 ,max= 2.567
                          zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                          _______    _______    _______    _________    _________
@@ -3218,7 +3381,7 @@ mt_z_wage_mesh_coh_wkb :mu= 1.1347 ,sd= 0.67508 ,min= 0.34741 ,max= 2.567
     zi_311249_r311249    0.34741    0.40076    0.94436     2.2253        2.567  
     zi_311250_r311250    0.34741    0.40076    0.94436     2.2253        2.567  
 
-pos = 26 ; key = mt_z_wage_mesh_interp_coh_grid ;rown= 772 ,coln= 15
+pos = 31 ; key = mt_z_wage_mesh_interp_coh_grid ;rown= 772 ,coln= 15
 mt_z_wage_mesh_interp_coh_grid :mu= 1.1347 ,sd= 0.67511 ,min= 0.34741 ,max= 2.567
                    zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                    _______    _______    _______    _________    _________
@@ -3252,15 +3415,20 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     ar_z_wage_mesh_r_borr_r1w2        14    14              1            75      1.1347     0.67963       0.34741      2.567
     ar_z_wage_mesh_r_borr_w1r2        15    15              1            75      1.1347     0.67963       0.34741      2.567
     ar_z_wage_prob                    16    16              1            15    0.066667    0.060897     0.0027089    0.16757
-    mt_coh_wkb                        17    18     3.1125e+05            15      16.471      20.726       -21.456     57.277
-    mt_interp_coh_grid_mesh_w_perc    18    19             50           772      18.614      22.333           -20     57.277
-    mt_interp_coh_grid_mesh_z         19    20            772            75      18.614      22.333           -20     57.277
-    mt_interp_coh_grid_mesh_z_wage    20    21            772            15      18.614      22.334           -20     57.277
-    mt_k                              21    22            250           249       17.47      15.467             0      69.93
-    mt_w_perc_mesh_interp_coh_grid    22    23             50           772    -0.69276      17.222           -20       57.2
-    mt_z_trans                        23    24             75            75    0.013333    0.040863             0    0.22626
-    mt_z_wage_mesh_coh_wkb            24    25     3.1125e+05            15      1.1347     0.67508       0.34741      2.567
-    mt_z_wage_mesh_interp_coh_grid    25    26            772            15      1.1347     0.67511       0.34741      2.567
+    cl_mt_coh_wkb_mesh_z_r_borr       17    17          62250            75      16.747      20.557       -20.056     57.277
+    mt_coh_wkb                        18    19     3.1125e+05            15      16.471      20.726       -21.456     57.277
+    mt_coh_wkb_mesh_z_r_borr          19    20     3.1125e+05            75      16.471      20.726       -21.456     57.277
+    mt_interp_coh_grid_mesh_w_perc    20    21             50           772      18.614      22.333           -20     57.277
+    mt_interp_coh_grid_mesh_z         21    22            772            75      18.614      22.333           -20     57.277
+    mt_interp_coh_grid_mesh_z_wage    22    23            772            15      18.614      22.334           -20     57.277
+    mt_k                              23    24            250           249       17.47      15.467             0      69.93
+    mt_w_perc_mesh_interp_coh_grid    24    25             50           772    -0.69276      17.222           -20       57.2
+    mt_z_mesh_coh_wkb                 25    26     3.1125e+05            75          38      21.649             1         75
+    mt_z_mesh_coh_wkb_seg             26    27          62250            75          38      21.649             1         75
+    mt_z_mesh_interp_coh_grid         27    28            772            75          38      21.649             1         75
+    mt_z_trans                        28    29             75            75    0.013333    0.040863             0    0.22626
+    mt_z_wage_mesh_coh_wkb            29    30     3.1125e+05            15      1.1347     0.67508       0.34741      2.567
+    mt_z_wage_mesh_interp_coh_grid    30    31            772            15      1.1347     0.67511       0.34741      2.567
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -3269,7 +3437,7 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
                    i    idx    value
                    _    ___    _____
 
-    it_ameshk_n    1    17     62250
+    it_ameshk_n    1    18     62250
 
 </pre><h2 id="21">Display 3 param_map</h2><pre class="codeinput">    fft_container_map_display(param_map, it_display_summmat_rowmax, it_display_summmat_colmax);
 </pre><pre class="codeoutput">----------------------------------------
@@ -3281,7 +3449,7 @@ CONTAINER NAME: PARAM_MAP
 ----------------------------------------
   Map with properties:
 
-        Count: 40
+        Count: 41
       KeyType: char
     ValueType: any
 
@@ -3290,10 +3458,46 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ----------------------------------------
 ----------------------------------------
 pos = 1 ; key = bl_default ; val = true
+pos = 2 ; key = fl_Amean ; val = 1
+pos = 3 ; key = fl_alpha ; val = 0.36
+pos = 4 ; key = fl_b_bd ; val = -20
+pos = 5 ; key = fl_beta ; val = 0.94
+pos = 6 ; key = fl_c_min ; val = 0.02
+pos = 7 ; key = fl_coh_interp_grid_gap ; val = 0.1
+pos = 8 ; key = fl_crra ; val = 1.5
+pos = 9 ; key = fl_default_wprime ; val = 0
+pos = 10 ; key = fl_delta ; val = 0.08
+pos = 11 ; key = fl_k_max ; val = 70
+pos = 12 ; key = fl_k_min ; val = 0
+pos = 13 ; key = fl_nan_replace ; val = -9999
+pos = 14 ; key = fl_r_save ; val = 0.025
+pos = 15 ; key = fl_tol_dist ; val = 1e-05
+pos = 16 ; key = fl_tol_pol ; val = 1e-05
+pos = 17 ; key = fl_tol_val ; val = 1e-05
+pos = 18 ; key = fl_w ; val = 0.44365
+pos = 19 ; key = fl_w_interp_grid_gap ; val = 0.28
+pos = 20 ; key = fl_w_max ; val = 50
+pos = 21 ; key = fl_w_min ; val = -20
+pos = 22 ; key = fl_z_r_borr_max ; val = 0.095
+pos = 23 ; key = fl_z_r_borr_min ; val = 0.025
+pos = 24 ; key = fl_z_r_borr_n ; val = 5
+pos = 25 ; key = fl_z_r_borr_poiss_mean ; val = 20
+pos = 26 ; key = fl_z_wage_mu ; val = 0
+pos = 27 ; key = fl_z_wage_rho ; val = 0.8
+pos = 28 ; key = fl_z_wage_sig ; val = 0.2
+pos = 29 ; key = it_ak_perc_n ; val = 250
+pos = 30 ; key = it_c_interp_grid_gap ; val = 0.0001
+pos = 31 ; key = it_maxiter_dist ; val = 1000
+pos = 32 ; key = it_maxiter_val ; val = 250
+pos = 33 ; key = it_tol_pol_nochange ; val = 25
+pos = 34 ; key = it_w_perc_n ; val = 50
+pos = 35 ; key = it_z_n ; val = 75
+pos = 36 ; key = it_z_wage_n ; val = 15
 pos = 37 ; key = st_analytical_stationary_type ; val = eigenvector
 pos = 38 ; key = st_model ; val = ipwkbzr
-pos = 39 ; key = st_z_r_borr_drv_ele_type ; val = unif
-pos = 40 ; key = st_z_r_borr_drv_prb_type ; val = poiss
+pos = 39 ; key = st_v_coh_z_interp_method ; val = method_cell
+pos = 40 ; key = st_z_r_borr_drv_ele_type ; val = unif
+pos = 41 ; key = st_z_r_borr_drv_prb_type ; val = poiss
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Scalars in Container and Sizes and Basic Statistics
@@ -3301,41 +3505,42 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
                               i     idx     value 
                               __    ___    _______
 
-    fl_Amean                   1     2           1
-    fl_alpha                   2     3        0.36
-    fl_b_bd                    3     4         -20
-    fl_beta                    4     5        0.94
-    fl_c_min                   5     6        0.02
-    fl_coh_interp_grid_gap     6     7         0.1
-    fl_crra                    7     8         1.5
-    fl_default_wprime          8     9           0
-    fl_delta                   9    10        0.08
-    fl_k_max                  10    11          70
-    fl_k_min                  11    12           0
-    fl_nan_replace            12    13       -9999
-    fl_r_save                 13    14       0.025
-    fl_tol_dist               14    15       1e-05
-    fl_tol_pol                15    16       1e-05
-    fl_tol_val                16    17       1e-05
-    fl_w                      17    18     0.44365
-    fl_w_interp_grid_gap      18    19        0.28
-    fl_w_max                  19    20          50
-    fl_w_min                  20    21         -20
-    fl_z_r_borr_max           21    22       0.095
-    fl_z_r_borr_min           22    23       0.025
-    fl_z_r_borr_n             23    24           5
-    fl_z_r_borr_poiss_mean    24    25          20
-    fl_z_wage_mu              25    26           0
-    fl_z_wage_rho             26    27         0.8
-    fl_z_wage_sig             27    28         0.2
-    it_ak_perc_n              28    29         250
-    it_c_interp_grid_gap      29    30      0.0001
-    it_maxiter_dist           30    31        1000
-    it_maxiter_val            31    32         250
-    it_tol_pol_nochange       32    33          25
-    it_w_perc_n               33    34          50
-    it_z_n                    34    35          75
-    it_z_wage_n               35    36          15
+    bl_default                 1     1           1
+    fl_Amean                   2     2           1
+    fl_alpha                   3     3        0.36
+    fl_b_bd                    4     4         -20
+    fl_beta                    5     5        0.94
+    fl_c_min                   6     6        0.02
+    fl_coh_interp_grid_gap     7     7         0.1
+    fl_crra                    8     8         1.5
+    fl_default_wprime          9     9           0
+    fl_delta                  10    10        0.08
+    fl_k_max                  11    11          70
+    fl_k_min                  12    12           0
+    fl_nan_replace            13    13       -9999
+    fl_r_save                 14    14       0.025
+    fl_tol_dist               15    15       1e-05
+    fl_tol_pol                16    16       1e-05
+    fl_tol_val                17    17       1e-05
+    fl_w                      18    18     0.44365
+    fl_w_interp_grid_gap      19    19        0.28
+    fl_w_max                  20    20          50
+    fl_w_min                  21    21         -20
+    fl_z_r_borr_max           22    22       0.095
+    fl_z_r_borr_min           23    23       0.025
+    fl_z_r_borr_n             24    24           5
+    fl_z_r_borr_poiss_mean    25    25          20
+    fl_z_wage_mu              26    26           0
+    fl_z_wage_rho             27    27         0.8
+    fl_z_wage_sig             28    28         0.2
+    it_ak_perc_n              29    29         250
+    it_c_interp_grid_gap      30    30      0.0001
+    it_maxiter_dist           31    31        1000
+    it_maxiter_val            32    32         250
+    it_tol_pol_nochange       33    33          25
+    it_w_perc_n               34    34          50
+    it_z_n                    35    35          75
+    it_z_wage_n               36    36          15
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -3344,11 +3549,11 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
                                      i    idx
                                      _    ___
 
-    bl_default                       1     1 
-    st_analytical_stationary_type    2    37 
-    st_model                         3    38 
-    st_z_r_borr_drv_ele_type         4    39 
-    st_z_r_borr_drv_prb_type         5    40 
+    st_analytical_stationary_type    1    37 
+    st_model                         2    38 
+    st_v_coh_z_interp_method         3    39 
+    st_z_r_borr_drv_ele_type         4    40 
+    st_z_r_borr_drv_prb_type         5    41 
 
 </pre><h2 id="22">Display 4 func_map</h2><pre class="codeinput">    fft_container_map_display(func_map, it_display_summmat_rowmax, it_display_summmat_colmax);
 </pre><pre class="codeoutput">----------------------------------------
@@ -3455,7 +3660,7 @@ function [mt_ev_condi_z_max, mt_ev_condi_z_max_idx, mt_ev_condi_z_max_kp, mt_ev_
 if (~isempty(varargin))
     
     % override when called from outside
-    [mt_val, param_map, support_map, armt_map] = varargin{:};
+    [clmt_val_wkb_interpolated, param_map, support_map, armt_map] = varargin{:};
     
 else
     
@@ -3515,10 +3720,12 @@ else
     [armt_map, func_map] = ffs_ipwkbzr_get_funcgrid(param_map, support_map);
     
     % Get Defaults
-    params_group = values(param_map, {'it_z_n'});
-    [it_z_n] = params_group{:};    
-    params_group = values(armt_map, {'mt_coh_wkb', 'ar_z_r_borr'});
-    [mt_coh_wkb, ar_z_r_borr] = params_group{:};
+    params_group = values(param_map, {'it_z_n', 'fl_z_r_borr_n'});
+    [it_z_n, fl_z_r_borr_n] = params_group{:};    
+    params_group = values(param_map, {'st_v_coh_z_interp_method'});
+    [st_v_coh_z_interp_method] = params_group{:};    
+    params_group = values(armt_map, {'mt_coh_wkb', 'ar_z_r_borr', 'ar_ak_perc', 'ar_w_level'});
+    [mt_coh_wkb, ar_z_r_borr, ar_ak_perc, ar_w_level] = params_group{:};
     params_group = values(func_map, {'f_util_standin_coh'});
     [f_util_standin_coh] = params_group{:};
     
@@ -3538,6 +3745,25 @@ else
     mt_val = f_util_standin_coh(mt_coh_wkb(:), ar_z_r_borr);
     % mt_val is: (I^k x I^w x M^r) by (M^z x M^r)
     mt_val = reshape(mt_val, [size(mt_coh_wkb, 1), it_z_n]);
+
+    if (ismember(st_v_coh_z_interp_method, ["method_idx_a", "method_idx_b", "method_cell"]))
+    
+        it_ak_perc_n = length(ar_ak_perc);
+        it_w_interp_n = length(ar_w_level);
+        it_wak_n = it_w_interp_n*it_ak_perc_n;
+        clmt_val_wkb_interpolated = cell([fl_z_r_borr_n, 1]);
+        for it_z_r_borr_ctr = 1:1:fl_z_r_borr_n
+            it_mt_val_row_start = it_wak_n*(it_z_r_borr_ctr-1) + 1;
+            it_mt_val_row_end = it_mt_val_row_start + it_wak_n - 1;
+            clmt_val_wkb_interpolated{it_z_r_borr_ctr} = ...
+                mt_val(it_mt_val_row_start:it_mt_val_row_end, :);
+        end
+    
+    elseif (ismember(st_v_coh_z_interp_method, ["method_matrix", "method_mat_seg"]))
+        
+        clmt_val_wkb_interpolated = mt_val;
+        
+    end
         
     % Display Parameters
     if (bl_display_evf)
@@ -3560,6 +3786,8 @@ params_group = values(param_map, {'it_z_n', 'fl_z_r_borr_n', 'it_z_wage_n'});
 [it_z_n, fl_z_r_borr_n, it_z_wage_n] = params_group{:};
 params_group = values(param_map, {'fl_nan_replace', 'fl_b_bd'});
 [fl_nan_replace, fl_b_bd] = params_group{:};
+params_group = values(param_map, {'st_v_coh_z_interp_method'});
+[st_v_coh_z_interp_method] = params_group{:};
 
 % support_map
 params_group = values(support_map, {'bl_graph_onebyones','bl_display_evf', 'bl_graph_evf'});
@@ -3623,15 +3851,24 @@ for it_z_r_borr_ctr = 1:1:fl_z_r_borr_n
     it_mt_z_trans_row_start = it_z_wage_n*(it_z_r_borr_ctr-1) + 1;
     it_mt_z_trans_row_end = it_mt_z_trans_row_start + it_z_wage_n - 1;    
     mt_z_trans_cur_z_r_borr = mt_z_trans(it_mt_z_trans_row_start:it_mt_z_trans_row_end, :);
-
-    % Val Segment : ((M^z) by (M^z x M^r))' for one m^r
-    it_mt_val_row_start = it_wak_n*(it_z_r_borr_ctr-1) + 1;
-    it_mt_val_row_end = it_mt_val_row_start + it_wak_n - 1;
-    mt_val_cur_z_r_borr = mt_val(it_mt_val_row_start:it_mt_val_row_end, :);
     
-    % EV(k',b';zw,zr) = E(V(coh(k',b',zr),zw',zr')|zw,zr) for one zr and all zw
-    mt_ev_condi_z(:, it_mt_z_trans_row_start:it_mt_z_trans_row_end) = ...
-        mt_val_cur_z_r_borr*mt_z_trans_cur_z_r_borr';
+    if (ismember(st_v_coh_z_interp_method, ["method_idx_a", "method_idx_b", "method_cell"]))
+        
+        mt_ev_condi_z(:, it_mt_z_trans_row_start:it_mt_z_trans_row_end) = ...
+            clmt_val_wkb_interpolated{it_z_r_borr_ctr}*mt_z_trans_cur_z_r_borr';
+        
+    elseif (ismember(st_v_coh_z_interp_method, ["method_matrix", "method_mat_seg"]))
+        
+        % Val Segment : ((M^z) by (M^z x M^r))' for one m^r
+        it_mt_val_row_start = it_wak_n*(it_z_r_borr_ctr-1) + 1;
+        it_mt_val_row_end = it_mt_val_row_start + it_wak_n - 1;
+        mt_val_cur_z_r_borr = clmt_val_wkb_interpolated(it_mt_val_row_start:it_mt_val_row_end, :);
+
+        % EV(k',b';zw,zr) = E(V(coh(k',b',zr),zw',zr')|zw,zr) for one zr and all zw
+        mt_ev_condi_z(:, it_mt_z_trans_row_start:it_mt_z_trans_row_end) = ...
+            mt_val_cur_z_r_borr*mt_z_trans_cur_z_r_borr';
+        
+    end
     
 end
 
@@ -3774,60 +4011,61 @@ if (bl_graph_evf)
 
     
     %% Graph 1, V and EV
-    if (~bl_graph_onebyones)
-        figure('PaperPosition', [0 0 14 4]);
-        hold on;
-    end
-    
-    
-    for subplot_j=1:1:2
-        
-        if (~bl_graph_onebyones)
-            hAxis(subplot_j) = subplot(1,2,subplot_j);
-        else
-            figure('PaperPosition', [0 0 7 4]);
-        end
-        
-        if (subplot_j==1)
-            chart = plot(mt_val);
-        end
-        if (subplot_j==2)
-            chart = plot(mt_ev_condi_z);
-        end
-        
-        clr = jet(numel(chart));
-        for m = 1:numel(chart)
-            set(chart(m),'Color',clr(m,:))
-        end
-        
-        legend(chart(ar_it_z_graph), cl_st_legendCell(ar_it_z_graph), 'Location','southeast');
-        
-        if (subplot_j==1)
-            title('V(coh,zp); w(k+b),k,z');
-        end
-        if (subplot_j==2)
-            title('E_z(V(coh,zp|z))');
-        end
-        
-        ylabel('Next Period Value');
-        xlabel({'Index of Cash-on-Hand Discrete Point'...
-            'Each Segment is a w=k+b; within segment increasing k'...
-            'EV and V identical if shock is fully persistent'});
-        grid on;
-        grid minor;
-    end
-    
-    % Share y axis
-    if (~bl_graph_onebyones)
-        linkaxes(hAxis,'y');
-    end
-    
-    % save file
-    if (bl_img_save)
-        mkdir(support_map('st_img_path'));
-        st_file_name = [st_img_prefix st_img_name_main '_vev' st_img_suffix];
-        saveas(gcf, strcat(st_img_path, st_file_name));
-    end
+%     if (~bl_graph_onebyones)
+%         figure('PaperPosition', [0 0 14 4]);
+%         hold on;
+%     end
+%     
+%     
+%     for subplot_j=1:1:2
+%         
+%         if (~bl_graph_onebyones)
+%             hAxis(subplot_j) = subplot(1,2,subplot_j);
+%         else
+%             figure('PaperPosition', [0 0 7 4]);
+%         end
+%         
+% %         cl_val_wkb_interpolated
+%         if (subplot_j==1)
+%             chart = plot(mt_val);
+%         end
+%         if (subplot_j==2)
+%             chart = plot(mt_ev_condi_z);
+%         end
+%         
+%         clr = jet(numel(chart));
+%         for m = 1:numel(chart)
+%             set(chart(m),'Color',clr(m,:))
+%         end
+%         
+%         legend(chart(ar_it_z_graph), cl_st_legendCell(ar_it_z_graph), 'Location','southeast');
+%         
+%         if (subplot_j==1)
+%             title('V(coh,zp); w(k+b),k,z');
+%         end
+%         if (subplot_j==2)
+%             title('E_z(V(coh,zp|z))');
+%         end
+%         
+%         ylabel('Next Period Value');
+%         xlabel({'Index of Cash-on-Hand Discrete Point'...
+%             'Each Segment is a w=k+b; within segment increasing k'...
+%             'EV and V identical if shock is fully persistent'});
+%         grid on;
+%         grid minor;
+%     end
+%     
+%     % Share y axis
+%     if (~bl_graph_onebyones)
+%         linkaxes(hAxis,'y');
+%     end
+%     
+%     % save file
+%     if (bl_img_save)
+%         mkdir(support_map('st_img_path'));
+%         st_file_name = [st_img_prefix st_img_name_main '_vev' st_img_suffix];
+%         saveas(gcf, strcat(st_img_path, st_file_name));
+%     end
     
     %% Graph 2, max(EV)
     
@@ -4034,7 +4272,6 @@ if (bl_graph_evf)
     end
     
 end
-
 
 %% Display Various Containers
 

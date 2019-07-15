@@ -156,7 +156,7 @@ CONTAINER NAME: PARAM_MAP
 ----------------------------------------
   Map with properties:
 
-        Count: 22
+        Count: 23
       KeyType: char
     ValueType: any
 
@@ -184,8 +184,9 @@ pos = 17 ; key = it_z_n ; val = 75
 pos = 18 ; key = it_z_wage_n ; val = 15
 pos = 19 ; key = st_forbrblk_type ; val = seg3
 pos = 20 ; key = st_model ; val = ipwkbzr_fibs
-pos = 21 ; key = st_z_r_infbr_drv_ele_type ; val = unif
-pos = 22 ; key = st_z_r_infbr_drv_prb_type ; val = poiss
+pos = 21 ; key = st_v_coh_z_interp_method ; val = method_cell
+pos = 22 ; key = st_z_r_infbr_drv_ele_type ; val = unif
+pos = 23 ; key = st_z_r_infbr_drv_prb_type ; val = poiss
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Scalars in Container and Sizes and Basic Statistics
@@ -221,8 +222,9 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
     st_forbrblk_type             1    19 
     st_model                     2    20 
-    st_z_r_infbr_drv_ele_type    3    21 
-    st_z_r_infbr_drv_prb_type    4    22 
+    st_v_coh_z_interp_method     3    21 
+    st_z_r_infbr_drv_ele_type    4    22 
+    st_z_r_infbr_drv_prb_type    5    23 
 
 ----------------------------------------
 ----------------------------------------
@@ -294,7 +296,7 @@ CONTAINER NAME: PARAM_MAP
 ----------------------------------------
   Map with properties:
 
-        Count: 49
+        Count: 50
       KeyType: char
     ValueType: any
 
@@ -349,8 +351,9 @@ pos = 44 ; key = it_z_wage_n ; val = 15
 pos = 45 ; key = st_analytical_stationary_type ; val = eigenvector
 pos = 46 ; key = st_forbrblk_type ; val = seg3
 pos = 47 ; key = st_model ; val = ipwkbzr_fibs
-pos = 48 ; key = st_z_r_infbr_drv_ele_type ; val = unif
-pos = 49 ; key = st_z_r_infbr_drv_prb_type ; val = poiss
+pos = 48 ; key = st_v_coh_z_interp_method ; val = method_cell
+pos = 49 ; key = st_z_r_infbr_drv_ele_type ; val = unif
+pos = 50 ; key = st_z_r_infbr_drv_prb_type ; val = poiss
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Scalars in Container and Sizes and Basic Statistics
@@ -413,8 +416,9 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     st_analytical_stationary_type    1    45 
     st_forbrblk_type                 2    46 
     st_model                         3    47 
-    st_z_r_infbr_drv_ele_type        4    48 
-    st_z_r_infbr_drv_prb_type        5    49 
+    st_v_coh_z_interp_method         4    48 
+    st_z_r_infbr_drv_ele_type        5    49 
+    st_z_r_infbr_drv_prb_type        6    50 
 
 ----------------------------------------
 ----------------------------------------
@@ -559,6 +563,9 @@ params_group = values(param_map, {<span class="string">'bl_b_is_principle'</span
     <span class="string">'it_c_interp_grid_gap'</span>, <span class="string">'fl_w_interp_grid_gap'</span>, <span class="string">'fl_coh_interp_grid_gap'</span>});
 [it_w_perc_n, it_ak_perc_n, it_coh_bridge_perc_n, <span class="keyword">...</span>
     it_c_interp_grid_gap, fl_w_interp_grid_gap, fl_coh_interp_grid_gap] = params_group{:};
+
+params_group = values(param_map, {<span class="string">'st_v_coh_z_interp_method'</span>});
+[st_v_coh_z_interp_method] = params_group{:};
 </pre><h2 id="6">Parse Parameters 2</h2><pre class="codeinput"><span class="comment">% param_map shock income</span>
 params_group = values(param_map, {<span class="string">'it_z_wage_n'</span>, <span class="string">'fl_z_wage_mu'</span>, <span class="string">'fl_z_wage_rho'</span>, <span class="string">'fl_z_wage_sig'</span>});
 [it_z_wage_n, fl_z_wage_mu, fl_z_wage_rho, fl_z_wage_sig] = params_group{:};
@@ -1441,10 +1448,50 @@ ar_bl_w_level_invalid =  min(mt_bl_wkb_invalid, [], 1);
 ar_w_level_full_dup = repmat(ar_w_level_full, [1,fl_z_r_infbr_n]);
 fl_w_level_min_valid = min(ar_w_level_full_dup(~ar_bl_w_level_invalid));
 </pre><h2 id="21">COH3: Update Valid 2nd stage choice matrix</h2><p>ar_w_level = linspace(fl_w_level_min_valid, fl_w_max, it_w_interp_n); ar_k_max = ar_w_level - fl_b_bd; mt_k = (ar_k_max'*ar_ak_perc)'; mt_a = (ar_w_level - mt_k); ar_a_meshk = mt_a(:); ar_k_mesha = mt_k(:);</p><h2 id="22">COH4: Select only Valid (k(w), a) choices</h2><pre class="codeinput"><span class="comment">% mt_coh_wkb = mt_coh_wkb_full(~ar_bl_wkb_invalid, :);</span>
-mt_coh_wkb = mt_coh_wkb_full;
 <span class="comment">% mt_z_wage_mesh_coh_wkb = repmat(ar_z, [size(mt_coh_wkb,1),1]);</span>
 <span class="comment">% mt_z_r_infbr_mesh_coh_wkb = repmat(ar_z_r_infbr, [size(mt_coh_wkb,1),1]);</span>
+
+<span class="comment">% it_ak_perc_n = length(ar_ak_perc);</span>
+<span class="comment">% it_w_interp_n = length(ar_w_level);</span>
+
+mt_coh_wkb = mt_coh_wkb_full;
+it_wak_n = size(mt_coh_wkb,1)/fl_z_r_infbr_n;
+
+mt_coh_wkb_mesh_z_r_infbr = repmat(mt_coh_wkb_full, [1, fl_z_r_infbr_n]);
+mt_z_r_infbr_mesh_coh_wkb = repmat(ar_z_r_infbr, [size(mt_coh_wkb,1),1]);
+
 mt_z_wage_mesh_coh_wkb = repmat(ar_z_wage, [size(mt_coh_wkb,1),1]);
+mt_z_mesh_coh_wkb = repmat((1:it_z_n), [size(mt_coh_wkb,1), 1]);
+mt_z_mesh_coh_wkb_seg = repmat((1:it_z_n), [it_wak_n, 1]);
+
+<span class="keyword">if</span> (ismember(st_v_coh_z_interp_method, [<span class="string">"method_cell"</span>]))
+
+    cl_mt_coh_wkb_mesh_z_r_infbr = cell([fl_z_r_infbr_n, 1]);
+    <span class="keyword">for</span> it_z_r_infbr_ctr = 1:1:fl_z_r_infbr_n
+        it_mt_val_row_start = it_wak_n*(it_z_r_infbr_ctr-1) + 1;
+        it_mt_val_row_end = it_mt_val_row_start + it_wak_n - 1;
+        cl_mt_coh_wkb_mesh_z_r_infbr{it_z_r_infbr_ctr} = <span class="keyword">...</span>
+            mt_coh_wkb_mesh_z_r_infbr(it_mt_val_row_start:it_mt_val_row_end, :);
+    <span class="keyword">end</span>
+
+<span class="keyword">elseif</span> (ismember(st_v_coh_z_interp_method, [<span class="string">"method_idx_a"</span>, <span class="string">"method_idx_b"</span>]))
+
+    <span class="comment">% This is borrowing with default or not condition</span>
+    fl_min_mt_coh = fl_b_bd;
+
+    cl_mt_coh_wkb_mesh_z_r_infbr = cell([fl_z_r_infbr_n, 1]);
+    <span class="keyword">for</span> it_z_r_infbr_ctr = 1:1:fl_z_r_infbr_n
+        it_mt_val_row_start = it_wak_n*(it_z_r_infbr_ctr-1) + 1;
+        it_mt_val_row_end = it_mt_val_row_start + it_wak_n - 1;
+
+        mt_coh_wkb_mesh_z_r_infbr_seg = <span class="keyword">...</span>
+            1 + ((mt_coh_wkb_mesh_z_r_infbr(it_mt_val_row_start:it_mt_val_row_end, :) - fl_min_mt_coh)/fl_coh_interp_grid_gap);
+
+        cl_mt_coh_wkb_mesh_z_r_infbr{it_z_r_infbr_ctr} = mt_coh_wkb_mesh_z_r_infbr_seg;
+
+    <span class="keyword">end</span>
+
+<span class="keyword">end</span>
 </pre><h2 id="23">Generate 1st Stage States: Interpolation Cash-on-hand Interpolation Grid</h2><p>For the iwkz problems, we solve the problem along a grid of cash-on-hand values, the interpolate to find v(k',b',z) at (k',b') choices. Crucially, we have to coh matrxies</p><pre class="codeinput">fl_max_mt_coh = max(max(mt_coh_wkb));
 
 <span class="comment">% This is savings only condition</span>
@@ -1458,10 +1505,12 @@ fl_min_mt_coh = fl_b_bd;
 
 it_coh_interp_n = (fl_max_mt_coh-fl_min_mt_coh)/(fl_coh_interp_grid_gap);
 ar_interp_coh_grid = fft_array_add_zero(linspace(fl_min_mt_coh, fl_max_mt_coh, it_coh_interp_n), true);
+it_coh_interp_n = length(ar_interp_coh_grid);
 [mt_interp_coh_grid_mesh_z_wage, mt_z_wage_mesh_interp_coh_grid] = ndgrid(ar_interp_coh_grid, ar_z_wage);
 mt_interp_coh_grid_mesh_w_perc = repmat(ar_interp_coh_grid, [it_w_perc_n, 1]);
 
 mt_interp_coh_grid_mesh_z = repmat(ar_interp_coh_grid', [1, it_z_n]);
+mt_z_mesh_interp_coh_grid = repmat((1:it_z_n), [it_coh_interp_n, 1]);
 </pre><h2 id="24">Generate 1st Stage Choices: Interpolation Cash-on-hand Interpolation Grid</h2><p>previously, our ar_w was the first stage choice grid, the grid was the same for all coh levels. Now, for each coh level, there is a different ar_w. ar_interp_coh_grid is (1 by ar_interp_coh_grid) and ar_w_perc is ( 1 by it_w_perc_n). Conditional on z, each choice matrix is (it_w_perc_n by ar_interp_coh_grid). Here we are pre-computing the choice matrix. This could be a large matrix if the choice grid is large. This is the matrix of aggregate savings choices</p><pre class="codeinput"><span class="comment">% 1. Given COH grid, w choices in terms of cash-on-hand percentages</span>
 <span class="keyword">if</span> (fl_min_mt_coh &lt; 0)
     <span class="comment">% borrowing bound is below zero</span>
@@ -1506,8 +1555,17 @@ armt_map(<span class="string">'mt_interp_coh_grid_mesh_w_perc'</span>) = mt_inte
 armt_map(<span class="string">'mt_w_perc_mesh_interp_coh_grid'</span>) = mt_w_perc_mesh_interp_coh_grid;
 
 armt_map(<span class="string">'mt_interp_coh_grid_mesh_z'</span>) = mt_interp_coh_grid_mesh_z;
+armt_map(<span class="string">'mt_z_mesh_interp_coh_grid'</span>) = mt_z_mesh_interp_coh_grid;
 </pre><h2 id="30">Store armt_map (3): 2nd stage reachable coh(k(w), a(w,k), z', r)</h2><p>Dimensions of Various Grids: I for level grid, M for shock grid, P for percent grid. These are grids for 1st stage solution</p><div><ol><li>mt_coh_wkb: ((P^{k}_{a&gt;=0} + P^{k}_{a&lt;0} x P^{w frac bridge} ) x I^w x M^r) by (M^z) matrix</li><li>mt_z_wage_mesh_coh_wkb: same as mt_coh_wkb</li></ol></div><pre class="codeinput">armt_map(<span class="string">'mt_coh_wkb'</span>) = mt_coh_wkb_full;
 armt_map(<span class="string">'mt_z_wage_mesh_coh_wkb'</span>) = mt_z_wage_mesh_coh_wkb;
+
+armt_map(<span class="string">'mt_z_mesh_coh_wkb'</span>) = mt_z_mesh_coh_wkb;
+armt_map(<span class="string">'mt_z_wage_mesh_coh_wkb'</span>) = mt_z_wage_mesh_coh_wkb;
+
+armt_map(<span class="string">'cl_mt_coh_wkb_mesh_z_r_infbr'</span>) = cl_mt_coh_wkb_mesh_z_r_infbr;
+armt_map(<span class="string">'mt_z_mesh_coh_wkb_seg'</span>) = mt_z_mesh_coh_wkb_seg;
+
+<span class="comment">% armt_map('mt_z_r_borr_mesh_coh_wkb') = mt_z_r_borr_mesh_coh_wkb;</span>
 </pre><h2 id="31">Store armt_map (4): 2nd stage additional arrays</h2><p>Dimensions of Various Grids: I for level grid, M for shock grid, P for percent grid. These are grids for 1st stage solution</p><div><ol><li>mt_k: (I^w) by (P^{k and b})</li><li>ar_a_meshk: 1 by (I^w x P^{k and b})</li><li>ar_k_mesha: 1 by (I^w x P^{k and b})</li><li>ar_aplusk_mesh: 1 by (I^w x P^{k and b})</li><li>it_ameshk_n: scalar</li></ol></div><pre class="codeinput">armt_map(<span class="string">'mt_k'</span>) = mt_k;
 armt_map(<span class="string">'ar_a_meshk'</span>) = ar_a_meshk;
 armt_map(<span class="string">'ar_k_mesha'</span>) = ar_k_mesha;
@@ -2105,7 +2163,7 @@ CONTAINER NAME: ARMT_MAP
 ----------------------------------------
   Map with properties:
 
-        Count: 37
+        Count: 41
       KeyType: char
     ValueType: any
 
@@ -2276,8 +2334,19 @@ ar_z_wage_prob :mu= 0.066667 ,sd= 0.060897 ,min= 0.0027089 ,max= 0.16757
 
     zi_1_r1    0.0027089    0.0069499    0.16757    0.0069499    0.0027089
 
-pos = 22 ; key = it_ameshk_n ; val = 2475
-pos = 23 ; key = mt_bl_w_perc_mesh_interp_coh_grid_wneg ;rown= 25 ,coln= 38
+pos = 22 ; key = cl_mt_coh_wkb_mesh_z_r_infbr ;rown= 2475 ,coln= 45
+cl_mt_coh_wkb_mesh_z_r_infbr :mu= 7.0869 ,sd= 21.1157 ,min= -20.0564 ,max= 57.2772
+                     zi_1_C1    zi_2_C2    zi_23_c23    zi_44_c44    zi_45_c45
+                     _______    _______    _________    _________    _________
+
+    zi_1_R1          -20.056    -20.056     -20.056      -20.056      -20.056 
+    zi_2_R2          -20.056    -20.056     -20.056      -20.056      -20.056 
+    zi_1238_r1238    -4.9012    -4.7915     -3.6728      -1.0366     -0.33339 
+    zi_2474_r2474     46.107     46.352      48.839       54.701       56.264 
+    zi_2475_r2475     45.954       46.2      48.708       54.619       56.195 
+
+pos = 23 ; key = it_ameshk_n ; val = 2475
+pos = 24 ; key = mt_bl_w_perc_mesh_interp_coh_grid_wneg ;rown= 25 ,coln= 38
 mt_bl_w_perc_mesh_interp_coh_grid_wneg :mu= 0.61895 ,sd= 0.4859 ,min= 0 ,max= 1
                  zi_1_C1    zi_2_C2    zi_19_c19    zi_37_c37    zi_38_c38
                  _______    _______    _________    _________    _________
@@ -2288,7 +2357,7 @@ mt_bl_w_perc_mesh_interp_coh_grid_wneg :mu= 0.61895 ,sd= 0.4859 ,min= 0 ,max= 1
     zi_24_r24     true       true        false        false        false  
     zi_25_r25     true       true        false        false        false  
 
-pos = 24 ; key = mt_coh_bridge_perc_mesh_w_level_neg ;rown= 10 ,coln= 3
+pos = 25 ; key = mt_coh_bridge_perc_mesh_w_level_neg ;rown= 10 ,coln= 3
 mt_coh_bridge_perc_mesh_w_level_neg :mu= 0.5 ,sd= 0.41523 ,min= 0 ,max= 1
                  zi_1_c1    zi_2_c2    zi_3_c3
                  _______    _______    _______
@@ -2299,7 +2368,7 @@ mt_coh_bridge_perc_mesh_w_level_neg :mu= 0.5 ,sd= 0.41523 ,min= 0 ,max= 1
     zi_9_R9         0         0.5         1   
     zi_10_r10       0         0.5         1   
 
-pos = 25 ; key = mt_coh_w_perc_ratio_wneg ;rown= 588 ,coln= 1
+pos = 26 ; key = mt_coh_w_perc_ratio_wneg ;rown= 588 ,coln= 1
 mt_coh_w_perc_ratio_wneg :mu= 0.72051 ,sd= 0.38072 ,min= 0 ,max= 1
                    zi_1_c1
                    _______
@@ -2310,7 +2379,7 @@ mt_coh_w_perc_ratio_wneg :mu= 0.72051 ,sd= 0.38072 ,min= 0 ,max= 1
     zi_587_r587       1   
     zi_588_r588       1   
 
-pos = 26 ; key = mt_coh_wkb ;rown= 7425 ,coln= 15
+pos = 27 ; key = mt_coh_wkb ;rown= 7425 ,coln= 15
 mt_coh_wkb :mu= 5.5134 ,sd= 22.6417 ,min= -38.5564 ,max= 57.2772
                      zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                      _______    _______    _______    _________    _________
@@ -2321,7 +2390,7 @@ mt_coh_wkb :mu= 5.5134 ,sd= 22.6417 ,min= -38.5564 ,max= 57.2772
     zi_7424_r7424     45.347     45.592     48.079      53.941       55.504 
     zi_7425_r7425     44.334      44.58     47.088      52.998       54.575 
 
-pos = 27 ; key = mt_interp_coh_grid_mesh_w_perc ;rown= 25 ,coln= 38
+pos = 28 ; key = mt_interp_coh_grid_mesh_w_perc ;rown= 25 ,coln= 38
 mt_interp_coh_grid_mesh_w_perc :mu= 18.1481 ,sd= 22.8237 ,min= -20 ,max= 57.2772
                  zi_1_C1    zi_2_C2    zi_19_c19    zi_37_c37    zi_38_c38
                  _______    _______    _________    _________    _________
@@ -2332,7 +2401,7 @@ mt_interp_coh_grid_mesh_w_perc :mu= 18.1481 ,sd= 22.8237 ,min= -20 ,max= 57.2772
     zi_24_r24      -20      -17.853     16.492       55.131       57.277  
     zi_25_r25      -20      -17.853     16.492       55.131       57.277  
 
-pos = 28 ; key = mt_interp_coh_grid_mesh_z ;rown= 38 ,coln= 45
+pos = 29 ; key = mt_interp_coh_grid_mesh_z ;rown= 38 ,coln= 45
 mt_interp_coh_grid_mesh_z :mu= 18.1481 ,sd= 22.8183 ,min= -20 ,max= 57.2772
                  zi_1_C1    zi_2_C2    zi_23_c23    zi_44_c44    zi_45_c45
                  _______    _______    _________    _________    _________
@@ -2343,7 +2412,7 @@ mt_interp_coh_grid_mesh_z :mu= 18.1481 ,sd= 22.8183 ,min= -20 ,max= 57.2772
     zi_37_r37     55.131     55.131      55.131       55.131       55.131 
     zi_38_r38     57.277     57.277      57.277       57.277       57.277 
 
-pos = 29 ; key = mt_interp_coh_grid_mesh_z_wage ;rown= 38 ,coln= 15
+pos = 30 ; key = mt_interp_coh_grid_mesh_z_wage ;rown= 38 ,coln= 15
 mt_interp_coh_grid_mesh_z_wage :mu= 18.1481 ,sd= 22.8317 ,min= -20 ,max= 57.2772
                  zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                  _______    _______    _______    _________    _________
@@ -2354,7 +2423,7 @@ mt_interp_coh_grid_mesh_z_wage :mu= 18.1481 ,sd= 22.8317 ,min= -20 ,max= 57.2772
     zi_37_r37     55.131     55.131     55.131      55.131       55.131 
     zi_38_r38     57.277     57.277     57.277      57.277       57.277 
 
-pos = 30 ; key = mt_k ;rown= 45 ,coln= 55
+pos = 31 ; key = mt_k ;rown= 45 ,coln= 55
 mt_k :mu= 12.7355 ,sd= 14.1856 ,min= 0 ,max= 69.93
                  zi_1_C1     zi_2_C2     zi_28_c28    zi_54_c54    zi_55_c55
                  _______    _________    _________    _________    _________
@@ -2365,7 +2434,7 @@ mt_k :mu= 12.7355 ,sd= 14.1856 ,min= 0 ,max= 69.93
     zi_44_r44       0           2.071      14.497       66.271      68.342  
     zi_45_r45       0          2.1191      14.834       67.811       69.93  
 
-pos = 31 ; key = mt_w_level_neg_mesh_coh_bridge_perc ;rown= 10 ,coln= 3
+pos = 32 ; key = mt_w_level_neg_mesh_coh_bridge_perc ;rown= 10 ,coln= 3
 mt_w_level_neg_mesh_coh_bridge_perc :mu= -10.4545 ,sd= 6.1969 ,min= -20 ,max= -0.90909
                  zi_1_c1     zi_2_c2     zi_3_c3 
                  ________    ________    ________
@@ -2376,7 +2445,7 @@ mt_w_level_neg_mesh_coh_bridge_perc :mu= -10.4545 ,sd= 6.1969 ,min= -20 ,max= -0
     zi_9_R9       -3.0303     -3.0303     -3.0303
     zi_10_r10    -0.90909    -0.90909    -0.90909
 
-pos = 32 ; key = mt_w_perc_mesh_interp_coh_grid ;rown= 25 ,coln= 38
+pos = 33 ; key = mt_w_perc_mesh_interp_coh_grid ;rown= 25 ,coln= 38
 mt_w_perc_mesh_interp_coh_grid :mu= -0.92596 ,sd= 17.5517 ,min= -20 ,max= 57.1999
                  zi_1_C1    zi_2_C2    zi_19_c19    zi_37_c37    zi_38_c38
                  _______    _______    _________    _________    _________
@@ -2387,7 +2456,7 @@ mt_w_perc_mesh_interp_coh_grid :mu= -0.92596 ,sd= 17.5517 ,min= -20 ,max= 57.199
     zi_24_r24      -20      -17.945      14.938       51.931       53.986 
     zi_25_r25      -20      -17.856      16.455       55.055         57.2 
 
-pos = 33 ; key = mt_w_perc_mesh_interp_coh_grid_wneg ;rown= 588 ,coln= 1
+pos = 34 ; key = mt_w_perc_mesh_interp_coh_grid_wneg ;rown= 588 ,coln= 1
 mt_w_perc_mesh_interp_coh_grid_wneg :mu= -12.4463 ,sd= 5.9341 ,min= -20 ,max= -0.02
                    zi_1_c1 
                    ________
@@ -2398,7 +2467,7 @@ mt_w_perc_mesh_interp_coh_grid_wneg :mu= -12.4463 ,sd= 5.9341 ,min= -20 ,max= -0
     zi_587_r587     -3.8555
     zi_588_r588    -0.64207
 
-pos = 34 ; key = mt_w_perc_mesh_interp_coh_grid_wpos ;rown= 362 ,coln= 1
+pos = 35 ; key = mt_w_perc_mesh_interp_coh_grid_wpos ;rown= 362 ,coln= 1
 mt_w_perc_mesh_interp_coh_grid_wpos :mu= 17.7867 ,sd= 13.6114 ,min= 0.0248 ,max= 57.1999
                    zi_1_c1
                    _______
@@ -2409,7 +2478,40 @@ mt_w_perc_mesh_interp_coh_grid_wpos :mu= 17.7867 ,sd= 13.6114 ,min= 0.0248 ,max=
     zi_361_r361     53.986
     zi_362_r362       57.2
 
-pos = 35 ; key = mt_z_trans ;rown= 45 ,coln= 45
+pos = 36 ; key = mt_z_mesh_coh_wkb ;rown= 7425 ,coln= 45
+mt_z_mesh_coh_wkb :mu= 23 ,sd= 12.9872 ,min= 1 ,max= 45
+                     zi_1_C1    zi_2_C2    zi_23_c23    zi_44_c44    zi_45_c45
+                     _______    _______    _________    _________    _________
+
+    zi_1_R1             1          2          23           44           45    
+    zi_2_R2             1          2          23           44           45    
+    zi_3713_r3713       1          2          23           44           45    
+    zi_7424_r7424       1          2          23           44           45    
+    zi_7425_r7425       1          2          23           44           45    
+
+pos = 37 ; key = mt_z_mesh_coh_wkb_seg ;rown= 2475 ,coln= 45
+mt_z_mesh_coh_wkb_seg :mu= 23 ,sd= 12.9872 ,min= 1 ,max= 45
+                     zi_1_C1    zi_2_C2    zi_23_c23    zi_44_c44    zi_45_c45
+                     _______    _______    _________    _________    _________
+
+    zi_1_R1             1          2          23           44           45    
+    zi_2_R2             1          2          23           44           45    
+    zi_1238_r1238       1          2          23           44           45    
+    zi_2474_r2474       1          2          23           44           45    
+    zi_2475_r2475       1          2          23           44           45    
+
+pos = 38 ; key = mt_z_mesh_interp_coh_grid ;rown= 38 ,coln= 45
+mt_z_mesh_interp_coh_grid :mu= 23 ,sd= 12.991 ,min= 1 ,max= 45
+                 zi_1_C1    zi_2_C2    zi_23_c23    zi_44_c44    zi_45_c45
+                 _______    _______    _________    _________    _________
+
+    zi_1_R1         1          2          23           44           45    
+    zi_2_R2         1          2          23           44           45    
+    zi_19_r19       1          2          23           44           45    
+    zi_37_r37       1          2          23           44           45    
+    zi_38_r38       1          2          23           44           45    
+
+pos = 39 ; key = mt_z_trans ;rown= 45 ,coln= 45
 mt_z_trans :mu= 0.022222 ,sd= 0.056818 ,min= 0 ,max= 0.2525
                   zi_1_C1       zi_2_C2      zi_23_c23     zi_44_c44     zi_45_c45 
                  __________    __________    __________    __________    __________
@@ -2420,7 +2522,7 @@ mt_z_trans :mu= 0.022222 ,sd= 0.056818 ,min= 0 ,max= 0.2525
     zi_44_r44     1.572e-18    4.2351e-16    8.9462e-05       0.17757       0.10165
     zi_45_r45    1.2404e-20     5.003e-18    1.1604e-05       0.24282       0.23544
 
-pos = 36 ; key = mt_z_wage_mesh_coh_wkb ;rown= 7425 ,coln= 15
+pos = 40 ; key = mt_z_wage_mesh_coh_wkb ;rown= 7425 ,coln= 15
 mt_z_wage_mesh_coh_wkb :mu= 1.1347 ,sd= 0.67509 ,min= 0.34741 ,max= 2.567
                      zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                      _______    _______    _______    _________    _________
@@ -2431,7 +2533,7 @@ mt_z_wage_mesh_coh_wkb :mu= 1.1347 ,sd= 0.67509 ,min= 0.34741 ,max= 2.567
     zi_7424_r7424    0.34741    0.40076    0.94436     2.2253        2.567  
     zi_7425_r7425    0.34741    0.40076    0.94436     2.2253        2.567  
 
-pos = 37 ; key = mt_z_wage_mesh_interp_coh_grid ;rown= 38 ,coln= 15
+pos = 41 ; key = mt_z_wage_mesh_interp_coh_grid ;rown= 38 ,coln= 15
 mt_z_wage_mesh_interp_coh_grid :mu= 1.1347 ,sd= 0.67568 ,min= 0.34741 ,max= 2.567
                  zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                  _______    _______    _______    _________    _________
@@ -2470,21 +2572,25 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     ar_z_wage_mesh_r_infbr_r1w2               19    19        1            45      1.1347     0.68271      0.34741       2.567
     ar_z_wage_mesh_r_infbr_w1r2               20    20        1            45      1.1347     0.68271      0.34741       2.567
     ar_z_wage_prob                            21    21        1            15    0.066667    0.060897    0.0027089     0.16757
-    mt_bl_w_perc_mesh_interp_coh_grid_wneg    22    23       25            38     0.61895      0.4859            0           1
-    mt_coh_bridge_perc_mesh_w_level_neg       23    24       10             3         0.5     0.41523            0           1
-    mt_coh_w_perc_ratio_wneg                  24    25      588             1     0.72051     0.38072            0           1
-    mt_coh_wkb                                25    26     7425            15      5.5134      22.642      -38.556      57.277
-    mt_interp_coh_grid_mesh_w_perc            26    27       25            38      18.148      22.824          -20      57.277
-    mt_interp_coh_grid_mesh_z                 27    28       38            45      18.148      22.818          -20      57.277
-    mt_interp_coh_grid_mesh_z_wage            28    29       38            15      18.148      22.832          -20      57.277
-    mt_k                                      29    30       45            55      12.736      14.186            0       69.93
-    mt_w_level_neg_mesh_coh_bridge_perc       30    31       10             3     -10.455      6.1969          -20    -0.90909
-    mt_w_perc_mesh_interp_coh_grid            31    32       25            38    -0.92596      17.552          -20        57.2
-    mt_w_perc_mesh_interp_coh_grid_wneg       32    33      588             1     -12.446      5.9341          -20       -0.02
-    mt_w_perc_mesh_interp_coh_grid_wpos       33    34      362             1      17.787      13.611       0.0248        57.2
-    mt_z_trans                                34    35       45            45    0.022222    0.056818            0      0.2525
-    mt_z_wage_mesh_coh_wkb                    35    36     7425            15      1.1347     0.67509      0.34741       2.567
-    mt_z_wage_mesh_interp_coh_grid            36    37       38            15      1.1347     0.67568      0.34741       2.567
+    cl_mt_coh_wkb_mesh_z_r_infbr              22    22     2475            45      7.0869      21.116      -20.056      57.277
+    mt_bl_w_perc_mesh_interp_coh_grid_wneg    23    24       25            38     0.61895      0.4859            0           1
+    mt_coh_bridge_perc_mesh_w_level_neg       24    25       10             3         0.5     0.41523            0           1
+    mt_coh_w_perc_ratio_wneg                  25    26      588             1     0.72051     0.38072            0           1
+    mt_coh_wkb                                26    27     7425            15      5.5134      22.642      -38.556      57.277
+    mt_interp_coh_grid_mesh_w_perc            27    28       25            38      18.148      22.824          -20      57.277
+    mt_interp_coh_grid_mesh_z                 28    29       38            45      18.148      22.818          -20      57.277
+    mt_interp_coh_grid_mesh_z_wage            29    30       38            15      18.148      22.832          -20      57.277
+    mt_k                                      30    31       45            55      12.736      14.186            0       69.93
+    mt_w_level_neg_mesh_coh_bridge_perc       31    32       10             3     -10.455      6.1969          -20    -0.90909
+    mt_w_perc_mesh_interp_coh_grid            32    33       25            38    -0.92596      17.552          -20        57.2
+    mt_w_perc_mesh_interp_coh_grid_wneg       33    34      588             1     -12.446      5.9341          -20       -0.02
+    mt_w_perc_mesh_interp_coh_grid_wpos       34    35      362             1      17.787      13.611       0.0248        57.2
+    mt_z_mesh_coh_wkb                         35    36     7425            45          23      12.987            1          45
+    mt_z_mesh_coh_wkb_seg                     36    37     2475            45          23      12.987            1          45
+    mt_z_mesh_interp_coh_grid                 37    38       38            45          23      12.991            1          45
+    mt_z_trans                                38    39       45            45    0.022222    0.056818            0      0.2525
+    mt_z_wage_mesh_coh_wkb                    39    40     7425            15      1.1347     0.67509      0.34741       2.567
+    mt_z_wage_mesh_interp_coh_grid            40    41       38            15      1.1347     0.67568      0.34741       2.567
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -2493,7 +2599,7 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
                    i    idx    value
                    _    ___    _____
 
-    it_ameshk_n    1    22     2475 
+    it_ameshk_n    1    23     2475 
 
 ----------------------------------------
 ----------------------------------------
@@ -2546,7 +2652,7 @@ ans =
 
   Map with properties:
 
-        Count: 37
+        Count: 41
       KeyType: char
     ValueType: any
 
@@ -2715,6 +2821,9 @@ params_group = values(param_map, {...
     'it_c_interp_grid_gap', 'fl_w_interp_grid_gap', 'fl_coh_interp_grid_gap'});
 [it_w_perc_n, it_ak_perc_n, it_coh_bridge_perc_n, ...
     it_c_interp_grid_gap, fl_w_interp_grid_gap, fl_coh_interp_grid_gap] = params_group{:};
+
+params_group = values(param_map, {'st_v_coh_z_interp_method'});
+[st_v_coh_z_interp_method] = params_group{:};
 
 %% Parse Parameters 2
 
@@ -3214,10 +3323,50 @@ fl_w_level_min_valid = min(ar_w_level_full_dup(~ar_bl_w_level_invalid));
 %% COH4: Select only Valid (k(w), a) choices
 
 % mt_coh_wkb = mt_coh_wkb_full(~ar_bl_wkb_invalid, :);
-mt_coh_wkb = mt_coh_wkb_full;
 % mt_z_wage_mesh_coh_wkb = repmat(ar_z, [size(mt_coh_wkb,1),1]);
 % mt_z_r_infbr_mesh_coh_wkb = repmat(ar_z_r_infbr, [size(mt_coh_wkb,1),1]);
+
+% it_ak_perc_n = length(ar_ak_perc);
+% it_w_interp_n = length(ar_w_level);
+
+mt_coh_wkb = mt_coh_wkb_full;
+it_wak_n = size(mt_coh_wkb,1)/fl_z_r_infbr_n;
+
+mt_coh_wkb_mesh_z_r_infbr = repmat(mt_coh_wkb_full, [1, fl_z_r_infbr_n]);
+mt_z_r_infbr_mesh_coh_wkb = repmat(ar_z_r_infbr, [size(mt_coh_wkb,1),1]);
+
 mt_z_wage_mesh_coh_wkb = repmat(ar_z_wage, [size(mt_coh_wkb,1),1]);
+mt_z_mesh_coh_wkb = repmat((1:it_z_n), [size(mt_coh_wkb,1), 1]);
+mt_z_mesh_coh_wkb_seg = repmat((1:it_z_n), [it_wak_n, 1]);
+
+if (ismember(st_v_coh_z_interp_method, ["method_cell"]))
+    
+    cl_mt_coh_wkb_mesh_z_r_infbr = cell([fl_z_r_infbr_n, 1]);
+    for it_z_r_infbr_ctr = 1:1:fl_z_r_infbr_n
+        it_mt_val_row_start = it_wak_n*(it_z_r_infbr_ctr-1) + 1;
+        it_mt_val_row_end = it_mt_val_row_start + it_wak_n - 1;
+        cl_mt_coh_wkb_mesh_z_r_infbr{it_z_r_infbr_ctr} = ...
+            mt_coh_wkb_mesh_z_r_infbr(it_mt_val_row_start:it_mt_val_row_end, :);
+    end
+    
+elseif (ismember(st_v_coh_z_interp_method, ["method_idx_a", "method_idx_b"]))
+
+    % This is borrowing with default or not condition
+    fl_min_mt_coh = fl_b_bd;
+
+    cl_mt_coh_wkb_mesh_z_r_infbr = cell([fl_z_r_infbr_n, 1]);
+    for it_z_r_infbr_ctr = 1:1:fl_z_r_infbr_n
+        it_mt_val_row_start = it_wak_n*(it_z_r_infbr_ctr-1) + 1;
+        it_mt_val_row_end = it_mt_val_row_start + it_wak_n - 1;
+
+        mt_coh_wkb_mesh_z_r_infbr_seg = ...
+            1 + ((mt_coh_wkb_mesh_z_r_infbr(it_mt_val_row_start:it_mt_val_row_end, :) - fl_min_mt_coh)/fl_coh_interp_grid_gap);
+
+        cl_mt_coh_wkb_mesh_z_r_infbr{it_z_r_infbr_ctr} = mt_coh_wkb_mesh_z_r_infbr_seg;
+
+    end
+    
+end
 
 %% Generate 1st Stage States: Interpolation Cash-on-hand Interpolation Grid
 % For the iwkz problems, we solve the problem along a grid of cash-on-hand
@@ -3237,10 +3386,12 @@ fl_min_mt_coh = fl_b_bd;
 
 it_coh_interp_n = (fl_max_mt_coh-fl_min_mt_coh)/(fl_coh_interp_grid_gap);
 ar_interp_coh_grid = fft_array_add_zero(linspace(fl_min_mt_coh, fl_max_mt_coh, it_coh_interp_n), true);
+it_coh_interp_n = length(ar_interp_coh_grid);
 [mt_interp_coh_grid_mesh_z_wage, mt_z_wage_mesh_interp_coh_grid] = ndgrid(ar_interp_coh_grid, ar_z_wage);
 mt_interp_coh_grid_mesh_w_perc = repmat(ar_interp_coh_grid, [it_w_perc_n, 1]);
 
 mt_interp_coh_grid_mesh_z = repmat(ar_interp_coh_grid', [1, it_z_n]);
+mt_z_mesh_interp_coh_grid = repmat((1:it_z_n), [it_coh_interp_n, 1]);
 
 %% Generate 1st Stage Choices: Interpolation Cash-on-hand Interpolation Grid
 % previously, our ar_w was the first stage choice grid, the grid was the
@@ -3357,6 +3508,7 @@ armt_map('mt_interp_coh_grid_mesh_w_perc') = mt_interp_coh_grid_mesh_w_perc;
 armt_map('mt_w_perc_mesh_interp_coh_grid') = mt_w_perc_mesh_interp_coh_grid;
 
 armt_map('mt_interp_coh_grid_mesh_z') = mt_interp_coh_grid_mesh_z;
+armt_map('mt_z_mesh_interp_coh_grid') = mt_z_mesh_interp_coh_grid;
 
 
 %% Store armt_map (3): 2nd stage reachable coh(k(w), a(w,k), z', r)
@@ -3369,6 +3521,14 @@ armt_map('mt_interp_coh_grid_mesh_z') = mt_interp_coh_grid_mesh_z;
 
 armt_map('mt_coh_wkb') = mt_coh_wkb_full;
 armt_map('mt_z_wage_mesh_coh_wkb') = mt_z_wage_mesh_coh_wkb;
+
+armt_map('mt_z_mesh_coh_wkb') = mt_z_mesh_coh_wkb;
+armt_map('mt_z_wage_mesh_coh_wkb') = mt_z_wage_mesh_coh_wkb;
+
+armt_map('cl_mt_coh_wkb_mesh_z_r_infbr') = cl_mt_coh_wkb_mesh_z_r_infbr;
+armt_map('mt_z_mesh_coh_wkb_seg') = mt_z_mesh_coh_wkb_seg;
+
+% armt_map('mt_z_r_borr_mesh_coh_wkb') = mt_z_r_borr_mesh_coh_wkb;
 
 %% Store armt_map (4): 2nd stage additional arrays
 % Dimensions of Various Grids: I for level grid, M for shock grid, P for

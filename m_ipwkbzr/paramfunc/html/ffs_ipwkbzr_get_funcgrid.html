@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Generate States/Choices/Shocks Grids, get Functions (Interpolated + Percentage + Risky + Safe Asset + Save + Borrow + R Shock)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-13"><meta name="DC.source" content="ffs_ipwkbzr_get_funcgrid.m"><style type="text/css">
+      --><title>Generate States/Choices/Shocks Grids, get Functions (Interpolated + Percentage + Risky + Safe Asset + Save + Borrow + R Shock)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-14"><meta name="DC.source" content="ffs_ipwkbzr_get_funcgrid.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Generate States/Choices/Shocks Grids, get Functions (Interpolated + Percentage + Risky + Safe Asset + Save + Borrow + R Shock)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FFS_IPWKBZR_GET_FUNCGRID get funcs, params, states choices shocks grids</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1a</a></li><li><a href="#5">Parse Parameters 1b</a></li><li><a href="#6">Parse Parameters 2</a></li><li><a href="#7">Parse Parameters 3</a></li><li><a href="#8">G: Generate Asset and Choice Grid for 2nd stage Problem</a></li><li><a href="#9">F1: Get Shock: Income Shock (ar1)</a></li><li><a href="#10">F2: Get Shock: Interest Rate Shock (iid)</a></li><li><a href="#11">F3: Get Shock: Mesh Shocks Together</a></li><li><a href="#12">Get Equations</a></li><li><a href="#13">Generate Cash-on-Hand/State Matrix</a></li><li><a href="#14">Check if COH is within Borrowing Bounds</a></li><li><a href="#15">Update Valid 2nd stage choice matrix</a></li><li><a href="#16">Select only Valid (k(w), a) choices</a></li><li><a href="#17">Generate 1st Stage States: Interpolation Cash-on-hand Interpolation Grid</a></li><li><a href="#18">Generate 1st Stage Choices: Interpolation Cash-on-hand Interpolation Grid</a></li><li><a href="#19">Generate Interpolation Consumption Grid</a></li><li><a href="#20">Initialize armt_map to store, state, choice, shock matrixes</a></li><li><a href="#21">Store armt_map (1): base arrays</a></li><li><a href="#22">Store armt_map (2): 1st stage level coh on hand related arrays</a></li><li><a href="#23">Store armt_map (3): 2nd stage reachable coh(k(w), a(w,k), z', r)</a></li><li><a href="#24">Store armt_map (4): 2nd stage additional arrays</a></li><li><a href="#25">Store armt_map (5): Shock Grids Arrays and Mesh</a></li><li><a href="#26">Store Function Map</a></li><li><a href="#27">Graph</a></li><li><a href="#29">Generate Limited Legends</a></li><li><a href="#30">Graph 1: a and k choice grid graphs</a></li><li><a href="#31">Graph 2: coh by shock</a></li><li><a href="#32">Graph 3: 1st State Aggregate Savings Choices by COH interpolation grids</a></li><li><a href="#34">Graph Details, Generally do Not Run</a></li><li><a href="#36">Graph 1: 2nd stage coh reached by k' b' choices by index</a></li><li><a href="#37">Graph 2: 2nd stage coh reached by k' b' choices  by coh</a></li><li><a href="#39">Display</a></li><li><a href="#40">Display</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [armt_map, func_map] = ffs_ipwkbzr_get_funcgrid(varargin)
+  </style></head><body><div class="content"><h1>Generate States/Choices/Shocks Grids, get Functions (Interpolated + Percentage + Risky + Safe Asset + Save + Borrow + R Shock)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FFS_IPWKBZR_GET_FUNCGRID get funcs, params, states choices shocks grids</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1a</a></li><li><a href="#5">Parse Parameters 1b</a></li><li><a href="#6">Parse Parameters 2</a></li><li><a href="#7">Parse Parameters 3</a></li><li><a href="#8">G: Generate Asset and Choice Grid for 2nd stage Problem</a></li><li><a href="#9">F1: Get Shock: Income Shock (ar1)</a></li><li><a href="#10">F2: Get Shock: Interest Rate Shock (iid)</a></li><li><a href="#11">F3: Get Shock: Mesh Shocks Together</a></li><li><a href="#12">Get Equations</a></li><li><a href="#13">Generate Cash-on-Hand/State Matrix</a></li><li><a href="#14">Check if COH is within Borrowing Bounds</a></li><li><a href="#15">Update Valid 2nd stage choice matrix</a></li><li><a href="#16">Generate 2nd Stage Cash-on-Hand Points for Interpolation</a></li><li><a href="#17">Generate 1st Stage States: Interpolation Cash-on-hand Interpolation Grid</a></li><li><a href="#18">Generate 1st Stage Choices: Interpolation Cash-on-hand Interpolation Grid</a></li><li><a href="#19">Generate Interpolation Consumption Grid</a></li><li><a href="#20">Initialize armt_map to store, state, choice, shock matrixes</a></li><li><a href="#21">Store armt_map (1): base arrays</a></li><li><a href="#22">Store armt_map (2): 1st stage level coh on hand related arrays</a></li><li><a href="#23">Store armt_map (3): 2nd stage reachable coh(k(w), a(w,k), z', r)</a></li><li><a href="#24">Store armt_map (4): 2nd stage additional arrays</a></li><li><a href="#25">Store armt_map (5): Shock Grids Arrays and Mesh</a></li><li><a href="#26">Store Function Map</a></li><li><a href="#27">Graph</a></li><li><a href="#29">Generate Limited Legends</a></li><li><a href="#30">Graph 1: a and k choice grid graphs</a></li><li><a href="#31">Graph 2: coh by shock</a></li><li><a href="#32">Graph 3: 1st State Aggregate Savings Choices by COH interpolation grids</a></li><li><a href="#34">Graph Details, Generally do Not Run</a></li><li><a href="#36">Graph 1: 2nd stage coh reached by k' b' choices by index</a></li><li><a href="#37">Graph 2: 2nd stage coh reached by k' b' choices  by coh</a></li><li><a href="#39">Display</a></li><li><a href="#40">Display</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [armt_map, func_map] = ffs_ipwkbzr_get_funcgrid(varargin)
 </pre><h2 id="2">FFS_IPWKBZR_GET_FUNCGRID get funcs, params, states choices shocks grids</h2><p>centralized gateway for retrieving parameters, and solution grids and functions. Similar to <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html">ffs_akz_get_funcgrid</a> function. This code deals with problems with savings and borrowing.</p><p>This file is a continuation of <a href="https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/paramfunc/html/ffs_ipwkz_get_funcgrid.html">ffs_ipwkz_get_funcgrid</a>. A significant change here is the inclusion of borrowing shocks, which changes significantly the implementation of the two-stage solution structure. Specifically, for the coh matrix here, there is another dimension which is the borrowing interest rate shock states, which expands the number of cash-on-hand points given the same productivity shock z. So compared to <a href="https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/paramfunc/html/ffs_ipwkz_get_funcgrid.html">ffs_ipwkz_get_funcgrid</a>, the same number of columns for the <i>mt_coh_wkb_full</i> matirx, but more rows.</p><p>Note that for borrowing, we can not start at the min(coh(k,w-k,z)) reacheable given the w and k choice grids. That would be: min(coh(k,w-k,z)) &lt; min(w). At min(coh), there is a single point, and also for all values between min(coh) and min(w), all percentage w_perc choices are below min(w), requiring extrapolation. It is in some sense safer to extrapolate by starting solution at min(coh) = min(w). Now, for the lowest levels of coh(k, w-k, z), which are &lt; min(w), we now require extrapolation. But this extrapolation is straight forward, when coh &lt; min(w), households have to default, the utility from default is the same regardless of the level of coh at the time of default. So nearest extrapolation is fully correct.</p><p>Note that the first stage w grid is based on cash-on-hand level reached by the coh(k,w-k,z) possible choice and shock combinations. This coh(k,w-k,z) &gt; max(w), which also means that at max(coh) grid, the w_perc choices at higher points require extrapolation. Extrapolation is based on nearest extrapolation.</p><p>Note that even when w = 0, as long as interest rate is low, only the lowest level of borrowing is invalid.</p><p>All discussion of of the word <i>wage</i> refers to productivity shock.</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param bl_input_override boolean if true varargin contained param_map and support_map fully overrides local default. Local default is not invoked. This could be important for speed if this function is getting invoked within certain loops. Default is 0.</p><p>@return armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm. Contains these:</p><p><b>armt_map</b> base arrays:</p><div><ol><li>ar_interp_c_grid: 1 by I^c</li><li>ar_interp_coh_grid: 1 by I^{coh}</li><li>ar_w_level: 1 by I^{W=k+b}</li><li>ar_w_perc: 1 by P^{W=k+b}</li><li>ar_ak_perc: 1 by P^{k and b}</li></ol></div><p><b>armt_map</b> 1st stage level coh on hand related arrays:</p><div><ol><li>mt_interp_coh_grid_mesh_z_wage: I^{coh} by M^w</li><li>mt_z_wage_mesh_interp_coh_grid: I^{coh} by M^w</li><li>mt_interp_coh_grid_mesh_w_perc: I^{coh} by P^{LAM=k+b}</li><li>mt_w_perc_mesh_interp_coh_grid: I^{coh} by P^{LAM=k+b}</li></ol></div><p><b>armt_map</b> 2nd stage reachable coh(k(w), a(w,k), z', r)</p><div><ol><li>mt_coh_wkb: (I^k x I^w x M^r) by (M^z)</li><li>mt_z_wage_mesh_coh_wkb: (I^k x I^w x M^r) by (M^z)</li></ol></div><p><b>armt_map</b> 2nd stage additional arrays</p><div><ol><li>mt_k: (I^w) by (P^{k and b})</li><li>ar_a_meshk: 1 by (I^w x P^{k and b})</li><li>ar_k_mesha: 1 by (I^w x P^{k and b})</li><li>ar_aplusk_mesh: 1 by (I^w x P^{k and b})</li><li>it_ameshk_n: scalar</li></ol></div><p><b>armt_map</b> Shock Grids Arrays and Mesh</p><div><ol><li>ar_z_r_borr: 1 by (M^r)</li><li>ar_z_r_borr_prob: 1 by (M^r)</li><li>ar_z_wage: 1 by (M^z)</li><li>ar_z_wage_prob: 1 by (M^z)</li><li>ar_z_r_borr_mesh_wage_w1r2: 1 by (M^z x M^r)</li><li>ar_z_wage_mesh_r_borr_w1r2: 1 by (M^z x M^r)</li><li>ar_z_r_borr_mesh_wage_r1w2: 1 by (M^r x M^z)</li><li>ar_z_wage_mesh_r_borr_r1w2: 1 by (M^r x M^z)</li></ol></div><p>@return func_map container container with function handles for consumption cash-on-hand etc.</p><p>@example</p><pre>  it_param_set = 2;
   bl_input_override = true;
   [param_map, support_map] = ffs_ipwkbzr_set_default_param(it_param_set);
@@ -165,7 +165,7 @@ CONTAINER NAME: PARAM_MAP
 ----------------------------------------
   Map with properties:
 
-        Count: 12
+        Count: 13
       KeyType: char
     ValueType: any
 
@@ -173,9 +173,19 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ----------------------------------------
 ----------------------------------------
+pos = 1 ; key = fl_z_r_borr_max ; val = 0.095
+pos = 2 ; key = fl_z_r_borr_min ; val = 0.025
+pos = 3 ; key = fl_z_r_borr_n ; val = 5
+pos = 4 ; key = fl_z_r_borr_poiss_mean ; val = 20
+pos = 5 ; key = fl_z_wage_mu ; val = 0
+pos = 6 ; key = fl_z_wage_rho ; val = 0.8
+pos = 7 ; key = fl_z_wage_sig ; val = 0.2
+pos = 8 ; key = it_z_n ; val = 75
+pos = 9 ; key = it_z_wage_n ; val = 15
 pos = 10 ; key = st_model ; val = ipwkbzr
-pos = 11 ; key = st_z_r_borr_drv_ele_type ; val = unif
-pos = 12 ; key = st_z_r_borr_drv_prb_type ; val = poiss
+pos = 11 ; key = st_v_coh_z_interp_method ; val = method_cell
+pos = 12 ; key = st_z_r_borr_drv_ele_type ; val = unif
+pos = 13 ; key = st_z_r_borr_drv_prb_type ; val = poiss
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Scalars in Container and Sizes and Basic Statistics
@@ -201,8 +211,9 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
                                 _    ___
 
     st_model                    1    10 
-    st_z_r_borr_drv_ele_type    2    11 
-    st_z_r_borr_drv_prb_type    3    12 
+    st_v_coh_z_interp_method    2    11 
+    st_z_r_borr_drv_ele_type    3    12 
+    st_z_r_borr_drv_prb_type    4    13 
 
 ----------------------------------------
 ----------------------------------------
@@ -250,7 +261,7 @@ CONTAINER NAME: PARAM_MAP
 ----------------------------------------
   Map with properties:
 
-        Count: 40
+        Count: 41
       KeyType: char
     ValueType: any
 
@@ -259,10 +270,46 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ----------------------------------------
 ----------------------------------------
 pos = 1 ; key = bl_default ; val = true
+pos = 2 ; key = fl_Amean ; val = 1
+pos = 3 ; key = fl_alpha ; val = 0.36
+pos = 4 ; key = fl_b_bd ; val = -20
+pos = 5 ; key = fl_beta ; val = 0.94
+pos = 6 ; key = fl_c_min ; val = 0.02
+pos = 7 ; key = fl_coh_interp_grid_gap ; val = 0.1
+pos = 8 ; key = fl_crra ; val = 1.5
+pos = 9 ; key = fl_default_wprime ; val = 0
+pos = 10 ; key = fl_delta ; val = 0.08
+pos = 11 ; key = fl_k_max ; val = 70
+pos = 12 ; key = fl_k_min ; val = 0
+pos = 13 ; key = fl_nan_replace ; val = -9999
+pos = 14 ; key = fl_r_save ; val = 0.025
+pos = 15 ; key = fl_tol_dist ; val = 1e-05
+pos = 16 ; key = fl_tol_pol ; val = 1e-05
+pos = 17 ; key = fl_tol_val ; val = 1e-05
+pos = 18 ; key = fl_w ; val = 0.44365
+pos = 19 ; key = fl_w_interp_grid_gap ; val = 0.1
+pos = 20 ; key = fl_w_max ; val = 50
+pos = 21 ; key = fl_w_min ; val = -20
+pos = 22 ; key = fl_z_r_borr_max ; val = 0.095
+pos = 23 ; key = fl_z_r_borr_min ; val = 0.025
+pos = 24 ; key = fl_z_r_borr_n ; val = 5
+pos = 25 ; key = fl_z_r_borr_poiss_mean ; val = 20
+pos = 26 ; key = fl_z_wage_mu ; val = 0
+pos = 27 ; key = fl_z_wage_rho ; val = 0.8
+pos = 28 ; key = fl_z_wage_sig ; val = 0.2
+pos = 29 ; key = it_ak_perc_n ; val = 50
+pos = 30 ; key = it_c_interp_grid_gap ; val = 0.0001
+pos = 31 ; key = it_maxiter_dist ; val = 1000
+pos = 32 ; key = it_maxiter_val ; val = 250
+pos = 33 ; key = it_tol_pol_nochange ; val = 25
+pos = 34 ; key = it_w_perc_n ; val = 50
+pos = 35 ; key = it_z_n ; val = 75
+pos = 36 ; key = it_z_wage_n ; val = 15
 pos = 37 ; key = st_analytical_stationary_type ; val = eigenvector
 pos = 38 ; key = st_model ; val = ipwkbzr
-pos = 39 ; key = st_z_r_borr_drv_ele_type ; val = unif
-pos = 40 ; key = st_z_r_borr_drv_prb_type ; val = poiss
+pos = 39 ; key = st_v_coh_z_interp_method ; val = method_cell
+pos = 40 ; key = st_z_r_borr_drv_ele_type ; val = unif
+pos = 41 ; key = st_z_r_borr_drv_prb_type ; val = poiss
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Scalars in Container and Sizes and Basic Statistics
@@ -270,41 +317,42 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
                               i     idx     value 
                               __    ___    _______
 
-    fl_Amean                   1     2           1
-    fl_alpha                   2     3        0.36
-    fl_b_bd                    3     4         -20
-    fl_beta                    4     5        0.94
-    fl_c_min                   5     6        0.02
-    fl_coh_interp_grid_gap     6     7         0.1
-    fl_crra                    7     8         1.5
-    fl_default_wprime          8     9           0
-    fl_delta                   9    10        0.08
-    fl_k_max                  10    11          70
-    fl_k_min                  11    12           0
-    fl_nan_replace            12    13       -9999
-    fl_r_save                 13    14       0.025
-    fl_tol_dist               14    15       1e-05
-    fl_tol_pol                15    16       1e-05
-    fl_tol_val                16    17       1e-05
-    fl_w                      17    18     0.44365
-    fl_w_interp_grid_gap      18    19         0.1
-    fl_w_max                  19    20          50
-    fl_w_min                  20    21         -20
-    fl_z_r_borr_max           21    22       0.095
-    fl_z_r_borr_min           22    23       0.025
-    fl_z_r_borr_n             23    24           5
-    fl_z_r_borr_poiss_mean    24    25          20
-    fl_z_wage_mu              25    26           0
-    fl_z_wage_rho             26    27         0.8
-    fl_z_wage_sig             27    28         0.2
-    it_ak_perc_n              28    29          50
-    it_c_interp_grid_gap      29    30      0.0001
-    it_maxiter_dist           30    31        1000
-    it_maxiter_val            31    32         250
-    it_tol_pol_nochange       32    33          25
-    it_w_perc_n               33    34          50
-    it_z_n                    34    35          75
-    it_z_wage_n               35    36          15
+    bl_default                 1     1           1
+    fl_Amean                   2     2           1
+    fl_alpha                   3     3        0.36
+    fl_b_bd                    4     4         -20
+    fl_beta                    5     5        0.94
+    fl_c_min                   6     6        0.02
+    fl_coh_interp_grid_gap     7     7         0.1
+    fl_crra                    8     8         1.5
+    fl_default_wprime          9     9           0
+    fl_delta                  10    10        0.08
+    fl_k_max                  11    11          70
+    fl_k_min                  12    12           0
+    fl_nan_replace            13    13       -9999
+    fl_r_save                 14    14       0.025
+    fl_tol_dist               15    15       1e-05
+    fl_tol_pol                16    16       1e-05
+    fl_tol_val                17    17       1e-05
+    fl_w                      18    18     0.44365
+    fl_w_interp_grid_gap      19    19         0.1
+    fl_w_max                  20    20          50
+    fl_w_min                  21    21         -20
+    fl_z_r_borr_max           22    22       0.095
+    fl_z_r_borr_min           23    23       0.025
+    fl_z_r_borr_n             24    24           5
+    fl_z_r_borr_poiss_mean    25    25          20
+    fl_z_wage_mu              26    26           0
+    fl_z_wage_rho             27    27         0.8
+    fl_z_wage_sig             28    28         0.2
+    it_ak_perc_n              29    29          50
+    it_c_interp_grid_gap      30    30      0.0001
+    it_maxiter_dist           31    31        1000
+    it_maxiter_val            32    32         250
+    it_tol_pol_nochange       33    33          25
+    it_w_perc_n               34    34          50
+    it_z_n                    35    35          75
+    it_z_wage_n               36    36          15
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -313,11 +361,11 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
                                      i    idx
                                      _    ___
 
-    bl_default                       1     1 
-    st_analytical_stationary_type    2    37 
-    st_model                         3    38 
-    st_z_r_borr_drv_ele_type         4    39 
-    st_z_r_borr_drv_prb_type         5    40 
+    st_analytical_stationary_type    1    37 
+    st_model                         2    38 
+    st_v_coh_z_interp_method         3    39 
+    st_z_r_borr_drv_ele_type         4    40 
+    st_z_r_borr_drv_prb_type         5    41 
 
 ----------------------------------------
 ----------------------------------------
@@ -359,6 +407,11 @@ pos = 20 ; key = bl_post ; val = true
 pos = 21 ; key = bl_profile ; val = false
 pos = 22 ; key = bl_profile_dist ; val = false
 pos = 23 ; key = bl_time ; val = false
+pos = 24 ; key = it_display_every ; val = 5
+pos = 25 ; key = it_display_final_colmax ; val = 12
+pos = 26 ; key = it_display_final_rowmax ; val = 100
+pos = 27 ; key = it_display_summmat_colmax ; val = 5
+pos = 28 ; key = it_display_summmat_rowmax ; val = 5
 pos = 29 ; key = st_img_name_main ; val = _default
 pos = 30 ; key = st_img_path ; val = C:/Users/fan/CodeDynaAsset//m_ipwkbzr//solve/img/
 pos = 31 ; key = st_img_prefix ; val = 
@@ -377,59 +430,59 @@ pos = 42 ; key = st_title_prefix ; val =
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Scalars in Container and Sizes and Basic Statistics
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                                 i    idx    value
-                                 _    ___    _____
+                                    i     idx    value
+                                    __    ___    _____
 
-    it_display_every             1    24        5 
-    it_display_final_colmax      2    25       12 
-    it_display_final_rowmax      3    26      100 
-    it_display_summmat_colmax    4    27        5 
-    it_display_summmat_rowmax    5    28        5 
+    bl_display                       1     1        0 
+    bl_display_defparam              2     2        1 
+    bl_display_dist                  3     3        0 
+    bl_display_evf                   4     4        0 
+    bl_display_final                 5     5        1 
+    bl_display_final_dist            6     6        0 
+    bl_display_final_dist_detail     7     7        0 
+    bl_display_funcgrids             8     8        0 
+    bl_graph                         9     9        1 
+    bl_graph_coh_t_coh              10    10        1 
+    bl_graph_evf                    11    11        0 
+    bl_graph_funcgrids              12    12        0 
+    bl_graph_funcgrids_detail       13    13        0 
+    bl_graph_onebyones              14    14        1 
+    bl_graph_pol_lvl                15    15        1 
+    bl_graph_pol_pct                16    16        1 
+    bl_graph_val                    17    17        1 
+    bl_img_save                     18    18        0 
+    bl_mat                          19    19        0 
+    bl_post                         20    20        1 
+    bl_profile                      21    21        0 
+    bl_profile_dist                 22    22        0 
+    bl_time                         23    23        0 
+    it_display_every                24    24        5 
+    it_display_final_colmax         25    25       12 
+    it_display_final_rowmax         26    26      100 
+    it_display_summmat_colmax       27    27        5 
+    it_display_summmat_rowmax       28    28        5 
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Strings in Container and Sizes and Basic Statistics
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                                    i     idx
-                                    __    ___
+                            i     idx
+                            __    ___
 
-    bl_display                       1     1 
-    bl_display_defparam              2     2 
-    bl_display_dist                  3     3 
-    bl_display_evf                   4     4 
-    bl_display_final                 5     5 
-    bl_display_final_dist            6     6 
-    bl_display_final_dist_detail     7     7 
-    bl_display_funcgrids             8     8 
-    bl_graph                         9     9 
-    bl_graph_coh_t_coh              10    10 
-    bl_graph_evf                    11    11 
-    bl_graph_funcgrids              12    12 
-    bl_graph_funcgrids_detail       13    13 
-    bl_graph_onebyones              14    14 
-    bl_graph_pol_lvl                15    15 
-    bl_graph_pol_pct                16    16 
-    bl_graph_val                    17    17 
-    bl_img_save                     18    18 
-    bl_mat                          19    19 
-    bl_post                         20    20 
-    bl_profile                      21    21 
-    bl_profile_dist                 22    22 
-    bl_time                         23    23 
-    st_img_name_main                24    29 
-    st_img_path                     25    30 
-    st_img_prefix                   26    31 
-    st_img_suffix                   27    32 
-    st_mat_name_main                28    33 
-    st_mat_path                     29    34 
-    st_mat_prefix                   30    35 
-    st_mat_suffix                   31    36 
-    st_matimg_path_root             32    37 
-    st_profile_name_main            33    38 
-    st_profile_path                 34    39 
-    st_profile_prefix               35    40 
-    st_profile_suffix               36    41 
-    st_title_prefix                 37    42 
+    st_img_name_main         1    29 
+    st_img_path              2    30 
+    st_img_prefix            3    31 
+    st_img_suffix            4    32 
+    st_mat_name_main         5    33 
+    st_mat_path              6    34 
+    st_mat_prefix            7    35 
+    st_mat_suffix            8    36 
+    st_matimg_path_root      9    37 
+    st_profile_name_main    10    38 
+    st_profile_path         11    39 
+    st_profile_prefix       12    40 
+    st_profile_suffix       13    41 
+    st_title_prefix         14    42 
 
 ----------------------------------------
 ----------------------------------------
@@ -440,7 +493,7 @@ CONTAINER NAME: PARAM_MAP
 ----------------------------------------
   Map with properties:
 
-        Count: 41
+        Count: 42
       KeyType: char
     ValueType: any
 
@@ -448,10 +501,48 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ----------------------------------------
 ----------------------------------------
+pos = 1 ; key = bl_default ; val = 0
+pos = 2 ; key = fl_Amean ; val = 1
+pos = 3 ; key = fl_alpha ; val = 0.36
+pos = 4 ; key = fl_b_bd ; val = -20
+pos = 5 ; key = fl_beta ; val = 0.94
+pos = 6 ; key = fl_c_min ; val = 0.02
+pos = 7 ; key = fl_coh_interp_grid_gap ; val = 2
+pos = 8 ; key = fl_crra ; val = 1.5
+pos = 9 ; key = fl_default_aprime ; val = 0
+pos = 10 ; key = fl_default_wprime ; val = 0
+pos = 11 ; key = fl_delta ; val = 0.08
+pos = 12 ; key = fl_k_max ; val = 70
+pos = 13 ; key = fl_k_min ; val = 0
+pos = 14 ; key = fl_nan_replace ; val = -9999
+pos = 15 ; key = fl_r_save ; val = 0.025
+pos = 16 ; key = fl_tol_dist ; val = 1e-05
+pos = 17 ; key = fl_tol_pol ; val = 1e-05
+pos = 18 ; key = fl_tol_val ; val = 1e-05
+pos = 19 ; key = fl_w ; val = 0.44365
+pos = 20 ; key = fl_w_interp_grid_gap ; val = 2
+pos = 21 ; key = fl_w_max ; val = 50
+pos = 22 ; key = fl_w_min ; val = -20
+pos = 23 ; key = fl_z_r_borr_max ; val = 0.95
+pos = 24 ; key = fl_z_r_borr_min ; val = 0.025
+pos = 25 ; key = fl_z_r_borr_n ; val = 3
+pos = 26 ; key = fl_z_r_borr_poiss_mean ; val = 20
+pos = 27 ; key = fl_z_wage_mu ; val = 0
+pos = 28 ; key = fl_z_wage_rho ; val = 0.8
+pos = 29 ; key = fl_z_wage_sig ; val = 0.2
+pos = 30 ; key = it_ak_perc_n ; val = 45
+pos = 31 ; key = it_c_interp_grid_gap ; val = 0.0001
+pos = 32 ; key = it_maxiter_dist ; val = 1000
+pos = 33 ; key = it_maxiter_val ; val = 250
+pos = 34 ; key = it_tol_pol_nochange ; val = 25
+pos = 35 ; key = it_w_perc_n ; val = 25
+pos = 36 ; key = it_z_n ; val = 45
+pos = 37 ; key = it_z_wage_n ; val = 15
 pos = 38 ; key = st_analytical_stationary_type ; val = eigenvector
 pos = 39 ; key = st_model ; val = ipwkbzr
-pos = 40 ; key = st_z_r_borr_drv_ele_type ; val = unif
-pos = 41 ; key = st_z_r_borr_drv_prb_type ; val = poiss
+pos = 40 ; key = st_v_coh_z_interp_method ; val = method_cell
+pos = 41 ; key = st_z_r_borr_drv_ele_type ; val = unif
+pos = 42 ; key = st_z_r_borr_drv_prb_type ; val = poiss
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Scalars in Container and Sizes and Basic Statistics
@@ -506,8 +597,9 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
     st_analytical_stationary_type    1    38 
     st_model                         2    39 
-    st_z_r_borr_drv_ele_type         3    40 
-    st_z_r_borr_drv_prb_type         4    41 
+    st_v_coh_z_interp_method         3    40 
+    st_z_r_borr_drv_ele_type         4    41 
+    st_z_r_borr_drv_prb_type         5    42 
 
 ----------------------------------------
 ----------------------------------------
@@ -549,6 +641,11 @@ pos = 20 ; key = bl_post ; val = true
 pos = 21 ; key = bl_profile ; val = false
 pos = 22 ; key = bl_profile_dist ; val = false
 pos = 23 ; key = bl_time ; val = false
+pos = 24 ; key = it_display_every ; val = 5
+pos = 25 ; key = it_display_final_colmax ; val = 12
+pos = 26 ; key = it_display_final_rowmax ; val = 100
+pos = 27 ; key = it_display_summmat_colmax ; val = 5
+pos = 28 ; key = it_display_summmat_rowmax ; val = 5
 pos = 29 ; key = st_img_name_main ; val = _default
 pos = 30 ; key = st_img_path ; val = C:/Users/fan/CodeDynaAsset//m_ipwkbzr//solve/img/
 pos = 31 ; key = st_img_prefix ; val = 
@@ -567,59 +664,59 @@ pos = 42 ; key = st_title_prefix ; val =
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Scalars in Container and Sizes and Basic Statistics
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                                 i    idx    value
-                                 _    ___    _____
+                                    i     idx    value
+                                    __    ___    _____
 
-    it_display_every             1    24        5 
-    it_display_final_colmax      2    25       12 
-    it_display_final_rowmax      3    26      100 
-    it_display_summmat_colmax    4    27        5 
-    it_display_summmat_rowmax    5    28        5 
+    bl_display                       1     1        0 
+    bl_display_defparam              2     2        1 
+    bl_display_dist                  3     3        0 
+    bl_display_evf                   4     4        0 
+    bl_display_final                 5     5        1 
+    bl_display_final_dist            6     6        0 
+    bl_display_final_dist_detail     7     7        0 
+    bl_display_funcgrids             8     8        1 
+    bl_graph                         9     9        1 
+    bl_graph_coh_t_coh              10    10        1 
+    bl_graph_evf                    11    11        0 
+    bl_graph_funcgrids              12    12        1 
+    bl_graph_funcgrids_detail       13    13        1 
+    bl_graph_onebyones              14    14        1 
+    bl_graph_pol_lvl                15    15        1 
+    bl_graph_pol_pct                16    16        1 
+    bl_graph_val                    17    17        1 
+    bl_img_save                     18    18        0 
+    bl_mat                          19    19        0 
+    bl_post                         20    20        1 
+    bl_profile                      21    21        0 
+    bl_profile_dist                 22    22        0 
+    bl_time                         23    23        0 
+    it_display_every                24    24        5 
+    it_display_final_colmax         25    25       12 
+    it_display_final_rowmax         26    26      100 
+    it_display_summmat_colmax       27    27        5 
+    it_display_summmat_rowmax       28    28        5 
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Strings in Container and Sizes and Basic Statistics
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                                    i     idx
-                                    __    ___
+                            i     idx
+                            __    ___
 
-    bl_display                       1     1 
-    bl_display_defparam              2     2 
-    bl_display_dist                  3     3 
-    bl_display_evf                   4     4 
-    bl_display_final                 5     5 
-    bl_display_final_dist            6     6 
-    bl_display_final_dist_detail     7     7 
-    bl_display_funcgrids             8     8 
-    bl_graph                         9     9 
-    bl_graph_coh_t_coh              10    10 
-    bl_graph_evf                    11    11 
-    bl_graph_funcgrids              12    12 
-    bl_graph_funcgrids_detail       13    13 
-    bl_graph_onebyones              14    14 
-    bl_graph_pol_lvl                15    15 
-    bl_graph_pol_pct                16    16 
-    bl_graph_val                    17    17 
-    bl_img_save                     18    18 
-    bl_mat                          19    19 
-    bl_post                         20    20 
-    bl_profile                      21    21 
-    bl_profile_dist                 22    22 
-    bl_time                         23    23 
-    st_img_name_main                24    29 
-    st_img_path                     25    30 
-    st_img_prefix                   26    31 
-    st_img_suffix                   27    32 
-    st_mat_name_main                28    33 
-    st_mat_path                     29    34 
-    st_mat_prefix                   30    35 
-    st_mat_suffix                   31    36 
-    st_matimg_path_root             32    37 
-    st_profile_name_main            33    38 
-    st_profile_path                 34    39 
-    st_profile_prefix               35    40 
-    st_profile_suffix               36    41 
-    st_title_prefix                 37    42 
+    st_img_name_main         1    29 
+    st_img_path              2    30 
+    st_img_prefix            3    31 
+    st_img_suffix            4    32 
+    st_mat_name_main         5    33 
+    st_mat_path              6    34 
+    st_mat_prefix            7    35 
+    st_mat_suffix            8    36 
+    st_matimg_path_root      9    37 
+    st_profile_name_main    10    38 
+    st_profile_path         11    39 
+    st_profile_prefix       12    40 
+    st_profile_suffix       13    41 
+    st_title_prefix         14    42 
 
 </pre><h2 id="4">Parse Parameters 1a</h2><pre class="codeinput">params_group = values(param_map, {<span class="string">'fl_b_bd'</span>, <span class="string">'fl_w_min'</span>, <span class="string">'fl_w_max'</span>});
 [fl_b_bd, fl_w_min, fl_w_max] = params_group{:};
@@ -637,6 +734,9 @@ params_group = values(param_map, {<span class="string">'fl_r_save'</span>, <span
     <span class="string">'it_c_interp_grid_gap'</span>, <span class="string">'fl_w_interp_grid_gap'</span>, <span class="string">'fl_coh_interp_grid_gap'</span>});
 [it_w_perc_n, it_ak_perc_n,<span class="keyword">...</span>
     it_c_interp_grid_gap, fl_w_interp_grid_gap, fl_coh_interp_grid_gap] = params_group{:};
+
+params_group = values(param_map, {<span class="string">'st_v_coh_z_interp_method'</span>});
+[st_v_coh_z_interp_method] = params_group{:};
 </pre><h2 id="6">Parse Parameters 2</h2><pre class="codeinput"><span class="comment">% param_map shock income</span>
 params_group = values(param_map, {<span class="string">'it_z_wage_n'</span>, <span class="string">'fl_z_wage_mu'</span>, <span class="string">'fl_z_wage_rho'</span>, <span class="string">'fl_z_wage_sig'</span>});
 [it_z_wage_n, fl_z_wage_mu, fl_z_wage_rho, fl_z_wage_sig] = params_group{:};
@@ -2212,11 +2312,52 @@ ar_bl_w_level_invalid =  min(mt_bl_wkb_invalid, [], 1);
 <span class="comment">% borrow sufficiently to maintain positive consumption.</span>
 ar_w_level_full_dup = repmat(ar_w_level_full, [1,fl_z_r_borr_n]);
 fl_w_level_min_valid = min(ar_w_level_full_dup(~ar_bl_w_level_invalid));
-</pre><h2 id="15">Update Valid 2nd stage choice matrix</h2><p>ar_w_level = linspace(fl_w_level_min_valid, fl_w_max, it_w_interp_n); ar_k_max = ar_w_level - fl_b_bd; mt_k = (ar_k_max'*ar_ak_perc)'; mt_a = (ar_w_level - mt_k); ar_a_meshk = mt_a(:); ar_k_mesha = mt_k(:);</p><h2 id="16">Select only Valid (k(w), a) choices</h2><pre class="codeinput"><span class="comment">% mt_coh_wkb = mt_coh_wkb_full(~ar_bl_wkb_invalid, :);</span>
+</pre><h2 id="15">Update Valid 2nd stage choice matrix</h2><p>ar_w_level = linspace(fl_w_level_min_valid, fl_w_max, it_w_interp_n); ar_k_max = ar_w_level - fl_b_bd; mt_k = (ar_k_max'*ar_ak_perc)'; mt_a = (ar_w_level - mt_k); ar_a_meshk = mt_a(:); ar_k_mesha = mt_k(:);</p><h2 id="16">Generate 2nd Stage Cash-on-Hand Points for Interpolation</h2><pre class="codeinput"><span class="comment">% it_ak_perc_n = length(ar_ak_perc);</span>
+<span class="comment">% it_w_interp_n = length(ar_w_level);</span>
+it_wak_n = it_w_interp_n*it_ak_perc_n;
+
+<span class="comment">% mt_coh_wkb = mt_coh_wkb_full(~ar_bl_wkb_invalid, :);</span>
 mt_coh_wkb = mt_coh_wkb_full;
+
+
+mt_coh_wkb_mesh_z_r_borr = repmat(mt_coh_wkb_full, [1, fl_z_r_borr_n]);
 mt_z_r_borr_mesh_coh_wkb = repmat(ar_z_r_borr, [size(mt_coh_wkb,1),1]);
+
 mt_z_wage_mesh_coh_wkb = repmat(ar_z_wage, [size(mt_coh_wkb,1),1]);
-</pre><h2 id="17">Generate 1st Stage States: Interpolation Cash-on-hand Interpolation Grid</h2><p>For the iwkz problems, we solve the problem along a grid of cash-on-hand values, the interpolate to find v(k',b',z) at (k',b') choices. Crucially, we have to coh matrxies</p><pre class="codeinput">fl_max_mt_coh = max(max(mt_coh_wkb));
+mt_z_mesh_coh_wkb = repmat((1:it_z_n), [size(mt_coh_wkb,1), 1]);
+mt_z_mesh_coh_wkb_seg = repmat((1:it_z_n), [it_wak_n, 1]);
+
+<span class="keyword">if</span> (ismember(st_v_coh_z_interp_method, [<span class="string">"method_cell"</span>]))
+
+    cl_mt_coh_wkb_mesh_z_r_borr = cell([fl_z_r_borr_n, 1]);
+    <span class="keyword">for</span> it_z_r_borr_ctr = 1:1:fl_z_r_borr_n
+        it_mt_val_row_start = it_wak_n*(it_z_r_borr_ctr-1) + 1;
+        it_mt_val_row_end = it_mt_val_row_start + it_wak_n - 1;
+        cl_mt_coh_wkb_mesh_z_r_borr{it_z_r_borr_ctr} = <span class="keyword">...</span>
+            mt_coh_wkb_mesh_z_r_borr(it_mt_val_row_start:it_mt_val_row_end, :);
+    <span class="keyword">end</span>
+
+<span class="keyword">elseif</span> (ismember(st_v_coh_z_interp_method, [<span class="string">"method_idx_a"</span>, <span class="string">"method_idx_b"</span>]))
+
+    <span class="comment">% This is borrowing with default or not condition</span>
+    fl_min_mt_coh = fl_b_bd;
+
+    cl_mt_coh_wkb_mesh_z_r_borr = cell([fl_z_r_borr_n, 1]);
+    <span class="keyword">for</span> it_z_r_borr_ctr = 1:1:fl_z_r_borr_n
+        it_mt_val_row_start = it_wak_n*(it_z_r_borr_ctr-1) + 1;
+        it_mt_val_row_end = it_mt_val_row_start + it_wak_n - 1;
+
+        mt_coh_wkb_mesh_z_r_borr_seg = <span class="keyword">...</span>
+            1 + ((mt_coh_wkb_mesh_z_r_borr(it_mt_val_row_start:it_mt_val_row_end, :) - fl_min_mt_coh)/fl_coh_interp_grid_gap);
+
+        cl_mt_coh_wkb_mesh_z_r_borr{it_z_r_borr_ctr} = mt_coh_wkb_mesh_z_r_borr_seg;
+
+    <span class="keyword">end</span>
+
+<span class="keyword">end</span>
+</pre><h2 id="17">Generate 1st Stage States: Interpolation Cash-on-hand Interpolation Grid</h2><p>For the iwkz problems, we solve the problem along a grid of cash-on-hand values, the interpolate to find v(k',b',z) at (k',b') choices. Crucially, we have to coh matrxies</p><pre class="codeinput">fl_min_mt_coh = fl_b_bd;
+
+fl_max_mt_coh = max(max(mt_coh_wkb));
 
 <span class="comment">% This is savings only condition</span>
 <span class="comment">% fl_min_mt_coh = min(min(mt_coh_wkb));</span>
@@ -2224,16 +2365,17 @@ mt_z_wage_mesh_coh_wkb = repmat(ar_z_wage, [size(mt_coh_wkb,1),1]);
 <span class="comment">% This could be condition if no defaults are allowed</span>
 <span class="comment">% fl_min_mt_coh = fl_w_level_min_valid;</span>
 
-<span class="comment">% This is borrowing with default or not condition</span>
-fl_min_mt_coh = fl_b_bd;
 
 it_coh_interp_n = (fl_max_mt_coh-fl_min_mt_coh)/(fl_coh_interp_grid_gap);
 ar_interp_coh_grid = fft_array_add_zero(linspace(fl_min_mt_coh, fl_max_mt_coh, it_coh_interp_n), true);
 mt_interp_coh_grid_mesh_w_perc = repmat(ar_interp_coh_grid, [it_w_perc_n, 1]);
+it_coh_interp_n = length(ar_interp_coh_grid);
 
 [mt_interp_coh_grid_mesh_z_wage, mt_z_wage_mesh_interp_coh_grid] = ndgrid(ar_interp_coh_grid, ar_z_wage);
 
 mt_interp_coh_grid_mesh_z = repmat(ar_interp_coh_grid', [1, it_z_n]);
+<span class="comment">% This is meshed index, 1:it_z_n index for, common value each column</span>
+mt_z_mesh_interp_coh_grid = repmat((1:it_z_n), [it_coh_interp_n, 1]);
 </pre><h2 id="18">Generate 1st Stage Choices: Interpolation Cash-on-hand Interpolation Grid</h2><p>previously, our ar_w was the first stage choice grid, the grid was the same for all coh levels. Now, for each coh level, there is a different ar_w. ar_interp_coh_grid is (1 by ar_interp_coh_grid) and ar_w_perc is ( 1 by it_w_perc_n). Conditional on z, each choice matrix is (it_w_perc_n by ar_interp_coh_grid). Here we are pre-computing the choice matrix. This could be a large matrix if the choice grid is large. This is the matrix of aggregate savings choices</p><pre class="codeinput"><span class="keyword">if</span> (fl_min_mt_coh &lt; 0)
     <span class="comment">% borrowing bound is below zero</span>
     mt_w_perc_mesh_interp_coh_grid = ((ar_interp_coh_grid-fl_min_mt_coh)'*ar_w_perc)' + fl_min_mt_coh;
@@ -2258,8 +2400,16 @@ armt_map(<span class="string">'mt_interp_coh_grid_mesh_w_perc'</span>) = mt_inte
 armt_map(<span class="string">'mt_w_perc_mesh_interp_coh_grid'</span>) = mt_w_perc_mesh_interp_coh_grid;
 
 armt_map(<span class="string">'mt_interp_coh_grid_mesh_z'</span>) = mt_interp_coh_grid_mesh_z;
+armt_map(<span class="string">'mt_z_mesh_interp_coh_grid'</span>) = mt_z_mesh_interp_coh_grid;
 </pre><h2 id="23">Store armt_map (3): 2nd stage reachable coh(k(w), a(w,k), z', r)</h2><p>Dimensions of Various Grids: I for level grid, M for shock grid, P for percent grid. These are grids for 1st stage solution</p><div><ol><li>mt_coh_wkb: (I^k x I^w x M^r) by (M^z)</li><li>mt_z_wage_mesh_coh_wkb: (I^k x I^w x M^r) by (M^z)</li></ol></div><pre class="codeinput">armt_map(<span class="string">'mt_coh_wkb'</span>) = mt_coh_wkb_full;
+armt_map(<span class="string">'mt_coh_wkb_mesh_z_r_borr'</span>) = mt_coh_wkb_mesh_z_r_borr;
+
+armt_map(<span class="string">'mt_z_mesh_coh_wkb'</span>) = mt_z_mesh_coh_wkb;
 armt_map(<span class="string">'mt_z_wage_mesh_coh_wkb'</span>) = mt_z_wage_mesh_coh_wkb;
+
+armt_map(<span class="string">'cl_mt_coh_wkb_mesh_z_r_borr'</span>) = cl_mt_coh_wkb_mesh_z_r_borr;
+armt_map(<span class="string">'mt_z_mesh_coh_wkb_seg'</span>) = mt_z_mesh_coh_wkb_seg;
+
 <span class="comment">% armt_map('mt_z_r_borr_mesh_coh_wkb') = mt_z_r_borr_mesh_coh_wkb;</span>
 </pre><h2 id="24">Store armt_map (4): 2nd stage additional arrays</h2><p>Dimensions of Various Grids: I for level grid, M for shock grid, P for percent grid. These are grids for 1st stage solution</p><div><ol><li>mt_k: (I^w) by (P^{k and b})</li><li>ar_a_meshk: 1 by (I^w x P^{k and b})</li><li>ar_k_mesha: 1 by (I^w x P^{k and b})</li><li>ar_aplusk_mesh: 1 by (I^w x P^{k and b})</li><li>it_ameshk_n: scalar</li></ol></div><pre class="codeinput">armt_map(<span class="string">'mt_k'</span>) = mt_k;
 armt_map(<span class="string">'ar_a_meshk'</span>) = ar_a_meshk;
@@ -2452,74 +2602,11 @@ func_map(<span class="string">'f_cons'</span>) = f_cons;
 
     disp(<span class="string">'----------------------------------------'</span>);
     disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
-    disp(<span class="string">'mt_w_perc_mesh_interp_coh_grid'</span>);
-    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
-    disp(size(mt_w_perc_mesh_interp_coh_grid));
-    disp(head(array2table(mt_w_perc_mesh_interp_coh_grid), 10));
-    disp(tail(array2table(mt_w_perc_mesh_interp_coh_grid), 10));
-
-    disp(<span class="string">'----------------------------------------'</span>);
-    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
     disp(<span class="string">'mt_z_trans'</span>);
     disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
     disp(size(mt_z_trans));
     disp(head(array2table(mt_z_trans), 10));
     disp(tail(array2table(mt_z_trans), 10));
-
-    disp(<span class="string">'----------------------------------------'</span>);
-    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
-    disp(<span class="string">'ar_interp_coh_grid'</span>);
-    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
-    summary(array2table(ar_interp_coh_grid'));
-
-    disp(<span class="string">'----------------------------------------'</span>);
-    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
-    disp(<span class="string">'ar_interp_c_grid'</span>);
-    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
-    summary(array2table(ar_interp_c_grid'));
-
-    disp(<span class="string">'----------------------------------------'</span>);
-    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
-    disp(<span class="string">'mt_interp_coh_grid_mesh_z'</span>);
-    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
-    disp(size(mt_interp_coh_grid_mesh_z_wage));
-    disp(head(array2table(mt_interp_coh_grid_mesh_z_wage), 10));
-    disp(tail(array2table(mt_interp_coh_grid_mesh_z_wage), 10));
-
-    disp(<span class="string">'----------------------------------------'</span>);
-    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
-    disp(<span class="string">'mt_a'</span>);
-    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
-    disp(size(mt_a));
-    disp(head(array2table(mt_a), 10));
-    disp(tail(array2table(mt_a), 10));
-
-    disp(<span class="string">'----------------------------------------'</span>);
-    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
-    disp(<span class="string">'ar_a_meshk'</span>);
-    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
-    summary(array2table(ar_a_meshk));
-
-    disp(<span class="string">'----------------------------------------'</span>);
-    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
-    disp(<span class="string">'mt_k'</span>);
-    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
-    disp(size(mt_k));
-    disp(head(array2table(mt_k), 10));
-    disp(tail(array2table(mt_k), 10));
-
-    disp(<span class="string">'----------------------------------------'</span>);
-    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
-    disp(<span class="string">'ar_k_mesha'</span>);
-    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
-    summary(array2table(ar_k_mesha));
-
-    param_map_keys = keys(func_map);
-    param_map_vals = values(func_map);
-    <span class="keyword">for</span> i = 1:length(func_map)
-        st_display = strjoin([<span class="string">'pos ='</span> num2str(i) <span class="string">'; key ='</span> string(param_map_keys{i}) <span class="string">'; val ='</span> func2str(param_map_vals{i})]);
-        disp(st_display);
-    <span class="keyword">end</span>
 
 <span class="keyword">end</span>
 </pre><pre class="codeoutput">----------------------------------------
@@ -2568,40 +2655,6 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-mt_w_perc_mesh_interp_coh_grid
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    25    38
-
-    mt_w_perc_mesh_interp_coh_grid1    mt_w_perc_mesh_interp_coh_grid2    mt_w_perc_mesh_interp_coh_grid3    mt_w_perc_mesh_interp_coh_grid4    mt_w_perc_mesh_interp_coh_grid5    mt_w_perc_mesh_interp_coh_grid6    mt_w_perc_mesh_interp_coh_grid7    mt_w_perc_mesh_interp_coh_grid8    mt_w_perc_mesh_interp_coh_grid9    mt_w_perc_mesh_interp_coh_grid10    mt_w_perc_mesh_interp_coh_grid11    mt_w_perc_mesh_interp_coh_grid12    mt_w_perc_mesh_interp_coh_grid13    mt_w_perc_mesh_interp_coh_grid14    mt_w_perc_mesh_interp_coh_grid15    mt_w_perc_mesh_interp_coh_grid16    mt_w_perc_mesh_interp_coh_grid17    mt_w_perc_mesh_interp_coh_grid18    mt_w_perc_mesh_interp_coh_grid19    mt_w_perc_mesh_interp_coh_grid20    mt_w_perc_mesh_interp_coh_grid21    mt_w_perc_mesh_interp_coh_grid22    mt_w_perc_mesh_interp_coh_grid23    mt_w_perc_mesh_interp_coh_grid24    mt_w_perc_mesh_interp_coh_grid25    mt_w_perc_mesh_interp_coh_grid26    mt_w_perc_mesh_interp_coh_grid27    mt_w_perc_mesh_interp_coh_grid28    mt_w_perc_mesh_interp_coh_grid29    mt_w_perc_mesh_interp_coh_grid30    mt_w_perc_mesh_interp_coh_grid31    mt_w_perc_mesh_interp_coh_grid32    mt_w_perc_mesh_interp_coh_grid33    mt_w_perc_mesh_interp_coh_grid34    mt_w_perc_mesh_interp_coh_grid35    mt_w_perc_mesh_interp_coh_grid36    mt_w_perc_mesh_interp_coh_grid37    mt_w_perc_mesh_interp_coh_grid38
-    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________
-
-                  -20                              -19.998                            -19.996                            -19.994                            -19.991                            -19.989                            -19.987                            -19.985                            -19.983                            -19.981                              -19.98                             -19.979                             -19.976                             -19.974                             -19.972                              -19.97                             -19.968                             -19.966                             -19.964                             -19.961                             -19.959                             -19.957                             -19.955                             -19.953                             -19.951                              -19.948                            -19.946                             -19.944                              -19.942                              -19.94                            -19.938                             -19.936                              -19.933                             -19.931                            -19.929                             -19.927                             -19.925                              -19.923            
-                  -20                              -19.909                            -19.817                            -19.726                            -19.634                            -19.543                            -19.452                             -19.36                            -19.269                            -19.177                             -19.148                             -19.086                             -18.995                             -18.903                             -18.812                              -18.72                             -18.629                             -18.537                             -18.446                             -18.355                             -18.263                             -18.172                              -18.08                             -17.989                             -17.898                              -17.806                            -17.715                             -17.623                              -17.532                             -17.441                            -17.349                             -17.258                              -17.166                             -17.075                            -16.984                             -16.892                             -16.801                              -16.709            
-                  -20                              -19.819                            -19.639                            -19.458                            -19.277                            -19.097                            -18.916                            -18.735                            -18.555                            -18.374                             -18.317                             -18.193                             -18.013                             -17.832                             -17.651                             -17.471                              -17.29                             -17.109                             -16.929                             -16.748                             -16.567                             -16.387                             -16.206                             -16.025                             -15.845                              -15.664                            -15.483                             -15.303                              -15.122                             -14.941                            -14.761                              -14.58                              -14.399                             -14.219                            -14.038                             -13.857                             -13.677                              -13.496            
-                  -20                               -19.73                             -19.46                             -19.19                             -18.92                             -18.65                             -18.38                             -18.11                            -17.841                            -17.571                             -17.485                             -17.301                             -17.031                             -16.761                             -16.491                             -16.221                             -15.951                             -15.681                             -15.411                             -15.141                             -14.871                             -14.601                             -14.331                             -14.061                             -13.792                              -13.522                            -13.252                             -12.982                              -12.712                             -12.442                            -12.172                             -11.902                              -11.632                             -11.362                            -11.092                             -10.822                             -10.552                              -10.282            
-                  -20                              -19.641                            -19.282                            -18.922                            -18.563                            -18.204                            -17.845                            -17.486                            -17.126                            -16.767                             -16.653                             -16.408                             -16.049                              -15.69                              -15.33                             -14.971                             -14.612                             -14.253                             -13.894                             -13.534                             -13.175                             -12.816                             -12.457                             -12.098                             -11.738                              -11.379                             -11.02                             -10.661                              -10.302                             -9.9425                            -9.5833                             -9.2241                              -8.8649                             -8.5057                            -8.1465                             -7.7873                             -7.4282                               -7.069            
-                  -20                              -19.552                            -19.103                            -18.655                            -18.206                            -17.758                            -17.309                            -16.861                            -16.412                            -15.964                             -15.822                             -15.515                             -15.067                             -14.619                              -14.17                             -13.722                             -13.273                             -12.825                             -12.376                             -11.928                             -11.479                             -11.031                             -10.582                             -10.134                             -9.6855                               -9.237                            -8.7886                             -8.3401                              -7.8916                             -7.4432                            -6.9947                             -6.5463                              -6.0978                             -5.6493                            -5.2009                             -4.7524                              -4.304                              -3.8555            
-                  -20                              -19.462                            -18.925                            -18.387                            -17.849                            -17.311                            -16.774                            -16.236                            -15.698                            -15.161                              -14.99                             -14.623                             -14.085                             -13.547                              -13.01                             -12.472                             -11.934                             -11.396                             -10.859                             -10.321                             -9.7833                             -9.2456                             -8.7079                             -8.1702                             -7.6324                              -7.0947                             -6.557                             -6.0193                              -5.4816                             -4.9438                            -4.4061                             -3.8684                              -3.3307                              -2.793                            -2.2552                             -1.7175                             -1.1798                             -0.64207            
-                  -20                              -19.373                            -18.746                            -18.119                            -17.492                            -16.865                            -16.238                            -15.611                            -14.984                            -14.357                             -14.158                              -13.73                             -13.103                             -12.476                             -11.849                             -11.222                             -10.595                             -9.9683                             -9.3413                             -8.7143                             -8.0873                             -7.4604                             -6.8334                             -6.2064                             -5.5794                              -4.9524                            -4.3254                             -3.6985                              -3.0715                             -2.4445                            -1.8175                             -1.1905                             -0.56354                            0.063439                            0.69042                              1.3174                              1.9444                               2.5714            
-                  -20                              -19.284                            -18.568                            -17.851                            -17.135                            -16.419                            -15.703                            -14.986                             -14.27                            -13.554                             -13.327                             -12.838                             -12.121                             -11.405                             -10.689                             -9.9726                             -9.2563                             -8.5401                             -7.8238                             -7.1076                             -6.3914                             -5.6751                             -4.9589                             -4.2426                             -3.5264                              -2.8101                            -2.0939                             -1.3776                             -0.66139                            0.054852                             0.7711                              1.4873                               2.2036                              2.9198                             3.6361                              4.3523                              5.0686                               5.7848            
-                  -20                              -19.194                            -18.389                            -17.583                            -16.778                            -15.972                            -15.167                            -14.361                            -13.556                             -12.75                             -12.495                             -11.945                             -11.139                             -10.334                             -9.5284                             -8.7229                             -7.9174                             -7.1119                             -6.3064                             -5.5009                             -4.6954                             -3.8899                             -3.0844                             -2.2788                             -1.4733                             -0.66783                            0.13767                             0.94318                               1.7487                              2.5542                             3.3597                              4.1652                               4.9707                              5.7762                             6.5817                              7.3872                              8.1927                               8.9983            
-
-    mt_w_perc_mesh_interp_coh_grid1    mt_w_perc_mesh_interp_coh_grid2    mt_w_perc_mesh_interp_coh_grid3    mt_w_perc_mesh_interp_coh_grid4    mt_w_perc_mesh_interp_coh_grid5    mt_w_perc_mesh_interp_coh_grid6    mt_w_perc_mesh_interp_coh_grid7    mt_w_perc_mesh_interp_coh_grid8    mt_w_perc_mesh_interp_coh_grid9    mt_w_perc_mesh_interp_coh_grid10    mt_w_perc_mesh_interp_coh_grid11    mt_w_perc_mesh_interp_coh_grid12    mt_w_perc_mesh_interp_coh_grid13    mt_w_perc_mesh_interp_coh_grid14    mt_w_perc_mesh_interp_coh_grid15    mt_w_perc_mesh_interp_coh_grid16    mt_w_perc_mesh_interp_coh_grid17    mt_w_perc_mesh_interp_coh_grid18    mt_w_perc_mesh_interp_coh_grid19    mt_w_perc_mesh_interp_coh_grid20    mt_w_perc_mesh_interp_coh_grid21    mt_w_perc_mesh_interp_coh_grid22    mt_w_perc_mesh_interp_coh_grid23    mt_w_perc_mesh_interp_coh_grid24    mt_w_perc_mesh_interp_coh_grid25    mt_w_perc_mesh_interp_coh_grid26    mt_w_perc_mesh_interp_coh_grid27    mt_w_perc_mesh_interp_coh_grid28    mt_w_perc_mesh_interp_coh_grid29    mt_w_perc_mesh_interp_coh_grid30    mt_w_perc_mesh_interp_coh_grid31    mt_w_perc_mesh_interp_coh_grid32    mt_w_perc_mesh_interp_coh_grid33    mt_w_perc_mesh_interp_coh_grid34    mt_w_perc_mesh_interp_coh_grid35    mt_w_perc_mesh_interp_coh_grid36    mt_w_perc_mesh_interp_coh_grid37    mt_w_perc_mesh_interp_coh_grid38
-    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________
-
-                  -20                              -18.659                            -17.318                            -15.977                            -14.636                            -13.295                            -11.954                            -10.612                            -9.2714                             -7.9303                              -7.505                             -6.5892                             -5.2481                              -3.907                              -2.566                            -1.2249                             0.11621                              1.4573                              2.7984                              4.1395                              5.4805                              6.8216                              8.1627                              9.5038                              10.845                              12.186                              13.527                              14.868                              16.209                               17.55                              18.891                              20.232                              21.573                              22.915                              24.256                              25.597                              26.938                              28.279             
-                  -20                               -18.57                            -17.139                            -15.709                            -14.279                            -12.848                            -11.418                            -9.9876                            -8.5573                             -7.1269                             -6.6733                             -5.6966                             -4.2662                             -2.8359                             -1.4055                             0.0248                              1.4551                              2.8855                              4.3158                              5.7462                              7.1765                              8.6069                              10.037                              11.468                              12.898                              14.328                              15.759                              17.189                              18.619                               20.05                               21.48                               22.91                              24.341                              25.771                              27.201                              28.632                              30.062                              31.492             
-                  -20                               -18.48                            -16.961                            -15.441                            -13.922                            -12.402                            -10.882                            -9.3628                            -7.8432                             -6.3236                             -5.8417                             -4.8039                             -3.2843                             -1.7647                            -0.24513                             1.2745                              2.7941                              4.3137                              5.8333                              7.3529                              8.8725                              10.392                              11.912                              13.431                              14.951                              16.471                               17.99                               19.51                              21.029                              22.549                              24.069                              25.588                              27.108                              28.627                              30.147                              31.667                              33.186                              34.706             
-                  -20                              -18.391                            -16.782                            -15.173                            -13.565                            -11.956                            -10.347                            -8.7379                            -7.1291                             -5.5202                               -5.01                             -3.9113                             -2.3025                            -0.69359                             0.91528                             2.5241                               4.133                              5.7419                              7.3507                              8.9596                              10.568                              12.177                              13.786                              15.395                              17.004                              18.613                              20.222                              21.831                              23.439                              25.048                              26.657                              28.266                              29.875                              31.484                              33.093                              34.701                               36.31                              37.919             
-                  -20                              -18.302                            -16.604                            -14.906                            -13.207                            -11.509                            -9.8112                            -8.1131                             -6.415                             -4.7168                             -4.1783                             -3.0187                             -1.3206                             0.37756                              2.0757                             3.7738                              5.4719                              7.1701                              8.8682                              10.566                              12.264                              13.963                              15.661                              17.359                              19.057                              20.755                              22.453                              24.151                               25.85                              27.548                              29.246                              30.944                              32.642                               34.34                              36.038                              37.736                              39.435                              41.133             
-                  -20                              -18.213                            -16.425                            -14.638                             -12.85                            -11.063                            -9.2756                            -7.4883                            -5.7009                             -3.9135                             -3.3467                             -2.1261                            -0.33869                              1.4487                              3.2361                             5.0235                              6.8109                              8.5983                              10.386                              12.173                               13.96                              15.748                              17.535                              19.323                               21.11                              22.897                              24.685                              26.472                               28.26                              30.047                              31.834                              33.622                              35.409                              37.197                              38.984                              40.771                              42.559                              44.346             
-                  -20                              -18.123                            -16.247                             -14.37                            -12.493                            -10.617                            -8.7401                            -6.8634                            -4.9868                             -3.1101                              -2.515                             -1.2335                              0.6432                              2.5199                              4.3965                             6.2732                              8.1498                              10.026                              11.903                               13.78                              15.656                              17.533                               19.41                              21.286                              23.163                               25.04                              26.916                              28.793                               30.67                              32.546                              34.423                                36.3                              38.176                              40.053                               41.93                              43.806                              45.683                               47.56             
-                  -20                              -18.034                            -16.068                            -14.102                            -12.136                             -10.17                            -8.2045                            -6.2386                            -4.2727                             -2.3068                             -1.6833                            -0.34084                              1.6251                               3.591                              5.5569                             7.5228                              9.4887                              11.455                              13.421                              15.386                              17.352                              19.318                              21.284                               23.25                              25.216                              27.182                              29.148                              31.114                               33.08                              35.046                              37.012                              38.977                              40.943                              42.909                              44.875                              46.841                              48.807                              50.773             
-                  -20                              -17.945                             -15.89                            -13.834                            -11.779                            -9.7241                            -7.6689                            -5.6137                            -3.5586                             -1.5034                            -0.85167                             0.55179                               2.607                              4.6621                              6.7173                             8.7725                              10.828                              12.883                              14.938                              16.993                              19.048                              21.104                              23.159                              25.214                              27.269                              29.324                              31.379                              33.435                               35.49                              37.545                                39.6                              41.655                              43.711                              45.766                              47.821                              49.876                              51.931                              53.986             
-                  -20                              -17.856                            -15.711                            -13.567                            -11.422                            -9.2778                            -7.1334                            -4.9889                            -2.8445                            -0.70003                               -0.02                              1.4444                              3.5889                              5.7333                              7.8777                             10.022                              12.167                              14.311                              16.455                                18.6                              20.744                              22.889                              25.033                              27.178                              29.322                              31.467                              33.611                              35.755                                37.9                              40.044                              42.189                              44.333                              46.478                              48.622                              50.767                              52.911                              55.055                                57.2             
-
-----------------------------------------
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 mt_z_trans
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     45    45
@@ -2634,176 +2687,6 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      1.572e-18     4.2351e-16     6.9181e-14      6.844e-12     4.1057e-10     1.4957e-08     3.3139e-07     4.4731e-06     3.6846e-05      0.00018551      0.00057172       0.0010797       0.0012502      0.00088787      0.00050823      3.1439e-17      8.4703e-15      1.3836e-12      1.3688e-10      8.2114e-09      2.9913e-07      6.6277e-06      8.9462e-05      0.00073691      0.0037102         0.011434        0.021593        0.025005        0.017757        0.010165      3.1439e-16      8.4703e-14      1.3836e-11      1.3688e-09      8.2114e-08      2.9913e-06      6.6277e-05      0.00089462      0.0073691        0.037102         0.11434          0.21593         0.25005         0.17757         0.10165 
     1.2404e-20      5.003e-18     1.2216e-15     1.8049e-13     1.6154e-11     8.7697e-10     2.8919e-08     5.8021e-07     7.0941e-06       5.295e-05      0.00024164      0.00067516       0.0011562       0.0012141       0.0011772      2.4807e-19      1.0006e-16      2.4433e-14      3.6099e-12      3.2308e-10      1.7539e-08      5.7838e-07      1.1604e-05      0.00014188       0.001059        0.0048328        0.013503        0.023123        0.024282        0.023544      2.4807e-18      1.0006e-15      2.4433e-13      3.6099e-11      3.2308e-09      1.7539e-07      5.7838e-06      0.00011604      0.0014188         0.01059        0.048328          0.13503         0.23123         0.24282         0.23544 
 
-----------------------------------------
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-ar_interp_coh_grid
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-Variables:
-
-    Var1: 38&times;1 double
-
-        Values:
-
-            Min          -20
-            Median    17.565
-            Max       57.277
-
-----------------------------------------
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-ar_interp_c_grid
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-Variables:
-
-    Var1: 772571&times;1 double
-
-        Values:
-
-            Min         0.02
-            Median    38.649
-            Max       77.277
-
-----------------------------------------
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-mt_interp_coh_grid_mesh_z
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    38    15
-
-    mt_interp_coh_grid_mesh_z_wage1    mt_interp_coh_grid_mesh_z_wage2    mt_interp_coh_grid_mesh_z_wage3    mt_interp_coh_grid_mesh_z_wage4    mt_interp_coh_grid_mesh_z_wage5    mt_interp_coh_grid_mesh_z_wage6    mt_interp_coh_grid_mesh_z_wage7    mt_interp_coh_grid_mesh_z_wage8    mt_interp_coh_grid_mesh_z_wage9    mt_interp_coh_grid_mesh_z_wage10    mt_interp_coh_grid_mesh_z_wage11    mt_interp_coh_grid_mesh_z_wage12    mt_interp_coh_grid_mesh_z_wage13    mt_interp_coh_grid_mesh_z_wage14    mt_interp_coh_grid_mesh_z_wage15
-    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________
-
-                    -20                                -20                                -20                                -20                                -20                                -20                                -20                                -20                                -20                                 -20                                 -20                                 -20                                 -20                                 -20                                 -20            
-                -17.853                            -17.853                            -17.853                            -17.853                            -17.853                            -17.853                            -17.853                            -17.853                            -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853                             -17.853            
-                -15.707                            -15.707                            -15.707                            -15.707                            -15.707                            -15.707                            -15.707                            -15.707                            -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707                             -15.707            
-                 -13.56                             -13.56                             -13.56                             -13.56                             -13.56                             -13.56                             -13.56                             -13.56                             -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56                              -13.56            
-                -11.414                            -11.414                            -11.414                            -11.414                            -11.414                            -11.414                            -11.414                            -11.414                            -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414                             -11.414            
-                -9.2671                            -9.2671                            -9.2671                            -9.2671                            -9.2671                            -9.2671                            -9.2671                            -9.2671                            -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671                             -9.2671            
-                -7.1205                            -7.1205                            -7.1205                            -7.1205                            -7.1205                            -7.1205                            -7.1205                            -7.1205                            -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205                             -7.1205            
-                -4.9739                            -4.9739                            -4.9739                            -4.9739                            -4.9739                            -4.9739                            -4.9739                            -4.9739                            -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739                             -4.9739            
-                -2.8273                            -2.8273                            -2.8273                            -2.8273                            -2.8273                            -2.8273                            -2.8273                            -2.8273                            -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273                             -2.8273            
-               -0.68071                           -0.68071                           -0.68071                           -0.68071                           -0.68071                           -0.68071                           -0.68071                           -0.68071                           -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071                            -0.68071            
-
-    mt_interp_coh_grid_mesh_z_wage1    mt_interp_coh_grid_mesh_z_wage2    mt_interp_coh_grid_mesh_z_wage3    mt_interp_coh_grid_mesh_z_wage4    mt_interp_coh_grid_mesh_z_wage5    mt_interp_coh_grid_mesh_z_wage6    mt_interp_coh_grid_mesh_z_wage7    mt_interp_coh_grid_mesh_z_wage8    mt_interp_coh_grid_mesh_z_wage9    mt_interp_coh_grid_mesh_z_wage10    mt_interp_coh_grid_mesh_z_wage11    mt_interp_coh_grid_mesh_z_wage12    mt_interp_coh_grid_mesh_z_wage13    mt_interp_coh_grid_mesh_z_wage14    mt_interp_coh_grid_mesh_z_wage15
-    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    _______________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________    ________________________________
-
-                37.958                             37.958                             37.958                             37.958                             37.958                             37.958                             37.958                             37.958                             37.958                              37.958                              37.958                              37.958                              37.958                              37.958                              37.958             
-                40.104                             40.104                             40.104                             40.104                             40.104                             40.104                             40.104                             40.104                             40.104                              40.104                              40.104                              40.104                              40.104                              40.104                              40.104             
-                42.251                             42.251                             42.251                             42.251                             42.251                             42.251                             42.251                             42.251                             42.251                              42.251                              42.251                              42.251                              42.251                              42.251                              42.251             
-                44.398                             44.398                             44.398                             44.398                             44.398                             44.398                             44.398                             44.398                             44.398                              44.398                              44.398                              44.398                              44.398                              44.398                              44.398             
-                46.544                             46.544                             46.544                             46.544                             46.544                             46.544                             46.544                             46.544                             46.544                              46.544                              46.544                              46.544                              46.544                              46.544                              46.544             
-                48.691                             48.691                             48.691                             48.691                             48.691                             48.691                             48.691                             48.691                             48.691                              48.691                              48.691                              48.691                              48.691                              48.691                              48.691             
-                50.837                             50.837                             50.837                             50.837                             50.837                             50.837                             50.837                             50.837                             50.837                              50.837                              50.837                              50.837                              50.837                              50.837                              50.837             
-                52.984                             52.984                             52.984                             52.984                             52.984                             52.984                             52.984                             52.984                             52.984                              52.984                              52.984                              52.984                              52.984                              52.984                              52.984             
-                55.131                             55.131                             55.131                             55.131                             55.131                             55.131                             55.131                             55.131                             55.131                              55.131                              55.131                              55.131                              55.131                              55.131                              55.131             
-                57.277                             57.277                             57.277                             57.277                             57.277                             57.277                             57.277                             57.277                             57.277                              57.277                              57.277                              57.277                              57.277                              57.277                              57.277             
-
-----------------------------------------
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-mt_a
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    45    35
-
-    mt_a1     mt_a2      mt_a3      mt_a4      mt_a5      mt_a6      mt_a7      mt_a8      mt_a9      mt_a10      mt_a11      mt_a12      mt_a13     mt_a14     mt_a15    mt_a16    mt_a17    mt_a18    mt_a19    mt_a20    mt_a21    mt_a22    mt_a23    mt_a24    mt_a25    mt_a26    mt_a27    mt_a28    mt_a29    mt_a30    mt_a31    mt_a32    mt_a33    mt_a34    mt_a35
-    _____    _______    _______    _______    _______    _______    _______    _______    _______    ________    ________    ________    ________    _______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
-
-     -20     -17.881    -15.762    -13.643    -11.524    -9.4045    -7.2855    -5.1664    -3.0473    -0.92818       -0.02      1.1909        3.31     5.4291    7.5482    9.6673    11.786    13.905    16.025    18.144    20.263    22.382    24.501     26.62    28.739    30.858    32.977    35.096    37.215    39.335    41.454    43.573    45.692    47.811     49.93
-     -20     -17.929    -15.858    -13.787    -11.716    -9.6451    -7.5741    -5.5032    -3.4322     -1.3612    -0.47364     0.70978      2.7808     4.8517    6.9227    8.9937    11.065    13.136    15.207    17.278    19.349     21.42    23.491    25.562    27.632    29.703    31.774    33.845    35.916    37.987    40.058    42.129      44.2    46.271    48.342
-     -20     -17.977    -15.954    -13.931    -11.909    -9.8857    -7.8628    -5.8399    -3.8171     -1.7942    -0.92727     0.22865      2.2515     4.2744    6.2972    8.3201    10.343    12.366    14.389    16.412    18.434    20.457     22.48    24.503    26.526    28.549    30.572    32.594    34.617     36.64    38.663    40.686    42.709    44.732    46.755
-     -20     -18.025     -16.05    -14.076    -12.101    -10.126    -8.1515    -6.1767     -4.202     -2.2272     -1.3809    -0.25248      1.7223      3.697    5.6718    7.6465    9.6213    11.596    13.571    15.546     17.52    19.495     21.47    23.445    25.419    27.394    29.369    31.344    33.318    35.293    37.268    39.243    41.217    43.192    45.167
-     -20     -18.073    -16.147     -14.22    -12.293    -10.367    -8.4402    -6.5135    -4.5869     -2.6602     -1.8345    -0.73361       1.193     3.1197    5.0463    6.9729    8.8996    10.826    12.753     14.68    16.606    18.533    20.459    22.386    24.313    26.239    28.166    30.093    32.019    33.946    35.873    37.799    39.726    41.652    43.579
-     -20     -18.121    -16.243    -14.364    -12.486    -10.607    -8.7288    -6.8503    -4.9718     -3.0933     -2.2882     -1.2147     0.66379     2.5423    4.4208    6.2994    8.1779    10.056    11.935    13.813    15.692    17.571    19.449    21.328    23.206    25.085    26.963    28.842     30.72    32.599    34.477    36.356    38.234    40.113    41.991
-     -20      -18.17    -16.339    -14.509    -12.678    -10.848    -9.0175    -7.1871    -5.3567     -3.5263     -2.7418     -1.6959     0.13455      1.965    3.7954    5.6258    7.4562    9.2866    11.117    12.947    14.778    16.608    18.439    20.269      22.1     23.93     25.76    27.591    29.421    31.252    33.082    34.912    36.743    38.573    40.404
-     -20     -18.218    -16.435    -14.653    -12.871    -11.088    -9.3062    -7.5239    -5.7416     -3.9593     -3.1955      -2.177     -0.3947     1.3876    3.1699    4.9522    6.7345    8.5168    10.299    12.081    13.864    15.646    17.428    19.211    20.993    22.775    24.558     26.34    28.122    29.904    31.687    33.469    35.251    37.034    38.816
-     -20     -18.266    -16.532    -14.797    -13.063    -11.329    -9.5949    -7.8607    -6.1265     -4.3923     -3.6491     -2.6581    -0.92394    0.81025    2.5444    4.2786    6.0128     7.747    9.4812    11.215     12.95    14.684    16.418    18.152    19.886     21.62    23.355    25.089    26.823    28.557    30.291    32.026     33.76    35.494    37.228
-     -20     -18.314    -16.628    -14.942    -13.256     -11.57    -9.8836    -8.1975    -6.5114     -4.8253     -4.1027     -3.1393     -1.4532    0.23289     1.919     3.605    5.2911    6.9772    8.6633    10.349    12.035    13.721    15.408    17.094     18.78    20.466    22.152    23.838    25.524     27.21    28.896    30.582    32.268    33.954     35.64
-
-    mt_a1     mt_a2      mt_a3      mt_a4      mt_a5      mt_a6      mt_a7      mt_a8      mt_a9     mt_a10     mt_a11     mt_a12     mt_a13     mt_a14     mt_a15     mt_a16     mt_a17     mt_a18     mt_a19     mt_a20     mt_a21     mt_a22     mt_a23     mt_a24     mt_a25     mt_a26     mt_a27     mt_a28     mt_a29     mt_a30     mt_a31     mt_a32     mt_a33     mt_a34     mt_a35 
-    _____    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______
-
-     -20     -19.565     -19.13    -18.695    -18.259    -17.824    -17.389    -16.954    -16.519    -16.084    -15.897    -15.649    -15.213    -14.778    -14.343    -13.908    -13.473    -13.038    -12.603    -12.168    -11.732    -11.297    -10.862    -10.427    -9.9918    -9.5567    -9.1216    -8.6864    -8.2513    -7.8161     -7.381    -6.9459    -6.5107    -6.0756    -5.6405
-     -20     -19.613    -19.226    -18.839    -18.452    -18.065    -17.678    -17.291    -16.904    -16.517    -16.351     -16.13    -15.743    -15.356    -14.969    -14.582    -14.195    -13.808    -13.421    -13.034    -12.647     -12.26    -11.872    -11.485    -11.098    -10.711    -10.324    -9.9374    -9.5503    -9.1633    -8.7763    -8.3893    -8.0022    -7.6152    -7.2282
-     -20     -19.661    -19.322    -18.983    -18.644    -18.305    -17.967    -17.628    -17.289     -16.95    -16.805    -16.611    -16.272    -15.933    -15.594    -15.255    -14.916    -14.577    -14.238      -13.9    -13.561    -13.222    -12.883    -12.544    -12.205    -11.866    -11.527    -11.188    -10.849     -10.51    -10.172    -9.8326    -9.4937    -9.1548    -8.8159
-     -20     -19.709    -19.418    -19.128    -18.837    -18.546    -18.255    -17.964    -17.674    -17.383    -17.258    -17.092    -16.801     -16.51     -16.22    -15.929    -15.638    -15.347    -15.056    -14.766    -14.475    -14.184    -13.893    -13.602    -13.312    -13.021     -12.73    -12.439    -12.148    -11.858    -11.567    -11.276    -10.985    -10.694    -10.404
-     -20     -19.757    -19.515    -19.272    -19.029    -18.787    -18.544    -18.301    -18.059    -17.816    -17.712    -17.573     -17.33    -17.088    -16.845    -16.602     -16.36    -16.117    -15.874    -15.632    -15.389    -15.146    -14.904    -14.661    -14.418    -14.176    -13.933     -13.69    -13.447    -13.205    -12.962    -12.719    -12.477    -12.234    -11.991
-     -20     -19.805    -19.611    -19.416    -19.222    -19.027    -18.833    -18.638    -18.443    -18.249    -18.165    -18.054     -17.86    -17.665    -17.471    -17.276    -17.081    -16.887    -16.692    -16.498    -16.303    -16.109    -15.914    -15.719    -15.525     -15.33    -15.136    -14.941    -14.747    -14.552    -14.357    -14.163    -13.968    -13.774    -13.579
-     -20     -19.854    -19.707    -19.561    -19.414    -19.268    -19.121    -18.975    -18.828    -18.682    -18.619    -18.535    -18.389    -18.242    -18.096     -17.95    -17.803    -17.657     -17.51    -17.364    -17.217    -17.071    -16.924    -16.778    -16.631    -16.485    -16.338    -16.192    -16.046    -15.899    -15.753    -15.606     -15.46    -15.313    -15.167
-     -20     -19.902    -19.803    -19.705    -19.607    -19.508     -19.41    -19.312    -19.213    -19.115    -19.073    -19.017    -18.918     -18.82    -18.721    -18.623    -18.525    -18.426    -18.328     -18.23    -18.131    -18.033    -17.935    -17.836    -17.738     -17.64    -17.541    -17.443    -17.345    -17.246    -17.148     -17.05    -16.951    -16.853    -16.755
-     -20      -19.95      -19.9    -19.849    -19.799    -19.749    -19.699    -19.648    -19.598    -19.548    -19.526    -19.498    -19.447    -19.397    -19.347    -19.297    -19.246    -19.196    -19.146    -19.096    -19.046    -18.995    -18.945    -18.895    -18.845    -18.794    -18.744    -18.694    -18.644    -18.593    -18.543    -18.493    -18.443    -18.393    -18.342
-     -20     -19.998    -19.996    -19.994    -19.992    -19.989    -19.987    -19.985    -19.983    -19.981     -19.98    -19.979    -19.977    -19.975    -19.972     -19.97    -19.968    -19.966    -19.964    -19.962     -19.96    -19.958    -19.955    -19.953    -19.951    -19.949    -19.947    -19.945    -19.943    -19.941    -19.938    -19.936    -19.934    -19.932     -19.93
-
-----------------------------------------
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-ar_a_meshk
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-Variables:
-
-    ar_a_meshk: 1575&times;1 double
-
-        Values:
-
-            Min             -20   
-            Median      -7.2782   
-            Max           49.93   
-
-----------------------------------------
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-mt_k
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    45    35
-
-    mt_k1      mt_k2        mt_k3        mt_k4        mt_k5       mt_k6       mt_k7       mt_k8       mt_k9      mt_k10     mt_k11      mt_k12      mt_k13      mt_k14      mt_k15      mt_k16      mt_k17      mt_k18      mt_k19      mt_k20      mt_k21      mt_k22      mt_k23      mt_k24      mt_k25      mt_k26     mt_k27      mt_k28      mt_k29      mt_k30      mt_k31      mt_k32      mt_k33      mt_k34     mt_k35
-    _____    _________    _________    _________    _________    ________    ________    ________    _______    ________    _______    ________    ________    ________    ________    ________    ________    ________    ________    ________    ________    ________    ________    ________    ________    ________    _______    ________    ________    ________    ________    ________    ________    ________    ______
-
-      0      0.0021212    0.0042424    0.0063636    0.0084848    0.010606    0.012727    0.014848    0.01697    0.019091       0.02    0.021212    0.023333    0.025455    0.027576    0.029697    0.031818    0.033939    0.036061    0.038182    0.040303    0.042424    0.044545    0.046667    0.048788    0.050909    0.05303    0.055152    0.057273    0.059394    0.061515    0.063636    0.065758    0.067879      0.07
-      0       0.050234      0.10047       0.1507      0.20094     0.25117      0.3014     0.35164    0.40187     0.45211    0.47364     0.50234     0.55258     0.60281     0.65304     0.70328     0.75351     0.80375     0.85398     0.90421     0.95445      1.0047      1.0549      1.1052      1.1554      1.2056     1.2559      1.3061      1.3563      1.4066      1.4568       1.507      1.5573      1.6075    1.6577
-      0       0.098347      0.19669      0.29504      0.39339     0.49174     0.59008     0.68843    0.78678     0.88512    0.92727     0.98347      1.0818      1.1802      1.2785      1.3769      1.4752      1.5736      1.6719      1.7702      1.8686      1.9669      2.0653      2.1636       2.262      2.3603     2.4587       2.557      2.6554      2.7537      2.8521      2.9504      3.0488      3.1471    3.2455
-      0        0.14646      0.29292      0.43938      0.58584      0.7323     0.87876      1.0252     1.1717      1.3181     1.3809      1.4646      1.6111      1.7575       1.904      2.0504      2.1969      2.3434      2.4898      2.6363      2.7827      2.9292      3.0757      3.2221      3.3686       3.515     3.6615       3.808      3.9544      4.1009      4.2473      4.3938      4.5403      4.6867    4.8332
-      0        0.19457      0.38915      0.58372      0.77829     0.97287      1.1674       1.362     1.5566      1.7512     1.8345      1.9457      2.1403      2.3349      2.5294       2.724      2.9186      3.1132      3.3077      3.5023      3.6969      3.8915       4.086      4.2806      4.4752      4.6698     4.8643      5.0589      5.2535       5.448      5.6426      5.8372      6.0318      6.2263    6.4209
-      0        0.24269      0.48537      0.72806      0.97074      1.2134      1.4561      1.6988     1.9415      2.1842     2.2882      2.4269      2.6695      2.9122      3.1549      3.3976      3.6403       3.883      4.1257      4.3683       4.611      4.8537      5.0964      5.3391      5.5818      5.8245     6.0671      6.3098      6.5525      6.7952      7.0379      7.2806      7.5233       7.766    8.0086
-      0         0.2908       0.5816       0.8724       1.1632       1.454      1.7448      2.0356     2.3264      2.6172     2.7418       2.908      3.1988      3.4896      3.7804      4.0712       4.362      4.6528      4.9436      5.2344      5.5252       5.816      6.1068      6.3976      6.6884      6.9792       7.27      7.5608      7.8516      8.1424      8.4332       8.724      9.0148      9.3056    9.5964
-      0        0.33891      0.67782       1.0167       1.3556      1.6946      2.0335      2.3724     2.7113      3.0502     3.1955      3.3891       3.728      4.0669      4.4059      4.7448      5.0837      5.4226      5.7615      6.1004      6.4393      6.7782      7.1171      7.4561       7.795      8.1339     8.4728      8.8117      9.1506      9.4895      9.8284      10.167      10.506      10.845    11.184
-      0        0.38702      0.77405       1.1611       1.5481      1.9351      2.3221      2.7092     3.0962      3.4832     3.6491      3.8702      4.2573      4.6443      5.0313      5.4183      5.8054      6.1924      6.5794      6.9664      7.3535      7.7405      8.1275      8.5145      8.9016      9.2886     9.6756      10.063       10.45      10.837      11.224      11.611      11.998      12.385    12.772
-      0        0.43514      0.87028       1.3054       1.7406      2.1757      2.6108       3.046     3.4811      3.9162     4.1027      4.3514      4.7865      5.2217      5.6568      6.0919      6.5271      6.9622      7.3973      7.8325      8.2676      8.7028      9.1379       9.573      10.008      10.443     10.878      11.314      11.749      12.184      12.619      13.054      13.489      13.924     14.36
-
-    mt_k1    mt_k2     mt_k3     mt_k4     mt_k5     mt_k6     mt_k7     mt_k8     mt_k9     mt_k10    mt_k11    mt_k12    mt_k13    mt_k14    mt_k15    mt_k16    mt_k17    mt_k18    mt_k19    mt_k20    mt_k21    mt_k22    mt_k23    mt_k24    mt_k25    mt_k26    mt_k27    mt_k28    mt_k29    mt_k30    mt_k31    mt_k32    mt_k33    mt_k34    mt_k35
-    _____    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
-
-      0      1.6861    3.3721    5.0582    6.7443    8.4304    10.116    11.803    13.489    15.175    15.897    16.861    18.547    20.233    21.919    23.605    25.291    26.977    28.663    30.349    32.035    33.721    35.408    37.094     38.78    40.466    42.152    43.838    45.524     47.21    48.896    50.582    52.268    53.954     55.64
-      0      1.7342    3.4684    5.2026    6.9367    8.6709    10.405    12.139    13.873    15.608    16.351    17.342    19.076     20.81    22.544    24.279    26.013    27.747    29.481    31.215     32.95    34.684    36.418    38.152    39.886     41.62    43.355    45.089    46.823    48.557    50.291    52.026     53.76    55.494    57.228
-      0      1.7823    3.5646    5.3469    7.1292    8.9115    10.694    12.476    14.258    16.041    16.805    17.823    19.605    21.388     23.17    24.952    26.735    28.517    30.299    32.081    33.864    35.646    37.428    39.211    40.993    42.775    44.558     46.34    48.122    49.904    51.687    53.469    55.251    57.034    58.816
-      0      1.8304    3.6608    5.4912    7.3217    9.1521    10.982    12.813    14.643    16.474    17.258    18.304    20.135    21.965    23.795    25.626    27.456    29.287    31.117    32.947    34.778    36.608    38.439    40.269      42.1     43.93     45.76    47.591    49.421    51.252    53.082    54.912    56.743    58.573    60.404
-      0      1.8785    3.7571    5.6356    7.5141    9.3926    11.271     13.15    15.028    16.907    17.712    18.785    20.664    22.542    24.421    26.299    28.178    30.056    31.935    33.813    35.692    37.571    39.449    41.328    43.206    45.085    46.963    48.842     50.72    52.599    54.477    56.356    58.234    60.113    61.991
-      0      1.9266    3.8533    5.7799    7.7066    9.6332     11.56    13.486    15.413     17.34    18.165    19.266    21.193     23.12    25.046    26.973      28.9    30.826    32.753     34.68    36.606    38.533    40.459    42.386    44.313    46.239    48.166    50.093    52.019    53.946    55.873    57.799    59.726    61.652    63.579
-      0      1.9748    3.9495    5.9243     7.899    9.8738    11.849    13.823    15.798    17.773    18.619    19.748    21.722    23.697    25.672    27.647    29.621    31.596    33.571    35.546     37.52    39.495     41.47    43.445    45.419    47.394    49.369    51.344    53.318    55.293    57.268    59.243    61.217    63.192    65.167
-      0      2.0229    4.0457    6.0686    8.0915    10.114    12.137     14.16    16.183    18.206    19.073    20.229    22.252    24.274    26.297     28.32    30.343    32.366    34.389    36.412    38.434    40.457     42.48    44.503    46.526    48.549    50.572    52.594    54.617     56.64    58.663    60.686    62.709    64.732    66.755
-      0       2.071     4.142    6.2129    8.2839    10.355    12.426    14.497    16.568    18.639    19.526     20.71    22.781    24.852    26.923    28.994    31.065    33.136    35.207    37.278    39.349     41.42    43.491    45.562    47.632    49.703    51.774    53.845    55.916    57.987    60.058    62.129      64.2    66.271    68.342
-      0      2.1191    4.2382    6.3573    8.4764    10.595    12.715    14.834    16.953    19.072     19.98    21.191     23.31    25.429    27.548    29.667    31.786    33.905    36.025    38.144    40.263    42.382    44.501     46.62    48.739    50.858    52.977    55.096    57.215    59.335    61.454    63.573    65.692    67.811     69.93
-
-----------------------------------------
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-ar_k_mesha
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-Variables:
-
-    ar_k_mesha: 1575&times;1 double
-
-        Values:
-
-            Min               0   
-            Median       12.722   
-            Max           69.93   
-
-pos = 1 ; key = f_coh ; val = @(fl_r_borr,z,b,k)(f_prod(z,k)+k*(1-fl_delta)+fl_w+b.*(1+fl_r_save).*(b&gt;0)+b.*(1+fl_r_borr).*(b&lt;=0))
-pos = 2 ; key = f_cons ; val = @(coh,bprime,kprime)(coh-kprime-bprime)
-pos = 3 ; key = f_inc ; val = @(fl_r_borr,z,b,k)(f_prod(z,k)-(fl_delta)*k+fl_w+b.*(fl_r_save).*(b&gt;0)+b.*(fl_r_borr).*(b&lt;=0))
-pos = 4 ; key = f_prod ; val = @(z,k)((fl_Amean.*(z)).*(k.^(fl_alpha)))
-pos = 5 ; key = f_util_crra ; val = @(c)(((c).^(1-fl_crra)-1)./(1-fl_crra))
-pos = 6 ; key = f_util_log ; val = @(c)log(c)
-pos = 7 ; key = f_util_standin ; val = @(fl_r_borr,z,b,k)f_util_log((f_coh(fl_r_borr,z,b,k)-fl_b_bd).*((f_coh(fl_r_borr,z,b,k)-fl_b_bd)&gt;fl_c_min)+fl_c_min.*((f_coh(fl_r_borr,z,b,k)-fl_b_bd)&lt;=fl_c_min))
-pos = 8 ; key = f_util_standin_coh ; val = @(coh,fl_r_borr)f_util_log((coh-fl_b_bd).*((coh&gt;0)&amp;(((coh-fl_b_bd)./(1))&gt;fl_c_min))+((coh-fl_b_bd)./(1)).*((coh&lt;=0)&amp;(((coh-fl_b_bd)./(1))&gt;fl_c_min))+(fl_c_min./(1+fl_r_borr)).*((((coh-fl_b_bd)./(1))&lt;=fl_c_min)))
 </pre><h2 id="40">Display</h2><pre class="codeinput"><span class="keyword">if</span> (bl_display_funcgrids)
     fft_container_map_display(armt_map, it_display_summmat_rowmax, it_display_summmat_colmax);
     fft_container_map_display(func_map, it_display_summmat_rowmax, it_display_summmat_colmax);
@@ -2817,7 +2700,7 @@ CONTAINER NAME: ARMT_MAP
 ----------------------------------------
   Map with properties:
 
-        Count: 26
+        Count: 31
       KeyType: char
     ValueType: any
 
@@ -2916,10 +2799,10 @@ ar_z_r_borr_mesh_wage_w1r2 :mu= 0.4875 ,sd= 0.3819 ,min= 0.025 ,max= 0.95
 
 pos = 12 ; key = ar_z_r_borr_prob ;rown= 1 ,coln= 3
 ar_z_r_borr_prob :mu= 0.33333 ,sd= 0.49692 ,min= 0.0045249 ,max= 0.90498
-               zi_1_c1     zi_2_c2     zi_3_c3
-               ________    ________    _______
+                zi_1_c1     zi_2_c2     zi_3_c3
+               _________    ________    _______
 
-    zi_1_r1    0.004525    0.090498    0.90498
+    zi_1_r1    0.0045249    0.090498    0.90498
 
 pos = 13 ; key = ar_z_wage ;rown= 1 ,coln= 15
 ar_z_wage :mu= 1.1347 ,sd= 0.69878 ,min= 0.34741 ,max= 2.567
@@ -2944,12 +2827,24 @@ ar_z_wage_mesh_r_borr_w1r2 :mu= 1.1347 ,sd= 0.68271 ,min= 0.34741 ,max= 2.567
 
 pos = 16 ; key = ar_z_wage_prob ;rown= 1 ,coln= 15
 ar_z_wage_prob :mu= 0.066667 ,sd= 0.060897 ,min= 0.0027089 ,max= 0.16757
-               zi_1_C1     zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
-               ________    _______    _______    _________    _________
+                zi_1_C1      zi_2_C2     zi_8_C8    zi_14_c14    zi_15_c15
+               _________    _________    _______    _________    _________
 
-    zi_1_r1    0.002709    0.00695    0.16757     0.00695     0.002709 
+    zi_1_r1    0.0027089    0.0069499    0.16757    0.0069499    0.0027089
 
-pos = 18 ; key = mt_coh_wkb ;rown= 4725 ,coln= 15
+pos = 17 ; key = cl_mt_coh_wkb_mesh_z_r_borr ;rown= 1575 ,coln= 45
+cl_mt_coh_wkb_mesh_z_r_borr :mu= 16.3337 ,sd= 20.9821 ,min= -20.0564 ,max= 57.2772
+                     zi_1_C1    zi_2_C2    zi_23_c23    zi_44_c44    zi_45_c45
+                     _______    _______    _________    _________    _________
+
+    zi_1_R1          -20.056    -20.056     -20.056      -20.056      -20.056 
+    zi_2_R2          -20.056    -20.056     -20.056      -20.056      -20.056 
+    zi_788_R788       13.912      14.06      15.567       19.117       20.064 
+    zi_1574_r1574     46.107     46.352      48.839       54.701       56.264 
+    zi_1575_r1575     45.954       46.2      48.708       54.619       56.195 
+
+pos = 18 ; key = it_ameshk_n ; val = 1575
+pos = 19 ; key = mt_coh_wkb ;rown= 4725 ,coln= 15
 mt_coh_wkb :mu= 12.5868 ,sd= 23.7372 ,min= -38.5564 ,max= 57.2772
                      zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                      _______    _______    _______    _________    _________
@@ -2960,7 +2855,18 @@ mt_coh_wkb :mu= 12.5868 ,sd= 23.7372 ,min= -38.5564 ,max= 57.2772
     zi_4724_r4724     29.141     29.385     31.873      37.734       39.298 
     zi_4725_r4725     27.519     27.765     30.273      36.183        37.76 
 
-pos = 19 ; key = mt_interp_coh_grid_mesh_w_perc ;rown= 25 ,coln= 38
+pos = 20 ; key = mt_coh_wkb_mesh_z_r_borr ;rown= 4725 ,coln= 45
+mt_coh_wkb_mesh_z_r_borr :mu= 12.5868 ,sd= 23.7371 ,min= -38.5564 ,max= 57.2772
+                     zi_1_C1    zi_2_C2    zi_23_c23    zi_44_c44    zi_45_c45
+                     _______    _______    _________    _________    _________
+
+    zi_1_R1          -20.056    -20.056     -20.056      -20.056      -20.056 
+    zi_2_R2          -20.056    -20.056     -20.056      -20.056      -20.056 
+    zi_2363_r2363     12.511     12.659      14.165       17.715       18.662 
+    zi_4724_r4724     29.141     29.385      31.873       37.734       39.298 
+    zi_4725_r4725     27.519     27.765      30.273       36.183        37.76 
+
+pos = 21 ; key = mt_interp_coh_grid_mesh_w_perc ;rown= 25 ,coln= 38
 mt_interp_coh_grid_mesh_w_perc :mu= 18.1481 ,sd= 22.8237 ,min= -20 ,max= 57.2772
                  zi_1_C1    zi_2_C2    zi_19_c19    zi_37_c37    zi_38_c38
                  _______    _______    _________    _________    _________
@@ -2971,7 +2877,7 @@ mt_interp_coh_grid_mesh_w_perc :mu= 18.1481 ,sd= 22.8237 ,min= -20 ,max= 57.2772
     zi_24_r24      -20      -17.853     16.492       55.131       57.277  
     zi_25_r25      -20      -17.853     16.492       55.131       57.277  
 
-pos = 20 ; key = mt_interp_coh_grid_mesh_z ;rown= 38 ,coln= 45
+pos = 22 ; key = mt_interp_coh_grid_mesh_z ;rown= 38 ,coln= 45
 mt_interp_coh_grid_mesh_z :mu= 18.1481 ,sd= 22.8183 ,min= -20 ,max= 57.2772
                  zi_1_C1    zi_2_C2    zi_23_c23    zi_44_c44    zi_45_c45
                  _______    _______    _________    _________    _________
@@ -2982,7 +2888,7 @@ mt_interp_coh_grid_mesh_z :mu= 18.1481 ,sd= 22.8183 ,min= -20 ,max= 57.2772
     zi_37_r37     55.131     55.131      55.131       55.131       55.131 
     zi_38_r38     57.277     57.277      57.277       57.277       57.277 
 
-pos = 21 ; key = mt_interp_coh_grid_mesh_z_wage ;rown= 38 ,coln= 15
+pos = 23 ; key = mt_interp_coh_grid_mesh_z_wage ;rown= 38 ,coln= 15
 mt_interp_coh_grid_mesh_z_wage :mu= 18.1481 ,sd= 22.8317 ,min= -20 ,max= 57.2772
                  zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                  _______    _______    _______    _________    _________
@@ -2993,18 +2899,18 @@ mt_interp_coh_grid_mesh_z_wage :mu= 18.1481 ,sd= 22.8317 ,min= -20 ,max= 57.2772
     zi_37_r37     55.131     55.131     55.131      55.131       55.131 
     zi_38_r38     57.277     57.277     57.277      57.277       57.277 
 
-pos = 22 ; key = mt_k ;rown= 45 ,coln= 35
+pos = 24 ; key = mt_k ;rown= 45 ,coln= 35
 mt_k :mu= 17.2857 ,sd= 15.737 ,min= 0 ,max= 69.93
-                 zi_1_C1    zi_2_C2     zi_18_c18    zi_34_c34    zi_35_c35
-                 _______    ________    _________    _________    _________
+                 zi_1_C1     zi_2_C2     zi_18_c18    zi_34_c34    zi_35_c35
+                 _______    _________    _________    _________    _________
 
-    zi_1_R1         0       0.002121    0.033939     0.067879        0.07  
-    zi_2_R2         0       0.050234     0.80375       1.6075      1.6577  
-    zi_23_r23       0         1.0606       16.97       33.939          35  
-    zi_44_r44       0          2.071      33.136       66.271      68.342  
-    zi_45_r45       0         2.1191      33.905       67.811       69.93  
+    zi_1_R1         0       0.0021212    0.033939     0.067879        0.07  
+    zi_2_R2         0        0.050234     0.80375       1.6075      1.6577  
+    zi_23_r23       0          1.0606       16.97       33.939          35  
+    zi_44_r44       0           2.071      33.136       66.271      68.342  
+    zi_45_r45       0          2.1191      33.905       67.811       69.93  
 
-pos = 23 ; key = mt_w_perc_mesh_interp_coh_grid ;rown= 25 ,coln= 38
+pos = 25 ; key = mt_w_perc_mesh_interp_coh_grid ;rown= 25 ,coln= 38
 mt_w_perc_mesh_interp_coh_grid :mu= -0.92596 ,sd= 17.5517 ,min= -20 ,max= 57.1999
                  zi_1_C1    zi_2_C2    zi_19_c19    zi_37_c37    zi_38_c38
                  _______    _______    _________    _________    _________
@@ -3015,18 +2921,51 @@ mt_w_perc_mesh_interp_coh_grid :mu= -0.92596 ,sd= 17.5517 ,min= -20 ,max= 57.199
     zi_24_r24      -20      -17.945      14.938       51.931       53.986 
     zi_25_r25      -20      -17.856      16.455       55.055         57.2 
 
-pos = 24 ; key = mt_z_trans ;rown= 45 ,coln= 45
+pos = 26 ; key = mt_z_mesh_coh_wkb ;rown= 4725 ,coln= 45
+mt_z_mesh_coh_wkb :mu= 23 ,sd= 12.9872 ,min= 1 ,max= 45
+                     zi_1_C1    zi_2_C2    zi_23_c23    zi_44_c44    zi_45_c45
+                     _______    _______    _________    _________    _________
+
+    zi_1_R1             1          2          23           44           45    
+    zi_2_R2             1          2          23           44           45    
+    zi_2363_r2363       1          2          23           44           45    
+    zi_4724_r4724       1          2          23           44           45    
+    zi_4725_r4725       1          2          23           44           45    
+
+pos = 27 ; key = mt_z_mesh_coh_wkb_seg ;rown= 1575 ,coln= 45
+mt_z_mesh_coh_wkb_seg :mu= 23 ,sd= 12.9873 ,min= 1 ,max= 45
+                     zi_1_C1    zi_2_C2    zi_23_c23    zi_44_c44    zi_45_c45
+                     _______    _______    _________    _________    _________
+
+    zi_1_R1             1          2          23           44           45    
+    zi_2_R2             1          2          23           44           45    
+    zi_788_R788         1          2          23           44           45    
+    zi_1574_r1574       1          2          23           44           45    
+    zi_1575_r1575       1          2          23           44           45    
+
+pos = 28 ; key = mt_z_mesh_interp_coh_grid ;rown= 38 ,coln= 45
+mt_z_mesh_interp_coh_grid :mu= 23 ,sd= 12.991 ,min= 1 ,max= 45
+                 zi_1_C1    zi_2_C2    zi_23_c23    zi_44_c44    zi_45_c45
+                 _______    _______    _________    _________    _________
+
+    zi_1_R1         1          2          23           44           45    
+    zi_2_R2         1          2          23           44           45    
+    zi_19_r19       1          2          23           44           45    
+    zi_37_r37       1          2          23           44           45    
+    zi_38_r38       1          2          23           44           45    
+
+pos = 29 ; key = mt_z_trans ;rown= 45 ,coln= 45
 mt_z_trans :mu= 0.022222 ,sd= 0.056818 ,min= 0 ,max= 0.2525
-                 zi_1_C1     zi_2_C2     zi_23_c23    zi_44_c44    zi_45_c45
-                 ________    ________    _________    _________    _________
+                  zi_1_C1       zi_2_C2      zi_23_c23     zi_44_c44     zi_45_c45 
+                 __________    __________    __________    __________    __________
 
-    zi_1_R1      0.001177    0.001214     1.2e-05            0            0 
-    zi_2_R2      0.000508    0.000888     8.9e-05            0            0 
-    zi_23_r23           0           0     0.02525      3.7e-05        2e-06 
-    zi_44_r44           0           0     8.9e-05      0.17757      0.10165 
-    zi_45_r45           0           0     1.2e-05      0.24282      0.23544 
+    zi_1_R1       0.0011772     0.0012141    1.1604e-05    1.0047e-15             0
+    zi_2_R2      0.00050823    0.00088787    8.9462e-05    8.4698e-14    3.0142e-16
+    zi_23_r23    7.7743e-09    1.8556e-07       0.02525    3.7111e-05    1.5549e-06
+    zi_44_r44     1.572e-18    4.2351e-16    8.9462e-05       0.17757       0.10165
+    zi_45_r45    1.2404e-20     5.003e-18    1.1604e-05       0.24282       0.23544
 
-pos = 25 ; key = mt_z_wage_mesh_coh_wkb ;rown= 4725 ,coln= 15
+pos = 30 ; key = mt_z_wage_mesh_coh_wkb ;rown= 4725 ,coln= 15
 mt_z_wage_mesh_coh_wkb :mu= 1.1347 ,sd= 0.67509 ,min= 0.34741 ,max= 2.567
                      zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                      _______    _______    _______    _________    _________
@@ -3037,7 +2976,7 @@ mt_z_wage_mesh_coh_wkb :mu= 1.1347 ,sd= 0.67509 ,min= 0.34741 ,max= 2.567
     zi_4724_r4724    0.34741    0.40076    0.94436     2.2253        2.567  
     zi_4725_r4725    0.34741    0.40076    0.94436     2.2253        2.567  
 
-pos = 26 ; key = mt_z_wage_mesh_interp_coh_grid ;rown= 38 ,coln= 15
+pos = 31 ; key = mt_z_wage_mesh_interp_coh_grid ;rown= 38 ,coln= 15
 mt_z_wage_mesh_interp_coh_grid :mu= 1.1347 ,sd= 0.67568 ,min= 0.34741 ,max= 2.567
                  zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                  _______    _______    _______    _________    _________
@@ -3071,15 +3010,20 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     ar_z_wage_mesh_r_borr_r1w2        14    14        1            45      1.1347     0.68271      0.34741      2.567
     ar_z_wage_mesh_r_borr_w1r2        15    15        1            45      1.1347     0.68271      0.34741      2.567
     ar_z_wage_prob                    16    16        1            15    0.066667    0.060897    0.0027089    0.16757
-    mt_coh_wkb                        17    18     4725            15      12.587      23.737      -38.556     57.277
-    mt_interp_coh_grid_mesh_w_perc    18    19       25            38      18.148      22.824          -20     57.277
-    mt_interp_coh_grid_mesh_z         19    20       38            45      18.148      22.818          -20     57.277
-    mt_interp_coh_grid_mesh_z_wage    20    21       38            15      18.148      22.832          -20     57.277
-    mt_k                              21    22       45            35      17.286      15.737            0      69.93
-    mt_w_perc_mesh_interp_coh_grid    22    23       25            38    -0.92596      17.552          -20       57.2
-    mt_z_trans                        23    24       45            45    0.022222    0.056818            0     0.2525
-    mt_z_wage_mesh_coh_wkb            24    25     4725            15      1.1347     0.67509      0.34741      2.567
-    mt_z_wage_mesh_interp_coh_grid    25    26       38            15      1.1347     0.67568      0.34741      2.567
+    cl_mt_coh_wkb_mesh_z_r_borr       17    17     1575            45      16.334      20.982      -20.056     57.277
+    mt_coh_wkb                        18    19     4725            15      12.587      23.737      -38.556     57.277
+    mt_coh_wkb_mesh_z_r_borr          19    20     4725            45      12.587      23.737      -38.556     57.277
+    mt_interp_coh_grid_mesh_w_perc    20    21       25            38      18.148      22.824          -20     57.277
+    mt_interp_coh_grid_mesh_z         21    22       38            45      18.148      22.818          -20     57.277
+    mt_interp_coh_grid_mesh_z_wage    22    23       38            15      18.148      22.832          -20     57.277
+    mt_k                              23    24       45            35      17.286      15.737            0      69.93
+    mt_w_perc_mesh_interp_coh_grid    24    25       25            38    -0.92596      17.552          -20       57.2
+    mt_z_mesh_coh_wkb                 25    26     4725            45          23      12.987            1         45
+    mt_z_mesh_coh_wkb_seg             26    27     1575            45          23      12.987            1         45
+    mt_z_mesh_interp_coh_grid         27    28       38            45          23      12.991            1         45
+    mt_z_trans                        28    29       45            45    0.022222    0.056818            0     0.2525
+    mt_z_wage_mesh_coh_wkb            29    30     4725            15      1.1347     0.67509      0.34741      2.567
+    mt_z_wage_mesh_interp_coh_grid    30    31       38            15      1.1347     0.67568      0.34741      2.567
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -3088,7 +3032,7 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
                    i    idx    value
                    _    ___    _____
 
-    it_ameshk_n    1    17     1575 
+    it_ameshk_n    1    18     1575 
 
 ----------------------------------------
 ----------------------------------------
@@ -3137,7 +3081,7 @@ ans =
 
   Map with properties:
 
-        Count: 26
+        Count: 31
       KeyType: char
     ValueType: any
 
@@ -3364,6 +3308,9 @@ params_group = values(param_map, {...
     'it_c_interp_grid_gap', 'fl_w_interp_grid_gap', 'fl_coh_interp_grid_gap'});
 [it_w_perc_n, it_ak_perc_n,...
     it_c_interp_grid_gap, fl_w_interp_grid_gap, fl_coh_interp_grid_gap] = params_group{:};
+
+params_group = values(param_map, {'st_v_coh_z_interp_method'});
+[st_v_coh_z_interp_method] = params_group{:};
 
 %% Parse Parameters 2
 
@@ -3713,17 +3660,57 @@ fl_w_level_min_valid = min(ar_w_level_full_dup(~ar_bl_w_level_invalid));
 % ar_a_meshk = mt_a(:);
 % ar_k_mesha = mt_k(:);
 
-%% Select only Valid (k(w), a) choices
+%% Generate 2nd Stage Cash-on-Hand Points for Interpolation
+
+% it_ak_perc_n = length(ar_ak_perc);
+% it_w_interp_n = length(ar_w_level);
+it_wak_n = it_w_interp_n*it_ak_perc_n;
 
 % mt_coh_wkb = mt_coh_wkb_full(~ar_bl_wkb_invalid, :);
 mt_coh_wkb = mt_coh_wkb_full;
+
+
+mt_coh_wkb_mesh_z_r_borr = repmat(mt_coh_wkb_full, [1, fl_z_r_borr_n]);
 mt_z_r_borr_mesh_coh_wkb = repmat(ar_z_r_borr, [size(mt_coh_wkb,1),1]);
+
 mt_z_wage_mesh_coh_wkb = repmat(ar_z_wage, [size(mt_coh_wkb,1),1]);
+mt_z_mesh_coh_wkb = repmat((1:it_z_n), [size(mt_coh_wkb,1), 1]);
+mt_z_mesh_coh_wkb_seg = repmat((1:it_z_n), [it_wak_n, 1]);
+
+if (ismember(st_v_coh_z_interp_method, ["method_cell"]))
+    
+    cl_mt_coh_wkb_mesh_z_r_borr = cell([fl_z_r_borr_n, 1]);
+    for it_z_r_borr_ctr = 1:1:fl_z_r_borr_n
+        it_mt_val_row_start = it_wak_n*(it_z_r_borr_ctr-1) + 1;
+        it_mt_val_row_end = it_mt_val_row_start + it_wak_n - 1;
+        cl_mt_coh_wkb_mesh_z_r_borr{it_z_r_borr_ctr} = ...
+            mt_coh_wkb_mesh_z_r_borr(it_mt_val_row_start:it_mt_val_row_end, :);
+    end
+    
+elseif (ismember(st_v_coh_z_interp_method, ["method_idx_a", "method_idx_b"]))
+
+    % This is borrowing with default or not condition
+    fl_min_mt_coh = fl_b_bd;
+
+    cl_mt_coh_wkb_mesh_z_r_borr = cell([fl_z_r_borr_n, 1]);
+    for it_z_r_borr_ctr = 1:1:fl_z_r_borr_n
+        it_mt_val_row_start = it_wak_n*(it_z_r_borr_ctr-1) + 1;
+        it_mt_val_row_end = it_mt_val_row_start + it_wak_n - 1;
+
+        mt_coh_wkb_mesh_z_r_borr_seg = ...
+            1 + ((mt_coh_wkb_mesh_z_r_borr(it_mt_val_row_start:it_mt_val_row_end, :) - fl_min_mt_coh)/fl_coh_interp_grid_gap);
+
+        cl_mt_coh_wkb_mesh_z_r_borr{it_z_r_borr_ctr} = mt_coh_wkb_mesh_z_r_borr_seg;
+
+    end
+    
+end
 
 %% Generate 1st Stage States: Interpolation Cash-on-hand Interpolation Grid
 % For the iwkz problems, we solve the problem along a grid of cash-on-hand
 % values, the interpolate to find v(k',b',z) at (k',b') choices. Crucially,
 % we have to coh matrxies
+fl_min_mt_coh = fl_b_bd;
 
 fl_max_mt_coh = max(max(mt_coh_wkb));
 
@@ -3733,16 +3720,17 @@ fl_max_mt_coh = max(max(mt_coh_wkb));
 % This could be condition if no defaults are allowed
 % fl_min_mt_coh = fl_w_level_min_valid;
 
-% This is borrowing with default or not condition
-fl_min_mt_coh = fl_b_bd;
 
 it_coh_interp_n = (fl_max_mt_coh-fl_min_mt_coh)/(fl_coh_interp_grid_gap);
 ar_interp_coh_grid = fft_array_add_zero(linspace(fl_min_mt_coh, fl_max_mt_coh, it_coh_interp_n), true);
 mt_interp_coh_grid_mesh_w_perc = repmat(ar_interp_coh_grid, [it_w_perc_n, 1]);
+it_coh_interp_n = length(ar_interp_coh_grid);
 
 [mt_interp_coh_grid_mesh_z_wage, mt_z_wage_mesh_interp_coh_grid] = ndgrid(ar_interp_coh_grid, ar_z_wage);
 
 mt_interp_coh_grid_mesh_z = repmat(ar_interp_coh_grid', [1, it_z_n]);
+% This is meshed index, 1:it_z_n index for, common value each column
+mt_z_mesh_interp_coh_grid = repmat((1:it_z_n), [it_coh_interp_n, 1]);
 
 %% Generate 1st Stage Choices: Interpolation Cash-on-hand Interpolation Grid
 % previously, our ar_w was the first stage choice grid, the grid was the
@@ -3834,6 +3822,7 @@ armt_map('mt_interp_coh_grid_mesh_w_perc') = mt_interp_coh_grid_mesh_w_perc;
 armt_map('mt_w_perc_mesh_interp_coh_grid') = mt_w_perc_mesh_interp_coh_grid;
 
 armt_map('mt_interp_coh_grid_mesh_z') = mt_interp_coh_grid_mesh_z;
+armt_map('mt_z_mesh_interp_coh_grid') = mt_z_mesh_interp_coh_grid;
 
 %% Store armt_map (3): 2nd stage reachable coh(k(w), a(w,k), z', r)
 % Dimensions of Various Grids: I for level grid, M for shock grid, P for
@@ -3844,7 +3833,14 @@ armt_map('mt_interp_coh_grid_mesh_z') = mt_interp_coh_grid_mesh_z;
 %
 
 armt_map('mt_coh_wkb') = mt_coh_wkb_full;
+armt_map('mt_coh_wkb_mesh_z_r_borr') = mt_coh_wkb_mesh_z_r_borr;
+
+armt_map('mt_z_mesh_coh_wkb') = mt_z_mesh_coh_wkb;
 armt_map('mt_z_wage_mesh_coh_wkb') = mt_z_wage_mesh_coh_wkb;
+
+armt_map('cl_mt_coh_wkb_mesh_z_r_borr') = cl_mt_coh_wkb_mesh_z_r_borr;
+armt_map('mt_z_mesh_coh_wkb_seg') = mt_z_mesh_coh_wkb_seg;
+
 % armt_map('mt_z_r_borr_mesh_coh_wkb') = mt_z_r_borr_mesh_coh_wkb;
 
 %% Store armt_map (4): 2nd stage additional arrays
@@ -4113,74 +4109,11 @@ if (bl_display_funcgrids)
 
     disp('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp('mt_w_perc_mesh_interp_coh_grid');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp(size(mt_w_perc_mesh_interp_coh_grid));
-    disp(head(array2table(mt_w_perc_mesh_interp_coh_grid), 10));
-    disp(tail(array2table(mt_w_perc_mesh_interp_coh_grid), 10));
-
-    disp('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('mt_z_trans');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(size(mt_z_trans));
     disp(head(array2table(mt_z_trans), 10));
     disp(tail(array2table(mt_z_trans), 10));
-
-    disp('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp('ar_interp_coh_grid');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    summary(array2table(ar_interp_coh_grid'));
-
-    disp('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp('ar_interp_c_grid');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    summary(array2table(ar_interp_c_grid'));
-
-    disp('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp('mt_interp_coh_grid_mesh_z');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp(size(mt_interp_coh_grid_mesh_z_wage));
-    disp(head(array2table(mt_interp_coh_grid_mesh_z_wage), 10));
-    disp(tail(array2table(mt_interp_coh_grid_mesh_z_wage), 10));
-
-    disp('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp('mt_a');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp(size(mt_a));
-    disp(head(array2table(mt_a), 10));
-    disp(tail(array2table(mt_a), 10));
-
-    disp('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp('ar_a_meshk');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    summary(array2table(ar_a_meshk));
-
-    disp('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp('mt_k');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp(size(mt_k));
-    disp(head(array2table(mt_k), 10));
-    disp(tail(array2table(mt_k), 10));
-
-    disp('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    disp('ar_k_mesha');
-    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    summary(array2table(ar_k_mesha));
-
-    param_map_keys = keys(func_map);
-    param_map_vals = values(func_map);
-    for i = 1:length(func_map)
-        st_display = strjoin(['pos =' num2str(i) '; key =' string(param_map_keys{i}) '; val =' func2str(param_map_vals{i})]);
-        disp(st_display);
-    end
 
 end
 

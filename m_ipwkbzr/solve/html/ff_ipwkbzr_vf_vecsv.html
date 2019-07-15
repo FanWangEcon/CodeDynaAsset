@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Risky + Safe Asset (Save + Borr + R Shock) Interpolated-Percentage (Optimized-Vectorized)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_IPWKBZR_VF_VECSV solve infinite horizon exo shock + endo asset problem</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1</a></li><li><a href="#5">Parse Parameters 2, Asset Arrays</a></li><li><a href="#6">Parse Parameters 2, interp_coh related matrixes</a></li><li><a href="#7">Parse Parameters 3, reachable cash-on-hand</a></li><li><a href="#8">Parse Parameters 4, other asset arrays</a></li><li><a href="#9">Parse Parameters 5, Others</a></li><li><a href="#10">Initialize Output Matrixes</a></li><li><a href="#11">Initialize Convergence Conditions</a></li><li><a href="#12">Pre-calculate u(c)</a></li><li><a href="#13">Iterate Value Function</a></li><li><a href="#15">Interpolate reacahble V(coh(k'(w),b'(w),zr,zw'),zw',zr')) given v(coh, z)</a></li><li><a href="#16">Solve Second Stage Problem k*(w,z)</a></li><li><a href="#17">Solve First Stage Problem w*(z) given k*(w,z)</a></li><li><a href="#19">A. Interpolate FULL to get k*(w_perc, z), b*(k,w) based on k*(w_level, z)</a></li><li><a href="#20">B. Calculate UPDATE u(c): u(c(coh_level, w_perc)) given k*_interp, b*_interp</a></li><li><a href="#21">C. Interpolate FULL EV(k*(coh_level, w_perc, z), w - b*|z) based on EV(k*(w_level, z))</a></li><li><a href="#22">D. Compute FULL U(coh_level, w_perc, z) over all w_perc</a></li><li><a href="#23">E. Optimize Over Choices: max_{w_perc} U(coh_level, w_perc, z)</a></li><li><a href="#24">F. Store Results</a></li><li><a href="#26">Check Tolerance and Continuation</a></li><li><a href="#28">Process Optimal Choices</a></li><li><a href="#29">Display Various Containers</a></li><li><a href="#31">Display 1 support_map</a></li><li><a href="#32">Display 2 armt_map</a></li><li><a href="#33">Display 3 param_map</a></li><li><a href="#34">Display 4 func_map</a></li><li><a href="#35">Display 5 result_map</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> result_map = ff_ipwkbzr_vf_vecsv(varargin)
+  </style></head><body><div class="content"><h1>Risky + Safe Asset (Save + Borr + R Shock) Interpolated-Percentage (Optimized-Vectorized)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_IPWKBZR_VF_VECSV solve infinite horizon exo shock + endo asset problem</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1</a></li><li><a href="#5">Parse Parameters 2, Asset Arrays</a></li><li><a href="#6">Parse Parameters 2, interp_coh related matrixes</a></li><li><a href="#7">Parse Parameters 3, reachable cash-on-hand</a></li><li><a href="#8">Parse Parameters 4, other asset arrays</a></li><li><a href="#9">Parse Parameters 5, Others</a></li><li><a href="#10">Initialize Output Matrixes</a></li><li><a href="#11">Initialize Convergence Conditions</a></li><li><a href="#12">Pre-calculate u(c)</a></li><li><a href="#13">Iterate Value Function</a></li><li><a href="#15">Interpolate V(coh, Z) 1: Splinterp2</a></li><li><a href="#16">Interpolate V(coh, Z) 2: griddedInterpolant(V)</a></li><li><a href="#17">Interpolate V(coh, Z) 3: Store in Cell</a></li><li><a href="#18">Interpolate V(coh, Z) 4: Single Call Full Matrix</a></li><li><a href="#19">Interpolate V(coh, Z) 5: Matrix Store</a></li><li><a href="#20">Solve Second Stage Problem k*(w,z)</a></li><li><a href="#21">Solve First Stage Problem w*(z) given k*(w,z)</a></li><li><a href="#23">A. Interpolate FULL to get k*(w_perc, z), b*(k,w) based on k*(w_level, z)</a></li><li><a href="#24">B. Calculate UPDATE u(c): u(c(coh_level, w_perc)) given k*_interp, b*_interp</a></li><li><a href="#25">C. Interpolate FULL EV(k*(coh_level, w_perc, z), w - b*|z) based on EV(k*(w_level, z))</a></li><li><a href="#26">D. Compute FULL U(coh_level, w_perc, z) over all w_perc</a></li><li><a href="#27">E. Optimize Over Choices: max_{w_perc} U(coh_level, w_perc, z)</a></li><li><a href="#28">F. Store Results</a></li><li><a href="#30">Check Tolerance and Continuation</a></li><li><a href="#32">Process Optimal Choices</a></li><li><a href="#33">Display Various Containers</a></li><li><a href="#35">Display 1 support_map</a></li><li><a href="#36">Display 2 armt_map</a></li><li><a href="#37">Display 3 param_map</a></li><li><a href="#38">Display 4 func_map</a></li><li><a href="#39">Display 5 result_map</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> result_map = ff_ipwkbzr_vf_vecsv(varargin)
 </pre><h2 id="2">FF_IPWKBZR_VF_VECSV solve infinite horizon exo shock + endo asset problem</h2><p>This program solves the infinite horizon dynamic savings and risky capital asset problem with some ar1 shock. This is the two step solution with interpolation and with percentage asset grids version of <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf_vecsv.html">ff_iwkz_vf_vecsv</a>. See that file for more descriptions.</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@param func_map container container with function handles for consumption cash-on-hand etc.</p><p>@return result_map container contains policy function matrix, value function matrix, iteration results, and policy function, value function and iteration results tables.</p><p>keys included in result_map:</p><div><ul><li>mt_val matrix states_n by shock_n matrix of converged value function grid</li><li>mt_pol_a matrix states_n by shock_n matrix of converged policy function grid</li><li>ar_val_diff_norm array if bl_post = true it_iter_last by 1 val function difference between iteration</li><li>ar_pol_diff_norm array if bl_post = true it_iter_last by 1 policy function difference between iterations</li><li>mt_pol_perc_change matrix if bl_post = true it_iter_last by shock_n the proportion of grid points at which policy function changed between current and last iteration for each element of shock</li></ul></div><p>@example</p><p>@include</p><div><ul><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbzr/paramfunc/ff_ipwkbzr_evf.m">ff_ipwkbzr_evf</a></li><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbzr/paramfunc/ffs_ipwkbzr_set_default_param.m">ffs_ipwkbzr_set_default_param</a></li><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbzr/paramfunc/ffs_ipwkbzr_get_funcgrid.m">ffs_ipwkbzr_get_funcgrid</a></li><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/solvepost/ff_akz_vf_post.m">ff_akz_vf_post</a></li></ul></div><h2 id="3">Default</h2><div><ul><li>it_param_set = 1: quick test</li><li>it_param_set = 2: benchmark run</li><li>it_param_set = 3: benchmark profile</li><li>it_param_set = 4: press publish button</li></ul></div><pre class="codeinput">it_param_set = 4;
 [param_map, support_map] = ffs_ipwkbzr_set_default_param(it_param_set);
 
@@ -146,14 +146,17 @@ support_map(<span class="string">'st_img_name_main'</span>) = [st_func_name supp
     <span class="string">'mt_interp_coh_grid_mesh_w_perc'</span>, <span class="keyword">...</span>
     <span class="string">'mt_z_wage_mesh_interp_coh_grid'</span>, <span class="keyword">...</span>
     <span class="string">'mt_w_perc_mesh_interp_coh_grid'</span>, <span class="keyword">...</span>
-    <span class="string">'mt_interp_coh_grid_mesh_z'</span>});
+    <span class="string">'mt_interp_coh_grid_mesh_z'</span>, <span class="string">'mt_z_mesh_interp_coh_grid'</span>, <span class="keyword">...</span>
+    <span class="string">'cl_mt_coh_wkb_mesh_z_r_borr'</span>, <span class="string">'mt_z_mesh_coh_wkb_seg'</span>});
 [mt_interp_coh_grid_mesh_z_wage, <span class="keyword">...</span>
     mt_interp_coh_grid_mesh_w_perc, <span class="keyword">...</span>
     mt_z_wage_mesh_interp_coh_grid, <span class="keyword">...</span>
     mt_w_perc_mesh_interp_coh_grid, <span class="keyword">...</span>
-    mt_interp_coh_grid_mesh_z] = params_group{:};
-</pre><h2 id="7">Parse Parameters 3, reachable cash-on-hand</h2><p>Dimensions of Various Grids: I for level grid, M for shock grid, P for percent grid. These are grids for 1st stage solution</p><div><ol><li>mt_coh_wkb: (I^k x I^w x M^r) by (M^z)</li><li>mt_z_wage_mesh_coh_wkb: (I^k x I^w x M^r) by (M^z)</li></ol></div><pre class="codeinput">params_group = values(armt_map, {<span class="string">'mt_coh_wkb'</span>, <span class="string">'mt_z_wage_mesh_coh_wkb'</span>});
-[mt_coh_wkb, mt_z_wage_mesh_coh_wkb] = params_group{:};
+    mt_interp_coh_grid_mesh_z, mt_z_mesh_interp_coh_grid, <span class="keyword">...</span>
+    cl_mt_coh_wkb_mesh_z_r_borr, mt_z_mesh_coh_wkb_seg] = params_group{:};
+</pre><h2 id="7">Parse Parameters 3, reachable cash-on-hand</h2><p>Dimensions of Various Grids: I for level grid, M for shock grid, P for percent grid. These are grids for 1st stage solution</p><div><ol><li>mt_coh_wkb: (I^k x I^w x M^r) by (M^z)</li><li>mt_z_wage_mesh_coh_wkb: (I^k x I^w x M^r) by (M^z)</li></ol></div><pre class="codeinput">params_group = values(armt_map, {<span class="keyword">...</span>
+    <span class="string">'mt_coh_wkb'</span>, <span class="string">'mt_coh_wkb_mesh_z_r_borr'</span>, <span class="string">'mt_z_mesh_coh_wkb'</span>, <span class="string">'mt_z_wage_mesh_coh_wkb'</span>});
+[mt_coh_wkb, mt_coh_wkb_mesh_z_r_borr, mt_z_mesh_coh_wkb, mt_z_wage_mesh_coh_wkb] = params_group{:};
 </pre><h2 id="8">Parse Parameters 4, other asset arrays</h2><pre class="codeinput">params_group = values(armt_map, {<span class="string">'ar_a_meshk'</span>, <span class="string">'ar_k_mesha'</span>});
 [ar_a_meshk, ar_k_mesha] = params_group{:};
 </pre><h2 id="9">Parse Parameters 5, Others</h2><pre class="codeinput"><span class="comment">% func_map</span>
@@ -168,6 +171,8 @@ params_group = values(param_map, {<span class="string">'it_maxiter_val'</span>, 
 [it_maxiter_val, fl_tol_val, fl_tol_pol, it_tol_pol_nochange] = params_group{:};
 params_group = values(param_map, {<span class="string">'it_z_n'</span>, <span class="string">'fl_z_r_borr_n'</span>, <span class="string">'it_z_wage_n'</span>});
 [it_z_n, fl_z_r_borr_n, it_z_wage_n] = params_group{:};
+params_group = values(param_map, {<span class="string">'st_v_coh_z_interp_method'</span>});
+[st_v_coh_z_interp_method] = params_group{:};
 
 <span class="comment">% support_map</span>
 params_group = values(support_map, {<span class="string">'bl_profile'</span>, <span class="string">'st_profile_path'</span>, <span class="keyword">...</span>
@@ -196,6 +201,8 @@ cl_w_kstar_interp_z = cell([it_z_n, 1]);
 <span class="keyword">for</span> it_z_i = 1:it_z_n
     cl_w_kstar_interp_z{it_z_i} = zeros([length(ar_w_perc), length(ar_interp_coh_grid)]) - 1;
 <span class="keyword">end</span>
+
+clmt_val_wkb_interpolated = cell([fl_z_r_borr_n, 1]);
 </pre><h2 id="11">Initialize Convergence Conditions</h2><pre class="codeinput">bl_vfi_continue = true;
 it_iter = 0;
 ar_val_diff_norm = zeros([it_maxiter_val, 1]);
@@ -228,60 +235,102 @@ f_grid_interpolant_spln = griddedInterpolant(ar_interp_c_grid, ar_interp_u_of_c_
 <span class="comment">% Value Function Iteration</span>
 <span class="keyword">while</span> bl_vfi_continue
 </pre><pre class="codeinput">    it_iter = it_iter + 1;
-</pre><h2 id="15">Interpolate reacahble V(coh(k'(w),b'(w),zr,zw'),zw',zr')) given v(coh, z)</h2><pre class="codeinput">    <span class="comment">% 1. Number of W/B/K Choice Combinations</span>
-    it_ak_perc_n = length(ar_ak_perc);
-    it_w_interp_n = length(ar_w_level);
-    it_wak_n = it_w_interp_n*it_ak_perc_n;
+</pre><h2 id="15">Interpolate V(coh, Z) 1: Splinterp2</h2><p>Interpolate reacahble V(coh(k'(w),b'(w),zr,zw'),zw',zr')) given v(coh, z)</p><pre class="codeinput">    <span class="keyword">if</span> (strcmp(st_v_coh_z_interp_method, <span class="string">'method_idx_a'</span>))
+        <span class="keyword">for</span> it_z_r_borr_ctr = 1:1:fl_z_r_borr_n
+            clmt_val_wkb_interpolated{it_z_r_borr_ctr} = <span class="keyword">...</span>
+                splinterp2(mt_val_cur,mt_z_mesh_coh_wkb_seg,cl_mt_coh_wkb_mesh_z_r_borr{it_z_r_borr_ctr});
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+</pre><h2 id="16">Interpolate V(coh, Z) 2: griddedInterpolant(V)</h2><p>Interpolate reacahble V(coh(k'(w),b'(w),zr,zw'),zw',zr')) given v(coh, z)</p><pre class="codeinput">    <span class="keyword">if</span> (strcmp(st_v_coh_z_interp_method, <span class="string">'method_idx_b'</span>))
+        <span class="comment">% Generate Interpolant for v(coh,z)</span>
+        <span class="comment">% mt_z_wage_mesh_interp_coh_grid is: (I^{coh_interp}) by (M^z)</span>
+        f_grid_interpolant_value = griddedInterpolant(mt_val_cur', <span class="string">'linear'</span>, <span class="string">'nearest'</span>);
+        <span class="keyword">for</span> it_z_r_borr_ctr = 1:1:fl_z_r_borr_n
+            clmt_val_wkb_interpolated{it_z_r_borr_ctr} = <span class="keyword">...</span>
+                f_grid_interpolant_value(mt_z_mesh_coh_wkb_seg,<span class="keyword">...</span>
+                                         cl_mt_coh_wkb_mesh_z_r_borr{it_z_r_borr_ctr});
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+</pre><h2 id="17">Interpolate V(coh, Z) 3: Store in Cell</h2><p>Interpolate reacahble V(coh(k'(w),b'(w),zr,zw'),zw',zr')) given v(coh, z)</p><pre class="codeinput">    <span class="keyword">if</span> (strcmp(st_v_coh_z_interp_method, <span class="string">'method_cell'</span>))
+        f_grid_interpolant_value = griddedInterpolant(<span class="keyword">...</span>
+            mt_z_mesh_interp_coh_grid', mt_interp_coh_grid_mesh_z', <span class="keyword">...</span>
+            mt_val_cur', <span class="string">'linear'</span>, <span class="string">'nearest'</span>);
 
-    <span class="comment">% 2. Initialize V(coh(k'(w),b'(w),zr,zw'),zw',zr'))</span>
-    <span class="comment">% mt_val_wkb_interpolated is: (I^k x I^w x M^r) by (M^z x M^r)</span>
-    <span class="comment">% reachable cash-on-hand (as rows) and shocks next period given choices</span>
-    <span class="comment">% and shocks next period.</span>
-    mt_val_wkb_interpolated = zeros([it_wak_n*fl_z_r_borr_n, it_z_n]);
+        <span class="keyword">for</span> it_z_r_borr_ctr = 1:1:fl_z_r_borr_n
 
-    <span class="comment">% 3. Loop over possible shocks over interest rate</span>
-    <span class="keyword">for</span> it_z_r_borr_ctr = 1:1:fl_z_r_borr_n
-
-        <span class="comment">% 4. Interpolate V(coh(k',b',z',r),z',r') for a specific r'</span>
-        <span class="comment">% v(coh,z) solved on ar_interp_coh_grid, ar_z grids, see</span>
-        <span class="comment">% ffs_ipwkbzr_get_funcgrid.m. Generate interpolant based on that, Then</span>
-        <span class="comment">% interpolate for the coh reachable levels given the k(w,z) percentage</span>
-        <span class="comment">% choice grids in the second stage of the problem.</span>
-        <span class="comment">%</span>
-        <span class="comment">% Note mt_val_cur/mt_val dimension is based on interpolant</span>
-        <span class="comment">% cash-on-hand for rows, and meshed shocks for columns. The meshed</span>
-        <span class="comment">% shock structure, see</span>
-        <span class="comment">% &lt;https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/paramfunc/html/ffs_ipwkbzr_get_funcgrid.html</span>
-        <span class="comment">% ffs_ipwkbzr_get_funcgrid&gt; for details on how the shock grids are</span>
-        <span class="comment">% formed.</span>
-
-        <span class="comment">% Get current z_r_borr from mt_val</span>
-        it_mt_val_col_start = it_z_wage_n*(it_z_r_borr_ctr-1) + 1;
-        it_mt_val_col_end   = it_mt_val_col_start + it_z_wage_n - 1;
-        mt_val_cur_rcolseg =  mt_val_cur(:, it_mt_val_col_start:it_mt_val_col_end);
-
+            clmt_val_wkb_interpolated{it_z_r_borr_ctr} = <span class="keyword">...</span>
+                f_grid_interpolant_value(mt_z_mesh_coh_wkb_seg,<span class="keyword">...</span>
+                                         cl_mt_coh_wkb_mesh_z_r_borr{it_z_r_borr_ctr});
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+</pre><h2 id="18">Interpolate V(coh, Z) 4: Single Call Full Matrix</h2><p>Interpolate reacahble V(coh(k'(w),b'(w),zr,zw'),zw',zr')) given v(coh, z)</p><pre class="codeinput">    <span class="keyword">if</span> (strcmp(st_v_coh_z_interp_method, <span class="string">'method_matrix'</span>))
         <span class="comment">% Generate Interpolant for v(coh,z)</span>
         <span class="comment">% mt_z_wage_mesh_interp_coh_grid is: (I^{coh_interp}) by (M^z)</span>
         f_grid_interpolant_value = griddedInterpolant(<span class="keyword">...</span>
-            mt_z_wage_mesh_interp_coh_grid', mt_interp_coh_grid_mesh_z_wage', <span class="keyword">...</span>
-            mt_val_cur_rcolseg', <span class="string">'linear'</span>, <span class="string">'nearest'</span>);
+            mt_z_mesh_interp_coh_grid', mt_interp_coh_grid_mesh_z', <span class="keyword">...</span>
+            mt_val_cur', <span class="string">'linear'</span>, <span class="string">'nearest'</span>);
 
         <span class="comment">% Interpolate V(coh(k',b',z',r),z',r') for a specific r'</span>
         <span class="comment">% mt_z_wage_mesh_coh_wkb and mt_coh_wkb are: (I^k x I^w x M^r) by (M^z)</span>
-        mt_val_wkb_interpolated_seg = f_grid_interpolant_value(mt_z_wage_mesh_coh_wkb, mt_coh_wkb);
-        mt_val_wkb_interpolated(:, it_mt_val_col_start:it_mt_val_col_end) = mt_val_wkb_interpolated_seg;
-
+        clmt_val_wkb_interpolated = f_grid_interpolant_value(mt_z_mesh_coh_wkb, mt_coh_wkb_mesh_z_r_borr);
     <span class="keyword">end</span>
-</pre><h2 id="16">Solve Second Stage Problem k*(w,z)</h2><p>This is the key difference between this function and <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html">ffs_akz_set_functions</a> which solves the two stages jointly Interpolation first, because solution coh grid is not the same as all points reachable by k and b choices given w.</p><pre class="codeinput">    support_map(<span class="string">'bl_graph_evf'</span>) = false;
+</pre><h2 id="19">Interpolate V(coh, Z) 5: Matrix Store</h2><p>Interpolate reacahble V(coh(k'(w),b'(w),zr,zw'),zw',zr')) given v(coh, z)</p><pre class="codeinput">    <span class="keyword">if</span> (strcmp(st_v_coh_z_interp_method, <span class="string">'method_mat_seg'</span>))
+
+        <span class="comment">% 1. Number of W/B/K Choice Combinations</span>
+        it_ak_perc_n = length(ar_ak_perc);
+        it_w_interp_n = length(ar_w_level);
+        it_wak_n = it_w_interp_n*it_ak_perc_n;
+
+        <span class="comment">% 2. Initialize V(coh(k'(w),b'(w),zr,zw'),zw',zr'))</span>
+        <span class="comment">% mt_val_wkb_interpolated is: (I^k x I^w x M^r) by (M^z x M^r)</span>
+        <span class="comment">% reachable cash-on-hand (as rows) and shocks next period given choices</span>
+        <span class="comment">% and shocks next period.</span>
+        clmt_val_wkb_interpolated = zeros([it_wak_n*fl_z_r_borr_n, it_z_n]);
+
+        <span class="comment">% 3. Loop over possible shocks over interest rate</span>
+        <span class="keyword">for</span> it_z_r_borr_ctr = 1:1:fl_z_r_borr_n
+
+            <span class="comment">% 4. Interpolate V(coh(k',b',z',r),z',r') for a specific r'</span>
+            <span class="comment">% v(coh,z) solved on ar_interp_coh_grid, ar_z grids, see</span>
+            <span class="comment">% ffs_ipwkbzr_get_funcgrid.m. Generate interpolant based on that, Then</span>
+            <span class="comment">% interpolate for the coh reachable levels given the k(w,z) percentage</span>
+            <span class="comment">% choice grids in the second stage of the problem.</span>
+            <span class="comment">%</span>
+            <span class="comment">% Note mt_val_cur/mt_val dimension is based on interpolant</span>
+            <span class="comment">% cash-on-hand for rows, and meshed shocks for columns. The meshed</span>
+            <span class="comment">% shock structure, see</span>
+            <span class="comment">% &lt;https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/paramfunc/html/ffs_ipwkbzr_get_funcgrid.html</span>
+            <span class="comment">% ffs_ipwkbzr_get_funcgrid&gt; for details on how the shock grids are</span>
+            <span class="comment">% formed.</span>
+
+            <span class="comment">% Get current z_r_borr from mt_val</span>
+            it_mt_val_col_start = it_z_wage_n*(it_z_r_borr_ctr-1) + 1;
+            it_mt_val_col_end   = it_mt_val_col_start + it_z_wage_n - 1;
+            mt_val_cur_rcolseg =  mt_val_cur(:, it_mt_val_col_start:it_mt_val_col_end);
+
+            <span class="comment">% Generate Interpolant for v(coh,z)</span>
+            <span class="comment">% mt_z_wage_mesh_interp_coh_grid is: (I^{coh_interp}) by (M^z)</span>
+            f_grid_interpolant_value = griddedInterpolant(<span class="keyword">...</span>
+                mt_z_wage_mesh_interp_coh_grid', mt_interp_coh_grid_mesh_z_wage', <span class="keyword">...</span>
+                mt_val_cur_rcolseg', <span class="string">'linear'</span>, <span class="string">'nearest'</span>);
+
+            <span class="comment">% Interpolate V(coh(k',b',z',r),z',r') for a specific r'</span>
+            <span class="comment">% mt_z_wage_mesh_coh_wkb and mt_coh_wkb are: (I^k x I^w x M^r) by (M^z)</span>
+            mt_val_wkb_interpolated_seg = f_grid_interpolant_value(mt_z_wage_mesh_coh_wkb, mt_coh_wkb);
+            clmt_val_wkb_interpolated(:, it_mt_val_col_start:it_mt_val_col_end) = mt_val_wkb_interpolated_seg;
+
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+</pre><h2 id="20">Solve Second Stage Problem k*(w,z)</h2><p>This is the key difference between this function and <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html">ffs_akz_set_functions</a> which solves the two stages jointly Interpolation first, because solution coh grid is not the same as all points reachable by k and b choices given w.</p><pre class="codeinput">    support_map(<span class="string">'bl_graph_evf'</span>) = false;
     <span class="keyword">if</span> (it_iter == (it_maxiter_val + 1))
         support_map(<span class="string">'bl_graph_evf'</span>) = bl_graph_evf;
     <span class="keyword">end</span>
     bl_input_override = true;
     [mt_ev_condi_z_max, ~, mt_ev_condi_z_max_kp, ~] = <span class="keyword">...</span>
-        ff_ipwkbzr_evf(mt_val_wkb_interpolated, param_map, support_map, armt_map, bl_input_override);
-</pre><h2 id="17">Solve First Stage Problem w*(z) given k*(w,z)</h2><pre class="codeinput">    <span class="comment">% loop 1: over exogenous states</span>
+        ff_ipwkbzr_evf(clmt_val_wkb_interpolated, param_map, support_map, armt_map, bl_input_override);
+</pre><h2 id="21">Solve First Stage Problem w*(z) given k*(w,z)</h2><pre class="codeinput">    <span class="comment">% loop 1: over exogenous states</span>
     <span class="keyword">for</span> it_z_i = 1:it_z_n
-</pre><h2 id="19">A. Interpolate FULL to get k*(w_perc, z), b*(k,w) based on k*(w_level, z)</h2><p>Generate interpolant for (2) k*(ar_w_perc) from k*(ar_w_level,z) There are two w=k'+b' arrays. ar_w_level is the level even grid based on which we solve the 2nd stage problem in ff_ipwkbzr_evf.m. Here for each coh level, we have a different vector of w levels, but the same vector of percentage ws. So we need to interpolate to get the optimal k* and b* choices at each percentage level of w.</p><pre class="codeinput">        f_interpolante_w_level_kstar_z = griddedInterpolant(ar_w_level, mt_ev_condi_z_max_kp(:, it_z_i)', <span class="string">'linear'</span>, <span class="string">'nearest'</span>);
+</pre><h2 id="23">A. Interpolate FULL to get k*(w_perc, z), b*(k,w) based on k*(w_level, z)</h2><p>Generate interpolant for (2) k*(ar_w_perc) from k*(ar_w_level,z) There are two w=k'+b' arrays. ar_w_level is the level even grid based on which we solve the 2nd stage problem in ff_ipwkbzr_evf.m. Here for each coh level, we have a different vector of w levels, but the same vector of percentage ws. So we need to interpolate to get the optimal k* and b* choices at each percentage level of w.</p><pre class="codeinput">        f_interpolante_w_level_kstar_z = griddedInterpolant(ar_w_level, mt_ev_condi_z_max_kp(:, it_z_i)', <span class="string">'linear'</span>, <span class="string">'nearest'</span>);
 
         <span class="comment">% Interpolate (2), shift from w_level to w_perc</span>
         mt_w_kstar_interp_z = f_interpolante_w_level_kstar_z(mt_w_perc_mesh_interp_coh_grid);
@@ -289,7 +338,7 @@ f_grid_interpolant_spln = griddedInterpolant(ar_interp_c_grid, ar_interp_u_of_c_
 
         <span class="comment">% changes in w_perc kstar choices</span>
         mt_w_kstar_diff_idx = (cl_w_kstar_interp_z{it_z_i} ~= mt_w_kstar_interp_z);
-</pre><h2 id="20">B. Calculate UPDATE u(c): u(c(coh_level, w_perc)) given k*_interp, b*_interp</h2><p>Note that compared to <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html">ffs_akz_set_functions</a> the mt_c here is much smaller the same number of columns (states) as in the ffs_akz_set_functions file, but the number of rows equal to ar_w length.</p><pre class="codeinput">        ar_c = f_cons(mt_interp_coh_grid_mesh_w_perc(mt_w_kstar_diff_idx), <span class="keyword">...</span>
+</pre><h2 id="24">B. Calculate UPDATE u(c): u(c(coh_level, w_perc)) given k*_interp, b*_interp</h2><p>Note that compared to <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html">ffs_akz_set_functions</a> the mt_c here is much smaller the same number of columns (states) as in the ffs_akz_set_functions file, but the number of rows equal to ar_w length.</p><pre class="codeinput">        ar_c = f_cons(mt_interp_coh_grid_mesh_w_perc(mt_w_kstar_diff_idx), <span class="keyword">...</span>
             mt_w_astar_interp_z(mt_w_kstar_diff_idx), <span class="keyword">...</span>
             mt_w_kstar_interp_z(mt_w_kstar_diff_idx));
 
@@ -306,10 +355,10 @@ f_grid_interpolant_spln = griddedInterpolant(ar_interp_c_grid, ar_interp_u_of_c_
             cl_c_valid_idx{it_z_i}(mt_w_kstar_diff_idx) = ar_it_c_valid_idx;
         <span class="keyword">end</span>
         cl_w_kstar_interp_z{it_z_i} = mt_w_kstar_interp_z;
-</pre><h2 id="21">C. Interpolate FULL EV(k*(coh_level, w_perc, z), w - b*|z) based on EV(k*(w_level, z))</h2><p>Generate Interpolant for (3) EV(k*(ar_w_perc),Z)</p><pre class="codeinput">        f_interpolante_ev_condi_z_max_z = griddedInterpolant(ar_w_level, mt_ev_condi_z_max(:, it_z_i)', <span class="string">'linear'</span>, <span class="string">'nearest'</span>);
+</pre><h2 id="25">C. Interpolate FULL EV(k*(coh_level, w_perc, z), w - b*|z) based on EV(k*(w_level, z))</h2><p>Generate Interpolant for (3) EV(k*(ar_w_perc),Z)</p><pre class="codeinput">        f_interpolante_ev_condi_z_max_z = griddedInterpolant(ar_w_level, mt_ev_condi_z_max(:, it_z_i)', <span class="string">'linear'</span>, <span class="string">'nearest'</span>);
         <span class="comment">% Interpolate (3), EVAL add on future utility, N by N + N by N</span>
         mt_ev_condi_z_max_interp_z = f_interpolante_ev_condi_z_max_z(mt_w_perc_mesh_interp_coh_grid);
-</pre><h2 id="22">D. Compute FULL U(coh_level, w_perc, z) over all w_perc</h2><pre class="codeinput">        mt_utility = cl_u_c_store{it_z_i} + fl_beta*mt_ev_condi_z_max_interp_z;
+</pre><h2 id="26">D. Compute FULL U(coh_level, w_perc, z) over all w_perc</h2><pre class="codeinput">        mt_utility = cl_u_c_store{it_z_i} + fl_beta*mt_ev_condi_z_max_interp_z;
 
         <span class="comment">% Index update</span>
         <span class="comment">% using the method below is much faster than index replace</span>
@@ -328,7 +377,7 @@ f_grid_interpolant_spln = griddedInterpolant(ar_interp_c_grid, ar_interp_u_of_c_
         <span class="comment">% percentage algorithm does not have invalid (check to make sure</span>
         <span class="comment">% min percent is not 0 in ffs_ipwkbzr_get_funcgrid.m)</span>
         <span class="comment">% mt_utility = mt_utility.*(~mt_it_c_valid_idx) + fl_u_neg_c*(mt_it_c_valid_idx);</span>
-</pre><h2 id="23">E. Optimize Over Choices: max_{w_perc} U(coh_level, w_perc, z)</h2><p>Optimization: remember matlab is column major, rows must be choices, columns must be states <a href="https://en.wikipedia.org/wiki/Row-_and_column-major_order">COLUMN-MAJOR</a></p><pre class="codeinput">        [ar_opti_val_z, ar_opti_idx_z] = max(mt_utility);
+</pre><h2 id="27">E. Optimize Over Choices: max_{w_perc} U(coh_level, w_perc, z)</h2><p>Optimization: remember matlab is column major, rows must be choices, columns must be states <a href="https://en.wikipedia.org/wiki/Row-_and_column-major_order">COLUMN-MAJOR</a></p><pre class="codeinput">        [ar_opti_val_z, ar_opti_idx_z] = max(mt_utility);
 
         <span class="comment">% Generate Linear Opti Index</span>
         [it_choies_n, it_states_n] = size(mt_utility);
@@ -353,14 +402,14 @@ f_grid_interpolant_spln = griddedInterpolant(ar_interp_c_grid, ar_interp_u_of_c_
             ar_opti_aprime_z(ar_opti_c_z &lt;= fl_c_min) = min(ar_a_meshk);
             ar_opti_kprime_z(ar_opti_c_z &lt;= fl_c_min) = min(ar_k_mesha);
         <span class="keyword">end</span>
-</pre><h2 id="24">F. Store Results</h2><pre class="codeinput">        mt_val(:,it_z_i) = ar_opti_val_z;
+</pre><h2 id="28">F. Store Results</h2><pre class="codeinput">        mt_val(:,it_z_i) = ar_opti_val_z;
         mt_pol_a(:,it_z_i) = ar_opti_aprime_z;
         mt_pol_k(:,it_z_i) = ar_opti_kprime_z;
         <span class="keyword">if</span> (it_iter == (it_maxiter_val + 1))
             mt_pol_idx(:,it_z_i) = ar_opti_linear_idx_z;
         <span class="keyword">end</span>
 </pre><pre class="codeinput">    <span class="keyword">end</span>
-</pre><h2 id="26">Check Tolerance and Continuation</h2><pre class="codeinput">    <span class="comment">% Difference across iterations</span>
+</pre><h2 id="30">Check Tolerance and Continuation</h2><pre class="codeinput">    <span class="comment">% Difference across iterations</span>
     ar_val_diff_norm(it_iter) = norm(mt_val - mt_val_cur);
     ar_pol_diff_norm(it_iter) = norm(mt_pol_a - mt_pol_a_cur) + norm(mt_pol_k - mt_pol_k_cur);
     ar_pol_a_perc_change = sum((mt_pol_a ~= mt_pol_a_cur))/(length(ar_interp_coh_grid));
@@ -420,7 +469,7 @@ f_grid_interpolant_spln = griddedInterpolant(ar_interp_c_grid, ar_interp_u_of_c_
     st_file_name = [st_profile_prefix st_profile_name_main st_profile_suffix];
     profsave(profile(<span class="string">'info'</span>), strcat(st_profile_path, st_file_name));
 <span class="keyword">end</span>
-</pre><h2 id="28">Process Optimal Choices</h2><pre class="codeinput">result_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
+</pre><h2 id="32">Process Optimal Choices</h2><pre class="codeinput">result_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
 result_map(<span class="string">'mt_val'</span>) = mt_val;
 result_map(<span class="string">'mt_pol_idx'</span>) = mt_pol_idx;
 
@@ -976,8 +1025,8 @@ tb_pol_w: risky + safe investment choices (first stage choice, choose within ris
     coh771:k=57.1769,b=0              49.24                      49.24                     49.24                     49.24                      49.24                      49.24                      49.24                      49.24                      49.24                      49.24                      49.24                     49.24        
     coh772:k=57.2773,b=0              49.33                      49.33                     49.33                     49.33                      49.33                      49.33                      49.33                      49.33                      49.33                      49.33                      49.33                     49.33        
 
-</pre><img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_01.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_02.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_03.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_04.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_05.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_06.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_07.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_08.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_09.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_10.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_11.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_12.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_13.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_14.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_15.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_16.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_17.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_18.png" alt=""> <h2 id="29">Display Various Containers</h2><pre class="codeinput"><span class="keyword">if</span> (bl_display_defparam)
-</pre><h2 id="31">Display 1 support_map</h2><pre class="codeinput">    fft_container_map_display(support_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+</pre><img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_01.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_02.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_03.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_04.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_05.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_06.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_07.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_08.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_09.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_10.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_11.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_12.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_13.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_14.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_15.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_16.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_17.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbzr_vf_vecsv_18.png" alt=""> <h2 id="33">Display Various Containers</h2><pre class="codeinput"><span class="keyword">if</span> (bl_display_defparam)
+</pre><h2 id="35">Display 1 support_map</h2><pre class="codeinput">    fft_container_map_display(support_map, it_display_summmat_rowmax, it_display_summmat_colmax);
 </pre><pre class="codeoutput">----------------------------------------
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -1095,7 +1144,7 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     st_profile_suffix       13    41 
     st_title_prefix         14    42 
 
-</pre><h2 id="32">Display 2 armt_map</h2><pre class="codeinput">    fft_container_map_display(armt_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+</pre><h2 id="36">Display 2 armt_map</h2><pre class="codeinput">    fft_container_map_display(armt_map, it_display_summmat_rowmax, it_display_summmat_colmax);
 </pre><pre class="codeoutput">----------------------------------------
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -1105,7 +1154,7 @@ CONTAINER NAME: ARMT_MAP
 ----------------------------------------
   Map with properties:
 
-        Count: 29
+        Count: 34
       KeyType: char
     ValueType: any
 
@@ -1259,8 +1308,19 @@ ar_z_wage_prob :mu= 0.066667 ,sd= 0.060897 ,min= 0.0027089 ,max= 0.16757
 
     zi_1_r1    0.0027089    0.0069499    0.16757    0.0069499    0.0027089
 
-pos = 19 ; key = it_ameshk_n ; val = 772
-pos = 20 ; key = mt_coh_wkb ;rown= 772 ,coln= 75
+pos = 19 ; key = cl_mt_coh_wkb_mesh_z_r_borr ;rown= 35000 ,coln= 75
+cl_mt_coh_wkb_mesh_z_r_borr :mu= 16.7744 ,sd= 20.509 ,min= -20.0564 ,max= 57.2773
+                       zi_1_C1    zi_2_C2    zi_38_c38    zi_74_c74    zi_75_c75
+                       _______    _______    _________    _________    _________
+
+    zi_1_R1            -20.056    -20.056     -20.056      -20.056      -20.056 
+    zi_2_R2            -20.056    -20.056     -20.056      -20.056      -20.056 
+    zi_17500_r17500     13.303     13.494      15.447       20.047       21.274 
+    zi_34999_r34999     46.092     46.336      48.826       54.692       56.257 
+    zi_35000_r35000     45.954       46.2      48.708       54.619       56.195 
+
+pos = 20 ; key = it_ameshk_n ; val = 772
+pos = 21 ; key = mt_coh_wkb ;rown= 772 ,coln= 75
 mt_coh_wkb :mu= 18.6145 ,sd= 22.3328 ,min= -20 ,max= 57.2773
                    zi_1_C1    zi_2_C2    zi_38_c38    zi_74_c74    zi_75_c75
                    _______    _______    _________    _________    _________
@@ -1271,7 +1331,18 @@ mt_coh_wkb :mu= 18.6145 ,sd= 22.3328 ,min= -20 ,max= 57.2773
     zi_771_r771    57.177     57.177      57.177       57.177       57.177  
     zi_772_r772    57.277     57.277      57.277       57.277       57.277  
 
-pos = 21 ; key = mt_coh_wkb_ori ;rown= 175000 ,coln= 15
+pos = 22 ; key = mt_coh_wkb_mesh_z_r_borr ;rown= 175000 ,coln= 75
+mt_coh_wkb_mesh_z_r_borr :mu= 16.4965 ,sd= 20.677 ,min= -21.4564 ,max= 57.2773
+                         zi_1_C1    zi_2_C2    zi_38_c38    zi_74_c74    zi_75_c75
+                         _______    _______    _________    _________    _________
+
+    zi_1_R1              -20.056    -20.056     -20.056      -20.056      -20.056 
+    zi_2_R2              -20.056    -20.056     -20.056      -20.056      -20.056 
+    zi_87500_R87500       12.604     12.796      14.748       19.348       20.575 
+    zi_174999_r174999     44.797     45.041       47.53       53.397       54.962 
+    zi_175000_r175000     44.559     44.805      47.313       53.223         54.8 
+
+pos = 23 ; key = mt_coh_wkb_ori ;rown= 175000 ,coln= 15
 mt_coh_wkb_ori :mu= 16.4965 ,sd= 20.677 ,min= -21.4564 ,max= 57.2773
                          zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                          _______    _______    _______    _________    _________
@@ -1282,7 +1353,7 @@ mt_coh_wkb_ori :mu= 16.4965 ,sd= 20.677 ,min= -21.4564 ,max= 57.2773
     zi_174999_r174999     44.797     45.041      47.53      53.397       54.962 
     zi_175000_r175000     44.559     44.805     47.313      53.223         54.8 
 
-pos = 22 ; key = mt_interp_coh_grid_mesh_w_perc ;rown= 50 ,coln= 772
+pos = 24 ; key = mt_interp_coh_grid_mesh_w_perc ;rown= 50 ,coln= 772
 mt_interp_coh_grid_mesh_w_perc :mu= 18.6145 ,sd= 22.3329 ,min= -20 ,max= 57.2773
                  zi_1_C1    zi_2_C2    zi_386_c386    zi_771_c771    zi_772_c772
                  _______    _______    ___________    ___________    ___________
@@ -1293,7 +1364,7 @@ mt_interp_coh_grid_mesh_w_perc :mu= 18.6145 ,sd= 22.3329 ,min= -20 ,max= 57.2773
     zi_49_r49      -20       -19.9       18.538         57.177         57.277   
     zi_50_r50      -20       -19.9       18.538         57.177         57.277   
 
-pos = 23 ; key = mt_interp_coh_grid_mesh_z ;rown= 772 ,coln= 75
+pos = 25 ; key = mt_interp_coh_grid_mesh_z ;rown= 772 ,coln= 75
 mt_interp_coh_grid_mesh_z :mu= 18.6145 ,sd= 22.3328 ,min= -20 ,max= 57.2773
                    zi_1_C1    zi_2_C2    zi_38_c38    zi_74_c74    zi_75_c75
                    _______    _______    _________    _________    _________
@@ -1304,7 +1375,7 @@ mt_interp_coh_grid_mesh_z :mu= 18.6145 ,sd= 22.3328 ,min= -20 ,max= 57.2773
     zi_771_r771    57.177     57.177      57.177       57.177       57.177  
     zi_772_r772    57.277     57.277      57.277       57.277       57.277  
 
-pos = 24 ; key = mt_interp_coh_grid_mesh_z_wage ;rown= 772 ,coln= 15
+pos = 26 ; key = mt_interp_coh_grid_mesh_z_wage ;rown= 772 ,coln= 15
 mt_interp_coh_grid_mesh_z_wage :mu= 18.6145 ,sd= 22.3335 ,min= -20 ,max= 57.2773
                    zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                    _______    _______    _______    _________    _________
@@ -1315,7 +1386,7 @@ mt_interp_coh_grid_mesh_z_wage :mu= 18.6145 ,sd= 22.3335 ,min= -20 ,max= 57.2773
     zi_771_r771    57.177     57.177     57.177      57.177       57.177  
     zi_772_r772    57.277     57.277     57.277      57.277       57.277  
 
-pos = 25 ; key = mt_k ;rown= 50 ,coln= 700
+pos = 27 ; key = mt_k ;rown= 50 ,coln= 700
 mt_k :mu= 17.4893 ,sd= 15.6002 ,min= 0 ,max= 69.93
                  zi_1_C1     zi_2_C2      zi_350_c350    zi_699_c699    zi_700_c700
                  _______    __________    ___________    ___________    ___________
@@ -1326,7 +1397,7 @@ mt_k :mu= 17.4893 ,sd= 15.6002 ,min= 0 ,max= 69.93
     zi_49_r49       0         0.098144       34.154        68.406         68.504   
     zi_50_r50       0          0.10019       34.865         69.83          69.93   
 
-pos = 26 ; key = mt_w_perc_mesh_interp_coh_grid ;rown= 50 ,coln= 772
+pos = 28 ; key = mt_w_perc_mesh_interp_coh_grid ;rown= 50 ,coln= 772
 mt_w_perc_mesh_interp_coh_grid :mu= -0.69276 ,sd= 17.2218 ,min= -20 ,max= 57.2
                  zi_1_C1    zi_2_C2    zi_386_c386    zi_771_c771    zi_772_c772
                  _______    _______    ___________    ___________    ___________
@@ -1337,7 +1408,40 @@ mt_w_perc_mesh_interp_coh_grid :mu= -0.69276 ,sd= 17.2218 ,min= -20 ,max= 57.2
     zi_49_r49      -20      -19.902       17.715         55.528         55.626  
     zi_50_r50      -20        -19.9         18.5           57.1           57.2  
 
-pos = 27 ; key = mt_z_trans ;rown= 75 ,coln= 75
+pos = 29 ; key = mt_z_mesh_coh_wkb ;rown= 175000 ,coln= 75
+mt_z_mesh_coh_wkb :mu= 38 ,sd= 21.6487 ,min= 1 ,max= 75
+                         zi_1_C1    zi_2_C2    zi_38_c38    zi_74_c74    zi_75_c75
+                         _______    _______    _________    _________    _________
+
+    zi_1_R1                 1          2          38           74           75    
+    zi_2_R2                 1          2          38           74           75    
+    zi_87500_R87500         1          2          38           74           75    
+    zi_174999_r174999       1          2          38           74           75    
+    zi_175000_r175000       1          2          38           74           75    
+
+pos = 30 ; key = mt_z_mesh_coh_wkb_seg ;rown= 35000 ,coln= 75
+mt_z_mesh_coh_wkb_seg :mu= 38 ,sd= 21.6487 ,min= 1 ,max= 75
+                       zi_1_C1    zi_2_C2    zi_38_c38    zi_74_c74    zi_75_c75
+                       _______    _______    _________    _________    _________
+
+    zi_1_R1               1          2          38           74           75    
+    zi_2_R2               1          2          38           74           75    
+    zi_17500_r17500       1          2          38           74           75    
+    zi_34999_r34999       1          2          38           74           75    
+    zi_35000_r35000       1          2          38           74           75    
+
+pos = 31 ; key = mt_z_mesh_interp_coh_grid ;rown= 772 ,coln= 75
+mt_z_mesh_interp_coh_grid :mu= 38 ,sd= 21.6489 ,min= 1 ,max= 75
+                   zi_1_C1    zi_2_C2    zi_38_c38    zi_74_c74    zi_75_c75
+                   _______    _______    _________    _________    _________
+
+    zi_1_R1           1          2          38           74           75    
+    zi_2_R2           1          2          38           74           75    
+    zi_386_r386       1          2          38           74           75    
+    zi_771_r771       1          2          38           74           75    
+    zi_772_r772       1          2          38           74           75    
+
+pos = 32 ; key = mt_z_trans ;rown= 75 ,coln= 75
 mt_z_trans :mu= 0.013333 ,sd= 0.040863 ,min= 0 ,max= 0.22626
                   zi_1_C1       zi_2_C2      zi_38_c38     zi_74_c74     zi_75_c75 
                  __________    __________    __________    __________    __________
@@ -1348,7 +1452,7 @@ mt_z_trans :mu= 0.013333 ,sd= 0.040863 ,min= 0 ,max= 0.22626
     zi_74_r74    4.2258e-20    1.1385e-17    2.4049e-05       0.15912      0.091083
     zi_75_r75    3.3344e-22    1.3449e-19    3.1195e-06       0.21758       0.21097
 
-pos = 28 ; key = mt_z_wage_mesh_coh_wkb ;rown= 175000 ,coln= 15
+pos = 33 ; key = mt_z_wage_mesh_coh_wkb ;rown= 175000 ,coln= 15
 mt_z_wage_mesh_coh_wkb :mu= 1.1347 ,sd= 0.67508 ,min= 0.34741 ,max= 2.567
                          zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                          _______    _______    _______    _________    _________
@@ -1359,7 +1463,7 @@ mt_z_wage_mesh_coh_wkb :mu= 1.1347 ,sd= 0.67508 ,min= 0.34741 ,max= 2.567
     zi_174999_r174999    0.34741    0.40076    0.94436     2.2253        2.567  
     zi_175000_r175000    0.34741    0.40076    0.94436     2.2253        2.567  
 
-pos = 29 ; key = mt_z_wage_mesh_interp_coh_grid ;rown= 772 ,coln= 15
+pos = 34 ; key = mt_z_wage_mesh_interp_coh_grid ;rown= 772 ,coln= 15
 mt_z_wage_mesh_interp_coh_grid :mu= 1.1347 ,sd= 0.67511 ,min= 0.34741 ,max= 2.567
                    zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                    _______    _______    _______    _________    _________
@@ -1395,16 +1499,21 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     ar_z_wage_mesh_r_borr_r1w2        16    16            1            75      1.1347     0.67963       0.34741      2.567
     ar_z_wage_mesh_r_borr_w1r2        17    17            1            75      1.1347     0.67963       0.34741      2.567
     ar_z_wage_prob                    18    18            1            15    0.066667    0.060897     0.0027089    0.16757
-    mt_coh_wkb                        19    20          772            75      18.614      22.333           -20     57.277
-    mt_coh_wkb_ori                    20    21     1.75e+05            15      16.497      20.677       -21.456     57.277
-    mt_interp_coh_grid_mesh_w_perc    21    22           50           772      18.614      22.333           -20     57.277
-    mt_interp_coh_grid_mesh_z         22    23          772            75      18.614      22.333           -20     57.277
-    mt_interp_coh_grid_mesh_z_wage    23    24          772            15      18.614      22.334           -20     57.277
-    mt_k                              24    25           50           700      17.489        15.6             0      69.93
-    mt_w_perc_mesh_interp_coh_grid    25    26           50           772    -0.69276      17.222           -20       57.2
-    mt_z_trans                        26    27           75            75    0.013333    0.040863             0    0.22626
-    mt_z_wage_mesh_coh_wkb            27    28     1.75e+05            15      1.1347     0.67508       0.34741      2.567
-    mt_z_wage_mesh_interp_coh_grid    28    29          772            15      1.1347     0.67511       0.34741      2.567
+    cl_mt_coh_wkb_mesh_z_r_borr       19    19        35000            75      16.774      20.509       -20.056     57.277
+    mt_coh_wkb                        20    21          772            75      18.614      22.333           -20     57.277
+    mt_coh_wkb_mesh_z_r_borr          21    22     1.75e+05            75      16.497      20.677       -21.456     57.277
+    mt_coh_wkb_ori                    22    23     1.75e+05            15      16.497      20.677       -21.456     57.277
+    mt_interp_coh_grid_mesh_w_perc    23    24           50           772      18.614      22.333           -20     57.277
+    mt_interp_coh_grid_mesh_z         24    25          772            75      18.614      22.333           -20     57.277
+    mt_interp_coh_grid_mesh_z_wage    25    26          772            15      18.614      22.334           -20     57.277
+    mt_k                              26    27           50           700      17.489        15.6             0      69.93
+    mt_w_perc_mesh_interp_coh_grid    27    28           50           772    -0.69276      17.222           -20       57.2
+    mt_z_mesh_coh_wkb                 28    29     1.75e+05            75          38      21.649             1         75
+    mt_z_mesh_coh_wkb_seg             29    30        35000            75          38      21.649             1         75
+    mt_z_mesh_interp_coh_grid         30    31          772            75          38      21.649             1         75
+    mt_z_trans                        31    32           75            75    0.013333    0.040863             0    0.22626
+    mt_z_wage_mesh_coh_wkb            32    33     1.75e+05            15      1.1347     0.67508       0.34741      2.567
+    mt_z_wage_mesh_interp_coh_grid    33    34          772            15      1.1347     0.67511       0.34741      2.567
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -1413,9 +1522,9 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
                    i    idx    value
                    _    ___    _____
 
-    it_ameshk_n    1    19      772 
+    it_ameshk_n    1    20      772 
 
-</pre><h2 id="33">Display 3 param_map</h2><pre class="codeinput">    fft_container_map_display(param_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+</pre><h2 id="37">Display 3 param_map</h2><pre class="codeinput">    fft_container_map_display(param_map, it_display_summmat_rowmax, it_display_summmat_colmax);
 </pre><pre class="codeoutput">----------------------------------------
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -1425,7 +1534,7 @@ CONTAINER NAME: PARAM_MAP
 ----------------------------------------
   Map with properties:
 
-        Count: 40
+        Count: 41
       KeyType: char
     ValueType: any
 
@@ -1471,8 +1580,9 @@ pos = 35 ; key = it_z_n ; val = 75
 pos = 36 ; key = it_z_wage_n ; val = 15
 pos = 37 ; key = st_analytical_stationary_type ; val = eigenvector
 pos = 38 ; key = st_model ; val = ipwkbzr
-pos = 39 ; key = st_z_r_borr_drv_ele_type ; val = unif
-pos = 40 ; key = st_z_r_borr_drv_prb_type ; val = poiss
+pos = 39 ; key = st_v_coh_z_interp_method ; val = method_cell
+pos = 40 ; key = st_z_r_borr_drv_ele_type ; val = unif
+pos = 41 ; key = st_z_r_borr_drv_prb_type ; val = poiss
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Scalars in Container and Sizes and Basic Statistics
@@ -1526,10 +1636,11 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
     st_analytical_stationary_type    1    37 
     st_model                         2    38 
-    st_z_r_borr_drv_ele_type         3    39 
-    st_z_r_borr_drv_prb_type         4    40 
+    st_v_coh_z_interp_method         3    39 
+    st_z_r_borr_drv_ele_type         4    40 
+    st_z_r_borr_drv_prb_type         5    41 
 
-</pre><h2 id="34">Display 4 func_map</h2><pre class="codeinput">    fft_container_map_display(func_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+</pre><h2 id="38">Display 4 func_map</h2><pre class="codeinput">    fft_container_map_display(func_map, it_display_summmat_rowmax, it_display_summmat_colmax);
 </pre><pre class="codeoutput">----------------------------------------
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -1571,7 +1682,7 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     f_util_standin        7     7         7    
     f_util_standin_coh    8     8         8    
 
-</pre><h2 id="35">Display 5 result_map</h2><pre class="codeinput">    fft_container_map_display(result_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+</pre><h2 id="39">Display 5 result_map</h2><pre class="codeinput">    fft_container_map_display(result_map, it_display_summmat_rowmax, it_display_summmat_colmax);
 </pre><pre class="codeoutput">----------------------------------------
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -1937,12 +2048,14 @@ params_group = values(armt_map, {...
     'mt_interp_coh_grid_mesh_w_perc', ...
     'mt_z_wage_mesh_interp_coh_grid', ...
     'mt_w_perc_mesh_interp_coh_grid', ...
-    'mt_interp_coh_grid_mesh_z'});
+    'mt_interp_coh_grid_mesh_z', 'mt_z_mesh_interp_coh_grid', ...
+    'cl_mt_coh_wkb_mesh_z_r_borr', 'mt_z_mesh_coh_wkb_seg'});
 [mt_interp_coh_grid_mesh_z_wage, ...
     mt_interp_coh_grid_mesh_w_perc, ...
     mt_z_wage_mesh_interp_coh_grid, ...
     mt_w_perc_mesh_interp_coh_grid, ...
-    mt_interp_coh_grid_mesh_z] = params_group{:};
+    mt_interp_coh_grid_mesh_z, mt_z_mesh_interp_coh_grid, ...
+    cl_mt_coh_wkb_mesh_z_r_borr, mt_z_mesh_coh_wkb_seg] = params_group{:};
 
 %% Parse Parameters 3, reachable cash-on-hand
 % Dimensions of Various Grids: I for level grid, M for shock grid, P for
@@ -1952,8 +2065,9 @@ params_group = values(armt_map, {...
 % # mt_z_wage_mesh_coh_wkb: (I^k x I^w x M^r) by (M^z)
 %
 
-params_group = values(armt_map, {'mt_coh_wkb', 'mt_z_wage_mesh_coh_wkb'});
-[mt_coh_wkb, mt_z_wage_mesh_coh_wkb] = params_group{:};
+params_group = values(armt_map, {...
+    'mt_coh_wkb', 'mt_coh_wkb_mesh_z_r_borr', 'mt_z_mesh_coh_wkb', 'mt_z_wage_mesh_coh_wkb'});
+[mt_coh_wkb, mt_coh_wkb_mesh_z_r_borr, mt_z_mesh_coh_wkb, mt_z_wage_mesh_coh_wkb] = params_group{:};
 
 %% Parse Parameters 4, other asset arrays
 
@@ -1974,6 +2088,8 @@ params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol', 
 [it_maxiter_val, fl_tol_val, fl_tol_pol, it_tol_pol_nochange] = params_group{:};
 params_group = values(param_map, {'it_z_n', 'fl_z_r_borr_n', 'it_z_wage_n'});
 [it_z_n, fl_z_r_borr_n, it_z_wage_n] = params_group{:};
+params_group = values(param_map, {'st_v_coh_z_interp_method'});
+[st_v_coh_z_interp_method] = params_group{:};
 
 % support_map
 params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
@@ -2005,6 +2121,8 @@ cl_w_kstar_interp_z = cell([it_z_n, 1]);
 for it_z_i = 1:it_z_n
     cl_w_kstar_interp_z{it_z_i} = zeros([length(ar_w_perc), length(ar_interp_coh_grid)]) - 1;
 end
+
+clmt_val_wkb_interpolated = cell([fl_z_r_borr_n, 1]);
 
 %% Initialize Convergence Conditions
 
@@ -2055,53 +2173,113 @@ end
 
 % Value Function Iteration
 while bl_vfi_continue
-    it_iter = it_iter + 1;
+    it_iter = it_iter + 1;    
+    
+    %% Interpolate V(coh, Z) 1: Splinterp2 
+    % Interpolate reacahble V(coh(k'(w),b'(w),zr,zw'),zw',zr')) given v(coh, z)
+    
+    if (strcmp(st_v_coh_z_interp_method, 'method_idx_a'))
+        for it_z_r_borr_ctr = 1:1:fl_z_r_borr_n
+            clmt_val_wkb_interpolated{it_z_r_borr_ctr} = ...
+                splinterp2(mt_val_cur,mt_z_mesh_coh_wkb_seg,cl_mt_coh_wkb_mesh_z_r_borr{it_z_r_borr_ctr});
+        end        
+    end
+    
+    %% Interpolate V(coh, Z) 2: griddedInterpolant(V) 
+    % Interpolate reacahble V(coh(k'(w),b'(w),zr,zw'),zw',zr')) given v(coh, z)
+    
+    if (strcmp(st_v_coh_z_interp_method, 'method_idx_b'))
+        % Generate Interpolant for v(coh,z)
+        % mt_z_wage_mesh_interp_coh_grid is: (I^{coh_interp}) by (M^z)
+        f_grid_interpolant_value = griddedInterpolant(mt_val_cur', 'linear', 'nearest');
+        for it_z_r_borr_ctr = 1:1:fl_z_r_borr_n
+            clmt_val_wkb_interpolated{it_z_r_borr_ctr} = ...
+                f_grid_interpolant_value(mt_z_mesh_coh_wkb_seg,...
+                                         cl_mt_coh_wkb_mesh_z_r_borr{it_z_r_borr_ctr});
+        end    
+    end
+    
+    %% Interpolate V(coh, Z) 3: Store in Cell
+    % Interpolate reacahble V(coh(k'(w),b'(w),zr,zw'),zw',zr')) given v(coh, z)
+    
+    if (strcmp(st_v_coh_z_interp_method, 'method_cell'))
+        f_grid_interpolant_value = griddedInterpolant(...
+            mt_z_mesh_interp_coh_grid', mt_interp_coh_grid_mesh_z', ...
+            mt_val_cur', 'linear', 'nearest');
 
-    %% Interpolate reacahble V(coh(k'(w),b'(w),zr,zw'),zw',zr')) given v(coh, z)
+        for it_z_r_borr_ctr = 1:1:fl_z_r_borr_n
 
-    % 1. Number of W/B/K Choice Combinations
-    it_ak_perc_n = length(ar_ak_perc);
-    it_w_interp_n = length(ar_w_level);
-    it_wak_n = it_w_interp_n*it_ak_perc_n;
-
-    % 2. Initialize V(coh(k'(w),b'(w),zr,zw'),zw',zr'))
-    % mt_val_wkb_interpolated is: (I^k x I^w x M^r) by (M^z x M^r)
-    % reachable cash-on-hand (as rows) and shocks next period given choices
-    % and shocks next period.
-    mt_val_wkb_interpolated = zeros([it_wak_n*fl_z_r_borr_n, it_z_n]);
-
-    % 3. Loop over possible shocks over interest rate
-    for it_z_r_borr_ctr = 1:1:fl_z_r_borr_n
-
-        % 4. Interpolate V(coh(k',b',z',r),z',r') for a specific r'
-        % v(coh,z) solved on ar_interp_coh_grid, ar_z grids, see
-        % ffs_ipwkbzr_get_funcgrid.m. Generate interpolant based on that, Then
-        % interpolate for the coh reachable levels given the k(w,z) percentage
-        % choice grids in the second stage of the problem.
-        %
-        % Note mt_val_cur/mt_val dimension is based on interpolant
-        % cash-on-hand for rows, and meshed shocks for columns. The meshed
-        % shock structure, see
-        % <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/paramfunc/html/ffs_ipwkbzr_get_funcgrid.html
-        % ffs_ipwkbzr_get_funcgrid> for details on how the shock grids are
-        % formed.
-
-        % Get current z_r_borr from mt_val
-        it_mt_val_col_start = it_z_wage_n*(it_z_r_borr_ctr-1) + 1;
-        it_mt_val_col_end   = it_mt_val_col_start + it_z_wage_n - 1;
-        mt_val_cur_rcolseg =  mt_val_cur(:, it_mt_val_col_start:it_mt_val_col_end);
-
+            clmt_val_wkb_interpolated{it_z_r_borr_ctr} = ...
+                f_grid_interpolant_value(mt_z_mesh_coh_wkb_seg,...
+                                         cl_mt_coh_wkb_mesh_z_r_borr{it_z_r_borr_ctr});
+        end
+    end        
+       
+    
+    %% Interpolate V(coh, Z) 4: Single Call Full Matrix
+    % Interpolate reacahble V(coh(k'(w),b'(w),zr,zw'),zw',zr')) given v(coh, z)
+    
+    if (strcmp(st_v_coh_z_interp_method, 'method_matrix'))
         % Generate Interpolant for v(coh,z)
         % mt_z_wage_mesh_interp_coh_grid is: (I^{coh_interp}) by (M^z)
         f_grid_interpolant_value = griddedInterpolant(...
-            mt_z_wage_mesh_interp_coh_grid', mt_interp_coh_grid_mesh_z_wage', ...
-            mt_val_cur_rcolseg', 'linear', 'nearest');
+            mt_z_mesh_interp_coh_grid', mt_interp_coh_grid_mesh_z', ...
+            mt_val_cur', 'linear', 'nearest');
 
         % Interpolate V(coh(k',b',z',r),z',r') for a specific r'
         % mt_z_wage_mesh_coh_wkb and mt_coh_wkb are: (I^k x I^w x M^r) by (M^z)
-        mt_val_wkb_interpolated_seg = f_grid_interpolant_value(mt_z_wage_mesh_coh_wkb, mt_coh_wkb);
-        mt_val_wkb_interpolated(:, it_mt_val_col_start:it_mt_val_col_end) = mt_val_wkb_interpolated_seg;
+        clmt_val_wkb_interpolated = f_grid_interpolant_value(mt_z_mesh_coh_wkb, mt_coh_wkb_mesh_z_r_borr);
+    end
+    
+    %% Interpolate V(coh, Z) 5: Matrix Store
+    % Interpolate reacahble V(coh(k'(w),b'(w),zr,zw'),zw',zr')) given v(coh, z)
 
+    if (strcmp(st_v_coh_z_interp_method, 'method_mat_seg'))
+    
+        % 1. Number of W/B/K Choice Combinations
+        it_ak_perc_n = length(ar_ak_perc);
+        it_w_interp_n = length(ar_w_level);
+        it_wak_n = it_w_interp_n*it_ak_perc_n;
+
+        % 2. Initialize V(coh(k'(w),b'(w),zr,zw'),zw',zr'))
+        % mt_val_wkb_interpolated is: (I^k x I^w x M^r) by (M^z x M^r)
+        % reachable cash-on-hand (as rows) and shocks next period given choices
+        % and shocks next period.
+        clmt_val_wkb_interpolated = zeros([it_wak_n*fl_z_r_borr_n, it_z_n]);
+
+        % 3. Loop over possible shocks over interest rate
+        for it_z_r_borr_ctr = 1:1:fl_z_r_borr_n
+
+            % 4. Interpolate V(coh(k',b',z',r),z',r') for a specific r'
+            % v(coh,z) solved on ar_interp_coh_grid, ar_z grids, see
+            % ffs_ipwkbzr_get_funcgrid.m. Generate interpolant based on that, Then
+            % interpolate for the coh reachable levels given the k(w,z) percentage
+            % choice grids in the second stage of the problem.
+            %
+            % Note mt_val_cur/mt_val dimension is based on interpolant
+            % cash-on-hand for rows, and meshed shocks for columns. The meshed
+            % shock structure, see
+            % <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/paramfunc/html/ffs_ipwkbzr_get_funcgrid.html
+            % ffs_ipwkbzr_get_funcgrid> for details on how the shock grids are
+            % formed.
+
+            % Get current z_r_borr from mt_val
+            it_mt_val_col_start = it_z_wage_n*(it_z_r_borr_ctr-1) + 1;
+            it_mt_val_col_end   = it_mt_val_col_start + it_z_wage_n - 1;
+            mt_val_cur_rcolseg =  mt_val_cur(:, it_mt_val_col_start:it_mt_val_col_end);
+
+            % Generate Interpolant for v(coh,z)
+            % mt_z_wage_mesh_interp_coh_grid is: (I^{coh_interp}) by (M^z)
+            f_grid_interpolant_value = griddedInterpolant(...
+                mt_z_wage_mesh_interp_coh_grid', mt_interp_coh_grid_mesh_z_wage', ...
+                mt_val_cur_rcolseg', 'linear', 'nearest');
+
+            % Interpolate V(coh(k',b',z',r),z',r') for a specific r'
+            % mt_z_wage_mesh_coh_wkb and mt_coh_wkb are: (I^k x I^w x M^r) by (M^z)
+            mt_val_wkb_interpolated_seg = f_grid_interpolant_value(mt_z_wage_mesh_coh_wkb, mt_coh_wkb);
+            clmt_val_wkb_interpolated(:, it_mt_val_col_start:it_mt_val_col_end) = mt_val_wkb_interpolated_seg;
+
+        end
     end
 
     %% Solve Second Stage Problem k*(w,z)
@@ -2116,7 +2294,7 @@ while bl_vfi_continue
     end
     bl_input_override = true;
     [mt_ev_condi_z_max, ~, mt_ev_condi_z_max_kp, ~] = ...
-        ff_ipwkbzr_evf(mt_val_wkb_interpolated, param_map, support_map, armt_map, bl_input_override);
+        ff_ipwkbzr_evf(clmt_val_wkb_interpolated, param_map, support_map, armt_map, bl_input_override);
 
     %% Solve First Stage Problem w*(z) given k*(w,z)
 
