@@ -80,13 +80,30 @@ support_map('bl_graph_funcgrids') = false;
 % Loops to Vary for Simulations Below
 it_size_type = 102;
 ar_it_test_grp = [3, 8, 9];
+it_simu_vec_len= 3;
+
+%% Array Parameters
+
+% Default
+default_params = {param_map support_map ...
+                    it_size_type ar_it_test_grp it_simu_vec_len};
+                
+%% Parse Inputs
+% override default set above if any parameters are updated
+
+params_len = length(varargin);
+[default_params{1:params_len}] = varargin{:};
+param_map = [param_map; default_params{1}];
+support_map = [support_map; default_params{2}];
+it_size_type = default_params{3};
+ar_it_test_grp = default_params{4};
+it_simu_vec_len = default_params{5};
 
 %% Set Solve Sizes
 
 if (it_size_type == 1)
     
-    it_simu_vec_len = 3;
-    
+    % Basic Test Run    
     param_map('it_w_perc_n') = 10;
     param_map('it_ak_perc_n') = param_map('it_w_perc_n');
     param_map('it_coh_bridge_perc_n') = param_map('it_w_perc_n');
@@ -103,42 +120,35 @@ if (it_size_type == 1)
     
 elseif (it_size_type == 2)
     
-    it_simu_vec_len = 5;
+    % Usable Run
     param_map('it_maxiter_val') = 50;
     
 elseif (it_size_type == 3)
     
-    it_simu_vec_len = 10;
-    param_map('it_maxiter_val') = 50;
+    % Full Run
     
-elseif (it_size_type == 99)
+elseif (it_size_type == 4)
     
-    it_simu_vec_len = 10;
-%     param_map('it_maxiter_val') = 75;
-
-elseif (it_size_type == 101)
-    
-    it_simu_vec_len = 10;
+    % Dense Run
     param_map('it_w_perc_n') = 75;
     param_map('it_ak_perc_n') = param_map('it_w_perc_n');
-    param_map('it_coh_bridge_perc_n') = param_map('it_w_perc_n');    
-%     param_map('it_maxiter_val') = 75;
+    % ususally divide by 5
+    param_map('it_coh_bridge_perc_n') = round(param_map('it_w_perc_n')/3);
 
-elseif (it_size_type == 102)
+elseif (it_size_type == 5)
     
-    it_simu_vec_len = 10;
+    % Denser Run
     param_map('it_w_perc_n') = 100;
     param_map('it_ak_perc_n') = param_map('it_w_perc_n');
-    param_map('it_coh_bridge_perc_n') = param_map('it_w_perc_n');    
-%     param_map('it_maxiter_val') = 75;
+    % ususally divide by 5
+    param_map('it_coh_bridge_perc_n') = round(param_map('it_w_perc_n')/3);
 
 end
 
-%% Array Parameters
-
+%% Set up Arrays
 % param_test_array_map
+
 param_test_array_map = containers.Map('KeyType','char', 'ValueType','any');
-param_test_array_map('ar_it_a_n') = [750];
 param_test_array_map('ar_it_z_wage_n') = [5];
 param_test_array_map('ar_fl_b_bd') = linspace(-20, -5, it_simu_vec_len);
 param_test_array_map('ar_fl_c_min') = linspace(0.1, 0.001, it_simu_vec_len);
@@ -150,23 +160,6 @@ param_test_array_map('ar_fl_z_sig') = linspace(0.05, 0.35, it_simu_vec_len);
 param_test_array_map('ar_fl_z_r_infbr_poiss_mean') = linspace(1, 20, it_simu_vec_len);
 param_test_array_map('ar_fl_r_fbr') = linspace(0.030, 0.080, it_simu_vec_len);
 param_test_array_map('ar_fl_forbrblk_gap') = linspace(-0.1, -2.5, it_simu_vec_len);
-
-% Default
-default_params = {param_map support_map it_size_type ...
-                    ar_it_test_grp it_simu_vec_len ...
-                    param_test_array_map};
-
-%% Parse Inputs
-% override default set above if any parameters are updated
-
-params_len = length(varargin);
-[default_params{1:params_len}] = varargin{:};
-param_map = [param_map; default_params{1}];
-support_map = [support_map; default_params{2}];
-it_size_type = default_params{3};
-ar_it_test_grp = default_params{4};
-it_simu_vec_len = default_params{5};
-param_test_array_map = [param_test_array_map; default_params{6}];
 
 %% Parase Preference and Shock Parameters
 
@@ -206,11 +199,11 @@ params_group = values(param_map, {'st_forbrblk_type', 'fl_forbrblk_brmost', 'fl_
 %% Parse Parameter Arrays
 
 params_group = values(param_test_array_map, {...
-    'ar_it_a_n', 'ar_it_z_wage_n', ...
+    'ar_it_z_wage_n', ...
     'ar_fl_b_bd', 'ar_fl_c_min', 'ar_fl_z_r_infbr_poiss_mean', ...
     'ar_fl_beta', 'ar_fl_crra', 'ar_fl_z_rho', 'ar_fl_z_sig', ...
     'ar_fl_r_fbr', 'ar_fl_forbrblk_gap'});
-[ar_it_a_n, ar_it_z_wage_n, ...
+[ar_it_z_wage_n, ...
     ar_fl_b_bd, ar_fl_c_min, ar_fl_z_r_infbr_poiss_mean, ...
     ar_fl_beta, ar_fl_crra, ar_fl_z_rho, ar_fl_z_sig, ...
     ar_fl_r_fbr, ar_fl_forbrblk_gap] = params_group{:};
@@ -379,28 +372,21 @@ for ar_it_test_ctr = 1:length(ar_it_test_grp)
             param_map('fl_forbrblk_gap') = ar_fl_forbrblk_gap(it_cur_param);
         end
 
-        % Loop over potentially different accuracy levels and run file
-        for it_accuracy = 1:length(ar_it_a_n)
             
-            % Accuracy Regular
-%             param_map('it_a_n') = ar_it_a_n(it_accuracy);
-            param_map('it_z_wage_n') = ar_it_z_wage_n(it_accuracy);
-            param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_infbr_n');
-            it_w_perc_n = param_map('it_w_perc_n');
-            disp(['xxxxx it_w_perc_n = ' num2str(it_w_perc_n) ', it_z_wage_n = ' num2str(ar_it_z_wage_n(it_accuracy)) ' xxxxx']);
-            % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_ipwkbzr_fibs_get_funcgrid.html ffs_ipwkbzr_fibs_get_funcgrid>
-            [armt_map, func_map] = ffs_ipwkbzr_fibs_get_funcgrid(param_map, support_map);
-            % Call Dynamic Programming Problem <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_ipwkbzr_fibs_vf_vecsv.html ff_ipwkbzr_fibs_vf_vecsv>
-            result_map = ff_ipwkbzr_fibs_vf_vecsv(param_map, support_map, armt_map, func_map);
-            % Call Distribution CProgram
-            result_map = ff_iwkz_ds_vecsv(param_map, support_map, armt_map, func_map, result_map);
-            
-            % Append Simulation Loop Statistics 
-            mt_outcomes_meansdperc = result_map('mt_outcomes_meansdperc');            
-            ar_simu_info = [it_test_grp, it_cur_param, param_map('fl_z_r_infbr_poiss_mean'), param_map('fl_r_fbr'), param_map('fl_forbrblk_gap')];
-            mt_simu_info = ar_simu_info + zeros([size(mt_outcomes_meansdperc,1), length(ar_simu_info)]);
-            
-        end
+        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_infbr_n');
+        it_w_perc_n = param_map('it_w_perc_n');
+        disp(['xxxxx it_w_perc_n = ' num2str(it_w_perc_n) ', it_z_wage_n = ' num2str(ar_it_z_wage_n(it_accuracy)) ' xxxxx']);
+        % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_ipwkbzr_fibs_get_funcgrid.html ffs_ipwkbzr_fibs_get_funcgrid>
+        [armt_map, func_map] = ffs_ipwkbzr_fibs_get_funcgrid(param_map, support_map);
+        % Call Dynamic Programming Problem <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_ipwkbzr_fibs_vf_vecsv.html ff_ipwkbzr_fibs_vf_vecsv>
+        result_map = ff_ipwkbzr_fibs_vf_vecsv(param_map, support_map, armt_map, func_map);
+        % Call Distribution CProgram
+        result_map = ff_iwkz_ds_vecsv(param_map, support_map, armt_map, func_map, result_map);
+
+        % Append Simulation Loop Statistics 
+        mt_outcomes_meansdperc = result_map('mt_outcomes_meansdperc');            
+        ar_simu_info = [it_test_grp, it_cur_param, param_map('fl_z_r_infbr_poiss_mean'), param_map('fl_r_fbr'), param_map('fl_forbrblk_gap')];
+        mt_simu_info = ar_simu_info + zeros([size(mt_outcomes_meansdperc,1), length(ar_simu_info)]);
 
         % Collect statistics
         mt_outcomes_meansdperc_wthinfo = [mt_simu_info, mt_outcomes_meansdperc];
