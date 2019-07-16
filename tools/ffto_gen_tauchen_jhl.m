@@ -2,7 +2,8 @@
 % This function is modified based on
 % https://sites.google.com/site/janhanneslang/programs
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [s, Pi, stationary, z_vector] = fo_st_tauchen_jhl(mu ,rho, sig, N)
+% [s, Pi, stationary, z_vector] = ffto_gen_tauchen_jhl(0, 0.988, 0.015, 100)
+function [s, Pi, stationary, z_vector] = ffto_gen_tauchen_jhl(mu ,rho, sig, N)
 
 m       = 3;
 s       = zeros(N,1);

@@ -125,6 +125,8 @@ else
     params_group = values(param_map, ...
         {'fl_r_fbr', 'st_forbrblk_type', 'fl_forbrblk_brmost', 'fl_forbrblk_brleast', 'fl_forbrblk_gap'});
     [fl_r_fbr, st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap] = params_group{:};
+%     st_forbrblk_type = 'unif';
+%     fl_forbrblk_gap = -1.5;
     [ar_forbrblk, ar_forbrblk_r] = ...
         ffs_for_br_block_gen(fl_r_fbr, st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap);
     

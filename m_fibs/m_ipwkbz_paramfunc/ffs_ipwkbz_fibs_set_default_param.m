@@ -101,7 +101,7 @@ support_map = [support_map_ipwkbz_fibs; support_map];
 
 % Percentage of w that is not for bridge loan, when param_map('bl_bridge') = false
 % ar_coh_bridge_perc = [1]
-param_map('it_coh_bridge_perc_n') = param_map('it_w_perc_n');
+param_map('it_coh_bridge_perc_n') = round(param_map('it_w_perc_n')/5);
 
 %% Subset Options Adjustments
 

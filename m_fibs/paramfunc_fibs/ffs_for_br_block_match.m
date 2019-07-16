@@ -93,7 +93,11 @@ ar_a = -sort(rand([10,1])*20);
 bl_b_is_principle = true;
 
 % Display
-bl_display_brblockmatch = false;
+if (isempty(varargin))
+    bl_display_brblockmatch = true;
+else
+    bl_display_brblockmatch = false;
+end
 
 default_params = {ar_a ar_forbrblk ar_forbrblk_r bl_b_is_principle bl_display_brblockmatch};
 

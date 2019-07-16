@@ -349,6 +349,7 @@ elseif (ismember(it_subset, [5,6,8,9]))
             support_map('bl_display_defparam') = false;
             support_map('bl_display_final_dist_detail') = false;
             support_map('bl_graph_coh_t_coh') = false;
+            support_map('bl_graph') = false;
         end
     end
 end

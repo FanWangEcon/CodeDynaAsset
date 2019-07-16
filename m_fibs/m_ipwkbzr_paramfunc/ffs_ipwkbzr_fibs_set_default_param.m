@@ -15,7 +15,6 @@ if (isempty(varargin))
 else
     bl_display_defparam = false;
 end
-
 default_params = {it_subset bl_display_defparam};
 [default_params{1:length(varargin)}] = varargin{:};
 [it_subset, bl_display_defparam] = default_params{:};
@@ -45,7 +44,7 @@ param_map('bl_b_is_principle') = true;
 param_map('fl_r_fsv') = 0.025;
 param_map('fl_r_fbr') = 0.065;
 % see: ffs_for_br_block.m
-param_map('st_forbrblk_type') = 'seg3';
+param_map('st_forbrblk_type') = 'unif';
 param_map('fl_forbrblk_brmost') = -19;
 param_map('fl_forbrblk_brleast') = -1;
 param_map('fl_forbrblk_gap') = -1.5;
@@ -105,13 +104,13 @@ support_map('st_img_path') = [st_matimg_path_root '/m_ipwkbzr_solve/img/'];
 %% Display New Parameters
 
 if (bl_display_defparam)
-
+    
     disp('----------------------------------------');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('Display Parameters Specific to IPWKBZR_FIBS')
     disp('it_coh_bridge_perc_n ADDED ON NEXT')
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-
+    
     fft_container_map_display(param_map);
     fft_container_map_display(support_map);
 end
@@ -122,7 +121,7 @@ end
 
 % Remove Keys not Relevant for the Interest Rate Shock Model
 cl_st_ipwkbzr_keysdrop = {'fl_z_rho', 'fl_z_mu', 'fl_z_sig', ...
-                          'fl_r_borr', 'fl_r_save'};
+    'fl_r_borr', 'fl_r_save'};
 remove(param_map_ipwkbzr_fibs, cl_st_ipwkbzr_keysdrop);
 
 % Merge
@@ -133,7 +132,7 @@ support_map = [support_map_ipwkbzr_fibs; support_map];
 
 % Percentage of w that is not for bridge loan, when param_map('bl_bridge') = false
 % ar_coh_bridge_perc = [1]
-param_map('it_coh_bridge_perc_n') = param_map('it_w_perc_n');
+param_map('it_coh_bridge_perc_n') = round(param_map('it_w_perc_n')/5);
 
 %% Subset Options Adjustments
 
@@ -145,13 +144,13 @@ if (ismember(it_subset, [3]))
 elseif (ismember(it_subset, [1,2,4]))
     % Main Run
     if (ismember(it_subset, [1]))
-
+        
         param_map('it_z_wage_n') = 5;
         param_map('fl_z_r_infbr_n') = 3;
         param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_infbr_n');
-
+        
         param_map('it_coh_bridge_perc_n') = param_map('it_w_perc_n');
-
+        
         support_map('bl_graph') = true;
     end
     if (ismember(it_subset, [4]))
@@ -164,33 +163,32 @@ if (ismember(it_subset, [7]))
     % Profile run
 elseif (ismember(it_subset, [5,6,8,9]))
     % Main Run
-        if (it_subset == 5)
-
+    if (it_subset == 5)
+        
         param_map('it_z_wage_n') = 5;
         param_map('fl_z_r_infbr_n') = 3;
         param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_infbr_n');
-
+        
         param_map('it_coh_bridge_perc_n') = param_map('it_w_perc_n');
-
+        
         support_map('bl_graph') = true;
     end
     if (ismember(it_subset, [8, 9]))
         if (ismember(it_subset, [9]))
+            support_map('bl_timer') = true;
         end
-
     end
-
 end
 
 %% Display All Parameters
 
 if (bl_display_defparam)
-
+    
     disp('----------------------------------------');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('Display All Parameters with IPWKBZR overriding IPWKBZR')
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-
+    
     fft_container_map_display(param_map);
     fft_container_map_display(support_map);
 end

@@ -74,13 +74,15 @@ it_param_set = 4;
 % param_map('fl_w_interp_grid_gap') = 0.1;
 
 % get armt and func map
-[armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(param_map, support_map); % 1 for override
-default_params = {param_map support_map armt_map func_map};
+params_len = length(varargin);
+if params_len <= 2
+    [armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(param_map, support_map); % 1 for override
+    default_params = {param_map support_map armt_map func_map};
+end
 
 %% Parse Parameters 1
 
 % if varargin only has param_map and support_map,
-params_len = length(varargin);
 [default_params{1:params_len}] = varargin{:};
 param_map = [param_map; default_params{1}];
 support_map = [support_map; default_params{2}];
@@ -90,8 +92,8 @@ if params_len >= 1 && params_len <= 2
     [armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(param_map, support_map);
 else
     % Override all
-    armt_map = [armt_map; default_params{3}];
-    func_map = [func_map; default_params{4}];
+    armt_map = default_params{3};
+    func_map = default_params{4};
 end
 
 % append function name
@@ -229,7 +231,6 @@ end
 % Value Function Iteration
 while bl_vfi_continue
     it_iter = it_iter + 1;
-
 
     %% Interpolate (1) reacahble v(coh(k(w,z),b(w,z),z),z) given v(coh, z)
     % This is the same as <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/solve/html/ff_ipwkbz_vf_vecsv.html
@@ -489,19 +490,6 @@ while bl_vfi_continue
 
 end
 
-% End Timer
-if (bl_time)
-    toc;
-end
-
-% End Profile
-if (bl_profile)
-    profile off
-    profile viewer
-    st_file_name = [st_profile_prefix st_profile_name_main st_profile_suffix];
-    profsave(profile('info'), strcat(st_profile_path, st_file_name));
-end
-
 %% Process Optimal Choices 1: Formal and Informal Choices
 
 result_map = containers.Map('KeyType','char', 'ValueType','any');
@@ -570,6 +558,21 @@ result_map('ar_st_pol_names') = ...
 
 % Get Discrete Choice Outcomes
 result_map = ffs_fibs_identify_discrete(result_map, bl_input_override);
+
+%% End Timer and Profile
+
+% End Timer
+if (bl_time)
+    toc;
+end
+
+% End Profile
+if (bl_profile)
+    profile off
+    profile viewer
+    st_file_name = [st_profile_prefix st_profile_name_main st_profile_suffix];
+    profsave(profile('info'), strcat(st_profile_path, st_file_name));
+end
 
 %% Post Solution Graph and Table Generation
 

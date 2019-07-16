@@ -16,7 +16,6 @@ function [result_map] = ff_ipwkbz_fibs_ds_wrapper(varargin)
 % # it_subset = 9 is invoke operational (only final stats) and coh graph
 
 it_param_set = 8;
-bl_input_override = true;
 [param_map, support_map] = ffs_ipwkbz_fibs_set_default_param(it_param_set);
 
 % Note: param_map and support_map can be adjusted here or outside to override defaults
@@ -35,25 +34,26 @@ bl_input_override = true;
 param_map('st_analytical_stationary_type') = 'eigenvector';
 
 % get armt and func map
-[armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
-default_params = {param_map support_map armt_map func_map};
+params_len = length(varargin);
+if params_len <= 2
+    [armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(param_map, support_map); % 1 for override
+    default_params = {param_map support_map armt_map func_map};
+end
 
 %% Parse Parameters 1
 
 % if varargin only has param_map and support_map,
-params_len = length(varargin);
 [default_params{1:params_len}] = varargin{:};
 param_map = [param_map; default_params{1}];
 support_map = [support_map; default_params{2}];
 if params_len >= 1 && params_len <= 2
     % If override param_map, re-generate armt and func if they are not
     % provided
-    bl_input_override = true;
-    [armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(param_map, support_map, bl_input_override);
+    [armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(param_map, support_map);
 else
     % Override all
-    armt_map = [armt_map; default_params{3}];
-    func_map = [func_map; default_params{4}];
+    armt_map = default_params{3};
+    func_map = default_params{4};
 end
 
 % if profile, profile DP + Dist here
@@ -91,22 +91,21 @@ end
 
 %% Solve DP
 
-bl_input_override = true;
 result_map = ff_ipwkbz_fibs_vf_vecsv(param_map, support_map, armt_map, func_map);
 
 %% Derive Distribution
 
 if (strcmp(st_analytical_stationary_type, 'loop'))
 
-    result_map = ff_iwkz_ds(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    result_map = ff_iwkz_ds(param_map, support_map, armt_map, func_map, result_map);
 
 elseif (strcmp(st_analytical_stationary_type, 'vector'))
 
-    result_map = ff_iwkz_ds_vec(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    result_map = ff_iwkz_ds_vec(param_map, support_map, armt_map, func_map, result_map);
 
 elseif (strcmp(st_analytical_stationary_type, 'eigenvector'))
 
-    result_map = ff_iwkz_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    result_map = ff_iwkz_ds_vecsv(param_map, support_map, armt_map, func_map, result_map);
 
 end
 

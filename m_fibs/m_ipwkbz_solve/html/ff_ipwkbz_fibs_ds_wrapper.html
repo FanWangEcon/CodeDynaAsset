@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Derive Distributions for For+Inf+Borr+Save Risky + Safe Asset Interpolated-Percentage (Wrapper)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-13"><meta name="DC.source" content="ff_ipwkbz_fibs_ds_wrapper.m"><style type="text/css">
+      --><title>Derive Distributions for For+Inf+Borr+Save Risky + Safe Asset Interpolated-Percentage (Wrapper)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-15"><meta name="DC.source" content="ff_ipwkbz_fibs_ds_wrapper.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -68,7 +68,6 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
   </style></head><body><div class="content"><h1>Derive Distributions for For+Inf+Borr+Save Risky + Safe Asset Interpolated-Percentage (Wrapper)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_IPWKBZ_FIBS_DS_WRAPPER finds the stationary asset distributions</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1</a></li><li><a href="#5">Parse Parameters</a></li><li><a href="#6">Start Profiler and Timer</a></li><li><a href="#7">Solve DP</a></li><li><a href="#8">Derive Distribution</a></li><li><a href="#9">End Profiler and Timer</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [result_map] = ff_ipwkbz_fibs_ds_wrapper(varargin)
 </pre><h2 id="2">FF_IPWKBZ_FIBS_DS_WRAPPER finds the stationary asset distributions</h2><p>This is a warpper function.</p><h2 id="3">Default</h2><div><ol><li>it_subset = 5 is basic invoke quick test</li><li>it_subset = 6 is invoke full test</li><li>it_subset = 7 is profiling invoke</li><li>it_subset = 8 is matlab publish</li><li>it_subset = 9 is invoke operational (only final stats) and coh graph</li></ol></div><pre class="codeinput">it_param_set = 8;
-bl_input_override = true;
 [param_map, support_map] = ffs_ipwkbz_fibs_set_default_param(it_param_set);
 
 <span class="comment">% Note: param_map and support_map can be adjusted here or outside to override defaults</span>
@@ -87,22 +86,23 @@ bl_input_override = true;
 param_map(<span class="string">'st_analytical_stationary_type'</span>) = <span class="string">'eigenvector'</span>;
 
 <span class="comment">% get armt and func map</span>
-[armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(param_map, support_map, bl_input_override); <span class="comment">% 1 for override</span>
-default_params = {param_map support_map armt_map func_map};
-</pre><h2 id="4">Parse Parameters 1</h2><pre class="codeinput"><span class="comment">% if varargin only has param_map and support_map,</span>
 params_len = length(varargin);
+<span class="keyword">if</span> params_len &lt;= 2
+    [armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(param_map, support_map); <span class="comment">% 1 for override</span>
+    default_params = {param_map support_map armt_map func_map};
+<span class="keyword">end</span>
+</pre><h2 id="4">Parse Parameters 1</h2><pre class="codeinput"><span class="comment">% if varargin only has param_map and support_map,</span>
 [default_params{1:params_len}] = varargin{:};
 param_map = [param_map; default_params{1}];
 support_map = [support_map; default_params{2}];
 <span class="keyword">if</span> params_len &gt;= 1 &amp;&amp; params_len &lt;= 2
     <span class="comment">% If override param_map, re-generate armt and func if they are not</span>
     <span class="comment">% provided</span>
-    bl_input_override = true;
-    [armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(param_map, support_map, bl_input_override);
+    [armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(param_map, support_map);
 <span class="keyword">else</span>
     <span class="comment">% Override all</span>
-    armt_map = [armt_map; default_params{3}];
-    func_map = [func_map; default_params{4}];
+    armt_map = default_params{3};
+    func_map = default_params{4};
 <span class="keyword">end</span>
 
 <span class="comment">% if profile, profile DP + Dist here</span>
@@ -131,8 +131,7 @@ params_group = values(support_map, <span class="keyword">...</span>
 <span class="keyword">if</span> (bl_time)
     tic;
 <span class="keyword">end</span>
-</pre><h2 id="7">Solve DP</h2><pre class="codeinput">bl_input_override = true;
-result_map = ff_ipwkbz_fibs_vf_vecsv(param_map, support_map, armt_map, func_map);
+</pre><h2 id="7">Solve DP</h2><pre class="codeinput">result_map = ff_ipwkbz_fibs_vf_vecsv(param_map, support_map, armt_map, func_map);
 </pre><pre class="codeoutput">----------------------------------------
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -204,39 +203,39 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
                                     i     idx    value
                                     __    ___    _____
 
-    bl_display                       1     1       0  
-    bl_display_defparam              2     2       1  
-    bl_display_dist                  3     3       0  
-    bl_display_evf                   4     4       0  
-    bl_display_final                 5     5       0  
-    bl_display_final_dist            6     6       1  
-    bl_display_final_dist_detail     7     7       1  
-    bl_display_funcgrids             8     8       0  
-    bl_display_infbridge             9     9       0  
-    bl_display_minccost             10    10       0  
-    bl_graph                        11    11       1  
-    bl_graph_coh_t_coh              12    12       1  
-    bl_graph_evf                    13    13       0  
-    bl_graph_forinf_discrete        14    14       1  
-    bl_graph_forinf_pol_lvl         15    15       1  
-    bl_graph_forinf_pol_pct         16    16       1  
-    bl_graph_funcgrids              17    17       0  
-    bl_graph_funcgrids_detail       18    18       0  
-    bl_graph_onebyones              19    19       1  
-    bl_graph_pol_lvl                20    20       0  
-    bl_graph_pol_pct                21    21       0  
-    bl_graph_val                    22    22       0  
-    bl_img_save                     23    23       0  
-    bl_mat                          24    24       0  
-    bl_post                         25    25       1  
-    bl_profile                      26    26       0  
-    bl_profile_dist                 27    27       0  
-    bl_time                         28    28       0  
-    it_display_every                29    29       1  
-    it_display_final_colmax         30    30       1  
-    it_display_final_rowmax         31    31       1  
-    it_display_summmat_colmax       32    32       1  
-    it_display_summmat_rowmax       33    33       1  
+    bl_display                       1     1        0 
+    bl_display_defparam              2     2        1 
+    bl_display_dist                  3     3        0 
+    bl_display_evf                   4     4        0 
+    bl_display_final                 5     5        0 
+    bl_display_final_dist            6     6        1 
+    bl_display_final_dist_detail     7     7        1 
+    bl_display_funcgrids             8     8        0 
+    bl_display_infbridge             9     9        0 
+    bl_display_minccost             10    10        0 
+    bl_graph                        11    11        1 
+    bl_graph_coh_t_coh              12    12        1 
+    bl_graph_evf                    13    13        0 
+    bl_graph_forinf_discrete        14    14        1 
+    bl_graph_forinf_pol_lvl         15    15        1 
+    bl_graph_forinf_pol_pct         16    16        1 
+    bl_graph_funcgrids              17    17        0 
+    bl_graph_funcgrids_detail       18    18        0 
+    bl_graph_onebyones              19    19        1 
+    bl_graph_pol_lvl                20    20        0 
+    bl_graph_pol_pct                21    21        0 
+    bl_graph_val                    22    22        0 
+    bl_img_save                     23    23        0 
+    bl_mat                          24    24        0 
+    bl_post                         25    25        1 
+    bl_profile                      26    26        0 
+    bl_profile_dist                 27    27        0 
+    bl_time                         28    28        0 
+    it_display_every                29    29       20 
+    it_display_final_colmax         30    30       12 
+    it_display_final_rowmax         31    31      100 
+    it_display_summmat_colmax       32    32        5 
+    it_display_summmat_rowmax       33    33        5 
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -269,7 +268,7 @@ CONTAINER NAME: ARMT_MAP
 ----------------------------------------
   Map with properties:
 
-        Count: 30
+        Count: 33
       KeyType: char
     ValueType: any
 
@@ -295,60 +294,71 @@ ar_a_meshk :mu= 18.6145 ,sd= 22.347 ,min= -20 ,max= 57.2773
     zi_771_r771    57.177 
     zi_772_r772    57.277 
 
-pos = 3 ; key = ar_ak_perc ;rown= 1 ,coln= 50
+pos = 3 ; key = ar_a_meshk_ori ;rown= 125000 ,coln= 1
+ar_a_meshk_ori :mu= -11.5107 ,sd= 10.6749 ,min= -20 ,max= 49.93
+                         zi_1_c1
+                         _______
+
+    zi_1_R1                  -20
+    zi_2_R2                  -20
+    zi_62500_R62500      -19.995
+    zi_124999_r124999    -18.504
+    zi_125000_r125000     -19.93
+
+pos = 4 ; key = ar_ak_perc ;rown= 1 ,coln= 50
 ar_ak_perc :mu= 0.5 ,sd= 0.2969 ,min= 0.001 ,max= 0.999
                zi_1_C1    zi_2_C2     zi_25_c25    zi_49_c49    zi_50_c50
                _______    ________    _________    _________    _________
 
     zi_1_r1     0.001     0.021367     0.48982      0.97863       0.999  
 
-pos = 4 ; key = ar_ameshk_tnext_with_r ;rown= 525000 ,coln= 1
-ar_ameshk_tnext_with_r :mu= -15.2838 ,sd= 7.0839 ,min= -21.9 ,max= 51.1782
+pos = 5 ; key = ar_ameshk_tnext_with_r ;rown= 125000 ,coln= 1
+ar_ameshk_tnext_with_r :mu= -12.4648 ,sd= 11.236 ,min= -21.9 ,max= 51.1782
                          zi_1_c1
                          _______
 
     zi_1_R1                -21.9
     zi_2_R2                -21.9
-    zi_262500_r262500    -21.571
-    zi_524999_r524999    -19.727
-    zi_525000_r525000    -21.253
+    zi_62500_R62500       -21.46
+    zi_124999_r124999    -19.727
+    zi_125000_r125000    -21.253
 
-pos = 5 ; key = ar_coh_bridge_perc ;rown= 1 ,coln= 50
-ar_coh_bridge_perc :mu= 0.5 ,sd= 0.2975 ,min= 0 ,max= 1
-               zi_1_C1    zi_2_C2     zi_25_c25    zi_49_c49    zi_50_c50
-               _______    ________    _________    _________    _________
+pos = 6 ; key = ar_coh_bridge_perc ;rown= 1 ,coln= 10
+ar_coh_bridge_perc :mu= 0.5 ,sd= 0.33641 ,min= 0 ,max= 1
+               zi_1_C1    zi_2_C2    zi_5_C5    zi_9_C9    zi_10_c10
+               _______    _______    _______    _______    _________
 
-    zi_1_r1       0       0.020408     0.4898       0.97959         1    
+    zi_1_r1       0       0.11111    0.44444    0.88889        1    
 
-pos = 6 ; key = ar_forbrblk ;rown= 1 ,coln= 9
+pos = 7 ; key = ar_forbrblk ;rown= 1 ,coln= 9
 ar_forbrblk :mu= -7.0556 ,sd= 6.3809 ,min= -19 ,max= 0
                zi_1_c1    zi_2_c2    zi_5_c5    zi_8_c8    zi_9_c9
                _______    _______    _______    _______    _______
 
     zi_1_r1      -19       -14.5      -5.5        -1          0   
 
-pos = 7 ; key = ar_forbrblk_r ;rown= 1 ,coln= 9
+pos = 8 ; key = ar_forbrblk_r ;rown= 1 ,coln= 9
 ar_forbrblk_r :mu= 0.065 ,sd= 0 ,min= 0.065 ,max= 0.065
                zi_1_c1    zi_2_c2    zi_5_c5    zi_8_c8    zi_9_c9
                _______    _______    _______    _______    _______
 
     zi_1_r1     0.065      0.065      0.065      0.065      0.065 
 
-pos = 8 ; key = ar_interp_c_grid ;rown= 1 ,coln= 772572
+pos = 9 ; key = ar_interp_c_grid ;rown= 1 ,coln= 772572
 ar_interp_c_grid :mu= 38.6486 ,sd= 22.3023 ,min= 0.02 ,max= 77.2773
                zi_1_C1    zi_2_C2    zi_386286_c386286    zi_772571_c772571    zi_772572_c772572
                _______    _______    _________________    _________________    _________________
 
     zi_1_r1     0.02      0.0201          38.649               77.277               77.277      
 
-pos = 9 ; key = ar_interp_coh_grid ;rown= 1 ,coln= 772
+pos = 10 ; key = ar_interp_coh_grid ;rown= 1 ,coln= 772
 ar_interp_coh_grid :mu= 18.6145 ,sd= 22.347 ,min= -20 ,max= 57.2773
                zi_1_C1    zi_2_C2    zi_386_c386    zi_771_c771    zi_772_c772
                _______    _______    ___________    ___________    ___________
 
     zi_1_r1      -20       -19.9       18.538         57.177         57.277   
 
-pos = 10 ; key = ar_k_mesha ;rown= 772 ,coln= 1
+pos = 11 ; key = ar_k_mesha ;rown= 772 ,coln= 1
 ar_k_mesha :mu= 0 ,sd= 0 ,min= 0 ,max= 0
                    zi_1_c1
                    _______
@@ -359,43 +369,54 @@ ar_k_mesha :mu= 0 ,sd= 0 ,min= 0 ,max= 0
     zi_771_r771       0   
     zi_772_r772       0   
 
-pos = 11 ; key = ar_stationary ;rown= 1 ,coln= 15
+pos = 12 ; key = ar_k_mesha_ori ;rown= 125000 ,coln= 1
+ar_k_mesha_ori :mu= 8.4893 ,sd= 10.6749 ,min= 0 ,max= 69.93
+                         zi_1_c1
+                         _______
+
+    zi_1_R1                   0 
+    zi_2_R2                   0 
+    zi_62500_R62500      4.9091 
+    zi_124999_r124999    68.504 
+    zi_125000_r125000     69.93 
+
+pos = 13 ; key = ar_stationary ;rown= 1 ,coln= 15
 ar_stationary :mu= 0.066667 ,sd= 0.060897 ,min= 0.0027089 ,max= 0.16757
                 zi_1_C1      zi_2_C2     zi_8_C8    zi_14_c14    zi_15_c15
                _________    _________    _______    _________    _________
 
     zi_1_r1    0.0027089    0.0069499    0.16757    0.0069499    0.0027089
 
-pos = 12 ; key = ar_w_level ;rown= 1 ,coln= 700
+pos = 14 ; key = ar_w_level ;rown= 1 ,coln= 700
 ar_w_level :mu= 14.9786 ,sd= 20.2441 ,min= -20 ,max= 50
                zi_1_C1    zi_2_C2    zi_350_c350    zi_699_c699    zi_700_c700
                _______    _______    ___________    ___________    ___________
 
     zi_1_r1      -20       -19.9        14.9           49.9            50     
 
-pos = 13 ; key = ar_w_level_full ;rown= 1 ,coln= 10500
-ar_w_level_full :mu= -8.3548 ,sd= 9.8727 ,min= -20 ,max= 50
-               zi_1_C1    zi_2_C2    zi_5250_C5250    zi_10499_c10499    zi_10500_c10500
-               _______    _______    _____________    _______________    _______________
+pos = 15 ; key = ar_w_level_full ;rown= 1 ,coln= 2500
+ar_w_level_full :mu= -3.0215 ,sd= 16.2736 ,min= -20 ,max= 50
+               zi_1_C1    zi_2_C2    zi_1250_c1250    zi_2499_c2499    zi_2500_c2500
+               _______    _______    _____________    _____________    _____________
 
-    zi_1_r1      -20       -19.9        -15.086            49.9                50       
+    zi_1_r1      -20       -19.9        -15.086           49.9              50      
 
-pos = 14 ; key = ar_w_perc ;rown= 1 ,coln= 50
+pos = 16 ; key = ar_w_perc ;rown= 1 ,coln= 50
 ar_w_perc :mu= 0.5 ,sd= 0.2969 ,min= 0.001 ,max= 0.999
                zi_1_C1    zi_2_C2     zi_25_c25    zi_49_c49    zi_50_c50
                _______    ________    _________    _________    _________
 
     zi_1_r1     0.001     0.021367     0.48982      0.97863       0.999  
 
-pos = 15 ; key = ar_z ;rown= 1 ,coln= 15
+pos = 17 ; key = ar_z ;rown= 1 ,coln= 15
 ar_z :mu= 1.1347 ,sd= 0.69878 ,min= 0.34741 ,max= 2.567
                zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                _______    _______    _______    _________    _________
 
     zi_1_r1    0.34741    0.40076    0.94436     2.2253        2.567  
 
-pos = 16 ; key = it_ameshk_n ; val = 772
-pos = 17 ; key = mt_bl_w_by_interp_coh_interp_grid_wneg ;rown= 50 ,coln= 772
+pos = 18 ; key = it_ameshk_n ; val = 772
+pos = 19 ; key = mt_bl_w_by_interp_coh_interp_grid_wneg ;rown= 50 ,coln= 772
 mt_bl_w_by_interp_coh_interp_grid_wneg :mu= 0.60951 ,sd= 0.48787 ,min= 0 ,max= 1
                  zi_1_C1    zi_2_C2    zi_386_c386    zi_771_c771    zi_772_c772
                  _______    _______    ___________    ___________    ___________
@@ -406,18 +427,18 @@ mt_bl_w_by_interp_coh_interp_grid_wneg :mu= 0.60951 ,sd= 0.48787 ,min= 0 ,max= 1
     zi_49_r49     true       true         false          false          false   
     zi_50_r50     true       true         false          false          false   
 
-pos = 18 ; key = mt_coh_bridge_perc_mesh_w_level_neg ;rown= 200 ,coln= 50
-mt_coh_bridge_perc_mesh_w_level_neg :mu= 0.5 ,sd= 0.29452 ,min= 0 ,max= 1
-                   zi_1_C1    zi_2_C2     zi_25_c25    zi_49_c49    zi_50_c50
-                   _______    ________    _________    _________    _________
+pos = 20 ; key = mt_coh_bridge_perc_mesh_w_level_neg ;rown= 200 ,coln= 10
+mt_coh_bridge_perc_mesh_w_level_neg :mu= 0.5 ,sd= 0.31922 ,min= 0 ,max= 1
+                   zi_1_C1    zi_2_C2    zi_5_C5    zi_9_C9    zi_10_c10
+                   _______    _______    _______    _______    _________
 
-    zi_1_R1           0       0.020408     0.4898       0.97959         1    
-    zi_2_R2           0       0.020408     0.4898       0.97959         1    
-    zi_100_r100       0       0.020408     0.4898       0.97959         1    
-    zi_199_r199       0       0.020408     0.4898       0.97959         1    
-    zi_200_r200       0       0.020408     0.4898       0.97959         1    
+    zi_1_R1           0       0.11111    0.44444    0.88889        1    
+    zi_2_R2           0       0.11111    0.44444    0.88889        1    
+    zi_100_r100       0       0.11111    0.44444    0.88889        1    
+    zi_199_r199       0       0.11111    0.44444    0.88889        1    
+    zi_200_r200       0       0.11111    0.44444    0.88889        1    
 
-pos = 19 ; key = mt_coh_w_perc_ratio_wneg ;rown= 23527 ,coln= 1
+pos = 21 ; key = mt_coh_w_perc_ratio_wneg ;rown= 23527 ,coln= 1
 mt_coh_w_perc_ratio_wneg :mu= 0.72495 ,sd= 0.37217 ,min= 0 ,max= 1
                        zi_1_c1
                        _______
@@ -428,7 +449,7 @@ mt_coh_w_perc_ratio_wneg :mu= 0.72495 ,sd= 0.37217 ,min= 0 ,max= 1
     zi_23526_r23526       1   
     zi_23527_r23527       1   
 
-pos = 20 ; key = mt_coh_wkb ;rown= 772 ,coln= 15
+pos = 22 ; key = mt_coh_wkb ;rown= 772 ,coln= 15
 mt_coh_wkb :mu= 18.6145 ,sd= 22.3335 ,min= -20 ,max= 57.2773
                    zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                    _______    _______    _______    _________    _________
@@ -439,7 +460,18 @@ mt_coh_wkb :mu= 18.6145 ,sd= 22.3335 ,min= -20 ,max= 57.2773
     zi_771_r771    57.177     57.177     57.177      57.177       57.177  
     zi_772_r772    57.277     57.277     57.277      57.277       57.277  
 
-pos = 21 ; key = mt_interp_coh_grid_mesh_w_perc ;rown= 50 ,coln= 772
+pos = 23 ; key = mt_coh_wkb_ori ;rown= 125000 ,coln= 15
+mt_coh_wkb_ori :mu= -2.1349 ,sd= 16.853 ,min= -21.4564 ,max= 57.2773
+                         zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
+                         _______    _______    _______    _________    _________
+
+    zi_1_R1              -21.456    -21.456    -21.456     -21.456      -21.456 
+    zi_2_R2              -21.456    -21.456    -21.456     -21.456      -21.456 
+    zi_62500_R62500      -15.884    -15.789    -14.825     -12.554      -11.948 
+    zi_124999_r124999     45.332     45.576     48.066      53.932       55.497 
+    zi_125000_r125000     45.129     45.375     47.883      53.793        55.37 
+
+pos = 24 ; key = mt_interp_coh_grid_mesh_w_perc ;rown= 50 ,coln= 772
 mt_interp_coh_grid_mesh_w_perc :mu= 18.6145 ,sd= 22.3329 ,min= -20 ,max= 57.2773
                  zi_1_C1    zi_2_C2    zi_386_c386    zi_771_c771    zi_772_c772
                  _______    _______    ___________    ___________    ___________
@@ -450,7 +482,7 @@ mt_interp_coh_grid_mesh_w_perc :mu= 18.6145 ,sd= 22.3329 ,min= -20 ,max= 57.2773
     zi_49_r49      -20       -19.9       18.538         57.177         57.277   
     zi_50_r50      -20       -19.9       18.538         57.177         57.277   
 
-pos = 22 ; key = mt_interp_coh_grid_mesh_z ;rown= 772 ,coln= 15
+pos = 25 ; key = mt_interp_coh_grid_mesh_z ;rown= 772 ,coln= 15
 mt_interp_coh_grid_mesh_z :mu= 18.6145 ,sd= 22.3335 ,min= -20 ,max= 57.2773
                    zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                    _______    _______    _______    _________    _________
@@ -461,18 +493,18 @@ mt_interp_coh_grid_mesh_z :mu= 18.6145 ,sd= 22.3335 ,min= -20 ,max= 57.2773
     zi_771_r771    57.177     57.177     57.177      57.177       57.177  
     zi_772_r772    57.277     57.277     57.277      57.277       57.277  
 
-pos = 23 ; key = mt_k ;rown= 50 ,coln= 10500
-mt_k :mu= 5.8226 ,sd= 6.6708 ,min= 0 ,max= 69.93
-                 zi_1_C1     zi_2_C2      zi_5250_C5250    zi_10499_c10499    zi_10500_c10500
-                 _______    __________    _____________    _______________    _______________
+pos = 26 ; key = mt_k ;rown= 50 ,coln= 2500
+mt_k :mu= 8.4893 ,sd= 10.6749 ,min= 0 ,max= 69.93
+                 zi_1_C1     zi_2_C2      zi_1250_c1250    zi_2499_c2499    zi_2500_c2500
+                 _______    __________    _____________    _____________    _____________
 
-    zi_1_R1         0       0.00010029      0.004914           0.0699               0.07     
-    zi_2_R2         0        0.0021429         0.105           1.4936             1.4957     
-    zi_25_r25       0         0.049122         2.407           34.238             34.287     
-    zi_49_r49       0         0.098144         4.809           68.406             68.504     
-    zi_50_r50       0          0.10019        4.9091            69.83              69.93     
+    zi_1_R1         0       0.00010029      0.004914          0.0699             0.07    
+    zi_2_R2         0        0.0021429         0.105          1.4936           1.4957    
+    zi_25_r25       0         0.049122         2.407          34.238           34.287    
+    zi_49_r49       0         0.098144         4.809          68.406           68.504    
+    zi_50_r50       0          0.10019        4.9091           69.83            69.93    
 
-pos = 24 ; key = mt_w_by_interp_coh_interp_grid ;rown= 50 ,coln= 772
+pos = 27 ; key = mt_w_by_interp_coh_interp_grid ;rown= 50 ,coln= 772
 mt_w_by_interp_coh_interp_grid :mu= -0.69276 ,sd= 17.2218 ,min= -20 ,max= 57.2
                  zi_1_C1    zi_2_C2    zi_386_c386    zi_771_c771    zi_772_c772
                  _______    _______    ___________    ___________    ___________
@@ -483,7 +515,7 @@ mt_w_by_interp_coh_interp_grid :mu= -0.69276 ,sd= 17.2218 ,min= -20 ,max= 57.2
     zi_49_r49      -20      -19.902       17.715         55.528         55.626  
     zi_50_r50      -20        -19.9         18.5           57.1           57.2  
 
-pos = 25 ; key = mt_w_by_interp_coh_interp_grid_wneg ;rown= 23527 ,coln= 1
+pos = 28 ; key = mt_w_by_interp_coh_interp_grid_wneg ;rown= 23527 ,coln= 1
 mt_w_by_interp_coh_interp_grid_wneg :mu= -12.2397 ,sd= 5.8332 ,min= -20 ,max= -0.00091541
                        zi_1_c1
                        _______
@@ -494,7 +526,7 @@ mt_w_by_interp_coh_interp_grid_wneg :mu= -12.2397 ,sd= 5.8332 ,min= -20 ,max= -0
     zi_23526_r23526    -2.6095
     zi_23527_r23527    -1.0355
 
-pos = 26 ; key = mt_w_by_interp_coh_interp_grid_wpos ;rown= 15073 ,coln= 1
+pos = 29 ; key = mt_w_by_interp_coh_interp_grid_wpos ;rown= 15073 ,coln= 1
 mt_w_by_interp_coh_interp_grid_wpos :mu= 17.3305 ,sd= 13.1706 ,min= 0.0036274 ,max= 57.2
                        zi_1_c1 
                        ________
@@ -505,18 +537,18 @@ mt_w_by_interp_coh_interp_grid_wpos :mu= 17.3305 ,sd= 13.1706 ,min= 0.0036274 ,m
     zi_15072_r15072      55.626
     zi_15073_r15073        57.2
 
-pos = 27 ; key = mt_w_level_neg_mesh_coh_bridge_perc ;rown= 200 ,coln= 50
-mt_w_level_neg_mesh_coh_bridge_perc :mu= -10.0215 ,sd= 5.7903 ,min= -20 ,max= -0.04298
-                   zi_1_C1     zi_2_C2     zi_25_c25    zi_49_c49    zi_50_c50
-                   ________    ________    _________    _________    _________
+pos = 30 ; key = mt_w_level_neg_mesh_coh_bridge_perc ;rown= 200 ,coln= 10
+mt_w_level_neg_mesh_coh_bridge_perc :mu= -10.0215 ,sd= 5.7914 ,min= -20 ,max= -0.04298
+                   zi_1_C1     zi_2_C2     zi_5_C5     zi_9_C9     zi_10_c10
+                   ________    ________    ________    ________    _________
 
-    zi_1_R1             -20         -20         -20          -20          -20 
-    zi_2_R2           -19.9       -19.9       -19.9        -19.9        -19.9 
-    zi_100_r100     -10.072     -10.072     -10.072      -10.072      -10.072 
-    zi_199_r199    -0.14327    -0.14327    -0.14327     -0.14327     -0.14327 
-    zi_200_r200    -0.04298    -0.04298    -0.04298     -0.04298     -0.04298 
+    zi_1_R1             -20         -20         -20         -20         -20 
+    zi_2_R2           -19.9       -19.9       -19.9       -19.9       -19.9 
+    zi_100_r100     -10.072     -10.072     -10.072     -10.072     -10.072 
+    zi_199_r199    -0.14327    -0.14327    -0.14327    -0.14327    -0.14327 
+    zi_200_r200    -0.04298    -0.04298    -0.04298    -0.04298    -0.04298 
 
-pos = 28 ; key = mt_z_mesh_coh_interp_grid ;rown= 772 ,coln= 15
+pos = 31 ; key = mt_z_mesh_coh_interp_grid ;rown= 772 ,coln= 15
 mt_z_mesh_coh_interp_grid :mu= 1.1347 ,sd= 0.67511 ,min= 0.34741 ,max= 2.567
                    zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                    _______    _______    _______    _________    _________
@@ -527,18 +559,18 @@ mt_z_mesh_coh_interp_grid :mu= 1.1347 ,sd= 0.67511 ,min= 0.34741 ,max= 2.567
     zi_771_r771    0.34741    0.40076    0.94436     2.2253        2.567  
     zi_772_r772    0.34741    0.40076    0.94436     2.2253        2.567  
 
-pos = 29 ; key = mt_z_mesh_coh_wkb ;rown= 525000 ,coln= 15
+pos = 32 ; key = mt_z_mesh_coh_wkb ;rown= 125000 ,coln= 15
 mt_z_mesh_coh_wkb :mu= 1.1347 ,sd= 0.67508 ,min= 0.34741 ,max= 2.567
                          zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                          _______    _______    _______    _________    _________
 
     zi_1_R1              0.34741    0.40076    0.94436     2.2253        2.567  
     zi_2_R2              0.34741    0.40076    0.94436     2.2253        2.567  
-    zi_262500_r262500    0.34741    0.40076    0.94436     2.2253        2.567  
-    zi_524999_r524999    0.34741    0.40076    0.94436     2.2253        2.567  
-    zi_525000_r525000    0.34741    0.40076    0.94436     2.2253        2.567  
+    zi_62500_R62500      0.34741    0.40076    0.94436     2.2253        2.567  
+    zi_124999_r124999    0.34741    0.40076    0.94436     2.2253        2.567  
+    zi_125000_r125000    0.34741    0.40076    0.94436     2.2253        2.567  
 
-pos = 30 ; key = mt_z_trans ;rown= 15 ,coln= 15
+pos = 33 ; key = mt_z_trans ;rown= 15 ,coln= 15
 mt_z_trans :mu= 0.066667 ,sd= 0.095337 ,min= 0 ,max= 0.27902
                   zi_1_C1       zi_2_C2       zi_8_C8      zi_14_c14     zi_15_c15 
                  __________    __________    __________    __________    __________
@@ -553,38 +585,41 @@ mt_z_trans :mu= 0.066667 ,sd= 0.095337 ,min= 0 ,max= 0.27902
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Matrix in Container and Sizes and Basic Statistics
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                                         i     idx      rowN         colN         mean        std          min           max    
-                                         __    ___    ________    __________    ________    ________    _________    ___________
+                                              i     idx      rowN         colN         mean        std          min           max    
+                                              __    ___    ________    __________    ________    ________    _________    ___________
 
-    ar_a                                  1     1            1           772      18.614      22.347          -20         57.277
-    ar_a_meshk                            2     2          772             1      18.614      22.347          -20         57.277
-    ar_ak_perc                            3     3            1            50         0.5      0.2969        0.001          0.999
-    ar_ameshk_tnext_with_r                4     4     5.25e+05             1     -15.284      7.0839        -21.9         51.178
-    ar_coh_bridge_perc                    5     5            1            50         0.5      0.2975            0              1
-    ar_forbrblk                           6     6            1             9     -7.0556      6.3809          -19              0
-    ar_forbrblk_r                         7     7            1             9       0.065           0        0.065          0.065
-    ar_interp_c_grid                      8     8            1    7.7257e+05      38.649      22.302         0.02         77.277
-    ar_interp_coh_grid                    9     9            1           772      18.614      22.347          -20         57.277
-    ar_k_mesha                           10    10          772             1           0           0            0              0
-    ar_stationary                        11    11            1            15    0.066667    0.060897    0.0027089        0.16757
-    ar_w_level                           12    12            1           700      14.979      20.244          -20             50
-    ar_w_level_full                      13    13            1         10500     -8.3548      9.8727          -20             50
-    ar_w_perc                            14    14            1            50         0.5      0.2969        0.001          0.999
-    ar_z                                 15    15            1            15      1.1347     0.69878      0.34741          2.567
-    mt_bl_w_by_interp_coh_interp_gri&#8230;    16    17           50           772     0.60951     0.48787            0              1
-    mt_coh_bridge_perc_mesh_w_level_&#8230;    17    18          200            50         0.5     0.29452            0              1
-    mt_coh_w_perc_ratio_wneg             18    19        23527             1     0.72495     0.37217            0              1
-    mt_coh_wkb                           19    20          772            15      18.614      22.334          -20         57.277
-    mt_interp_coh_grid_mesh_w_perc       20    21           50           772      18.614      22.333          -20         57.277
-    mt_interp_coh_grid_mesh_z            21    22          772            15      18.614      22.334          -20         57.277
-    mt_k                                 22    23           50         10500      5.8226      6.6708            0          69.93
-    mt_w_by_interp_coh_interp_grid       23    24           50           772    -0.69276      17.222          -20           57.2
-    mt_w_by_interp_coh_interp_grid_w&#8230;    24    25        23527             1      -12.24      5.8332          -20    -0.00091541
-    mt_w_by_interp_coh_interp_grid_w&#8230;    25    26        15073             1       17.33      13.171    0.0036274           57.2
-    mt_w_level_neg_mesh_coh_bridge_p&#8230;    26    27          200            50     -10.021      5.7903          -20       -0.04298
-    mt_z_mesh_coh_interp_grid            27    28          772            15      1.1347     0.67511      0.34741          2.567
-    mt_z_mesh_coh_wkb                    28    29     5.25e+05            15      1.1347     0.67508      0.34741          2.567
-    mt_z_trans                           29    30           15            15    0.066667    0.095337            0        0.27902
+    ar_a                                       1     1            1           772      18.614      22.347          -20         57.277
+    ar_a_meshk                                 2     2          772             1      18.614      22.347          -20         57.277
+    ar_a_meshk_ori                             3     3     1.25e+05             1     -11.511      10.675          -20          49.93
+    ar_ak_perc                                 4     4            1            50         0.5      0.2969        0.001          0.999
+    ar_ameshk_tnext_with_r                     5     5     1.25e+05             1     -12.465      11.236        -21.9         51.178
+    ar_coh_bridge_perc                         6     6            1            10         0.5     0.33641            0              1
+    ar_forbrblk                                7     7            1             9     -7.0556      6.3809          -19              0
+    ar_forbrblk_r                              8     8            1             9       0.065           0        0.065          0.065
+    ar_interp_c_grid                           9     9            1    7.7257e+05      38.649      22.302         0.02         77.277
+    ar_interp_coh_grid                        10    10            1           772      18.614      22.347          -20         57.277
+    ar_k_mesha                                11    11          772             1           0           0            0              0
+    ar_k_mesha_ori                            12    12     1.25e+05             1      8.4893      10.675            0          69.93
+    ar_stationary                             13    13            1            15    0.066667    0.060897    0.0027089        0.16757
+    ar_w_level                                14    14            1           700      14.979      20.244          -20             50
+    ar_w_level_full                           15    15            1          2500     -3.0215      16.274          -20             50
+    ar_w_perc                                 16    16            1            50         0.5      0.2969        0.001          0.999
+    ar_z                                      17    17            1            15      1.1347     0.69878      0.34741          2.567
+    mt_bl_w_by_interp_coh_interp_grid_wneg    18    19           50           772     0.60951     0.48787            0              1
+    mt_coh_bridge_perc_mesh_w_level_neg       19    20          200            10         0.5     0.31922            0              1
+    mt_coh_w_perc_ratio_wneg                  20    21        23527             1     0.72495     0.37217            0              1
+    mt_coh_wkb                                21    22          772            15      18.614      22.334          -20         57.277
+    mt_coh_wkb_ori                            22    23     1.25e+05            15     -2.1349      16.853      -21.456         57.277
+    mt_interp_coh_grid_mesh_w_perc            23    24           50           772      18.614      22.333          -20         57.277
+    mt_interp_coh_grid_mesh_z                 24    25          772            15      18.614      22.334          -20         57.277
+    mt_k                                      25    26           50          2500      8.4893      10.675            0          69.93
+    mt_w_by_interp_coh_interp_grid            26    27           50           772    -0.69276      17.222          -20           57.2
+    mt_w_by_interp_coh_interp_grid_wneg       27    28        23527             1      -12.24      5.8332          -20    -0.00091541
+    mt_w_by_interp_coh_interp_grid_wpos       28    29        15073             1       17.33      13.171    0.0036274           57.2
+    mt_w_level_neg_mesh_coh_bridge_perc       29    30          200            10     -10.021      5.7914          -20       -0.04298
+    mt_z_mesh_coh_interp_grid                 30    31          772            15      1.1347     0.67511      0.34741          2.567
+    mt_z_mesh_coh_wkb                         31    32     1.25e+05            15      1.1347     0.67508      0.34741          2.567
+    mt_z_trans                                32    33           15            15    0.066667    0.095337            0        0.27902
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -593,7 +628,7 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
                    i    idx    value
                    _    ___    _____
 
-    it_ameshk_n    1    16      772 
+    it_ameshk_n    1    18      772 
 
 ----------------------------------------
 ----------------------------------------
@@ -646,7 +681,7 @@ pos = 31 ; key = fl_z_rho ; val = 0.8
 pos = 32 ; key = fl_z_sig ; val = 0.2
 pos = 33 ; key = it_ak_perc_n ; val = 50
 pos = 34 ; key = it_c_interp_grid_gap ; val = 0.0001
-pos = 35 ; key = it_coh_bridge_perc_n ; val = 50
+pos = 35 ; key = it_coh_bridge_perc_n ; val = 10
 pos = 36 ; key = it_maxiter_dist ; val = 1000
 pos = 37 ; key = it_maxiter_val ; val = 250
 pos = 38 ; key = it_tol_pol_nochange ; val = 25
@@ -659,49 +694,49 @@ pos = 43 ; key = st_model ; val = ipwkbz_fibs
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Scalars in Container and Sizes and Basic Statistics
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                              i     idx    value
-                              __    ___    _____
+                              i     idx     value 
+                              __    ___    _______
 
-    bl_b_is_principle          1     1       1  
-    bl_bridge                  2     2       1  
-    bl_default                 3     3       1  
-    bl_rollover                4     4       1  
-    fl_Amean                   5     5       1  
-    fl_alpha                   6     6       1  
-    fl_b_bd                    7     7       1  
-    fl_beta                    8     8       1  
-    fl_c_min                   9     9       1  
-    fl_coh_interp_grid_gap    10    10       1  
-    fl_crra                   11    11       1  
-    fl_default_wprime         12    12       0  
-    fl_delta                  13    13       1  
-    fl_forbrblk_brleast       14    14       1  
-    fl_forbrblk_brmost        15    15       1  
-    fl_forbrblk_gap           16    16       1  
-    fl_k_max                  17    17       1  
-    fl_k_min                  18    18       0  
-    fl_nan_replace            19    19       1  
-    fl_r_fbr                  20    20       1  
-    fl_r_fsv                  21    21       1  
-    fl_r_inf                  22    22       1  
-    fl_tol_dist               23    23       1  
-    fl_tol_pol                24    24       1  
-    fl_tol_val                25    25       1  
-    fl_w                      26    26       1  
-    fl_w_interp_grid_gap      27    27       1  
-    fl_w_max                  28    28       1  
-    fl_w_min                  29    29       1  
-    fl_z_mu                   30    30       0  
-    fl_z_rho                  31    31       1  
-    fl_z_sig                  32    32       1  
-    it_ak_perc_n              33    33       1  
-    it_c_interp_grid_gap      34    34       1  
-    it_coh_bridge_perc_n      35    35       1  
-    it_maxiter_dist           36    36       1  
-    it_maxiter_val            37    37       1  
-    it_tol_pol_nochange       38    38       1  
-    it_w_perc_n               39    39       1  
-    it_z_n                    40    40       1  
+    bl_b_is_principle          1     1           1
+    bl_bridge                  2     2           1
+    bl_default                 3     3           1
+    bl_rollover                4     4           1
+    fl_Amean                   5     5           1
+    fl_alpha                   6     6        0.36
+    fl_b_bd                    7     7         -20
+    fl_beta                    8     8        0.94
+    fl_c_min                   9     9        0.02
+    fl_coh_interp_grid_gap    10    10         0.1
+    fl_crra                   11    11         1.5
+    fl_default_wprime         12    12           0
+    fl_delta                  13    13        0.08
+    fl_forbrblk_brleast       14    14          -1
+    fl_forbrblk_brmost        15    15         -19
+    fl_forbrblk_gap           16    16        -1.5
+    fl_k_max                  17    17          70
+    fl_k_min                  18    18           0
+    fl_nan_replace            19    19       -9999
+    fl_r_fbr                  20    20       0.065
+    fl_r_fsv                  21    21       0.025
+    fl_r_inf                  22    22       0.095
+    fl_tol_dist               23    23       1e-05
+    fl_tol_pol                24    24       1e-05
+    fl_tol_val                25    25       1e-05
+    fl_w                      26    26     0.44365
+    fl_w_interp_grid_gap      27    27         0.1
+    fl_w_max                  28    28          50
+    fl_w_min                  29    29         -20
+    fl_z_mu                   30    30           0
+    fl_z_rho                  31    31         0.8
+    fl_z_sig                  32    32         0.2
+    it_ak_perc_n              33    33          50
+    it_c_interp_grid_gap      34    34      0.0001
+    it_coh_bridge_perc_n      35    35          10
+    it_maxiter_dist           36    36        1000
+    it_maxiter_val            37    37         250
+    it_tol_pol_nochange       38    38          25
+    it_w_perc_n               39    39          50
+    it_z_n                    40    40          15
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -775,7 +810,7 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ----------------------------------------
 ----------------------------------------
 pos = 1 ; key = ar_pol_diff_norm ;rown= 134 ,coln= 1
-ar_pol_diff_norm :mu= 59.1738 ,sd= 291.5489 ,min= 0 ,max= 2459.7802
+ar_pol_diff_norm :mu= 59.0582 ,sd= 291.5504 ,min= 0 ,max= 2459.833
                    zi_1_c1
                    _______
 
@@ -787,15 +822,15 @@ ar_pol_diff_norm :mu= 59.1738 ,sd= 291.5489 ,min= 0 ,max= 2459.7802
 
 pos = 2 ; key = ar_st_pol_names ; val = cl_mt_coh cl_mt_pol_a cl_mt_pol_k cl_mt_pol_c cl_mt_pol_a_principleonly cl_mt_pol_b_bridge cl_mt_pol_inf_borr_nobridge cl_mt_pol_for_borr cl_mt_pol_for_save
 pos = 3 ; key = ar_val_diff_norm ;rown= 134 ,coln= 1
-ar_val_diff_norm :mu= 10.1336 ,sd= 29.0717 ,min= 0.0019959 ,max= 179.6801
+ar_val_diff_norm :mu= 10.1341 ,sd= 29.0738 ,min= 0.0019946 ,max= 179.6801
                     zi_1_c1 
                    _________
 
     zi_1_R1           179.68
-    zi_2_R2           173.02
-    zi_67_R67        0.10418
-    zi_133_r133    0.0021222
-    zi_134_r134    0.0019959
+    zi_2_R2           173.03
+    zi_67_R67        0.10409
+    zi_133_r133    0.0021208
+    zi_134_r134    0.0019946
 
 pos = 4 ; key = cl_mt_coh ;rown= 772 ,coln= 15
 cl_mt_coh :mu= 18.6145 ,sd= 22.3335 ,min= -20 ,max= 57.2773
@@ -809,7 +844,7 @@ cl_mt_coh :mu= 18.6145 ,sd= 22.3335 ,min= -20 ,max= 57.2773
     zi_772_r772    57.277     57.277     57.277      57.277       57.277  
 
 pos = 5 ; key = cl_mt_cons ;rown= 772 ,coln= 15
-cl_mt_cons :mu= 2.9363 ,sd= 2.4526 ,min= -18.5689 ,max= 7.2187
+cl_mt_cons :mu= 2.9386 ,sd= 2.4524 ,min= -18.5689 ,max= 7.2187
                    zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                    _______    _______    _______    _________    _________
 
@@ -820,7 +855,7 @@ cl_mt_cons :mu= 2.9363 ,sd= 2.4526 ,min= -18.5689 ,max= 7.2187
     zi_772_r772     6.7507      6.786     6.8805       7.139       7.2096 
 
 pos = 6 ; key = cl_mt_pol_a ;rown= 772 ,coln= 15
-cl_mt_pol_a :mu= 9.0108 ,sd= 20.2126 ,min= -21.8995 ,max= 50.3606
+cl_mt_pol_a :mu= 9.0004 ,sd= 20.2258 ,min= -21.8995 ,max= 50.3606
                    zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                    _______    _______    _______    _________    _________
 
@@ -831,7 +866,7 @@ cl_mt_pol_a :mu= 9.0108 ,sd= 20.2126 ,min= -21.8995 ,max= 50.3606
     zi_772_r772     49.045     47.598     43.723      33.124       30.229 
 
 pos = 7 ; key = cl_mt_pol_a_principleonly ;rown= 772 ,coln= 15
-cl_mt_pol_a_principleonly :mu= 9.037 ,sd= 19.4055 ,min= -19.9995 ,max= 49.1323
+cl_mt_pol_a_principleonly :mu= 9.0279 ,sd= 19.4169 ,min= -19.9995 ,max= 49.1323
                    zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                    _______    _______    _______    _________    _________
 
@@ -853,7 +888,7 @@ cl_mt_pol_b_bridge :mu= -2.5943 ,sd= 5.2867 ,min= -20 ,max= 0
     zi_772_r772         0          0          0           0            0  
 
 pos = 9 ; key = cl_mt_pol_c ;rown= 772 ,coln= 15
-cl_mt_pol_c :mu= 2.9102 ,sd= 2.8382 ,min= -20 ,max= 7.9469
+cl_mt_pol_c :mu= 2.9111 ,sd= 2.8378 ,min= -20 ,max= 7.9469
                    zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                    _______    _______    _______    _________    _________
 
@@ -864,7 +899,7 @@ cl_mt_pol_c :mu= 2.9102 ,sd= 2.8382 ,min= -20 ,max= 7.9469
     zi_772_r772    7.9469     7.9469     7.9469      7.9469       7.9469  
 
 pos = 10 ; key = cl_mt_pol_for_borr ;rown= 772 ,coln= 15
-cl_mt_pol_for_borr :mu= -1.6823 ,sd= 2.9909 ,min= -14.5 ,max= 0
+cl_mt_pol_for_borr :mu= -1.6766 ,sd= 2.9877 ,min= -14.5 ,max= 0
                    zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                    _______    _______    _______    _________    _________
 
@@ -875,7 +910,7 @@ cl_mt_pol_for_borr :mu= -1.6823 ,sd= 2.9909 ,min= -14.5 ,max= 0
     zi_772_r772       0          0          0           0            0    
 
 pos = 11 ; key = cl_mt_pol_for_save ;rown= 772 ,coln= 15
-cl_mt_pol_for_save :mu= 13.3591 ,sd= 14.7391 ,min= 0 ,max= 49.1323
+cl_mt_pol_for_save :mu= 13.3636 ,sd= 14.7352 ,min= 0 ,max= 49.1323
                    zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                    _______    _______    _______    _________    _________
 
@@ -886,7 +921,7 @@ cl_mt_pol_for_save :mu= 13.3591 ,sd= 14.7391 ,min= 0 ,max= 49.1323
     zi_772_r772    47.849     46.437     42.656       32.316       29.492 
 
 pos = 12 ; key = cl_mt_pol_inf_borr_nobridge ;rown= 772 ,coln= 15
-cl_mt_pol_inf_borr_nobridge :mu= -0.045427 ,sd= 0.15758 ,min= -2.519 ,max= 0
+cl_mt_pol_inf_borr_nobridge :mu= -0.064717 ,sd= 0.20137 ,min= -2.533 ,max= 0
                    zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                    _______    _______    _______    _________    _________
 
@@ -897,7 +932,7 @@ cl_mt_pol_inf_borr_nobridge :mu= -0.045427 ,sd= 0.15758 ,min= -2.519 ,max= 0
     zi_772_r772       0          0          0           0            0    
 
 pos = 13 ; key = cl_mt_pol_k ;rown= 772 ,coln= 15
-cl_mt_pol_k :mu= 6.6673 ,sd= 5.1931 ,min= 5.018e-07 ,max= 22.2439
+cl_mt_pol_k :mu= 6.6755 ,sd= 5.1921 ,min= 5.018e-07 ,max= 22.2439
                    zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                    _______    _______    _______    _________    _________
 
@@ -930,7 +965,7 @@ mt_it_for_only_nbdg :mu= 0 ,sd= 0 ,min= 0 ,max= 0
     zi_772_r772     false      false      false       false        false  
 
 pos = 16 ; key = mt_it_fr_brrsv_nbdg ;rown= 772 ,coln= 15
-mt_it_fr_brrsv_nbdg :mu= 0.12997 ,sd= 0.33628 ,min= 0 ,max= 1
+mt_it_fr_brrsv_nbdg :mu= 0.12513 ,sd= 0.33088 ,min= 0 ,max= 1
                    zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                    _______    _______    _______    _________    _________
 
@@ -941,7 +976,7 @@ mt_it_fr_brrsv_nbdg :mu= 0.12997 ,sd= 0.33628 ,min= 0 ,max= 1
     zi_772_r772     false      false      false       false        false  
 
 pos = 17 ; key = mt_it_frin_brr_nbdg ;rown= 772 ,coln= 15
-mt_it_frin_brr_nbdg :mu= 0.20233 ,sd= 0.40176 ,min= 0 ,max= 1
+mt_it_frin_brr_nbdg :mu= 0.20717 ,sd= 0.40529 ,min= 0 ,max= 1
                    zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                    _______    _______    _______    _________    _________
 
@@ -974,7 +1009,7 @@ mt_it_inf_only_nbdg :mu= 0.016926 ,sd= 0.129 ,min= 0 ,max= 1
     zi_772_r772     false      false      false       false        false  
 
 pos = 20 ; key = mt_pol_idx ;rown= 772 ,coln= 15
-mt_pol_idx :mu= 19318.9985 ,sd= 11146.918 ,min= 1 ,max= 38595
+mt_pol_idx :mu= 19318.9907 ,sd= 11146.9295 ,min= 1 ,max= 38595
                    zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                    _______    _______    _______    _________    _________
 
@@ -985,23 +1020,23 @@ mt_pol_idx :mu= 19318.9985 ,sd= 11146.918 ,min= 1 ,max= 38595
     zi_772_r772     38595      38595      38595       38595        38595  
 
 pos = 21 ; key = mt_pol_perc_change ;rown= 134 ,coln= 15
-mt_pol_perc_change :mu= 0.088526 ,sd= 0.24515 ,min= 0 ,max= 1
-                   zi_1_C1    zi_2_C2     zi_8_C8     zi_14_c14    zi_15_c15
-                   _______    _______    _________    _________    _________
+mt_pol_perc_change :mu= 0.08872 ,sd= 0.24528 ,min= 0 ,max= 1
+                   zi_1_C1     zi_2_C2      zi_8_C8     zi_14_c14    zi_15_c15
+                   _______    _________    _________    _________    _________
 
-    zi_1_R1           1          1               1        1            1    
-    zi_2_R2           1          1               1        1            1    
-    zi_67_R67         0          0       0.0025907        0            0    
-    zi_133_r133       0          0               0        0            0    
-    zi_134_r134       0          0               0        0            0    
+    zi_1_R1           1               1            1        1            1    
+    zi_2_R2           1               1            1        1            1    
+    zi_67_R67         0       0.0025907    0.0025907        0            0    
+    zi_133_r133       0               0            0        0            0    
+    zi_134_r134       0               0            0        0            0    
 
 pos = 22 ; key = mt_val ;rown= 772 ,coln= 15
-mt_val :mu= 8.8004 ,sd= 6.7931 ,min= -9.0197 ,max= 16.6004
+mt_val :mu= 8.8006 ,sd= 6.7928 ,min= -9.0197 ,max= 16.6004
                    zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
                    _______    _______    _______    _________    _________
 
-    zi_1_R1        -9.0197    -8.7784    -6.7989     -4.0898      -3.6315 
-    zi_2_R2        -9.0197    -8.7784    -6.7989     -4.0898      -3.6315 
+    zi_1_R1        -9.0197    -8.7783    -6.7989     -4.0898      -3.6315 
+    zi_2_R2        -9.0197    -8.7783    -6.7989     -4.0898      -3.6315 
     zi_386_r386     10.299     10.402     11.296      12.613       12.845 
     zi_771_r771     15.415     15.457     15.839      16.475       16.595 
     zi_772_r772     15.423     15.466     15.847      16.481         16.6 
@@ -1013,27 +1048,27 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
                                    i     idx    rowN    colN      mean         std         min        max  
                                    __    ___    ____    ____    _________    _______    _________    ______
 
-    ar_pol_diff_norm                1     1     134       1        59.174     291.55            0    2459.8
-    ar_val_diff_norm                2     3     134       1        10.134     29.072    0.0019959    179.68
+    ar_pol_diff_norm                1     1     134       1        59.058     291.55            0    2459.8
+    ar_val_diff_norm                2     3     134       1        10.134     29.074    0.0019946    179.68
     cl_mt_coh                       3     4     772      15        18.614     22.334          -20    57.277
-    cl_mt_cons                      4     5     772      15        2.9363     2.4526      -18.569    7.2187
-    cl_mt_pol_a                     5     6     772      15        9.0108     20.213      -21.899    50.361
-    cl_mt_pol_a_principleonly       6     7     772      15         9.037     19.406      -19.999    49.132
+    cl_mt_cons                      4     5     772      15        2.9386     2.4524      -18.569    7.2187
+    cl_mt_pol_a                     5     6     772      15        9.0004     20.226      -21.899    50.361
+    cl_mt_pol_a_principleonly       6     7     772      15        9.0279     19.417      -19.999    49.132
     cl_mt_pol_b_bridge              7     8     772      15       -2.5943     5.2867          -20         0
-    cl_mt_pol_c                     8     9     772      15        2.9102     2.8382          -20    7.9469
-    cl_mt_pol_for_borr              9    10     772      15       -1.6823     2.9909        -14.5         0
-    cl_mt_pol_for_save             10    11     772      15        13.359     14.739            0    49.132
-    cl_mt_pol_inf_borr_nobridge    11    12     772      15     -0.045427    0.15758       -2.519         0
-    cl_mt_pol_k                    12    13     772      15        6.6673     5.1931    5.018e-07    22.244
+    cl_mt_pol_c                     8     9     772      15        2.9111     2.8378          -20    7.9469
+    cl_mt_pol_for_borr              9    10     772      15       -1.6766     2.9877        -14.5         0
+    cl_mt_pol_for_save             10    11     772      15        13.364     14.735            0    49.132
+    cl_mt_pol_inf_borr_nobridge    11    12     772      15     -0.064717    0.20137       -2.533         0
+    cl_mt_pol_k                    12    13     772      15        6.6755     5.1921    5.018e-07    22.244
     mt_it_b_bridge_idx             13    14     772      15       0.25907    0.43814            0         1
     mt_it_for_only_nbdg            14    15     772      15             0          0            0         0
-    mt_it_fr_brrsv_nbdg            15    16     772      15       0.12997    0.33628            0         1
-    mt_it_frin_brr_nbdg            16    17     772      15       0.20233    0.40176            0         1
+    mt_it_fr_brrsv_nbdg            15    16     772      15       0.12513    0.33088            0         1
+    mt_it_frin_brr_nbdg            16    17     772      15       0.20717    0.40529            0         1
     mt_it_frmsavng_only            17    18     772      15       0.65078    0.47675            0         1
     mt_it_inf_only_nbdg            18    19     772      15      0.016926      0.129            0         1
     mt_pol_idx                     19    20     772      15         19319      11147            1     38595
-    mt_pol_perc_change             20    21     134      15      0.088526    0.24515            0         1
-    mt_val                         21    22     772      15        8.8004     6.7931      -9.0197      16.6
+    mt_pol_perc_change             20    21     134      15       0.08872    0.24528            0         1
+    mt_val                         21    22     772      15        8.8006     6.7928      -9.0197      16.6
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -1046,15 +1081,15 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 </pre><img vspace="5" hspace="5" src="ff_ipwkbz_fibs_ds_wrapper_01.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbz_fibs_ds_wrapper_02.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbz_fibs_ds_wrapper_03.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbz_fibs_ds_wrapper_04.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbz_fibs_ds_wrapper_05.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbz_fibs_ds_wrapper_06.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbz_fibs_ds_wrapper_07.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbz_fibs_ds_wrapper_08.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbz_fibs_ds_wrapper_09.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbz_fibs_ds_wrapper_10.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbz_fibs_ds_wrapper_11.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbz_fibs_ds_wrapper_12.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbz_fibs_ds_wrapper_13.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbz_fibs_ds_wrapper_14.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbz_fibs_ds_wrapper_15.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbz_fibs_ds_wrapper_16.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbz_fibs_ds_wrapper_17.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbz_fibs_ds_wrapper_18.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbz_fibs_ds_wrapper_19.png" alt=""> <img vspace="5" hspace="5" src="ff_ipwkbz_fibs_ds_wrapper_20.png" alt=""> <h2 id="8">Derive Distribution</h2><pre class="codeinput"><span class="keyword">if</span> (strcmp(st_analytical_stationary_type, <span class="string">'loop'</span>))
 
-    result_map = ff_iwkz_ds(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    result_map = ff_iwkz_ds(param_map, support_map, armt_map, func_map, result_map);
 
 <span class="keyword">elseif</span> (strcmp(st_analytical_stationary_type, <span class="string">'vector'</span>))
 
-    result_map = ff_iwkz_ds_vec(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    result_map = ff_iwkz_ds_vec(param_map, support_map, armt_map, func_map, result_map);
 
 <span class="keyword">elseif</span> (strcmp(st_analytical_stationary_type, <span class="string">'eigenvector'</span>))
 
-    result_map = ff_iwkz_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    result_map = ff_iwkz_ds_vecsv(param_map, support_map, armt_map, func_map, result_map);
 
 <span class="keyword">end</span>
 </pre><pre class="codeoutput">----------------------------------------
@@ -1063,46 +1098,46 @@ Summary Statistics for: cl_mt_coh
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ----------------------------------------
 fl_choice_mean
-    4.2134
+    4.2154
 
 fl_choice_sd
-    5.3798
+    5.3811
 
 fl_choice_coefofvar
-    1.2768
+    1.2765
 
 fl_choice_prob_zero
     0.0018
 
 fl_choice_prob_below_zero
-    0.1465
+    0.1462
 
 fl_choice_prob_above_zero
-    0.8517
+    0.8520
 
 fl_choice_prob_max
-   4.8637e-14
+   4.8652e-14
 
 tb_prob_drv
     percentiles    cl_mt_cohPercentileValues    fracOfSumHeldBelowThisPercentile
     ___________    _________________________    ________________________________
 
-        0.1                     -20                        -0.018629            
-          1                 -15.885                        -0.044649            
-          5                 -4.8456                         -0.13201            
-         10                 -1.2327                           -0.162            
-         15                0.072016                         -0.16784            
-         20                  1.0756                         -0.16025            
-         25                  1.9789                         -0.14072            
-         35                  3.3839                        -0.075999            
-         50                  4.9897                         0.080379            
-         65                  6.0936                           0.2859            
-         75                  6.6958                          0.43489            
-         80                  7.1976                          0.51387            
-         85                  8.0005                          0.59491            
-         90                  9.4055                          0.69662            
-         95                  11.915                          0.82073            
-         99                  17.434                           0.9524            
+        0.1                     -20                        -0.018692            
+          1                 -15.885                        -0.044911            
+          5                 -4.8456                         -0.13205            
+         10                 -1.2327                         -0.16184            
+         15                0.072016                         -0.16769            
+         20                  1.0756                          -0.1601            
+         25                  1.9789                         -0.14057            
+         35                  3.3839                         -0.07585            
+         50                  4.9897                         0.080511            
+         65                  6.0936                          0.28601            
+         75                  6.6958                          0.43497            
+         80                  7.1976                          0.51394            
+         85                  8.0005                          0.59497            
+         90                  9.4055                          0.69666            
+         95                  11.915                          0.82076            
+         99                  17.434                          0.95241            
        99.9                   24.66                          0.99368            
 
 ----------------------------------------
@@ -1111,47 +1146,47 @@ Summary Statistics for: cl_mt_pol_a
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ----------------------------------------
 fl_choice_mean
-   -2.2632
+   -2.2625
 
 fl_choice_sd
-    4.2020
+    4.2041
 
 fl_choice_coefofvar
-   -1.8566
+   -1.8582
 
 fl_choice_prob_zero
      0
 
 fl_choice_prob_below_zero
-    0.6977
+    0.6976
 
 fl_choice_prob_above_zero
-    0.3023
+    0.3024
 
 fl_choice_prob_max
-   1.0842e-33
+   1.9198e-31
 
 tb_prob_drv
     percentiles    cl_mt_pol_aPercentileValues    fracOfSumHeldBelowThisPercentile
     ___________    ___________________________    ________________________________
 
-        0.1                   -21.868                         0.010643            
-          1                   -21.151                         0.096114            
-          5                   -10.074                          0.35572            
-         10                   -6.2827                          0.52754            
-         15                   -5.4072                          0.65809            
-         20                   -4.3085                          0.76022            
-         25                   -3.7622                          0.85055            
-         35                   -2.6175                          0.97518            
-         50                   -1.0396                           1.0805            
+        0.1                   -21.868                         0.011209            
+          1                   -21.289                         0.096234            
+          5                   -10.075                          0.35557            
+         10                   -6.4006                          0.52716            
+         15                   -5.3924                          0.65861            
+         20                   -4.3146                          0.75869            
+         25                   -3.7652                          0.85118            
+         35                   -2.6152                          0.97527            
+         50                   -1.0396                           1.0806            
          65                 -0.054437                           1.1095            
-         75                  0.069262                           1.1088            
-         80                   0.14091                           1.1064            
-         85                    0.2255                           1.1023            
-         90                   0.33883                           1.0965            
-         95                     1.314                           1.0832            
-         99                    5.3232                           1.0343            
-       99.9                     11.03                           1.0058            
+         75                  0.069262                           1.1089            
+         80                   0.14091                           1.1065            
+         85                    0.2255                           1.1024            
+         90                   0.33883                           1.0966            
+         95                     1.314                           1.0833            
+         99                    5.3232                           1.0344            
+       99.9                    11.032                           1.0058            
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -1159,13 +1194,13 @@ Summary Statistics for: cl_mt_pol_k
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ----------------------------------------
 fl_choice_mean
-    4.6366
+    4.6377
 
 fl_choice_sd
-    2.1420
+    2.1417
 
 fl_choice_coefofvar
-    0.4620
+    0.4618
 
 fl_choice_prob_zero
      0
@@ -1177,27 +1212,27 @@ fl_choice_prob_above_zero
     1.0000
 
 fl_choice_prob_max
-   1.2790e-12
+   1.2794e-12
 
 tb_prob_drv
     percentiles    cl_mt_pol_kPercentileValues    fracOfSumHeldBelowThisPercentile
     ___________    ___________________________    ________________________________
 
-        0.1                1.6058e-06                        3.4489e-10           
-          1                    1.2685                         0.0015227           
-          5                    2.0231                          0.016091           
-         10                    2.4614                          0.040765           
-         15                    2.7494                          0.068955           
-         20                    2.9055                          0.099855           
-         25                    3.1775                           0.13214           
-         35                    3.7035                           0.20668           
-         50                     4.376                           0.33714           
-         65                    4.8356                           0.48539           
-         75                    5.5122                           0.59572           
-         80                    5.8438                           0.65867           
-         85                    6.4862                            0.7234           
-         90                    7.3656                           0.79802           
-         95                    8.8617                           0.88399           
+        0.1                1.6058e-06                        3.6144e-10           
+          1                    1.3094                         0.0015814           
+          5                    2.0134                          0.016558           
+         10                    2.4614                          0.041031           
+         15                     2.766                          0.069264           
+         20                    2.9165                          0.099949           
+         25                    3.1758                           0.13239           
+         35                    3.7035                           0.20817           
+         50                    4.3859                           0.33775           
+         65                    4.8356                           0.48535           
+         75                    5.5122                           0.59607           
+         80                    5.8438                           0.65859           
+         85                    6.5082                           0.72564           
+         90                    7.3665                           0.79971           
+         95                    8.8618                           0.88401           
          99                    12.023                           0.97011           
        99.9                    15.791                           0.99611           
 
@@ -1210,10 +1245,10 @@ fl_choice_mean
     1.6678
 
 fl_choice_sd
-    1.4426
+    1.4450
 
 fl_choice_coefofvar
-    0.8649
+    0.8664
 
 fl_choice_prob_zero
      0
@@ -1225,28 +1260,28 @@ fl_choice_prob_above_zero
     0.9961
 
 fl_choice_prob_max
-   4.8637e-14
+   4.8652e-14
 
 tb_prob_drv
     percentiles    cl_mt_pol_cPercentileValues    fracOfSumHeldBelowThisPercentile
     ___________    ___________________________    ________________________________
 
-        0.1                     -20                          -0.047063            
-          1                  1.1032                          -0.042045            
-          5                  1.1967                          -0.013547            
-         10                   1.259                           0.022375            
-         15                  1.3151                           0.060938            
-         20                  1.3649                            0.10183            
-         25                  1.4086                            0.14388            
-         35                  1.4841                            0.22881            
-         50                  1.5768                            0.37027            
-         65                  1.6579                            0.51248            
-         75                  2.1933                            0.64625            
-         80                  2.2347                            0.70618            
-         85                  2.3092                            0.77177            
-         90                  2.4251                            0.83871            
-         95                   2.632                             0.9121            
-         99                  3.1286                            0.97984            
+        0.1                     -20                          -0.047246            
+          1                  1.1032                          -0.042073            
+          5                  1.1967                          -0.013506            
+         10                   1.259                           0.022025            
+         15                  1.3151                            0.06058            
+         20                  1.3649                            0.10137            
+         25                  1.4086                            0.14321            
+         35                  1.4862                            0.22865            
+         50                  1.5768                            0.36961            
+         65                  1.6579                            0.51236            
+         75                  2.1933                            0.64619            
+         80                  2.2347                            0.70613            
+         85                  2.3092                            0.77172            
+         90                  2.4251                            0.83867            
+         95                   2.632                            0.91207            
+         99                  3.1286                            0.97983            
        99.9                  3.7567                            0.99766            
 
 ----------------------------------------
@@ -1255,47 +1290,47 @@ Summary Statistics for: cl_mt_pol_a_principleonly
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ----------------------------------------
 fl_choice_mean
-   -2.0910
+   -2.0900
 
 fl_choice_sd
-    3.9014
+    3.9027
 
 fl_choice_coefofvar
-   -1.8658
+   -1.8673
 
 fl_choice_prob_zero
      0
 
 fl_choice_prob_below_zero
-    0.6977
+    0.6976
 
 fl_choice_prob_above_zero
-    0.3023
+    0.3024
 
 fl_choice_prob_max
-   1.0842e-33
+   1.9198e-31
 
 tb_prob_drv
     percentiles    cl_mt_pol_a_principleonlyPercentileValues    fracOfSumHeldBelowThisPercentile
     ___________    _________________________________________    ________________________________
 
-        0.1                          -19.998                                0.010723            
-          1                          -19.449                                0.095582            
-          5                          -9.3381                                 0.35488            
-         10                          -5.8786                                 0.52673            
-         15                          -4.9893                                 0.65808            
-         20                          -4.0441                                 0.76092            
-         25                          -3.3741                                 0.85484            
-         35                          -2.4507                                 0.98238            
+        0.1                          -19.998                                0.011307            
+          1                          -19.561                                0.095701            
+          5                          -9.3208                                 0.35486            
+         10                          -5.9549                                 0.52674            
+         15                          -5.0084                                 0.65802            
+         20                          -4.0441                                 0.76208            
+         25                          -3.3741                                  0.8552            
+         35                          -2.4507                                  0.9824            
          50                         -0.97522                                  1.0866            
-         65                        -0.049714                                  1.1156            
-         75                         0.067573                                  1.1149            
-         80                          0.13747                                  1.1124            
-         85                             0.22                                   1.108            
-         90                          0.33057                                  1.1019            
+         65                        -0.049714                                  1.1157            
+         75                         0.067573                                   1.115            
+         80                          0.13747                                  1.1125            
+         85                             0.22                                  1.1081            
+         90                          0.33057                                   1.102            
          95                            1.282                                  1.0879            
          99                           5.1933                                  1.0363            
-       99.9                           10.761                                  1.0062            
+       99.9                           10.763                                  1.0061            
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -1303,34 +1338,34 @@ Summary Statistics for: cl_mt_pol_b_bridge
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ----------------------------------------
 fl_choice_mean
-   -0.7075
+   -0.7072
 
 fl_choice_sd
-    2.6766
+    2.6800
 
 fl_choice_coefofvar
-   -3.7831
+   -3.7894
 
 fl_choice_prob_zero
-    0.8535
+    0.8538
 
 fl_choice_prob_below_zero
-    0.1465
+    0.1462
 
 fl_choice_prob_above_zero
      0
 
 fl_choice_prob_max
-    0.8535
+    0.8538
 
 tb_prob_drv
     percentiles    cl_mt_pol_b_bridgePercentileValues    fracOfSumHeldBelowThisPercentile
     ___________    __________________________________    ________________________________
 
-        0.1                         -20                              0.11094             
-          1                     -15.885                              0.26589             
-          5                     -4.8456                              0.78616             
-         10                     -1.2327                              0.96473             
+        0.1                         -20                              0.11141             
+          1                     -15.885                              0.26769             
+          5                     -4.8456                              0.78706             
+         10                     -1.2327                              0.96462             
          15                           0                                    1             
          20                           0                                    1             
          25                           0                                    1             
@@ -1351,38 +1386,38 @@ Summary Statistics for: cl_mt_pol_inf_borr_nobridge
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ----------------------------------------
 fl_choice_mean
-   -0.0596
+   -0.0664
 
 fl_choice_sd
-    0.1060
+    0.1225
 
 fl_choice_coefofvar
-   -1.7791
+   -1.8443
 
 fl_choice_prob_zero
-    0.5372
+    0.5351
 
 fl_choice_prob_below_zero
-    0.4628
+    0.4649
 
 fl_choice_prob_above_zero
      0
 
 fl_choice_prob_max
-    0.5372
+    0.5351
 
 tb_prob_drv
     percentiles    cl_mt_pol_inf_borr_nobridgePercentileValues    fracOfSumHeldBelowThisPercentile
     ___________    ___________________________________________    ________________________________
 
-        0.1                          -0.83201                                 0.019254            
-          1                          -0.55015                                  0.11652            
-          5                          -0.23923                                  0.32635            
-         10                          -0.18821                                  0.50141            
-         15                          -0.15478                                  0.64504            
-         20                          -0.11549                                  0.75621            
-         25                         -0.094969                                  0.84467            
-         35                         -0.037399                                  0.96646            
+        0.1                          -0.83201                                 0.024691            
+          1                          -0.63867                                  0.11807            
+          5                          -0.25947                                  0.35428            
+         10                          -0.19422                                  0.52289            
+         15                          -0.16734                                  0.66304            
+         20                          -0.12789                                  0.76914            
+         25                         -0.097994                                  0.85368            
+         35                         -0.037399                                  0.97011            
          50                                 0                                        1            
          65                                 0                                        1            
          75                                 0                                        1            
@@ -1399,38 +1434,38 @@ Summary Statistics for: cl_mt_pol_for_borr
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ----------------------------------------
 fl_choice_mean
-   -1.6570
+   -1.6514
 
 fl_choice_sd
-    1.9957
+    1.9893
 
 fl_choice_coefofvar
-   -1.2045
+   -1.2046
 
 fl_choice_prob_zero
-    0.4520
+    0.4522
 
 fl_choice_prob_below_zero
-    0.5480
+    0.5478
 
 fl_choice_prob_above_zero
      0
 
 fl_choice_prob_max
-    0.4520
+    0.4522
 
 tb_prob_drv
     percentiles    cl_mt_pol_for_borrPercentileValues    fracOfSumHeldBelowThisPercentile
     ___________    __________________________________    ________________________________
 
-        0.1                        -10                               0.018207            
-          1                         -7                                0.10584            
-          5                       -5.5                                0.32368            
-         10                         -4                                0.66859            
-         15                         -4                                0.66859            
-         20                         -4                                0.66859            
-         25                       -2.5                                0.90336            
-         35                       -2.5                                0.90336            
+        0.1                        -10                               0.018449            
+          1                         -7                                0.10413            
+          5                       -5.5                                0.31901            
+         10                         -4                                0.66594            
+         15                         -4                                0.66594            
+         20                         -4                                0.66594            
+         25                       -2.5                                0.90297            
+         35                       -2.5                                0.90297            
          50                         -1                                      1            
          65                          0                                      1            
          75                          0                                      1            
@@ -1447,25 +1482,25 @@ Summary Statistics for: cl_mt_pol_for_save
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ----------------------------------------
 fl_choice_mean
-    0.3331
+    0.3350
 
 fl_choice_sd
-    1.4049
+    1.4064
 
 fl_choice_coefofvar
-    4.2178
+    4.1980
 
 fl_choice_prob_zero
-    0.4628
+    0.4649
 
 fl_choice_prob_below_zero
      0
 
 fl_choice_prob_above_zero
-    0.5372
+    0.5351
 
 fl_choice_prob_max
-   1.0842e-33
+   1.9198e-31
 
 tb_prob_drv
     percentiles    cl_mt_pol_for_savePercentileValues    fracOfSumHeldBelowThisPercentile
@@ -1479,45 +1514,45 @@ tb_prob_drv
          20                            0                                    0            
          25                            0                                    0            
          35                            0                                    0            
-         50                     0.020491                            0.0012171            
-         65                     0.089838                             0.026846            
-         75                      0.14627                             0.064958            
-         80                      0.19137                             0.086535            
-         85                      0.25787                              0.11876            
-         90                      0.36291                              0.16512            
-         95                       1.4841                              0.26874            
-         99                       6.4837                              0.64516            
-       99.9                       17.536                              0.98634            
+         50                     0.017733                            0.0010628            
+         65                     0.088996                             0.025719            
+         75                      0.14627                             0.063416            
+         80                      0.19294                             0.088267            
+         85                      0.26972                              0.12367            
+         90                      0.38236                              0.16798            
+         95                          1.5                               0.2729            
+         99                       6.4837                              0.64642            
+       99.9                       17.536                              0.98636            
 
 xxx All Variables PERCENTILES AND STATS xxx
 tb_outcomes_meansdperc: mean, sd, percentiles
                                      mean         sd       coefofvar       min        max        pYis0        pYls0       pYgr0      pYisMINY      pYisMAXY        p0_1          p1          p5         p10         p15         p20          p25          p35         p50          p65         p75         p80        p85        p90       p95       p99      p99_9 
                                    _________    _______    _________    _________    ______    _________    _________    _______    __________    __________    __________    ________    ________    ________    ________    ________    _________    _________    ________    _________    ________    _______    _______    _______    ______    ______    ______
 
-    cl_mt_coh                         4.2134     5.3798      1.2768           -20    57.277    0.0017536      0.14653    0.85172     0.0039247    4.8637e-14           -20     -15.885     -4.8456     -1.2327    0.072016      1.0756       1.9789       3.3839      4.9897       6.0936      6.6958     7.1976     8.0005     9.4055    11.915    17.434     24.66
-    cl_mt_pol_a                      -2.2632      4.202     -1.8566       -21.899    50.361            0      0.69775    0.30225    1.5195e-15    1.0842e-33       -21.868     -21.151     -10.074     -6.2827     -5.4072     -4.3085      -3.7622      -2.6175     -1.0396    -0.054437    0.069262    0.14091     0.2255    0.33883     1.314    5.3232     11.03
-    cl_mt_pol_k                       4.6366      2.142     0.46198     5.018e-07    22.244            0            0          1    1.5195e-15     1.279e-12    1.6058e-06      1.2685      2.0231      2.4614      2.7494      2.9055       3.1775       3.7035       4.376       4.8356      5.5122     5.8438     6.4862     7.3656    8.8617    12.023    15.791
-    cl_mt_pol_c                       1.6678     1.4426     0.86494           -20    7.9469            0    0.0039247    0.99608     0.0039247    4.8637e-14           -20      1.1032      1.1967       1.259      1.3151      1.3649       1.4086       1.4841      1.5768       1.6579      2.1933     2.2347     2.3092     2.4251     2.632    3.1286    3.7567
-    cl_mt_pol_a_principleonly         -2.091     3.9014     -1.8658       -19.999    49.132            0      0.69775    0.30225    1.5195e-15    1.0842e-33       -19.998     -19.449     -9.3381     -5.8786     -4.9893     -4.0441      -3.3741      -2.4507    -0.97522    -0.049714    0.067573    0.13747       0.22    0.33057     1.282    5.1933    10.761
-    cl_mt_pol_b_bridge              -0.70753     2.6766     -3.7831           -20         0      0.85347      0.14653          0     0.0039247       0.85347           -20     -15.885     -4.8456     -1.2327           0           0            0            0           0            0           0          0          0          0         0         0         0
-    cl_mt_pol_inf_borr_nobridge    -0.059594    0.10602     -1.7791        -2.519         0       0.5372       0.4628          0    3.2084e-07        0.5372      -0.83201    -0.55015    -0.23923    -0.18821    -0.15478    -0.11549    -0.094969    -0.037399           0            0           0          0          0          0         0         0         0
-    cl_mt_pol_for_borr                -1.657     1.9957     -1.2045         -14.5         0      0.45205      0.54795          0    9.9441e-05       0.45205           -10          -7        -5.5          -4          -4          -4         -2.5         -2.5          -1            0           0          0          0          0         0         0         0
-    cl_mt_pol_for_save                0.3331     1.4049      4.2178             0    49.132       0.4628            0     0.5372        0.4628    1.0842e-33             0           0           0           0           0           0            0            0    0.020491     0.089838     0.14627    0.19137    0.25787    0.36291    1.4841    6.4837    17.536
+    cl_mt_coh                         4.2154     5.3811      1.2765           -20    57.277    0.0017737      0.14618    0.85204     0.0039397    4.8652e-14           -20     -15.885     -4.8456     -1.2327    0.072016      1.0756       1.9789       3.3839      4.9897       6.0936      6.6958     7.1976     8.0005     9.4055    11.915    17.434     24.66
+    cl_mt_pol_a                      -2.2625     4.2041     -1.8582       -21.899    50.361            0      0.69764    0.30236    1.6034e-15    1.9198e-31       -21.868     -21.289     -10.075     -6.4006     -5.3924     -4.3146      -3.7652      -2.6152     -1.0396    -0.054437    0.069262    0.14091     0.2255    0.33883     1.314    5.3232    11.032
+    cl_mt_pol_k                       4.6377     2.1417      0.4618     5.018e-07    22.244            0            0          1    1.6034e-15    1.2794e-12    1.6058e-06      1.3094      2.0134      2.4614       2.766      2.9165       3.1758       3.7035      4.3859       4.8356      5.5122     5.8438     6.5082     7.3665    8.8618    12.023    15.791
+    cl_mt_pol_c                       1.6678      1.445     0.86643           -20    7.9469            0    0.0039397    0.99606     0.0039397    4.8652e-14           -20      1.1032      1.1967       1.259      1.3151      1.3649       1.4086       1.4862      1.5768       1.6579      2.1933     2.2347     2.3092     2.4251     2.632    3.1286    3.7567
+    cl_mt_pol_a_principleonly          -2.09     3.9027     -1.8673       -19.999    49.132            0      0.69764    0.30236    1.6034e-15    1.9198e-31       -19.998     -19.561     -9.3208     -5.9549     -5.0084     -4.0441      -3.3741      -2.4507    -0.97522    -0.049714    0.067573    0.13747       0.22    0.33057     1.282    5.1933    10.763
+    cl_mt_pol_b_bridge              -0.70723       2.68     -3.7894           -20         0      0.85382      0.14618          0     0.0039397       0.85382           -20     -15.885     -4.8456     -1.2327           0           0            0            0           0            0           0          0          0          0         0         0         0
+    cl_mt_pol_inf_borr_nobridge    -0.066409    0.12248     -1.8443        -2.533         0      0.53509      0.46491          0    1.1585e-06       0.53509      -0.83201    -0.63867    -0.25947    -0.19422    -0.16734    -0.12789    -0.097994    -0.037399           0            0           0          0          0          0         0         0         0
+    cl_mt_pol_for_borr               -1.6514     1.9893     -1.2046         -14.5         0      0.45222      0.54778          0    0.00010614       0.45222           -10          -7        -5.5          -4          -4          -4         -2.5         -2.5          -1            0           0          0          0          0         0         0         0
+    cl_mt_pol_for_save               0.33503     1.4064       4.198             0    49.132      0.46491            0    0.53509       0.46491    1.9198e-31             0           0           0           0           0           0            0            0    0.017733     0.088996     0.14627    0.19294    0.26972    0.38236       1.5    6.4837    17.536
 
 xxx All Variables Fraction of Y Held up to Percentile xxx
 tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
                                    fracByP0_1    fracByP1     fracByP5     fracByP10    fracByP15    fracByP20    fracByP25    fracByP35    fracByP50    fracByP65    fracByP75    fracByP80    fracByP85    fracByP90    fracByP95    fracByP99    fracByP99_9
                                    __________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    ___________
 
-    cl_mt_coh                       -0.018629    -0.044649     -0.13201      -0.162     -0.16784     -0.16025     -0.14072     -0.075999     0.080379      0.2859      0.43489      0.51387      0.59491      0.69662      0.82073       0.9524       0.99368  
-    cl_mt_pol_a                      0.010643     0.096114      0.35572     0.52754      0.65809      0.76022      0.85055       0.97518       1.0805      1.1095       1.1088       1.1064       1.1023       1.0965       1.0832       1.0343        1.0058  
-    cl_mt_pol_k                    3.4489e-10    0.0015227     0.016091    0.040765     0.068955     0.099855      0.13214       0.20668      0.33714     0.48539      0.59572      0.65867       0.7234      0.79802      0.88399      0.97011       0.99611  
-    cl_mt_pol_c                     -0.047063    -0.042045    -0.013547    0.022375     0.060938      0.10183      0.14388       0.22881      0.37027     0.51248      0.64625      0.70618      0.77177      0.83871       0.9121      0.97984       0.99766  
-    cl_mt_pol_a_principleonly        0.010723     0.095582      0.35488     0.52673      0.65808      0.76092      0.85484       0.98238       1.0866      1.1156       1.1149       1.1124        1.108       1.1019       1.0879       1.0363        1.0062  
-    cl_mt_pol_b_bridge                0.11094      0.26589      0.78616     0.96473            1            1            1             1            1           1            1            1            1            1            1            1             1  
-    cl_mt_pol_inf_borr_nobridge      0.019254      0.11652      0.32635     0.50141      0.64504      0.75621      0.84467       0.96646            1           1            1            1            1            1            1            1             1  
-    cl_mt_pol_for_borr               0.018207      0.10584      0.32368     0.66859      0.66859      0.66859      0.90336       0.90336            1           1            1            1            1            1            1            1             1  
-    cl_mt_pol_for_save                      0            0            0           0            0            0            0             0    0.0012171    0.026846     0.064958     0.086535      0.11876      0.16512      0.26874      0.64516       0.98634  
+    cl_mt_coh                       -0.018692    -0.044911     -0.13205    -0.16184     -0.16769      -0.1601     -0.14057     -0.07585      0.080511     0.28601      0.43497      0.51394      0.59497      0.69666      0.82076      0.95241       0.99368  
+    cl_mt_pol_a                      0.011209     0.096234      0.35557     0.52716      0.65861      0.75869      0.85118      0.97527        1.0806      1.1095       1.1089       1.1065       1.1024       1.0966       1.0833       1.0344        1.0058  
+    cl_mt_pol_k                    3.6144e-10    0.0015814     0.016558    0.041031     0.069264     0.099949      0.13239      0.20817       0.33775     0.48535      0.59607      0.65859      0.72564      0.79971      0.88401      0.97011       0.99611  
+    cl_mt_pol_c                     -0.047246    -0.042073    -0.013506    0.022025      0.06058      0.10137      0.14321      0.22865       0.36961     0.51236      0.64619      0.70613      0.77172      0.83867      0.91207      0.97983       0.99766  
+    cl_mt_pol_a_principleonly        0.011307     0.095701      0.35486     0.52674      0.65802      0.76208       0.8552       0.9824        1.0866      1.1157        1.115       1.1125       1.1081        1.102       1.0879       1.0363        1.0061  
+    cl_mt_pol_b_bridge                0.11141      0.26769      0.78706     0.96462            1            1            1            1             1           1            1            1            1            1            1            1             1  
+    cl_mt_pol_inf_borr_nobridge      0.024691      0.11807      0.35428     0.52289      0.66304      0.76914      0.85368      0.97011             1           1            1            1            1            1            1            1             1  
+    cl_mt_pol_for_borr               0.018449      0.10413      0.31901     0.66594      0.66594      0.66594      0.90297      0.90297             1           1            1            1            1            1            1            1             1  
+    cl_mt_pol_for_save                      0            0            0           0            0            0            0            0     0.0010628    0.025719     0.063416     0.088267      0.12367      0.16798       0.2729      0.64642       0.98636  
 
 </pre><h2 id="9">End Profiler and Timer</h2><p>End Timer</p><pre class="codeinput"><span class="keyword">if</span> (bl_time)
     toc;
@@ -1551,7 +1586,6 @@ function [result_map] = ff_ipwkbz_fibs_ds_wrapper(varargin)
 % # it_subset = 9 is invoke operational (only final stats) and coh graph
 
 it_param_set = 8;
-bl_input_override = true;
 [param_map, support_map] = ffs_ipwkbz_fibs_set_default_param(it_param_set);
 
 % Note: param_map and support_map can be adjusted here or outside to override defaults
@@ -1570,25 +1604,26 @@ bl_input_override = true;
 param_map('st_analytical_stationary_type') = 'eigenvector';
 
 % get armt and func map
-[armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
-default_params = {param_map support_map armt_map func_map};
+params_len = length(varargin);
+if params_len <= 2
+    [armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(param_map, support_map); % 1 for override
+    default_params = {param_map support_map armt_map func_map};
+end
 
 %% Parse Parameters 1
 
 % if varargin only has param_map and support_map,
-params_len = length(varargin);
 [default_params{1:params_len}] = varargin{:};
 param_map = [param_map; default_params{1}];
 support_map = [support_map; default_params{2}];
 if params_len >= 1 && params_len <= 2
     % If override param_map, re-generate armt and func if they are not
     % provided
-    bl_input_override = true;
-    [armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(param_map, support_map, bl_input_override);
+    [armt_map, func_map] = ffs_ipwkbz_fibs_get_funcgrid(param_map, support_map);
 else
     % Override all
-    armt_map = [armt_map; default_params{3}];
-    func_map = [func_map; default_params{4}];
+    armt_map = default_params{3};
+    func_map = default_params{4};
 end
 
 % if profile, profile DP + Dist here
@@ -1626,22 +1661,21 @@ end
 
 %% Solve DP
 
-bl_input_override = true;
 result_map = ff_ipwkbz_fibs_vf_vecsv(param_map, support_map, armt_map, func_map);
 
 %% Derive Distribution
 
 if (strcmp(st_analytical_stationary_type, 'loop'))
 
-    result_map = ff_iwkz_ds(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    result_map = ff_iwkz_ds(param_map, support_map, armt_map, func_map, result_map);
 
 elseif (strcmp(st_analytical_stationary_type, 'vector'))
 
-    result_map = ff_iwkz_ds_vec(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    result_map = ff_iwkz_ds_vec(param_map, support_map, armt_map, func_map, result_map);
 
 elseif (strcmp(st_analytical_stationary_type, 'eigenvector'))
 
-    result_map = ff_iwkz_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    result_map = ff_iwkz_ds_vecsv(param_map, support_map, armt_map, func_map, result_map);
 
 end
 

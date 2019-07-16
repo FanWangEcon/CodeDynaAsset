@@ -15,8 +15,7 @@ function [result_map] = ff_ipwkbzr_fibs_ds_wrapper(varargin)
 % # it_subset = 8 is matlab publish
 % # it_subset = 9 is invoke operational (only final stats) and coh graph
 
-it_param_set = 9;
-bl_input_override = true;
+it_param_set = 8;
 [param_map, support_map] = ffs_ipwkbzr_fibs_set_default_param(it_param_set);
 
 %% Change Parameter to Main Options
@@ -25,9 +24,20 @@ bl_input_override = true;
 st_param_which = 'default';
 
 if (ismember(st_param_which, ["default"]))
+%     param_map('it_maxiter_val') = 50;
+    % default    
+%     param_map('it_w_perc_n') = 25;
+%     param_map('it_ak_perc_n') = param_map('it_w_perc_n');
+%     param_map('it_coh_bridge_perc_n') = param_map('it_w_perc_n');
+% 
+%     param_map('fl_coh_interp_grid_gap') = 0.1;
+%     param_map('it_c_interp_grid_gap') = 10^-4;
+%     param_map('fl_w_interp_grid_gap') = 0.1;
+% 
+%     param_map('it_z_wage_n') = 7;
+%     param_map('fl_z_r_infbr_n') = 7;
+%     param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_infbr_n');
     
-    % default
-
 elseif ismember(st_param_which, ["ff_ipwkbzr_ds_wrapper", "ff_ipwkbzrr_ds_wrapper"])
 
     param_map('fl_r_save') = 0.025;
@@ -78,8 +88,11 @@ param_map('st_analytical_stationary_type') = 'eigenvector';
 %% Generate Grids
 
 % get armt and func map
-[armt_map, func_map] = ffs_ipwkbzr_fibs_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
-default_params = {param_map support_map armt_map func_map};
+params_len = length(varargin);
+if params_len <= 2
+    [armt_map, func_map] = ffs_ipwkbzr_fibs_get_funcgrid(param_map, support_map); % 1 for override
+    default_params = {param_map support_map armt_map func_map};
+end
 
 %% Parse Parameters 1
 
@@ -94,8 +107,8 @@ if params_len >= 1 && params_len <= 2
     [armt_map, func_map] = ffs_ipwkbzr_fibs_get_funcgrid(param_map, support_map);
 else
     % Override all
-    armt_map = [armt_map; default_params{3}];
-    func_map = [func_map; default_params{4}];
+    armt_map = default_params{3};
+    func_map = default_params{4};
 end
 
 % if profile, profile DP + Dist here
@@ -133,22 +146,21 @@ end
 
 %% Solve DP
 
-bl_input_override = true;
 result_map = ff_ipwkbzr_fibs_vf_vecsv(param_map, support_map, armt_map, func_map);
 
 %% Derive Distribution
 
 if (strcmp(st_analytical_stationary_type, 'loop'))
     
-    result_map = ff_iwkz_ds(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    result_map = ff_iwkz_ds(param_map, support_map, armt_map, func_map, result_map);
     
 elseif (strcmp(st_analytical_stationary_type, 'vector'))
     
-    result_map = ff_iwkz_ds_vec(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    result_map = ff_iwkz_ds_vec(param_map, support_map, armt_map, func_map, result_map);
     
 elseif (strcmp(st_analytical_stationary_type, 'eigenvector'))
     
-    result_map = ff_iwkz_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    result_map = ff_iwkz_ds_vecsv(param_map, support_map, armt_map, func_map, result_map);
     
 end
 

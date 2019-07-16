@@ -616,7 +616,7 @@ An application of the codes developed in sections (1) through (5) is the paper: 
 
 1. Use *ipwkbz+fibs* [2nd stage solution with Formal Informal and Bridge](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbz_solve/html/ff_ipwkbz_fibs_evf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_ipwkbz_solve/ff_ipwkbz_fibs_evf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbz_solve/html/ff_ipwkbz_fibs_evf.html)
 2. *ipwkbz* model [optimized vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbz_solve/html/ff_ipwkbz_fibs_vf_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_ipwkbz_solve/ff_ipwkbz_fibs_vf_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbz_solve/html/ff_ipwkbz_fibs_vf_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbz_solve/profile/ff_ipwkbz_fibs_vf_vecsv_default_p3/file0.html)    
-    * speed: **20.0** seconds
+    * speed: **8.7** seconds
 
 ## 6.2 Two Assets For+Inf+R Shock (ipWKBZR+FIBS)
 
@@ -624,16 +624,16 @@ An application of the codes developed in sections (1) through (5) is the paper: 
 
 1. Use *ipwkbzr+fibs* [2nd stage solution with Formal Informal and Bridge](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbzr_solve/html/ff_ipwkbzr_fibs_evf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_ipwkbzr_solve/ff_ipwkbzr_fibs_evf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbzr_solve/html/ff_ipwkbzr_fibs_evf.html)    
 2. *ipwkbzr* model [optimized vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbzr_solve/html/ff_ipwkbzr_fibs_vf_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_ipwkbzr_solve/ff_ipwkbzr_fibs_vf_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbzr_solve/html/ff_ipwkbzr_fibs_vf_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbzr_solve/profile/ff_ipwkbzr_fibs_vf_vecsv_default_p3/file0.html)    
-    * speed: **452.1** seconds
+    * speed: **102.1** seconds
 
 ## 6.2 Asset Distributions
 
 This are the wrapper files for *ipwkbz+fibs* and *ipwkbzr+fibs* that invokes the [looped](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_ds.html), [vectorized](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_ds_vec.html), and [semi-analytical](https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_ds_vecsv.html) distributional programs from *3.4.b*:
 
 * *ipwkbz+fibs* distributional [wrapper](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbz_solve/html/ff_ipwkbz_fibs_ds_wrapper.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_ipwkbz_solve/ff_ipwkbz_fibs_ds_wrapper.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbz_solve/html/ff_ipwkbz_fibs_ds_wrapper.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbz_solve/profile/ff_ipwkbz_fibs_ds_wrapper_default_p7/file0.html)   
-    * speed (dynamic programming + distribution): **23.0** seconds
+    * speed (dynamic programming + distribution): **11.8** seconds
 * *ipwkbzr+fibs* distributional [wrapper](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbzr_solve/html/ff_ipwkbzr_fibs_ds_wrapper.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_ipwkbzr_solve/ff_ipwkbzr_fibs_ds_wrapper.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbzr_solve/html/ff_ipwkbzr_fibs_ds_wrapper.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbzr_solve/profile/ff_ipwkbzr_fibs_ds_wrapper_default_p7/file0.html)   
-    * speed (dynamic programming + distribution): **471.1** seconds
+    * speed (dynamic programming + distribution): **137.0** seconds
 
 ## 6.4 Solution Support
 

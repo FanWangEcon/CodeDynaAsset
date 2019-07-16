@@ -220,7 +220,7 @@ if (bl_graph_forinf_discrete)
     
     %% Graph Optimal Discrete Graph Discrete Outcomes
     
-    % colors etc    
+    % colors etc
     cl_colors = {'blue', 'red', 'black', [0 0.4471 0.7412], 'blue', [.61 .51 .74]};
     cl_legend = {'For Borr', 'Inf Borr', 'For+Inf Br', 'For+Br+Save', 'Bridge Loan', 'For Save'};
     cl_shapes = {'s','x','o','d','p','*'};

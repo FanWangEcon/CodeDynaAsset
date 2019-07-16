@@ -103,13 +103,15 @@ elseif ismember(st_param_which, ['ff_ipwkbzr_vf_vecsv', 'ff_ipwkbzrr_vf_vecsv'])
 end
 
 % get armt and func map
-[armt_map, func_map] = ffs_ipwkbzr_fibs_get_funcgrid(param_map, support_map); % 1 for override
-default_params = {param_map support_map armt_map func_map};
+params_len = length(varargin);
+if params_len <= 2
+    [armt_map, func_map] = ffs_ipwkbzr_fibs_get_funcgrid(param_map, support_map); % 1 for override
+    default_params = {param_map support_map armt_map func_map};
+end
 
 %% Parse Parameters 1
 
 % if varargin only has param_map and support_map,
-params_len = length(varargin);
 [default_params{1:params_len}] = varargin{:};
 param_map = [param_map; default_params{1}];
 support_map = [support_map; default_params{2}];
@@ -118,9 +120,8 @@ if params_len >= 1 && params_len <= 2
     % provided
     [armt_map, func_map] = ffs_ipwkbzr_fibs_get_funcgrid(param_map, support_map);
 else
-    % Override all
-    armt_map = [armt_map; default_params{3}];
-    func_map = [func_map; default_params{4}];
+    armt_map = default_params{3};
+    func_map = default_params{4};
 end
 
 % append function name
@@ -713,7 +714,9 @@ end
 
 result_map('cl_mt_coh') = {mt_interp_coh_grid_mesh_z, zeros(1)};
 result_map('cl_mt_pol_k') = {mt_pol_k, zeros(1)};
-result_map('cl_mt_pol_c') = {f_cons(mt_interp_coh_grid_mesh_z, mt_pol_a, mt_pol_k), zeros(1)};
+mt_c = f_cons(mt_interp_coh_grid_mesh_z, mt_pol_a, mt_pol_k);
+mt_c(mt_c <= fl_c_min) = fl_c_min;
+result_map('cl_mt_pol_c') = {mt_c, zeros(1)};
 
 result_map('cl_mt_pol_a') = {mt_pol_b_with_r, zeros(1)};
 result_map('cl_mt_pol_a_principleonly') = {mt_pol_a, zeros(1)};
@@ -724,16 +727,23 @@ result_map('cl_mt_pol_inf_borr_nobridge') = {mt_pol_inf_borr_nobridge, zeros(1)}
 result_map('cl_mt_pol_for_borr') = {mt_pol_for_borr, zeros(1)};
 result_map('cl_mt_pol_for_save') = {mt_pol_for_save, zeros(1)};
 
+% Get Discrete Choice Outcomes
+result_map = ffs_fibs_identify_discrete(result_map, bl_input_override);
+result_map('cl_mt_it_for_only_nbdg') = {result_map('mt_it_for_only_nbdg'), zeros(1)};
+result_map('cl_mt_it_inf_only_nbdg') = {result_map('mt_it_inf_only_nbdg'), zeros(1)};
+result_map('cl_mt_it_frin_brr_nbdg') = {result_map('mt_it_frin_brr_nbdg'), zeros(1)};
+result_map('cl_mt_it_fr_brrsv_nbdg') = {result_map('mt_it_fr_brrsv_nbdg'), zeros(1)};
+result_map('cl_mt_it_frmsavng_only') = {result_map('mt_it_frmsavng_only'), zeros(1)};
+
 %% Process Optimal Choices 4: List of Variable Names to be processed by distributional codes
 % this list is needed for the ds codes to generate distribution,
 % distributional statistcs will be computed for elements in the list here. 
 
 result_map('ar_st_pol_names') = ...
     ["cl_mt_coh", "cl_mt_pol_a", "cl_mt_pol_k", "cl_mt_pol_c", "cl_mt_pol_a_principleonly", ...
-    "cl_mt_pol_b_bridge", "cl_mt_pol_inf_borr_nobridge", "cl_mt_pol_for_borr", "cl_mt_pol_for_save"];
-
-% Get Discrete Choice Outcomes
-result_map = ffs_fibs_identify_discrete(result_map, bl_input_override);
+     "cl_mt_pol_b_bridge", "cl_mt_pol_inf_borr_nobridge", "cl_mt_pol_for_borr", "cl_mt_pol_for_save", ...
+     "cl_mt_it_for_only_nbdg", "cl_mt_it_inf_only_nbdg", "cl_mt_it_frin_brr_nbdg", ...
+     "cl_mt_it_fr_brrsv_nbdg", "cl_mt_it_frmsavng_only"];
 
 %% Post Solution Graph and Table Generation
 
