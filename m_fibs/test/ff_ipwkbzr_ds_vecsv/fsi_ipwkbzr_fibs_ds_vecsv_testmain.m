@@ -1,11 +1,11 @@
-%% Test For+inf+Borr+Save Borrow Bound Interest Rate Etc
+%% Test Risky + Safe Asset (Save + Borr + FIBS + RShock) Interp-Perc Main Function
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
 %%
-function result_map = fsi_ipwkbzr_fibs_ds_vecsv_testmain(varargin)
-%% FSI_ipwkbzr_FIBS_DS_VECSV_TESTMAIN main formal informal borrow save tester
+function result_map = ff_ipwkbzr_testmain(varargin)
+%% F main formal informal borrow save tester
 % Controls four key groups of borrowing and savings parameters, allows for
 % loops over various parameters, simulate model over multiple loops.
 % Functiond designed to be invoked to compare when bl_bridge is true vs
@@ -26,6 +26,13 @@ function result_map = fsi_ipwkbzr_fibs_ds_vecsv_testmain(varargin)
 % * *abz* test interest rate no default: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_borr/html/fsi_ipwkbzr_ds_vecsv_nbc.html fsi_ipwkbzr_ds_vecsv_nbc>
 % * *abz* test interest rate default: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_borr/html/fsi_ipwkbzr_ds_vecsv_default.html fsi_ipwkbzr_ds_vecsv_default>
 %
+
+%% Default Parameter Loops
+
+% Loops to Vary for Simulations Below
+it_size_type = 4;
+ar_it_test_grp = [3, 8, 9];
+it_simu_vec_len= 3;
 
 %% Default Parameters
 
@@ -54,6 +61,7 @@ param_map('fl_c_min') = 0.02;
 % Interest Rate Simulate Controls
 param_map('fl_r_fsv') = 0.025;
 param_map('fl_r_fbr') = 0.065;
+
 % Informal Rate
 param_map('st_z_r_infbr_drv_ele_type') = 'unif';
 param_map('st_z_r_infbr_drv_prb_type') = 'poiss';
@@ -75,12 +83,10 @@ support_map('bl_time') = true;
 support_map('bl_profile') = false;
 support_map('bl_graph_funcgrids') = false;
 
-%% Default Parameter Loops
-
-% Loops to Vary for Simulations Below
-it_size_type = 102;
-ar_it_test_grp = [3, 8, 9];
-it_simu_vec_len= 3;
+support_map('bl_mat_test') = true;
+st_matimg_path_root = support_map('st_matimg_path_root');
+% test_borinf for default: ar_it_test_grp = [3, 8, 9]
+support_map('st_mat_test_path') = [st_matimg_path_root '/test/ff_ipwkbzr_ds_vecsv/test_forinf/mat/'];
 
 %% Array Parameters
 
@@ -98,6 +104,12 @@ support_map = [support_map; default_params{2}];
 it_size_type = default_params{3};
 ar_it_test_grp = default_params{4};
 it_simu_vec_len = default_params{5};
+
+% support_map
+support_map('st_mat_test_prefix') = [''];
+support_map('st_mat_test_name_main') = ['res'];
+support_map('st_mat_test_suffix') = ['g' strrep(num2str(ar_it_test_grp), '  ', '') ...
+    '_t' num2str(it_size_type) 'l' num2str(it_simu_vec_len)];
 
 %% Set Solve Sizes
 
@@ -128,14 +140,6 @@ elseif (it_size_type == 3)
     % Full Run
     
 elseif (it_size_type == 4)
-    
-    % Dense Run
-    param_map('it_w_perc_n') = 75;
-    param_map('it_ak_perc_n') = param_map('it_w_perc_n');
-    % ususally divide by 5
-    param_map('it_coh_bridge_perc_n') = round(param_map('it_w_perc_n')/3);
-
-elseif (it_size_type == 5)
     
     % Denser Run
     param_map('it_w_perc_n') = 100;
@@ -195,6 +199,10 @@ params_group = values(param_map, {'fl_r_fsv', 'fl_z_r_infbr_poiss_mean', 'fl_r_f
 % formal menu controls
 params_group = values(param_map, {'st_forbrblk_type', 'fl_forbrblk_brmost', 'fl_forbrblk_brleast', 'fl_forbrblk_gap'});
 [st_forbrblk_type, fl_forbrblk_brmost, fl_forbrblk_brleast, fl_forbrblk_gap] = params_group{:};
+
+% support map
+params_group = values(support_map, {'bl_mat_test', 'st_mat_test_path', 'st_mat_test_prefix', 'st_mat_test_name_main', 'st_mat_test_suffix'});
+[bl_mat_test, st_mat_test_path, st_mat_test_prefix, st_mat_test_name_main, st_mat_test_suffix] = params_group{:};
 
 %% Parse Parameter Arrays
 
@@ -268,7 +276,7 @@ end
 disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
 disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
 
-cl_mt_outcomes_meansdperc_wthinfo = cell([length(ar_it_test_grp), 1]);
+cl_tb_outcomes_meansdperc_wthinfo = cell([length(ar_it_test_grp), 1]);
 
 for ar_it_test_ctr = 1:length(ar_it_test_grp)
     
@@ -281,6 +289,7 @@ for ar_it_test_ctr = 1:length(ar_it_test_grp)
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');   
     
+    %% Display Current Parameter been Varied
     % Conditional Changes
     if (it_test_grp == 1)
         % Change the borrowing bound
@@ -315,9 +324,11 @@ for ar_it_test_ctr = 1:length(ar_it_test_grp)
     
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    mt_outcomes_meansdperc_wthinfo_stack = [];
+    tb_outcomes_meansdperc_wthinfo_stack = [];
     for it_cur_param = 1:1:it_simu_vec_len
 
+        %% Adjust Value for Current Parameter been Varied
+        
         % Reset Base Parameters, parameters already grabbed out, updating
         % param_map does not impact fl_b_bd etc..
         param_map('fl_b_bd') = fl_b_bd;
@@ -371,11 +382,12 @@ for ar_it_test_ctr = 1:length(ar_it_test_grp)
             % Update
             param_map('fl_forbrblk_gap') = ar_fl_forbrblk_gap(it_cur_param);
         end
-
-            
+        
+        %% Simulate Model
         param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_infbr_n');
         it_w_perc_n = param_map('it_w_perc_n');
-        disp(['xxxxx it_w_perc_n = ' num2str(it_w_perc_n) ', it_z_wage_n = ' num2str(ar_it_z_wage_n(it_accuracy)) ' xxxxx']);
+        it_z_n = param_map('it_z_n');
+        disp(['xxxxx it_w_perc_n = ' num2str(it_w_perc_n) ', it_z_n = ' num2str(it_z_n) ' xxxxx']);
         % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_ipwkbzr_fibs_get_funcgrid.html ffs_ipwkbzr_fibs_get_funcgrid>
         [armt_map, func_map] = ffs_ipwkbzr_fibs_get_funcgrid(param_map, support_map);
         % Call Dynamic Programming Problem <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_ipwkbzr_fibs_vf_vecsv.html ff_ipwkbzr_fibs_vf_vecsv>
@@ -383,35 +395,44 @@ for ar_it_test_ctr = 1:length(ar_it_test_grp)
         % Call Distribution CProgram
         result_map = ff_iwkz_ds_vecsv(param_map, support_map, armt_map, func_map, result_map);
 
+        %% Store Results to Table
         % Append Simulation Loop Statistics 
-        mt_outcomes_meansdperc = result_map('mt_outcomes_meansdperc');            
+        tb_outcomes_meansdperc = result_map('tb_outcomes_meansdperc');            
         ar_simu_info = [it_test_grp, it_cur_param, param_map('fl_z_r_infbr_poiss_mean'), param_map('fl_r_fbr'), param_map('fl_forbrblk_gap')];
-        mt_simu_info = ar_simu_info + zeros([size(mt_outcomes_meansdperc,1), length(ar_simu_info)]);
+        tb_simu_info = array2table(ar_simu_info + zeros([size(tb_outcomes_meansdperc,1), length(ar_simu_info)]));
+        cl_col_names = {'it_test_grp', 'it_cur_param', ...
+                        'fl_z_r_infbr_poiss_mean', 'fl_r_fbr', 'fl_forbrblk_gap'};
+        tb_simu_info.Properties.VariableNames = cl_col_names;
+        variablenames = tb_outcomes_meansdperc.Properties.RowNames;
+        tb_simu_info.Properties.RowNames = variablenames;
 
         % Collect statistics
-        mt_outcomes_meansdperc_wthinfo = [mt_simu_info, mt_outcomes_meansdperc];
+        tb_outcomes_meansdperc_wthinfo = [tb_simu_info tb_outcomes_meansdperc];
+        tb_outcomes_meansdperc_wthinfo.Properties.RowNames = ...
+            strcat(variablenames, '_p', num2str(it_cur_param));
+        tb_outcomes_meansdperc_wthinfo = addvars(tb_outcomes_meansdperc_wthinfo, variablenames, 'Before', 1);
+        
+        %% Combine Results from Different Parameters in Shared Table
         if (it_cur_param == 1)
-            mt_outcomes_meansdperc_wthinfo_stack = mt_outcomes_meansdperc_wthinfo;
+            tb_outcomes_meansdperc_wthinfo_stack = tb_outcomes_meansdperc_wthinfo;
         else 
-            mt_outcomes_meansdperc_wthinfo_stack = [mt_outcomes_meansdperc_wthinfo_stack; mt_outcomes_meansdperc_wthinfo];
+            tb_outcomes_meansdperc_wthinfo_stack = [tb_outcomes_meansdperc_wthinfo_stack; tb_outcomes_meansdperc_wthinfo];
         end
                 
     end
     
-    cl_mt_outcomes_meansdperc_wthinfo{ar_it_test_ctr} = mt_outcomes_meansdperc_wthinfo_stack;
+    cl_tb_outcomes_meansdperc_wthinfo{ar_it_test_ctr} = tb_outcomes_meansdperc_wthinfo_stack;
 
 end
 
 %% Save Mat
 
-% append function name
-st_mat_prefix = '';
-st_mat_name_main = 'res';
-st_mat_suffix = ['_s' num2str(it_size_type)];
-st_file_name = [st_mat_prefix st_mat_name_main st_mat_suffix];
-st_mat_path = 'C:\Users\fan\CodeDynaAsset\m_fibs\m_ipwkbzr_test\mat\';
-mkdir(st_mat_path);
-save(strcat(st_mat_path, st_file_name));
+if (bl_mat_test)
+    clear armt_map result_map
+    if ~exist(st_mat_test_path,'dir'); mkdir(st_mat_test_path); end
+    st_file_name = [st_mat_test_prefix st_mat_test_name_main st_mat_test_suffix];
+    save(strcat(st_mat_test_path, st_file_name));
+end
 
 % close all
 close all;

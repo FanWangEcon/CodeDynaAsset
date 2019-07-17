@@ -255,6 +255,7 @@ if (bl_display_final_dist)
 
     disp('tb_outcomes_meansdperc: mean, sd, percentiles')
     disp(tb_outcomes_meansdperc);
+    result_map('tb_outcomes_meansdperc') = tb_outcomes_meansdperc;    
 end
 
 if (bl_display_final_dist_detail)
@@ -269,7 +270,7 @@ if (bl_display_final_dist_detail)
     
     disp('tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile')
     disp(tb_outcomes_fracheld);
-
+    result_map('tb_outcomes_fracheld') = tb_outcomes_fracheld;    
 end
 
 
