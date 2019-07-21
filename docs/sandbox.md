@@ -1,7 +1,10 @@
+- 2019-07-19 15:03
+  + cl_mt_pol_coh to cl_mt_coh for state coh unless actually pol_coh based on choices.
+
 # Issues 2019-07-14
 
 - [] 2019-07-14 11:36
-  + below zero -20 consumption for ikwpkz + fibs, happens to be cmin/default proportion as well. 
+  + below zero -20 consumption for ikwpkz + fibs, happens to be cmin/default proportion as well.
 
 # To do 2019-07-11
 

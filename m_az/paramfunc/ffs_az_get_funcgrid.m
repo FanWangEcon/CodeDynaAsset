@@ -42,7 +42,8 @@ function [armt_map, func_map] = ffs_az_get_funcgrid(varargin)
 if (~isempty(varargin))
     
     % override when called from outside
-    [param_map, support_map, ~] = varargin{:};
+    [param_map, support_map] = varargin{:};
+    
 else
     % default internal run
     [param_map, support_map] = ffs_az_set_default_param();

@@ -5,7 +5,7 @@
 1. consumption when borrowing not calculated correctly when households default.
 -->
 
-This is a work-in-progress (*updated: 2019-07-16*) [website](https://fanwangecon.github.io/CodeDynaAsset/) for solving several infinite-horizon exogenously-incomplete dynamic assets models in discrete-time. Section **(1)** solves the [savings problem](https://fanwangecon.github.io/CodeDynaAsset/#1-the-savings-problem-az). Section **(2)** solves the [borrowing and savings problem](https://fanwangecon.github.io/CodeDynaAsset/#2-the-savings--borrowing-problem-abz). Section **(3)** solve the [risky and safe asset problem (risky entrepreneur)](https://fanwangecon.github.io/CodeDynaAsset/#3-the-risky--safe-asset-problem-part-1). Section **(4)** solves the same problem as (3) with [percentage choice grids and interpolation](https://fanwangecon.github.io/CodeDynaAsset/#4-the-risky--safe-asset-problem-part-2). Section **(5) and (6)** is an application/extension of the earlier models: models from (1) through (4) are augmented following [*A Choice Amongst Many: Household Borrowing in a Setting with Multiple Providers*](https://fanwangecon.github.io/CodeDynaAsset/#5-one-asset-formal--informal) ([**Robert M. Townsend**](http://www.robertmtownsend.net/) and [**Fan Wang**](https://fanwangecon.github.io/) 2019).
+This is a work-in-progress (*updated: 2019-07-20*) [website](https://fanwangecon.github.io/CodeDynaAsset/) for solving several infinite-horizon exogenously-incomplete dynamic assets models in discrete-time. Section **(1)** solves the [savings problem](https://fanwangecon.github.io/CodeDynaAsset/#1-the-savings-problem-az). Section **(2)** solves the [borrowing and savings problem](https://fanwangecon.github.io/CodeDynaAsset/#2-the-savings--borrowing-problem-abz). Section **(3)** solve the [risky and safe asset problem (risky entrepreneur)](https://fanwangecon.github.io/CodeDynaAsset/#3-the-risky--safe-asset-problem-part-1). Section **(4)** solves the same problem as (3) with [percentage choice grids and interpolation](https://fanwangecon.github.io/CodeDynaAsset/#4-the-risky--safe-asset-problem-part-2). Section **(5) and (6)** is an application/extension of the earlier models: models from (1) through (4) are augmented following [*A Choice Amongst Many: Household Borrowing in a Setting with Multiple Providers*](https://fanwangecon.github.io/CodeDynaAsset/#5-one-asset-formal--informal) ([**Robert M. Townsend**](http://www.robertmtownsend.net/) and [**Fan Wang**](https://fanwangecon.github.io/) 2019).
 
 Key elements for solution algorithms from (1) through (5) are described and developed in [**Wang (2019)**](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3316939). Generally, looped, vectorized, and optimized-vectorized implementations of the same solution algorithm with tabular, graphical and profiling results are shown. Separate subsections show files that solve policy functions and derive asset distributions. Looped codes are shown for clarity, vectorized codes are shown for speed. Codes are designed to not require special hardware or explicit parallelization. Codes are tested on Windows 10 with [Matlab 2019a](https://www.mathworks.com/company/newsroom/mathworks-announces-release-2019a-of-matlab-and-simulink.html) for replicability. The algorithms here are platform agnostic and could be implemented in alternative languages, but speed variations across languages is generally small for the algorithms described here. Please contact [FanWangEcon](https://fanwangecon.github.io/) for problems.
 
@@ -107,7 +107,7 @@ Deriving asset distributions relies on two functions from the [/tools/](https://
 
 ## 1.4 Parameter Testing (AZ)
 
-We analyze model features by adjusting parameters.
+Test model outcomes as parameters given parameter adjustments.
 
 1. *az* model **value and policy** functions precision
     * [adjust state/choice grid points](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_vf_vecsv/test_precision/html/fsi_az_vf_vecsv_a_n.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/test/ff_az_vf_vecsv/test_precision/fsi_az_vf_vecsv_a_n.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_vf_vecsv/test_precision/html/fsi_az_vf_vecsv_a_n.html)
@@ -119,6 +119,27 @@ We analyze model features by adjusting parameters.
     * [adjust discount and risk aversion](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_pref/html/fsi_az_ds_vecsv_pref.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/test/ff_az_ds_vecsv/test_pref/fsi_az_ds_vecsv_pref.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_pref/html/fsi_az_ds_vecsv_pref.html)
 4. *az* model shock process and **asset distributions**
     * [adjust shock persistence and variance](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_shock/html/fsi_az_ds_vecsv_shock.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/test/ff_az_ds_vecsv/test_shock/fsi_az_ds_vecsv_shock.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_shock/html/fsi_az_ds_vecsv_shock.html)
+
+## 1.5 Simulations (AZ)
+
+Simulate and graph effects of changing parameters on outcomes.
+
+**Simulation Functions**:
+
+1.  *az* model [simulate model](https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_test_gen.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solvepost/ff_az_test_gen.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_test_gen.html)
+    * cross and grid simulation
+    * outputs to table where columns are statistics, rows are variables, groups of rows are different simulations
+2. *az* model [graphi simulation results](https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_test_analyze.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solvepost/ff_az_test_analyze.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_test_analyze.html)
+    * graph various aggregate and distributional outcomes
+
+**Simulation Results**:
+
+1. *az* the effects *preference parameters* on distributional outcomes
+    * cross test, [adjust discount and risk aversion](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_pref/html/fsi_az_ds_vecsv_pref_cross.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/test/ff_az_ds_vecsv/test_pref/fsi_az_ds_vecsv_pref_cross.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_pref/html/fsi_az_ds_vecsv_pref_cross.html)
+2. *az* the effects *shock parameters* on distributional outcomes
+    * cross test, [adjust shock persistence and variance](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_shock/html/fsi_az_ds_vecsv_shock_cross.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/test/ff_az_ds_vecsv/test_shock/fsi_az_ds_vecsv_shock_cross.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_shock/html/fsi_az_ds_vecsv_shock_cross.html)
+3. *az* the effects *prices* on distributional outcomes
+    * cross test, [adjust wage and savings rate](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_price/html/fsi_az_ds_vecsv_price_cross.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/test/ff_az_ds_vecsv/test_price/fsi_az_ds_vecsv_price_cross.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_price/html/fsi_az_ds_vecsv_price_cross.html)
 
 # 2. The Savings + Borrowing Problem (ABZ)
 

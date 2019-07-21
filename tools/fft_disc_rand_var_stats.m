@@ -192,11 +192,22 @@ if (bl_display_drvstats)
     disp('fl_choice_prob_max');
     disp(fl_choice_prob_max);
     
+     
+    disp('tb_disc_cumu');
+    tb_disc_cumu = table(ar_choice_unique_sorted', ar_choice_prob', ...
+                         ar_choice_prob_cumsum', ar_choice_unique_cumufrac');
+    st_var_name = [char(st_var_name) ' discrete val'];
+    st_var_name_p = [char(st_var_name) ' prob mass'];
+    tb_disc_cumu.Properties.VariableNames = ...
+        matlab.lang.makeValidName([st_var_name, st_var_name_p, "CDF", "cumsum frac"]);
+    disp(tb_disc_cumu);
+    
     disp('tb_prob_drv');
     tb_prob_drv = table(ar_fl_percentiles', ar_choice_percentiles', ar_choice_perc_fracheld');
     st_var_name = [char(st_var_name) ' percentile values'];
     tb_prob_drv.Properties.VariableNames = matlab.lang.makeValidName(["percentiles", st_var_name, "frac of sum held below this percentile"]);    
     disp(tb_prob_drv);
-
+    
+%     fft_container_map_display(ds_stats_map)
 end
 end

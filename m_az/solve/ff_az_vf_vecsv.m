@@ -101,7 +101,7 @@ function result_map = ff_az_vf_vecsv(varargin)
 % from ffs_az_set_default_param as we possibly change it_a_n and it_z_n
 % here.
 
-it_param_set = 4;
+it_param_set = 3;
 bl_input_override = true;
 [param_map, support_map] = ffs_az_set_default_param(it_param_set);
 
@@ -344,10 +344,10 @@ result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
 result_map('mt_pol_idx') = mt_pol_idx;
 
+result_map('cl_mt_coh') = {f_coh(ar_z, ar_a'), zeros(1)};
 result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
-result_map('cl_mt_pol_coh') = {f_coh(ar_z, ar_a'), zeros(1)};
 result_map('cl_mt_pol_c') = {f_cons(ar_z, ar_a', mt_pol_a), zeros(1)};
-result_map('ar_st_pol_names') = ["cl_mt_pol_a", "cl_mt_pol_coh", "cl_mt_pol_c"];
+result_map('ar_st_pol_names') = ["cl_mt_pol_a", "cl_mt_coh", "cl_mt_pol_c"];
 
 if (bl_post)
     bl_input_override = true;

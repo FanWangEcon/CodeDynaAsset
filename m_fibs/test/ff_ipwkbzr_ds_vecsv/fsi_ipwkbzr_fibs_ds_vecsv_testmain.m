@@ -93,7 +93,7 @@ support_map('st_mat_test_path') = [st_matimg_path_root '/test/ff_ipwkbzr_ds_vecs
 % Default
 default_params = {param_map support_map ...
                     it_size_type ar_it_test_grp it_simu_vec_len};
-                
+
 %% Parse Inputs
 % override default set above if any parameters are updated
 
