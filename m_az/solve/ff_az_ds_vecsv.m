@@ -102,6 +102,7 @@ function [result_map] = ff_az_ds_vecsv(varargin)
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_ds_post_stats.html ff_az_ds_post_stats>
 % * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html fft_disc_rand_var_stats>
 % * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html fft_disc_rand_var_mass2outcomes>
+% * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2covar.html fft_disc_rand_var_mass2covar>
 %
 % @seealso
 %
@@ -134,7 +135,7 @@ else
     % default invoke
     close all;
 
-    it_param_set = 7;
+    it_param_set = 8;
     bl_input_override = true;
 
     % 1. Generate Parameters

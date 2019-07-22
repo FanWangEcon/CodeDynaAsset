@@ -61,21 +61,27 @@ function [ar_choice_prob_byY, ar_choice_unique_sorted_byY, ...
 % @return mt_choice_prob_byYA matrix f(y,a), meaning for y outcomes along
 % the row dimension.
 %
+% @example
+%
+%   bl_input_override = true;
+%     [ar_choice_prob_byY, ar_choice_unique_sorted_byY, mt_choice_prob_byYZ, mt_choice_prob_byYA] = ...
+%         fft_disc_rand_var_mass2outcomes(st_cur_output_key, mt_choice_cur, mt_dist_az, bl_input_override);
+%
+% @seealso
+%
+% * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html fft_disc_rand_var_stats>
+% * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html fft_disc_rand_var_mass2outcomes>
+% * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2covcor.html fft_disc_rand_var_mass2outcomes>
+%
 
 %% Default
 % use binomial as test case, z maps to binomial win prob, remember binom
 % approximates normal.
 
-params_len = length(varargin);
-bl_input_override = 0;
-if (params_len == 4)
-    bl_input_override = varargin{4};
-end
-
-if (bl_input_override)
+if (~isempty(varargin))
     
     % if invoked from outside overrid fully
-    [st_var_name, mt_choice_bystates, mt_dist_bystates, ~] = varargin{:};
+    [st_var_name, mt_choice_bystates, mt_dist_bystates] = varargin{:};
     bl_display_drvm2outcomes = false;
     bl_drvm2outcomes_vec = true;
     

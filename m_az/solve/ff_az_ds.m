@@ -106,6 +106,7 @@ function [result_map] = ff_az_ds(varargin)
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_ds_post_stats.html ff_az_ds_post_stats>
 % * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html fft_disc_rand_var_stats>
 % * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html fft_disc_rand_var_mass2outcomes>
+% * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2covar.html fft_disc_rand_var_mass2covar>
 %
 % @seealso
 %
@@ -129,15 +130,10 @@ function [result_map] = ff_az_ds(varargin)
 % # it_subset = 9 is invoke operational (only final stats) and coh graph
 %
 
-params_len = length(varargin);
-bl_input_override = 0;
-if (params_len == 6)
-    bl_input_override = varargin{6};
-end
-
-if (bl_input_override)
+if (~isempty(varargin))
+    
     % if invoked from outside override fully
-    [param_map, support_map, armt_map, func_map, result_map, ~] = varargin{:};
+    [param_map, support_map, armt_map, func_map, result_map] = varargin{:};
 
 else
     % default invoke

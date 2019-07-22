@@ -76,7 +76,7 @@ function [tb_outcomes, support_map] = ff_az_test_analyze(varargin)
 %
 
 %% Default Parameter
-ar_it_plot_sets = [1,2,4,5];
+ar_it_plot_sets = [1,2,4,5,6,7];
 it_param_set = 9;
 [param_map, support_map] = ffs_az_set_default_param(it_param_set);
 support_map('bl_replacefile') = false;
@@ -86,7 +86,7 @@ support_map('bl_display_graph_stats') = true;
 %% Array Parameters
 % initiate empty map
 
-st_simu_type = 'r'; % if false, simu full grid
+st_simu_type = 'c'; % if false, simu full grid
 it_size_type = 2;
 cl_st_param_keys = {'fl_crra', 'fl_beta'};
 
@@ -177,6 +177,18 @@ for it_plot = ar_it_plot_sets
         ar_st_colnames_plot =  repmat({'mean'}, [1, length(ar_st_variablenames_plot)]);
         st_title = 'Aggregate Outcomes (wealth, savings, consumption)';
         st_ytitle = 'Aggregate Levels';
+    elseif (it_plot == 6)
+        ar_st_variablenames_plot =  {'cl_mt_coh', 'cl_mt_pol_a', 'cl_mt_pol_c'};
+        ar_st_legend_plot =  {'coh=wealth', 'savings', 'consumption'};
+        ar_st_colnames_plot =  repmat({'coefofvar'}, [1, length(ar_st_variablenames_plot)]);
+        st_title = 'Coef of Variation (wealth, savings, consumption)';
+        st_ytitle = 'Coefficient of Variation (SD/Mean)';        
+    elseif (it_plot == 7)
+        ar_st_variablenames_plot =  {'cl_mt_coh', 'cl_mt_pol_a', 'cl_mt_pol_c'};
+        ar_st_legend_plot =  {'coh=wealth', 'savings', 'consumption'};
+        ar_st_colnames_plot =  repmat({'fl_cor_cl_mt_pol_c'}, [1, length(ar_st_variablenames_plot)]);
+        st_title = 'Correlation with Consumption)';
+        st_ytitle = 'Correlation Coefficient';
     end
     
     cl_ar_st_variablenames{it_plot_ctr} = ar_st_variablenames_plot;

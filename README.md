@@ -75,10 +75,12 @@ Deriving asset distributions relies on two functions from the [/tools/](https://
 
 1. all model [f(y) from f(a,z) and y(a,z)](https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/fft_disc_rand_var_mass2outcomes.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html)
     * from pmf *f(a,z)* and outcome/policy *y(a,z)*, derive *f(y,z)*, *f(y,a)* and *f(y)*
-2. all model [distributional statistics](https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/fft_disc_rand_var_stats.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html)
+2. all model [covariance and correlations](https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2covcor.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/fft_disc_rand_var_mass2covcor.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2covcor.html)
+    * given *E(y1), E(y2)*, *sd(y1), sd(y2)*, *f(a,z)*, *y1(a,z), y2(a,z)*, compute *cor(y1,y2)*
+3. all model [distributional statistics](https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/fft_disc_rand_var_stats.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html)
     * table: mean, sd, percentiles, fraction of outcome/asset held by household up to x percentile
-3. all model [store statistics to container](https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_ds_post_stats.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solvepost/ff_az_ds_post_stats.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_ds_post_stats.html)
-    * This is a manager file for (1) and (2). Add statistics from (1) and (2) to results container for each model choice/outcome
+4. all model [store statistics to container](https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_ds_post_stats.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solvepost/ff_az_ds_post_stats.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_ds_post_stats.html)
+    * This is a manager file 
 
 
 ## 1.3 Solution Support (AZ)

@@ -58,6 +58,7 @@ function [result_map] = ff_az_ds_post_stats(varargin)
 %
 % * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html fft_disc_rand_var_stats>
 % * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html fft_disc_rand_var_mass2outcomes>
+% * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2covcor.html fft_disc_rand_var_mass2outcomes>
 %
 
 %% Default
@@ -81,17 +82,15 @@ else
     it_shocks = 5;
     fl_binom_n = it_states-1;
     ar_binom_p = (1:(it_shocks))./(it_shocks+2);
-    ar_binom_x = 0:1:(it_states-1);
+    ar_binom_x = (0:1:(it_states-1)) -3;
     
-    % a
-    ar_choice_unique_sorted_byY = ar_binom_x;
     % f(z)
     ar_binom_p_prob = binopdf(0:(it_shocks-1), it_shocks-1, 0.5);
     % f(a,z), mass for a, z
     mt_dist_az = zeros([it_states, it_shocks]);
     for it_z=1:it_shocks
         % f(a|z)
-        f_a_condi_z = binopdf(ar_binom_x, fl_binom_n, ar_binom_p(it_z));
+        f_a_condi_z = binopdf(ar_binom_x - min(ar_binom_x), fl_binom_n, ar_binom_p(it_z));
         % f(z)
         f_z = ar_binom_p_prob(it_z);
         % f(a,z)=f(a|z)*f(z)
@@ -101,11 +100,11 @@ else
     % y(a,z), some non-smooth structure
     rng(123);    
     mt_pol_a = ar_binom_x' - 0.01*ar_binom_x'.^2  + ar_binom_p - 0.5*ar_binom_p.^2 + rand([it_states, it_shocks]);
-    mt_pol_a = round(mt_pol_a*2);
+    mt_pol_a = round(mt_pol_a*3);
 
-    mt_pol_c = ar_binom_x' + ar_binom_p + rand([it_states, it_shocks]);
-    mt_pol_c = round(mt_pol_c*3);
-    
+    rng(456);
+    mt_pol_c = 10 -(mt_pol_a) + 15*(rand([it_states, it_shocks])-0.5);
+        
     % Generate result_map
     result_map = containers.Map('KeyType','char', 'ValueType','any');
     result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
@@ -234,11 +233,86 @@ for it_outcome_ctr=1:length(ar_st_pol_names)
 
 end
 
+%% Covariance and Correlation
+% Having computed elsewhere E(X), E(Y), and SD(X), SD(Y), and given X(a,z)
+% and Y(a,z), which are the optimal choices along the endogenous state
+% space grid a, and the exogenous state space grid z, and given also
+% f(a,z), the probability mass function over (a,z), we compute covariance
+% and correlation between outcomes X and Y. 
+%
+% * Covariance
+%
+% $$\mathrm{Cov}\left(x,y\right) = \sum_{a} \sum_{z} f(a,z) \cdot \left( x(a,z) - \mu_x \right) \cdot \left( y(a,z) - \mu_y \right)$$
+%
+% * Correlation
+%
+% $$\rho_{x,y} = \frac{\mathrm{Cov}\left(x,y\right)}{\sigma_x \cdot \sigma_y}$$
+
+for it_outcome_x_ctr=1:length(ar_st_pol_names)
+        
+    st_cur_output_x_key = ar_st_pol_names(it_outcome_x_ctr);
+    
+    cl_mt_choice_cur = result_map(st_cur_output_x_key);
+    ds_stats_map = cl_mt_choice_cur{2};
+
+    cl_mt_choice_cur = result_map(st_cur_output_x_key);
+    mt_choice_x_bystates = cl_mt_choice_cur{1};    
+    fl_choice_x_mean = ds_stats_map('fl_choice_mean');
+    fl_choice_x_sd = ds_stats_map('fl_choice_sd');    
+    
+    ar_covvar = zeros([1,length(ar_st_pol_names)*2]);
+    ar_st_covvar = strings([1,length(ar_st_pol_names)*2]);
+    for it_outcome_y_ctr=1:length(ar_st_pol_names)
+
+        st_cur_output_y_key = ar_st_pol_names(it_outcome_y_ctr);
+
+        cl_mt_choice_cur = result_map(st_cur_output_y_key);
+        ds_stats_map = cl_mt_choice_cur{2};
+
+        cl_mt_choice_cur = result_map(st_cur_output_y_key);
+        mt_choice_y_bystates = cl_mt_choice_cur{1};        
+        fl_choice_y_mean = ds_stats_map('fl_choice_mean');
+        fl_choice_y_sd = ds_stats_map('fl_choice_sd');
+        
+        covvar_input_map = containers.Map('KeyType','char', 'ValueType','any');
+        covvar_input_map('mt_choice_x_bystates') = mt_choice_x_bystates;
+        covvar_input_map('mt_choice_y_bystates') = mt_choice_y_bystates;
+        covvar_input_map('mt_dist_bystates') = mt_dist_az;
+        covvar_input_map('fl_choice_x_mean') = fl_choice_x_mean;
+        covvar_input_map('fl_choice_x_sd') = fl_choice_x_sd;
+        covvar_input_map('fl_choice_y_mean') = fl_choice_y_mean;
+        covvar_input_map('fl_choice_y_sd') = fl_choice_y_sd;
+        
+        [fl_cov_xy, fl_cor_xy] = fft_disc_rand_var_mass2covcor(covvar_input_map);
+        
+        % only include the y name, x name is from the row
+        st_x_y_cov = strjoin(["fl_cov_" st_cur_output_y_key], '');
+        st_x_y_cor = strjoin(["fl_cor_" st_cur_output_y_key], '');
+        ds_stats_map(st_x_y_cov) = fl_cov_xy;
+        ds_stats_map(st_x_y_cor) = fl_cor_xy;
+        
+        ar_covvar(it_outcome_y_ctr*2-1) = fl_cov_xy;
+        ar_covvar(it_outcome_y_ctr*2) = fl_cor_xy;
+        ar_st_covvar(it_outcome_y_ctr*2-1) = string(st_x_y_cov);
+        ar_st_covvar(it_outcome_y_ctr*2) = string(st_x_y_cor);
+        
+        cl_mt_choice_cur{2} = ds_stats_map;
+        result_map(st_cur_output_y_key) = cl_mt_choice_cur;        
+    end    
+    
+    if (it_outcome_x_ctr == 1)
+        mt_outcomes_covvar = ar_covvar;
+    else
+        mt_outcomes_covvar = [mt_outcomes_covvar; ar_covvar];
+    end
+    
+end
+
 %% *f(y), f(c), f(a)*: Store Statistics Shared Table All Outcomes
 
 % Add to result_map
-result_map('mt_outcomes_meansdperc') = mt_outcomes_meansdperc;
-result_map('mt_outcomes_fracheld') = mt_outcomes_fracheld;
+mt_outcomes = [mt_outcomes_meansdperc, mt_outcomes_covvar, mt_outcomes_fracheld];
+result_map('mt_outcomes') = mt_outcomes;
 
 % Display
 if (bl_display_final_dist)
@@ -249,13 +323,32 @@ if (bl_display_final_dist)
     tb_outcomes_meansdperc = array2table(mt_outcomes_meansdperc);
     ar_fl_percentiles = ds_stats_map('ar_fl_percentiles');
     cl_col_names = ['mean', 'sd', 'coefofvar', 'min', 'max', ...
-                    'pYis0', 'pYls0', 'pYgr0', 'pYisMINY', 'pYisMAXY', strcat('p', string(ar_fl_percentiles))];
+                    'pYis0', 'pYls0', 'pYgr0', 'pYisMINY', 'pYisMAXY', ...
+                    strcat('p', string(ar_fl_percentiles))];
     tb_outcomes_meansdperc.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
     tb_outcomes_meansdperc.Properties.RowNames = matlab.lang.makeValidName(cl_outcome_names);
-
     disp('tb_outcomes_meansdperc: mean, sd, percentiles')
     disp(tb_outcomes_meansdperc);
-    result_map('tb_outcomes_meansdperc') = tb_outcomes_meansdperc;    
+    result_map('tb_outcomes_meansdperc') = tb_outcomes_meansdperc;
+    
+    % Process covariance and correlation
+    tb_outcomes_covvar = array2table(mt_outcomes_covvar);
+    tb_outcomes_covvar.Properties.VariableNames = matlab.lang.makeValidName(ar_st_covvar);
+    tb_outcomes_covvar.Properties.RowNames = matlab.lang.makeValidName(cl_outcome_names);
+    disp('tb_outcomes_covvar: variance correlation')
+    disp(tb_outcomes_covvar);
+    
+    % Process Aset Held by up to percentiles
+    tb_outcomes_fracheld = array2table(mt_outcomes_fracheld);
+    cl_col_names = [strcat('fracByP', string(ar_fl_percentiles))];
+    tb_outcomes_fracheld.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_outcomes_fracheld.Properties.RowNames = matlab.lang.makeValidName(cl_outcome_names);
+    
+    
+    % All Outcomes Together
+    tb_outcomes = [tb_outcomes_meansdperc, tb_outcomes_covvar, tb_outcomes_fracheld];
+    result_map('tb_outcomes') = tb_outcomes;        
+    
 end
 
 if (bl_display_final_dist_detail)

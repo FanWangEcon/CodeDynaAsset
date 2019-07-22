@@ -29,7 +29,7 @@
 % is needed.
 
 % Set which to graph, simulate over which variables
-ar_it_plot_sets = [1,2,3,4,5];
+ar_it_plot_sets = [1,2,3,4,5,6];
 bl_simu_cross = 'c';
 it_size_type = 2;
 cl_st_param_keys = {'fl_crra', 'fl_beta'};

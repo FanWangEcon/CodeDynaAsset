@@ -410,7 +410,7 @@ result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_m
 %% Store Results to Table
 
 % Append Simulation Loop Statistics
-tb_outcomes_meansdperc = result_map('tb_outcomes_meansdperc');
+tb_outcomes_meansdperc = result_map('tb_outcomes');
 tb_simu_info = array2table(ar_simu_info + zeros([size(tb_outcomes_meansdperc,1), length(ar_simu_info)]));
 tb_simu_info.Properties.VariableNames = cl_col_names;
 variablenames = tb_outcomes_meansdperc.Properties.RowNames;

@@ -11,7 +11,7 @@ function [ds_stats_map] = fft_disc_rand_var_stats(varargin)
 %
 % Statistics include:
 %
-% * $\mu_Y = E(Y) = \sum_{y} p(Y=y) \cdot y $
+% * $\mu_Y = E(Y) = \sum_{y} p(Y=y) \cdot y$
 % * $\sigma_Y = \sqrt{ \sum_{y} p(Y=y) \cdot \left( y - \mu_y \right)^2}$
 % * $p(y=0)$
 % * $p(y=\min(y))$
@@ -37,7 +37,8 @@ function [ds_stats_map] = fft_disc_rand_var_stats(varargin)
 % @example
 %   
 %   % run function
-%   [ds_stats_map] = fft_disc_rand_var_stats(ar_choice_unique_sorted, ar_choice_prob,ar_fl_percentiles);
+%   st_var_name = 'binom';
+%   [ds_stats_map] = fft_disc_rand_var_stats(st_var_name, ar_choice_unique_sorted, ar_choice_prob, ar_fl_percentiles);
 %   % retrieve scalar statistics
 %   % fl_choice_mean = ds_stats_map('fl_choice_mean');
 %   fl_choice_sd = ds_stats_map('fl_choice_sd');
@@ -46,6 +47,10 @@ function [ds_stats_map] = fft_disc_rand_var_stats(varargin)
 %   % retrieve distributional array stats
 %   ar_choice_percentiles = ds_stats_map('ar_choice_percentiles');
 %   ar_choice_perc_fracheld = ds_stats_map('ar_choice_perc_fracheld');
+%
+% * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html fft_disc_rand_var_stats>
+% * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html fft_disc_rand_var_mass2outcomes>
+% * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2covcor.html fft_disc_rand_var_mass2outcomes>
 %
 
 %% Default
@@ -200,7 +205,8 @@ if (bl_display_drvstats)
     st_var_name_p = [char(st_var_name) ' prob mass'];
     tb_disc_cumu.Properties.VariableNames = ...
         matlab.lang.makeValidName([st_var_name, st_var_name_p, "CDF", "cumsum frac"]);
-    disp(tb_disc_cumu);
+    disp(head(tb_disc_cumu,10));
+    disp(tail(tb_disc_cumu,10));
     
     disp('tb_prob_drv');
     tb_prob_drv = table(ar_fl_percentiles', ar_choice_percentiles', ar_choice_perc_fracheld');
