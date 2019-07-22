@@ -8,8 +8,23 @@ function [tb_outcomes, support_map, param_desc_map] = ff_az_test_gen(varargin)
 %% FF_AZ_TEST_GEN post solution simulation
 % Simulate the model along various dimensions
 %
-% @param bl_simu_cross boolean cross vs gridd simulation. cross: with
+% @param st_simu_type string cross vs gridd simulation. cross: with
 % (x,y), vary X fixing y, vary Y fixing x. grid: all (x,y) \in (X,Y)
+%
+% # _st_simu_type_ = 'c' for cross simulate, if 'c', then each array value
+% of param_tstar_map container is simulated over one by one. So if there
+% are two arrays associated with two keys in param_tstar_map with length N1
+% and N2, the total number of simulations equals to N1 + N2.
+% # _st_simu_type_ = 'g' for grid simulate, if 'g', then all possible
+% combinations of the arrays in param_tstar_map are used to create
+% combinations of parameter values. So if there are two arrays with lengths
+% N1 and N2, there will be N1*N2 number of simulations
+% # _st_simu_type_ = 'r' for random simulate, if 'r', then should specify
+% param_map('it_st_simu_type_g_seed') value. Only the minimum and the
+% maximum values for each array in param_tstar_map matters. Based on these
+% minimum and maximum, and also what is in
+% param_map('it_st_simu_type_g_simun'). Random parameter values will be
+% drawn. 
 %
 % @param it_size_type integer: 
 %  param_map support_map param_tstar_map param_desc_map
@@ -59,7 +74,7 @@ function [tb_outcomes, support_map, param_desc_map] = ff_az_test_gen(varargin)
 % Loops to Vary for Simulations Below
 it_size_type = 2;
 cl_st_param_keys = {'fl_crra', 'fl_beta'};
-bl_simu_cross = true; % if false, simu full grid
+st_simu_type = 'r'; % 'c' for cross or 'g' for grid or 'r' rand
 
 %% Default Parameters
 
@@ -82,6 +97,10 @@ support_map('st_mat_test_path') = [st_matimg_path_root '/test/ff_az_ds_vecsv/mat
 % generate, if file exists does not generate.
 support_map('bl_replacefile') = true;
 support_map('bl_display_simu_stats') = true;
+
+% param map modification
+param_map('it_st_simu_type_g_seed') = 123;
+param_map('it_st_simu_type_g_simun') = 20;
 
 %% Array Parameters
 
@@ -115,7 +134,7 @@ param_desc_map(ls_st_param_key{9}) = {'Asset Grid N'};
 
 %% Default
 
-default_params = {bl_simu_cross it_size_type cl_st_param_keys ...
+default_params = {st_simu_type it_size_type cl_st_param_keys ...
                     param_map support_map param_tstar_map param_desc_map};
 
 %% Parse Inputs
@@ -124,7 +143,7 @@ default_params = {bl_simu_cross it_size_type cl_st_param_keys ...
 params_len = length(varargin);
 [default_params{1:params_len}] = varargin{:};
 
-bl_simu_cross = default_params{1};
+st_simu_type = default_params{1};
 it_size_type = default_params{2};
 cl_st_param_keys = default_params{3};
 
@@ -145,9 +164,11 @@ param_map('ar_param_keys_idx') = ar_param_keys_idx;
 % If bl_replacefile is true, that means the existing file must be replaced,
 % which will set bl_gen to true
 
-params_group = values(support_map, ...
-    {'bl_replacefile', 'bl_display_simu_stats'});
+params_group = values(support_map, {'bl_replacefile', 'bl_display_simu_stats'});
 [bl_replacefile, bl_display_simu_stats] = params_group{:};
+
+params_group = values(param_map, {'it_st_simu_type_g_seed', 'it_st_simu_type_g_simun'});
+[it_st_simu_type_g_seed, it_st_simu_type_g_simun] = params_group{:};
 
 %% Store Mat Strings
 %
@@ -162,8 +183,8 @@ it_total_length = sum(cell2mat(cellfun(@(m) length(param_tstar_map(m)), ...
 support_map('st_mat_test_prefix') = [''];
 support_map('st_mat_test_name_main') = ['r'];
 support_map('st_mat_test_suffix') = ['_g' strrep(num2str(ar_param_keys_idx), '  ', '') ...
-                                     '_c' num2str(bl_simu_cross) 't' num2str(it_size_type) ...
-                                     'l' num2str(it_total_length)];
+                                     '_c' st_simu_type ...
+                                     '_t' num2str(it_size_type) 'l' num2str(it_total_length)];
 
 %% Set Solve Sizes
 
@@ -232,7 +253,7 @@ else
     % value point.
     %
     
-    if (bl_simu_cross)
+    if (strcmp(st_simu_type, 'c'))
         
         for it_pcombi_ctr = 1:length(cl_st_param_keys)
             
@@ -290,28 +311,38 @@ else
     % all possible combinations of X and Y arrays.
     %
     
-    if (~bl_simu_cross)
+    if (ismember(st_simu_type, ["g", "r"]))
+        
         % Get Arrays to be Meshed in Cells
         cl_ar_param_subset_values = values(param_tstar_map, cl_st_param_keys);
         
         % Generate all possible combinations of parameters subsets
-        cl_mt_all = cl_ar_param_subset_values;
-        [cl_mt_all{:}] = ndgrid(cl_ar_param_subset_values{:});
-        mt_param_vals_combi = cell2mat(cellfun(@(m) m(:), cl_mt_all, 'uni', 0));
+        if (strcmp(st_simu_type, 'g'))
+            cl_mt_all = cl_ar_param_subset_values;
+            [cl_mt_all{:}] = ndgrid(cl_ar_param_subset_values{:});
+            mt_param_vals_combi = cell2mat(cellfun(@(m) m(:), cl_mt_all, 'uni', 0));
+        elseif (strcmp(st_simu_type, 'r'))
+            % random draw within max and min N count
+            rng(it_st_simu_type_g_seed);            
+            mt_param_vals_combi = cell2mat(cellfun(@(m) ...
+                                       rand([it_st_simu_type_g_simun,1]).*(max(param_tstar_map(m)) - min(param_tstar_map(m))) ...
+                                       + min(param_tstar_map(m)), ...
+                                       cl_st_param_keys, 'UniformOutput', false));
+        end
         
         % Sizes
         it_test_combi_n = size(mt_param_vals_combi,1);
         
-        % Convert from Matrix to Table for Clarity
+        % Show Combinations of Parameters Simulating over, convert from Matrix to Table for Clarity
         tb_pvals_combi = array2table(mt_param_vals_combi);
-        tb_pvals_combi.Properties.VariableNames = ls_st_param_key(cl_st_param_keys);
+        tb_pvals_combi.Properties.VariableNames = cl_st_param_keys;
         tb_pvals_combi.Properties.RowNames = strcat('j=', string(1:size(mt_param_vals_combi,1)));
         clear mt_param_vals_combi;
         
         % Display
         disp(head(tb_pvals_combi, 10));
         disp(tail(tb_pvals_combi, 10));
-        
+                
         for it_pcombi_ctr = 1:it_test_combi_n
             
             tb_row_param_adj_cur = tb_pvals_combi(it_pcombi_ctr, :);

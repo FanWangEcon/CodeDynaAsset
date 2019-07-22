@@ -13,11 +13,26 @@ function [tb_outcomes, support_map] = ff_az_test_analyze(varargin)
 % generate, see line 128. Could add additional statistics to that
 % conditional list.
 %
-% @param bl_simu_cross boolean cross vs gridd simulation. cross: with
+% @param st_simu_type string cross vs gridd simulation. cross: with
 % (x,y), vary X fixing y, vary Y fixing x. grid: all (x,y) \in (X,Y)
 %
+% # _st_simu_type_ = 'c' for cross simulate, if 'c', then each array value
+% of param_tstar_map container is simulated over one by one. So if there
+% are two arrays associated with two keys in param_tstar_map with length N1
+% and N2, the total number of simulations equals to N1 + N2.
+% # _st_simu_type_ = 'g' for grid simulate, if 'g', then all possible
+% combinations of the arrays in param_tstar_map are used to create
+% combinations of parameter values. So if there are two arrays with lengths
+% N1 and N2, there will be N1*N2 number of simulations
+% # _st_simu_type_ = 'r' for random simulate, if 'r', then should specify
+% param_map('it_st_simu_type_g_seed') value. Only the minimum and the
+% maximum values for each array in param_tstar_map matters. Based on these
+% minimum and maximum, and also what is in
+% param_map('it_st_simu_type_g_simun'). Random parameter values will be
+% drawn. 
+%
 % @param it_size_type integer: 
-%  param_map support_map param_tstar_map param_desc_map
+% 
 % # it_size_type = 1 is quick grid
 % # it_size_type = 2 is standard grid
 % # it_size_type = 3 is denser grid
@@ -71,7 +86,7 @@ support_map('bl_display_graph_stats') = true;
 %% Array Parameters
 % initiate empty map
 
-bl_simu_cross = true; % if false, simu full grid
+st_simu_type = 'r'; % if false, simu full grid
 it_size_type = 2;
 cl_st_param_keys = {'fl_crra', 'fl_beta'};
 
@@ -86,7 +101,7 @@ param_desc_map('fl_beta') = {'Discount'};
 
 %% Default
 default_params = {ar_it_plot_sets ...
-                    bl_simu_cross it_size_type cl_st_param_keys ...
+                    st_simu_type it_size_type cl_st_param_keys ...
                     param_map support_map param_tstar_map param_desc_map};
 
 %% Parse Parameters 1
@@ -96,7 +111,7 @@ params_len = length(varargin);
 [default_params{1:params_len}] = varargin{:};
 
 ar_it_plot_sets = default_params{1};
-bl_simu_cross = default_params{2};
+st_simu_type = default_params{2};
 it_size_type = default_params{3};
 cl_st_param_keys = default_params{4};
 
@@ -114,7 +129,7 @@ params_group = values(support_map, ...
 %% Cross-Simulate Model Along Parameters
 
 [tb_outcomes, support_map, param_desc_map] = ff_az_test_gen( ...
-    bl_simu_cross, it_size_type, cl_st_param_keys, ...
+    st_simu_type, it_size_type, cl_st_param_keys, ...
     param_map, support_map, param_tstar_map, param_desc_map);
 
 %% Specify Outcome Variables to Plot
@@ -172,13 +187,18 @@ for it_plot = ar_it_plot_sets
     
 end
 
+%% Get Var Descs
+
+cl_st_param_desc = values(param_desc_map, cl_st_param_keys);
+cl_st_param_desc = cellfun(@(m) m{1}, cl_st_param_desc, 'UniformOutput', false);
+
 %% Graph Outcomes
 close all;
 
 for it_pcombi_ctr = 1:length(cl_st_param_keys)
     
     st_param_key = cl_st_param_keys{it_pcombi_ctr};
-    st_param_desc = param_desc_map(st_param_key);
+    st_param_desc = cl_st_param_desc(it_pcombi_ctr);
     
     if (~bl_graph_onebyones)
         figure('PaperPosition', [0 0 it_plot_cols*7 it_plot_rows*4]);
@@ -186,7 +206,11 @@ for it_pcombi_ctr = 1:length(cl_st_param_keys)
     end
     
     % get data
-    mt_cur_data = tb_outcomes(strcmp(tb_outcomes.var_param_key, st_param_key), :);
+    if (strcmp(st_simu_type, 'c'))
+        mt_cur_data = tb_outcomes(strcmp(tb_outcomes.var_param_key, st_param_key), :);
+    elseif (ismember(st_simu_type, ["g", "r"]))
+        mt_cur_data = tb_outcomes;
+    end    
     st_x_label = st_param_desc;
     
     %% Loop over Subplots (different sets of Outcomes)
@@ -254,18 +278,22 @@ for it_pcombi_ctr = 1:length(cl_st_param_keys)
             % Access X Values
             ar_x = mt_graph_data{:, st_param_key};
             
-            % Plot Scatter
+            % Plot Scatter            
             ls_chart(it_graph_counter) = scatter(ar_x', ar_y', it_csize, ar_color, st_shape);
             
-            % plot line do not include in legend
-            line = plot(ar_x, ar_y);
-            line.HandleVisibility = 'off';
-            line.Color = ar_color;
-            line.LineStyle = st_lnsty;
-            line.HandleVisibility = 'off';
-            line.LineWidth = st_lnwth;
+            if (strcmp(st_simu_type, 'c'))
+                % plot line do not include in legend
+                line = plot(ar_x, ar_y);
+                line.HandleVisibility = 'off';
+                line.Color = ar_color;
+                line.LineStyle = st_lnsty;
+                line.HandleVisibility = 'off';
+                line.LineWidth = st_lnwth;
+            elseif (ismember(st_simu_type, ["g", "r"]))
+                
+            end
             
-            cl_legend{it_graph_counter} = cl_legend{it_fig};
+            cl_legend{it_graph_counter} = cl_legend{it_fig};            
             
         end
         
@@ -274,9 +302,17 @@ for it_pcombi_ctr = 1:length(cl_st_param_keys)
         % 9. Titling etc
         grid on;
         title(strrep(cl_st_title{it_plot}, '_', '\_'));
-        ylabel(strrep(cl_st_ytitle{it_plot}, '_', '\_'));
-        xlabel(strrep(st_x_label, '_', '\_'));
-        
+        ylabel(strrep(cl_st_ytitle{it_plot}, '_', '\_'));        
+        st_xlabel = strrep(st_x_label, '_', '\_');
+        if (strcmp(st_simu_type, 'c'))        
+            xlabel(st_xlabel);
+        elseif (ismember(st_simu_type, ["g"]))
+            st_xlabel_randvars = string(['full grid of: ' strrep(strjoin(cl_st_param_desc, ' and '), '_', '\_')]);
+            xlabel({st_xlabel{1} st_xlabel_randvars});
+        elseif (ismember(st_simu_type, ["r"]))
+            st_xlabel_randvars = string(['random vary by: ' strrep(strjoin(cl_st_param_desc, ' and '), '_', '\_')]);
+            xlabel({st_xlabel{1} st_xlabel_randvars});
+        end
     end
     
     % snap figure in place

@@ -9,7 +9,7 @@
 
 [param_map, support_map] = ffs_az_set_default_param(it_param_set);
 
-bl_simu_cross = true;
+bl_simu_cross = 'c';
 cl_st_param_keys = {'fl_crra', 'fl_beta', 'fl_w', 'fl_r_save'};
 it_simu_vec_len = 5;
 it_size_type = 1;

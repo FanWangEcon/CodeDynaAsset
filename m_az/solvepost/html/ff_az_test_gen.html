@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Simulate Savings Model Along Various Parameter Arrays</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-20"><meta name="DC.source" content="ff_az_test_gen.m"><style type="text/css">
+      --><title>Simulate Savings Model Along Various Parameter Arrays</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-21"><meta name="DC.source" content="ff_az_test_gen.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -67,10 +67,10 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
   </style></head><body><div class="content"><h1>Simulate Savings Model Along Various Parameter Arrays</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_AZ_TEST_GEN post solution simulation</a></li><li><a href="#3">Default Parameter Loops</a></li><li><a href="#4">Default Parameters</a></li><li><a href="#5">Array Parameters</a></li><li><a href="#6">Default</a></li><li><a href="#7">Parse Inputs</a></li><li><a href="#8">Parse Generate or Get Current</a></li><li><a href="#9">Store Mat Strings</a></li><li><a href="#10">Set Solve Sizes</a></li><li><a href="#11">Parase Preference and Shock Parameters</a></li><li><a href="#12">Display support_map</a></li><li><a href="#13">Generate New or Obtain Existing Mat</a></li><li><a href="#14">Initialize Storage</a></li><li><a href="#15">Simulate 1: Cross Simulation, fix one point, extend parameters in each direction</a></li><li><a href="#16">Simulate 2: Full Grid Simulation, Simulate Along Full Grid</a></li><li><a href="#17">Save Mat</a></li><li><a href="#20">Simulate Model given Parameter and Process Results</a></li><li><a href="#22">Reset Parameters that are determined by other parameters</a></li><li><a href="#23">Simulate Model</a></li><li><a href="#24">Store Results to Table</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [tb_outcomes, support_map, param_desc_map] = ff_az_test_gen(varargin)
-</pre><h2 id="2">FF_AZ_TEST_GEN post solution simulation</h2><p>Simulate the model along various dimensions</p><p>@param bl_simu_cross boolean cross vs gridd simulation. cross: with (x,y), vary X fixing y, vary Y fixing x. grid: all (x,y) \in (X,Y)</p><p>@param it_size_type integer:  param_map support_map param_tstar_map param_desc_map # it_size_type = 1 is quick grid # it_size_type = 2 is standard grid # it_size_type = 3 is denser grid</p><p>@param cl_st_param_keys cell string cell array container parameters that we are simulating over</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param param_tstar_map container map of arrays with keys that are parameter keys. This could be specified outside with array values to override defaults here.</p><p>@param param_desc_map container map of strings for each parameter key.</p><p>@param tb_outcomes table table of simulation outcomes for various statistics for each set of parameters. Columns are statistics, rows are outcome variables, groups of rows are different simulations.</p><p>@include</p><div><ul><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html">ff_az_ds_vecsv</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_set_default_param.html">ffs_az_set_default_param</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_get_funcgrid.html">ffs_az_get_funcgrid</a></li></ul></div><p>@seealso</p><div><ul><li><i>SPEED</i> savings only overall benchmark speed testing: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_speed/html/fsi_az_ds_vecsv_speed.html">fsi_az_ds_vecsv_speed</a></li><li><i>PREFERENCE</i> savings only preference testing: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_pref/html/fsi_az_ds_vecsv_pref.html">fsi_az_ds_vecsv_pref</a></li><li><i>PREFERENCE</i> savings only preference testing cross: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_pref/html/fsi_az_ds_vecsv_pref_cross.html">fsi_az_ds_vecsv_pref_cross</a></li><li><i>SHOCK</i> savings only shock testing: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_shock/html/fsi_az_ds_vecsv_shock.html">fsi_az_ds_vecsv_shock</a></li><li><i>SHOCK</i> savings only shock testing cross: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_shock/html/fsi_az_ds_vecsv_shock_cross.html">fsi_az_ds_vecsv_shock_cross</a></li><li><i>PRICE</i> savings only wage and interest rate testing cross: adjust wage and savings rate <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_price/html/fsi_az_ds_vecsv_price_cross.html">fsi_az_ds_vecsv_price_cross</a></li></ul></div><h2 id="3">Default Parameter Loops</h2><pre class="codeinput"><span class="comment">% Loops to Vary for Simulations Below</span>
+</pre><h2 id="2">FF_AZ_TEST_GEN post solution simulation</h2><p>Simulate the model along various dimensions</p><p>@param st_simu_type string cross vs gridd simulation. cross: with (x,y), vary X fixing y, vary Y fixing x. grid: all (x,y) \in (X,Y)</p><div><ol><li><i>st_simu_type</i> = 'c' for cross simulate, if 'c', then each array value of param_tstar_map container is simulated over one by one. So if there are two arrays associated with two keys in param_tstar_map with length N1 and N2, the total number of simulations equals to N1 + N2.</li><li><i>st_simu_type</i> = 'g' for grid simulate, if 'g', then all possible combinations of the arrays in param_tstar_map are used to create combinations of parameter values. So if there are two arrays with lengths N1 and N2, there will be N1*N2 number of simulations</li><li><i>st_simu_type</i> = 'r' for random simulate, if 'r', then should specify param_map('it_st_simu_type_g_seed') value. Only the minimum and the maximum values for each array in param_tstar_map matters. Based on these minimum and maximum, and also what is in param_map('it_st_simu_type_g_simun'). Random parameter values will be drawn.</li></ol></div><p>@param it_size_type integer:  param_map support_map param_tstar_map param_desc_map # it_size_type = 1 is quick grid # it_size_type = 2 is standard grid # it_size_type = 3 is denser grid</p><p>@param cl_st_param_keys cell string cell array container parameters that we are simulating over</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param param_tstar_map container map of arrays with keys that are parameter keys. This could be specified outside with array values to override defaults here.</p><p>@param param_desc_map container map of strings for each parameter key.</p><p>@param tb_outcomes table table of simulation outcomes for various statistics for each set of parameters. Columns are statistics, rows are outcome variables, groups of rows are different simulations.</p><p>@include</p><div><ul><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html">ff_az_ds_vecsv</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_set_default_param.html">ffs_az_set_default_param</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_get_funcgrid.html">ffs_az_get_funcgrid</a></li></ul></div><p>@seealso</p><div><ul><li><i>SPEED</i> savings only overall benchmark speed testing: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_speed/html/fsi_az_ds_vecsv_speed.html">fsi_az_ds_vecsv_speed</a></li><li><i>PREFERENCE</i> savings only preference testing: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_pref/html/fsi_az_ds_vecsv_pref.html">fsi_az_ds_vecsv_pref</a></li><li><i>PREFERENCE</i> savings only preference testing cross: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_pref/html/fsi_az_ds_vecsv_pref_cross.html">fsi_az_ds_vecsv_pref_cross</a></li><li><i>SHOCK</i> savings only shock testing: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_shock/html/fsi_az_ds_vecsv_shock.html">fsi_az_ds_vecsv_shock</a></li><li><i>SHOCK</i> savings only shock testing cross: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_shock/html/fsi_az_ds_vecsv_shock_cross.html">fsi_az_ds_vecsv_shock_cross</a></li><li><i>PRICE</i> savings only wage and interest rate testing cross: adjust wage and savings rate <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_price/html/fsi_az_ds_vecsv_price_cross.html">fsi_az_ds_vecsv_price_cross</a></li></ul></div><h2 id="3">Default Parameter Loops</h2><pre class="codeinput"><span class="comment">% Loops to Vary for Simulations Below</span>
 it_size_type = 2;
 cl_st_param_keys = {<span class="string">'fl_crra'</span>, <span class="string">'fl_beta'</span>};
-bl_simu_cross = true; <span class="comment">% if false, simu full grid</span>
+st_simu_type = <span class="string">'r'</span>; <span class="comment">% 'c' for cross or 'g' for grid or 'r' rand</span>
 </pre><h2 id="4">Default Parameters</h2><pre class="codeinput"><span class="comment">% Base parameters call</span>
 it_param_set = 9;
 [param_map, support_map] = ffs_az_set_default_param(it_param_set);
@@ -90,6 +90,10 @@ support_map(<span class="string">'st_mat_test_path'</span>) = [st_matimg_path_ro
 <span class="comment">% generate, if file exists does not generate.</span>
 support_map(<span class="string">'bl_replacefile'</span>) = true;
 support_map(<span class="string">'bl_display_simu_stats'</span>) = true;
+
+<span class="comment">% param map modification</span>
+param_map(<span class="string">'it_st_simu_type_g_seed'</span>) = 123;
+param_map(<span class="string">'it_st_simu_type_g_simun'</span>) = 20;
 </pre><h2 id="5">Array Parameters</h2><pre class="codeinput">ls_st_param_key = {<span class="string">'fl_crra'</span>, <span class="string">'fl_beta'</span>, <span class="keyword">...</span>
                     <span class="string">'fl_w'</span>, <span class="string">'fl_r_save'</span>, <span class="keyword">...</span>
                     <span class="string">'fl_z_rho'</span>, <span class="string">'fl_z_sig'</span>, <span class="keyword">...</span>
@@ -117,12 +121,12 @@ param_desc_map(ls_st_param_key{6}) = {<span class="string">'Shock SD'</span>};
 param_desc_map(ls_st_param_key{7}) = {<span class="string">'Max Asset Bound'</span>};
 param_desc_map(ls_st_param_key{8}) = {<span class="string">'Shock Grid N'</span>};
 param_desc_map(ls_st_param_key{9}) = {<span class="string">'Asset Grid N'</span>};
-</pre><h2 id="6">Default</h2><pre class="codeinput">default_params = {bl_simu_cross it_size_type cl_st_param_keys <span class="keyword">...</span>
+</pre><h2 id="6">Default</h2><pre class="codeinput">default_params = {st_simu_type it_size_type cl_st_param_keys <span class="keyword">...</span>
                     param_map support_map param_tstar_map param_desc_map};
 </pre><h2 id="7">Parse Inputs</h2><p>override default set above if any parameters are updated</p><pre class="codeinput">params_len = length(varargin);
 [default_params{1:params_len}] = varargin{:};
 
-bl_simu_cross = default_params{1};
+st_simu_type = default_params{1};
 it_size_type = default_params{2};
 cl_st_param_keys = default_params{3};
 
@@ -137,17 +141,19 @@ param_map(<span class="string">'cl_st_param_keys'</span>) = cl_st_param_keys;
 ar_param_keys_idx = cell2mat(cellfun(@(m) find(strcmp(ls_st_param_key, m)), <span class="keyword">...</span>
     cl_st_param_keys, <span class="string">'UniformOutput'</span>, false));
 param_map(<span class="string">'ar_param_keys_idx'</span>) = ar_param_keys_idx;
-</pre><h2 id="8">Parse Generate or Get Current</h2><p>if bl_gen = true, generate, if bl_gen = false, get saved file and output. If bl_replacefile is true, that means the existing file must be replaced, which will set bl_gen to true</p><pre class="codeinput">params_group = values(support_map, <span class="keyword">...</span>
-    {<span class="string">'bl_replacefile'</span>, <span class="string">'bl_display_simu_stats'</span>});
+</pre><h2 id="8">Parse Generate or Get Current</h2><p>if bl_gen = true, generate, if bl_gen = false, get saved file and output. If bl_replacefile is true, that means the existing file must be replaced, which will set bl_gen to true</p><pre class="codeinput">params_group = values(support_map, {<span class="string">'bl_replacefile'</span>, <span class="string">'bl_display_simu_stats'</span>});
 [bl_replacefile, bl_display_simu_stats] = params_group{:};
+
+params_group = values(param_map, {<span class="string">'it_st_simu_type_g_seed'</span>, <span class="string">'it_st_simu_type_g_simun'</span>});
+[it_st_simu_type_g_seed, it_st_simu_type_g_simun] = params_group{:};
 </pre><h2 id="9">Store Mat Strings</h2><div><ol><li><i>it_total_length</i>: this is the total length of all selected arrays</li><li><i>ar_param_keys_idx</i>: these are the linear index of the selected keys among all possible keys</li></ol></div><pre class="codeinput">it_total_length = sum(cell2mat(cellfun(@(m) length(param_tstar_map(m)), <span class="keyword">...</span>
                                 cl_st_param_keys, <span class="string">'UniformOutput'</span>, false)));
 
 support_map(<span class="string">'st_mat_test_prefix'</span>) = [<span class="string">''</span>];
 support_map(<span class="string">'st_mat_test_name_main'</span>) = [<span class="string">'r'</span>];
 support_map(<span class="string">'st_mat_test_suffix'</span>) = [<span class="string">'_g'</span> strrep(num2str(ar_param_keys_idx), <span class="string">'  '</span>, <span class="string">''</span>) <span class="keyword">...</span>
-                                     <span class="string">'_c'</span> num2str(bl_simu_cross) <span class="string">'t'</span> num2str(it_size_type) <span class="keyword">...</span>
-                                     <span class="string">'l'</span> num2str(it_total_length)];
+                                     <span class="string">'_c'</span> st_simu_type <span class="keyword">...</span>
+                                     <span class="string">'_t'</span> num2str(it_size_type) <span class="string">'l'</span> num2str(it_total_length)];
 </pre><h2 id="10">Set Solve Sizes</h2><pre class="codeinput"><span class="keyword">if</span> (it_size_type == 1)
 
     <span class="comment">% Basic Test Run</span>
@@ -228,7 +234,7 @@ pos = 37 ; key = st_mat_suffix ; val = _p9
 pos = 38 ; key = st_mat_test_name_main ; val = r
 pos = 39 ; key = st_mat_test_path ; val = C:/Users/fan/CodeDynaAsset//m_az//test/ff_az_ds_vecsv/mat/
 pos = 40 ; key = st_mat_test_prefix ; val = 
-pos = 41 ; key = st_mat_test_suffix ; val = _g12_c1t2l10
+pos = 41 ; key = st_mat_test_suffix ; val = _g12_cr_t2l10
 pos = 42 ; key = st_matimg_path_root ; val = C:/Users/fan/CodeDynaAsset//m_az/
 pos = 43 ; key = st_profile_name_main ; val = _default
 pos = 44 ; key = st_profile_path ; val = C:/Users/fan/CodeDynaAsset//m_az//solve/profile/
@@ -307,7 +313,7 @@ CONTAINER NAME: PARAM_MAP
 ----------------------------------------
   Map with properties:
 
-        Count: 27
+        Count: 29
       KeyType: char
     ValueType: any
 
@@ -343,11 +349,13 @@ pos = 19 ; key = it_a_n ; val = 750
 pos = 20 ; key = it_maxiter_dist ; val = 1000
 pos = 21 ; key = it_maxiter_val ; val = 1000
 pos = 22 ; key = it_size_type ; val = 2
-pos = 23 ; key = it_tol_pol_nochange ; val = 25
-pos = 24 ; key = it_trans_power_dist ; val = 1000
-pos = 25 ; key = it_z_n ; val = 15
-pos = 26 ; key = st_analytical_stationary_type ; val = eigenvector
-pos = 27 ; key = st_model ; val = az
+pos = 23 ; key = it_st_simu_type_g_seed ; val = 123
+pos = 24 ; key = it_st_simu_type_g_simun ; val = 20
+pos = 25 ; key = it_tol_pol_nochange ; val = 25
+pos = 26 ; key = it_trans_power_dist ; val = 1000
+pos = 27 ; key = it_z_n ; val = 15
+pos = 28 ; key = st_analytical_stationary_type ; val = eigenvector
+pos = 29 ; key = st_model ; val = az
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Matrix in Container and Sizes and Basic Statistics
@@ -361,32 +369,34 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Scalars in Container and Sizes and Basic Statistics
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                           i     idx    value
-                           __    ___    _____
+                               i     idx    value
+                               __    ___    _____
 
-    bl_loglin               1     2         0
-    fl_a_max                2     4        50
-    fl_a_min                3     5         0
-    fl_b_bd                 4     6         0
-    fl_beta                 5     7      0.94
-    fl_crra                 6     8       1.5
-    fl_loglin_threshold     7     9         1
-    fl_nan_replace          8    10     -9999
-    fl_r_save               9    11     0.025
-    fl_tol_dist            10    12     1e-05
-    fl_tol_pol             11    13     1e-05
-    fl_tol_val             12    14     1e-05
-    fl_w                   13    15      1.28
-    fl_z_mu                14    16         0
-    fl_z_rho               15    17       0.8
-    fl_z_sig               16    18       0.2
-    it_a_n                 17    19       750
-    it_maxiter_dist        18    20      1000
-    it_maxiter_val         19    21      1000
-    it_size_type           20    22         2
-    it_tol_pol_nochange    21    23        25
-    it_trans_power_dist    22    24      1000
-    it_z_n                 23    25        15
+    bl_loglin                   1     2         0
+    fl_a_max                    2     4        50
+    fl_a_min                    3     5         0
+    fl_b_bd                     4     6         0
+    fl_beta                     5     7      0.94
+    fl_crra                     6     8       1.5
+    fl_loglin_threshold         7     9         1
+    fl_nan_replace              8    10     -9999
+    fl_r_save                   9    11     0.025
+    fl_tol_dist                10    12     1e-05
+    fl_tol_pol                 11    13     1e-05
+    fl_tol_val                 12    14     1e-05
+    fl_w                       13    15      1.28
+    fl_z_mu                    14    16         0
+    fl_z_rho                   15    17       0.8
+    fl_z_sig                   16    18       0.2
+    it_a_n                     17    19       750
+    it_maxiter_dist            18    20      1000
+    it_maxiter_val             19    21      1000
+    it_size_type               20    22         2
+    it_st_simu_type_g_seed     21    23       123
+    it_st_simu_type_g_simun    22    24        20
+    it_tol_pol_nochange        23    25        25
+    it_trans_power_dist        24    26      1000
+    it_z_n                     25    27        15
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -396,8 +406,8 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
                                      _    ___
 
     cl_st_param_keys                 1     3 
-    st_analytical_stationary_type    2    26 
-    st_model                         3    27 
+    st_analytical_stationary_type    2    28 
+    st_model                         3    29 
 
 ----------------------------------------
 ----------------------------------------
@@ -522,7 +532,7 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
 ---------------------------
-</pre><h2 id="15">Simulate 1: Cross Simulation, fix one point, extend parameters in each direction</h2><p>Given X and Y parameters, simulate along an array of x values fixing y value, then simulate along an array of y values fixing x value. Along the x and y grid, this produces a <i>cross</i> of simulated points. The intersection of the array arrays, the center of the cross could be some benchmark parameter value, or perhaps some estimated/calibrated parameter value point.</p><pre class="codeinput">    <span class="keyword">if</span> (bl_simu_cross)
+</pre><h2 id="15">Simulate 1: Cross Simulation, fix one point, extend parameters in each direction</h2><p>Given X and Y parameters, simulate along an array of x values fixing y value, then simulate along an array of y values fixing x value. Along the x and y grid, this produces a <i>cross</i> of simulated points. The intersection of the array arrays, the center of the cross could be some benchmark parameter value, or perhaps some estimated/calibrated parameter value point.</p><pre class="codeinput">    <span class="keyword">if</span> (strcmp(st_simu_type, <span class="string">'c'</span>))
 
         <span class="keyword">for</span> it_pcombi_ctr = 1:length(cl_st_param_keys)
 
@@ -573,36 +583,31 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxx
             param_map(st_param_key) = fl_param_val_benchmark;
         <span class="keyword">end</span>
     <span class="keyword">end</span>
-</pre><pre class="codeoutput">---------------------------
-xxxxxxxxxxxxxxxxxxxxxxxxxxx
-    'Vary '    'CRRA'    ' ('    'fl_crra'    '): '    '1  2  3  4  5'
+</pre><h2 id="16">Simulate 2: Full Grid Simulation, Simulate Along Full Grid</h2><p>To explore the effects of parameters on model outcomes, simulate the model along full grids. Given X and Y parameters, this means simulate at all possible combinations of X and Y arrays.</p><pre class="codeinput">    <span class="keyword">if</span> (ismember(st_simu_type, [<span class="string">"g"</span>, <span class="string">"r"</span>]))
 
-fl_crra:1.5
-fl_beta:0.94
-fl_w:1.28
-fl_r_save:0.025
-fl_z_rho:0.8
-fl_z_sig:0.2
-fl_a_max:50
-it_z_n:15
-it_a_n:750
-xxxxxxxxxxxxxxxxxxxxxxxxxxx
-xxxxx fl_crra = 1 xxxxx
-</pre><h2 id="16">Simulate 2: Full Grid Simulation, Simulate Along Full Grid</h2><p>To explore the effects of parameters on model outcomes, simulate the model along full grids. Given X and Y parameters, this means simulate at all possible combinations of X and Y arrays.</p><pre class="codeinput">    <span class="keyword">if</span> (~bl_simu_cross)
         <span class="comment">% Get Arrays to be Meshed in Cells</span>
         cl_ar_param_subset_values = values(param_tstar_map, cl_st_param_keys);
 
         <span class="comment">% Generate all possible combinations of parameters subsets</span>
-        cl_mt_all = cl_ar_param_subset_values;
-        [cl_mt_all{:}] = ndgrid(cl_ar_param_subset_values{:});
-        mt_param_vals_combi = cell2mat(cellfun(@(m) m(:), cl_mt_all, <span class="string">'uni'</span>, 0));
+        <span class="keyword">if</span> (strcmp(st_simu_type, <span class="string">'g'</span>))
+            cl_mt_all = cl_ar_param_subset_values;
+            [cl_mt_all{:}] = ndgrid(cl_ar_param_subset_values{:});
+            mt_param_vals_combi = cell2mat(cellfun(@(m) m(:), cl_mt_all, <span class="string">'uni'</span>, 0));
+        <span class="keyword">elseif</span> (strcmp(st_simu_type, <span class="string">'r'</span>))
+            <span class="comment">% random draw within max and min N count</span>
+            rng(it_st_simu_type_g_seed);
+            mt_param_vals_combi = cell2mat(cellfun(@(m) <span class="keyword">...</span>
+                                       rand([it_st_simu_type_g_simun,1]).*(max(param_tstar_map(m)) - min(param_tstar_map(m))) <span class="keyword">...</span>
+                                       + min(param_tstar_map(m)), <span class="keyword">...</span>
+                                       cl_st_param_keys, <span class="string">'UniformOutput'</span>, false));
+        <span class="keyword">end</span>
 
         <span class="comment">% Sizes</span>
         it_test_combi_n = size(mt_param_vals_combi,1);
 
-        <span class="comment">% Convert from Matrix to Table for Clarity</span>
+        <span class="comment">% Show Combinations of Parameters Simulating over, convert from Matrix to Table for Clarity</span>
         tb_pvals_combi = array2table(mt_param_vals_combi);
-        tb_pvals_combi.Properties.VariableNames = ls_st_param_key(cl_st_param_keys);
+        tb_pvals_combi.Properties.VariableNames = cl_st_param_keys;
         tb_pvals_combi.Properties.RowNames = strcat(<span class="string">'j='</span>, string(1:size(mt_param_vals_combi,1)));
         clear <span class="string">mt_param_vals_combi</span>;
 
@@ -646,35 +651,39 @@ xxxxx fl_crra = 1 xxxxx
         disp(head(tb_outcomes, 10));
         disp(tail(tb_outcomes, 10));
     <span class="keyword">end</span>
-</pre><pre class="codeoutput">-------------------------
-xxxxxx tb_outcomes xxxxxx
-                        variablenames    var_param_key    it_test_grp    it_cur_param    fl_crra    fl_beta     mean        sd       coefofvar      min       max       pYis0      pYls0     pYgr0     pYisMINY      pYisMAXY       p0_1        p1          p5         p10        p15         p20         p25        p35        p50         p65        p75       p80        p85       p90       p95       p99      p99_9 
-                        _____________    _____________    ___________    ____________    _______    _______    _______    _______    _________    _______    ______    ________    _____    _______    _________    ___________    _______    _______    ________    _______    ________    ________    _______    _______    ________    _______    _______    ______    _______    ______    ______    ______    ______
+</pre><pre class="codeoutput">            fl_crra    fl_beta
+            _______    _______
 
-    cl_mt_pol_a_p1v1    'cl_mt_pol_a'      'fl_crra'           1              1             1        0.94      0.39061    0.70074      1.7939           0    48.598     0.39645      0      0.60355      0.39645     2.7479e-36          0          0           0          0           0           0          0          0    0.066756    0.26702    0.46729    0.6008    0.86782    1.2016    1.8692    3.3378    5.3405
-    cl_mt_coh_p1v1      'cl_mt_coh'        'fl_crra'           1              1             1        0.94       1.6804     1.0129     0.60276     0.44468    54.536           0      0            1    0.0025817     2.7479e-36    0.44468    0.59175     0.68262    0.78744     0.90837     0.90837     1.0479     1.1821      1.3944      1.677     2.0102    2.2244     2.5398    2.9616    3.7143    5.4955    7.7401
-    cl_mt_pol_c_p1v1    'cl_mt_pol_c'      'fl_crra'           1              1             1        0.94       1.2898    0.37696     0.29227     0.44468    5.9377           0      0            1    0.0025817     2.7479e-36    0.44468    0.59175     0.68262    0.78744     0.90837     0.90837     1.0479     1.1163      1.2789     1.4117     1.5468    1.6247     1.6744    1.8084    1.9368    2.2175    2.4964
-    cl_mt_pol_a_p1v2    'cl_mt_pol_a'      'fl_crra'           1              2             2        0.94        1.341     1.6059      1.1976           0        50     0.14762      0      0.85238      0.14762    -5.2804e-36          0          0           0          0    0.066756    0.066756    0.13351    0.40053     0.80107     1.4019     1.9359    2.3364     2.8037    3.4713    4.6729    7.2096    10.481
-    cl_mt_coh_p1v2      'cl_mt_coh'        'fl_crra'           1              2             2        0.94       2.6545     1.8815     0.70878     0.44468    54.536           0      0            1    0.0018409     1.5116e-35    0.44468    0.59175     0.78744    0.90837      1.0479      1.1821     1.2772     1.5953      2.0971     2.8038     3.4471    3.8665     4.4139    5.1666    6.4512    9.2454    12.746
-    cl_mt_pol_c_p1v2    'cl_mt_pol_c'      'fl_crra'           1              2             2        0.94       1.3135     0.3224     0.24545     0.44468    4.5358           0      0            1    0.0018409     1.5116e-35    0.44468    0.59175     0.78744    0.90837     0.97846      1.0479     1.1182     1.2031      1.3039     1.4283     1.5229    1.5935     1.6353    1.7216    1.8334    2.0753    2.3262
-    cl_mt_pol_a_p1v3    'cl_mt_pol_a'      'fl_crra'           1              3             3        0.94       2.4357     2.3673      0.9719           0        50    0.049666      0      0.95033     0.049666     1.5116e-19          0          0    0.066756    0.13351     0.33378     0.46729    0.66756     1.0681      1.7356     2.6702     3.4713    4.0721     4.7397    5.6742    7.2096    10.481    14.753
-    cl_mt_coh_p1v3      'cl_mt_coh'        'fl_crra'           1              3             3        0.94       3.7766     2.6281     0.69588     0.44468    54.536           0      0            1    0.0010806      3.075e-20    0.44468    0.66017     0.90837     1.1163      1.3669      1.5953     1.8138     2.2839      3.1006      4.127     5.0209    5.6297     6.3298    7.3473    8.9984    12.488    16.946
-    cl_mt_pol_c_p1v3    'cl_mt_pol_c'      'fl_crra'           1              3             3        0.94       1.3409    0.29467     0.21975     0.44468    4.5358           0      0            1    0.0010806      3.075e-20    0.44468    0.65149     0.85587    0.97801      1.0512      1.1246     1.1437     1.2271      1.3515     1.4562     1.5451     1.583     1.6486    1.7087    1.8172    2.0387    2.2793
-    cl_mt_pol_a_p1v4    'cl_mt_pol_a'      'fl_crra'           1              4             4        0.94       3.6456     3.0477       0.836           0        50    0.017458      0      0.98254     0.017458     1.4012e-13          0          0     0.20027    0.46729     0.80107      1.0681     1.3351     1.9359      2.8705     4.0721     5.1402    5.8077     6.6756    7.8104    9.6796    13.551    18.625
+    j=1     3.7859     0.93344
+    j=2     2.1446     0.95494
+    j=3     1.9074     0.94245
+    j=4     3.2053      0.9311
+    j=5     3.8779     0.94224
+    j=6     2.6924      0.9023
+    j=7     4.9231     0.90618
+    j=8     3.7393     0.89283
+    j=9     2.9237     0.89937
+    j=10    2.5685      0.9331
 
-                        variablenames    var_param_key    it_test_grp    it_cur_param    fl_crra    fl_beta     mean        sd       coefofvar      min       max       pYis0      pYls0     pYgr0      pYisMINY      pYisMAXY       p0_1        p1         p5         p10        p15        p20         p25         p35        p50         p65        p75        p80        p85       p90       p95       p99      p99_9 
-                        _____________    _____________    ___________    ____________    _______    _______    _______    _______    _________    _______    ______    ________    _____    _______    __________    ___________    _______    _______    _______    _______    _______    ________    ________    _______    ________    _______    _______    _______    _______    ______    ______    ______    ______
+            fl_crra    fl_beta
+            _______    _______
 
-    cl_mt_pol_c_p2v2    'cl_mt_pol_c'      'fl_beta'           2              2            1.5       0.895      1.2846    0.40112     0.31226     0.44468    7.2728           0      0            1       0.00268    -3.1624e-38    0.44468    0.59175    0.68262    0.78744    0.90837     0.90837     0.97679     1.0479      1.2088     1.3961     1.5418     1.6135     1.7237    1.8005    1.9557    2.3294     2.665
-    cl_mt_pol_a_p2v3    'cl_mt_pol_a'      'fl_beta'           2              3            1.5        0.92     0.40859     0.7045      1.7242           0    48.531     0.38605      0      0.61395       0.38605    -2.4207e-34          0          0          0          0          0           0           0          0    0.066756    0.26702    0.53405    0.66756    0.93458    1.2684    1.8692    3.3378    5.2737
-    cl_mt_coh_p2v3      'cl_mt_coh'        'fl_beta'           2              3            1.5        0.92      1.6988     1.0188     0.59973     0.44468    54.536           0      0            1     0.0025648    -2.4207e-34    0.44468    0.59175    0.68262    0.78744    0.90837     0.90837      1.0479     1.1847      1.3944      1.709     2.0608     2.2773     2.5665    2.9878    3.7405    5.5087    7.6983
-    cl_mt_pol_c_p2v3    'cl_mt_pol_c'      'fl_beta'           2              3            1.5        0.92      1.2902    0.37555     0.29107     0.44468    6.0044           0      0            1     0.0025648    -2.4207e-34    0.44468    0.59175    0.68262    0.78744    0.90837     0.90837      1.0479     1.1163      1.2789       1.42     1.5485     1.6252     1.6694    1.7938    1.9402    2.2209    2.4979
-    cl_mt_pol_a_p2v4    'cl_mt_pol_a'      'fl_beta'           2              4            1.5       0.945      1.0308     1.3631      1.3224           0    49.866     0.18721      0      0.81279       0.18721    -4.3701e-35          0          0          0          0          0    0.066756    0.066756    0.20027     0.53405     1.0013     1.4686     1.8024     2.2029    2.8037    3.8718    6.2083    9.1455
-    cl_mt_coh_p2v4      'cl_mt_coh'        'fl_beta'           2              4            1.5       0.945      2.3366     1.6448     0.70394     0.44468    54.536           0      0            1     0.0021034    -4.3701e-35    0.44468    0.59175    0.78744    0.90837    0.97679      1.0479      1.1847     1.3944      1.8246     2.4208      2.977     3.3609     3.8399    4.5241    5.6873    8.2303    11.446
-    cl_mt_pol_c_p2v4    'cl_mt_pol_c'      'fl_beta'           2              4            1.5       0.945      1.3058    0.33496     0.25653     0.44468    4.6693           0      0            1     0.0021034    -4.3701e-35    0.44468    0.59175    0.75104    0.85754    0.92596      1.0479      1.0495     1.1964      1.3293     1.4211     1.5301     1.5863     1.6619     1.717    1.8617    2.0854    2.3457
-    cl_mt_pol_a_p2v5    'cl_mt_pol_a'      'fl_beta'           2              5            1.5        0.97      5.4081     4.7673     0.88152           0        50    0.025303      0       0.9747      0.025303     1.2197e-07          0          0    0.13351    0.53405    0.93458      1.3351      1.8024     2.6702      4.2056     6.0748     7.8104     8.8785     10.147    11.949     14.82    20.961    28.772
-    cl_mt_coh_p2v5      'cl_mt_coh'        'fl_beta'           2              5            1.5        0.97      6.8233     5.0167     0.73523     0.44468    54.536           0      0            1    0.00057637     6.7203e-09    0.51297    0.68262     1.1296     1.5997     2.0742      2.5506      3.0295      3.988      5.6323      7.614      9.393     10.488     11.815    13.693    16.673    23.012      31.1
-    cl_mt_pol_c_p2v5    'cl_mt_pol_c'      'fl_beta'           2              5            1.5        0.97      1.4152    0.27424     0.19378     0.44468    4.5358           0      0            1    0.00057637     6.7203e-09    0.51297    0.68262      0.968     1.0619     1.1463      1.2041      1.2422     1.3216      1.4183     1.5159     1.5952     1.6331     1.6877    1.7595    1.8589    2.0683    2.3223
+    j=11    2.3727     0.87921
+    j=12    3.9162     0.91337
+    j=13    2.7543     0.91309
+    j=14    1.2387     0.91937
+    j=15    2.5922     0.91258
+    j=16     3.952     0.90123
+    j=17      1.73     0.91264
+    j=18    1.7018     0.95934
+    j=19    3.1262     0.96442
+    j=20    3.1273     0.92018
+
+xxxxx Shift to: xxxxx
+           fl_crra    fl_beta
+           _______    _______
+
+    j=1    3.7859     0.93344
 
 </pre><h2 id="17">Save Mat</h2><pre class="codeinput">    <span class="keyword">if</span> (bl_mat_test)
         clear <span class="string">armt_map</span> <span class="string">result_map</span>
@@ -699,98 +708,198 @@ disp([<span class="string">'xxxxx it_a_n = '</span> num2str(it_a_n) <span class=
 </pre><pre class="codeoutput">xxxxx it_a_n = 750, it_z_n = 15 xxxxx
 </pre><pre class="codeoutput">xxxxx it_a_n = 750, it_z_n = 15 xxxxx
 </pre><pre class="codeoutput">xxxxx it_a_n = 750, it_z_n = 15 xxxxx
+</pre><pre class="codeoutput">xxxxx it_a_n = 750, it_z_n = 15 xxxxx
+</pre><pre class="codeoutput">xxxxx it_a_n = 750, it_z_n = 15 xxxxx
+</pre><pre class="codeoutput">xxxxx it_a_n = 750, it_z_n = 15 xxxxx
+</pre><pre class="codeoutput">xxxxx it_a_n = 750, it_z_n = 15 xxxxx
+</pre><pre class="codeoutput">xxxxx it_a_n = 750, it_z_n = 15 xxxxx
+</pre><pre class="codeoutput">xxxxx it_a_n = 750, it_z_n = 15 xxxxx
+</pre><pre class="codeoutput">xxxxx it_a_n = 750, it_z_n = 15 xxxxx
+</pre><pre class="codeoutput">xxxxx it_a_n = 750, it_z_n = 15 xxxxx
+</pre><pre class="codeoutput">xxxxx it_a_n = 750, it_z_n = 15 xxxxx
+</pre><pre class="codeoutput">xxxxx it_a_n = 750, it_z_n = 15 xxxxx
 </pre><h2 id="23">Simulate Model</h2><pre class="codeinput">[armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map);
 result_map = ff_az_vf_vecsv(param_map, support_map, armt_map, func_map);
 result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map);
 </pre><pre class="codeoutput">xxx All Variables PERCENTILES AND STATS xxx
 tb_outcomes_meansdperc: mean, sd, percentiles
-                    mean        sd       coefofvar      min       max       pYis0     pYls0     pYgr0     pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15        p20       p25       p35        p50         p65        p75       p80        p85       p90       p95       p99      p99_9 
-                   _______    _______    _________    _______    ______    _______    _____    _______    _________    __________    _______    _______    _______    _______    _______    _______    ______    ______    ________    _______    _______    ______    _______    ______    ______    ______    ______
+                    mean       sd      coefofvar      min       max       pYis0      pYls0     pYgr0      pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15        p20        p25       p35       p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
+                   ______    ______    _________    _______    ______    ________    _____    _______    __________    __________    _______    _______    _______    _______    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
 
-    cl_mt_pol_a    0.39061    0.70074      1.7939           0    48.598    0.39645      0      0.60355      0.39645    2.7479e-36          0          0          0          0          0          0         0         0    0.066756    0.26702    0.46729    0.6008    0.86782    1.2016    1.8692    3.3378    5.3405
-    cl_mt_coh       1.6804     1.0129     0.60276     0.44468    54.536          0      0            1    0.0025817    2.7479e-36    0.44468    0.59175    0.68262    0.78744    0.90837    0.90837    1.0479    1.1821      1.3944      1.677     2.0102    2.2244     2.5398    2.9616    3.7143    5.4955    7.7401
-    cl_mt_pol_c     1.2898    0.37696     0.29227     0.44468    5.9377          0      0            1    0.0025817    2.7479e-36    0.44468    0.59175    0.68262    0.78744    0.90837    0.90837    1.0479    1.1163      1.2789     1.4117     1.5468    1.6247     1.6744    1.8084    1.9368    2.2175    2.4964
-
-</pre><pre class="codeoutput">xxx All Variables PERCENTILES AND STATS xxx
-tb_outcomes_meansdperc: mean, sd, percentiles
-                    mean       sd      coefofvar      min       max       pYis0     pYls0     pYgr0     pYisMINY      pYisMAXY       p0_1        p1         p5         p10        p15         p20         p25        p35        p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
-                   ______    ______    _________    _______    ______    _______    _____    _______    _________    ___________    _______    _______    _______    _______    ________    ________    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______
-
-    cl_mt_pol_a     1.341    1.6059      1.1976           0        50    0.14762      0      0.85238      0.14762    -5.2804e-36          0          0          0          0    0.066756    0.066756    0.13351    0.40053    0.80107    1.4019    1.9359    2.3364    2.8037    3.4713    4.6729    7.2096    10.481
-    cl_mt_coh      2.6545    1.8815     0.70878     0.44468    54.536          0      0            1    0.0018409     1.5116e-35    0.44468    0.59175    0.78744    0.90837      1.0479      1.1821     1.2772     1.5953     2.0971    2.8038    3.4471    3.8665    4.4139    5.1666    6.4512    9.2454    12.746
-    cl_mt_pol_c    1.3135    0.3224     0.24545     0.44468    4.5358          0      0            1    0.0018409     1.5116e-35    0.44468    0.59175    0.78744    0.90837     0.97846      1.0479     1.1182     1.2031     1.3039    1.4283    1.5229    1.5935    1.6353    1.7216    1.8334    2.0753    2.3262
+    cl_mt_pol_a    2.8959    2.5842     0.89238           0        50    0.032683      0      0.96732      0.032683    1.3544e-17          0          0    0.13351    0.33378    0.53405    0.73431    0.93458    1.4019    2.2029    3.2043    4.1389    4.7397    5.4072    6.4085    8.0107    11.549    15.888
+    cl_mt_coh      4.2483    2.8433     0.66928     0.44468    54.536           0      0            1    0.00078348    2.6934e-18    0.51297    0.68262     1.0023     1.3189     1.5953      1.869       2.14    2.6766    3.5796    4.6788    5.6456    6.2722    7.0558    8.1197    9.8303    13.514    18.141
+    cl_mt_pol_c    1.3524     0.288     0.21296     0.44468    4.5358           0      0            1    0.00078348    2.6934e-18    0.51297    0.68262    0.88213    0.98277     1.0595     1.1313      1.152    1.2371     1.344    1.4667    1.5359    1.5931    1.6394    1.7169    1.8301    2.0449    2.2623
 
 </pre><pre class="codeoutput">xxx All Variables PERCENTILES AND STATS xxx
 tb_outcomes_meansdperc: mean, sd, percentiles
-                    mean       sd       coefofvar      min       max       pYis0      pYls0     pYgr0     pYisMINY      pYisMAXY      p0_1        p1          p5         p10        p15        p20        p25       p35       p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
-                   ______    _______    _________    _______    ______    ________    _____    _______    _________    __________    _______    _______    ________    _______    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
+                    mean       sd       coefofvar      min       max       pYis0      pYls0     pYgr0     pYisMINY      pYisMAXY      p0_1        p1         p5         p10         p15        p20        p25       p35       p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
+                   ______    _______    _________    _______    ______    ________    _____    _______    _________    __________    _______    _______    _______    ________    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
 
-    cl_mt_pol_a    2.4357     2.3673      0.9719           0        50    0.049666      0      0.95033     0.049666    1.5116e-19          0          0    0.066756    0.13351    0.33378    0.46729    0.66756    1.0681    1.7356    2.6702    3.4713    4.0721    4.7397    5.6742    7.2096    10.481    14.753
-    cl_mt_coh      3.7766     2.6281     0.69588     0.44468    54.536           0      0            1    0.0010806     3.075e-20    0.44468    0.66017     0.90837     1.1163     1.3669     1.5953     1.8138    2.2839    3.1006     4.127    5.0209    5.6297    6.3298    7.3473    8.9984    12.488    16.946
-    cl_mt_pol_c    1.3409    0.29467     0.21975     0.44468    4.5358           0      0            1    0.0010806     3.075e-20    0.44468    0.65149     0.85587    0.97801     1.0512     1.1246     1.1437    1.2271    1.3515    1.4562    1.5451     1.583    1.6486    1.7087    1.8172    2.0387    2.2793
-
-</pre><pre class="codeoutput">xxx All Variables PERCENTILES AND STATS xxx
-tb_outcomes_meansdperc: mean, sd, percentiles
-                    mean       sd      coefofvar      min       max       pYis0      pYls0     pYgr0     pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15       p20       p25       p35       p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
-                   ______    ______    _________    _______    ______    ________    _____    _______    _________    __________    _______    _______    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
-
-    cl_mt_pol_a    3.6456    3.0477       0.836           0        50    0.017458      0      0.98254     0.017458    1.4012e-13          0          0    0.20027    0.46729    0.80107    1.0681    1.3351    1.9359    2.8705    4.0721    5.1402    5.8077    6.6756    7.8104    9.6796    13.551    18.625
-    cl_mt_coh      5.0168    3.3019     0.65817     0.44468    54.536           0      0            1    0.0005419     1.875e-14    0.51297    0.75104     1.1616     1.5268     1.8822    2.2155    2.5532    3.1931    4.2682    5.5683    6.6827    7.4158    8.3141    9.5169    11.462    15.602    20.827
-    cl_mt_pol_c    1.3711    0.2794     0.20377     0.44468    4.5358           0      0            1    0.0005419     1.875e-14    0.51297    0.68262    0.91004     1.0111     1.0736     1.148    1.1763    1.2555    1.3732      1.48    1.5497    1.6064    1.6519     1.732    1.8334    2.0408    2.2622
+    cl_mt_pol_a    2.6171     2.6169     0.99994           0        50    0.068867      0      0.93113     0.068867    1.7986e-15          0          0          0    0.066756    0.26702    0.46729    0.66756    1.0681    1.8692    2.8705    3.8051    4.4059    5.1402    6.2083    7.8772    11.549    16.222
+    cl_mt_coh      3.9625     2.8722     0.72483     0.44468    54.536           0      0            1    0.0011444    2.5529e-16    0.44468    0.59175    0.90837      1.1163     1.3341     1.5926     1.8049    2.3036    3.1931    4.3301    5.3035    5.9744    6.7512    7.8882    9.6694    13.567    18.449
+    cl_mt_pol_c    1.3454    0.29084     0.21617     0.44468    4.5358           0      0            1    0.0011444    2.5529e-16    0.44468    0.59175    0.85587     0.97846     1.0519      1.128     1.1454    1.2321    1.3577    1.4617    1.5375    1.5868    1.6327    1.7087     1.822    2.0115    2.2527
 
 </pre><pre class="codeoutput">xxx All Variables PERCENTILES AND STATS xxx
 tb_outcomes_meansdperc: mean, sd, percentiles
-                    mean       sd       coefofvar      min       max       pYis0      pYls0     pYgr0      pYisMINY      pYisMAXY      p0_1        p1         p5        p10       p15       p20       p25       p35       p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
-                   ______    _______    _________    _______    ______    ________    _____    _______    __________    __________    ______    ________    _______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
+                    mean       sd       coefofvar      min       max       pYis0     pYls0     pYgr0     pYisMINY      pYisMAXY       p0_1        p1         p5         p10        p15         p20         p25        p35        p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
+                   ______    _______    _________    _______    ______    _______    _____    _______    _________    ___________    _______    _______    _______    _______    ________    ________    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______
 
-    cl_mt_pol_a    4.9436       3.69     0.74641           0        50    0.005859      0      0.99414      0.005859    8.8021e-11         0    0.066756    0.53405    1.0013    1.4019    1.8024    2.1362    2.9372    4.1389    5.6075    6.8758    7.6769    8.6782    9.9466     12.15    16.622    22.363
-    cl_mt_coh      6.3472     3.9417       0.621     0.44468    54.536           0      0            1    0.00025955    8.1479e-12    0.5814     0.88789     1.5268    2.0742    2.5506    2.9682    3.3876    4.2195    5.5612    7.0825    8.4421    9.2715    10.338     11.72    13.967    18.681    24.599
-    cl_mt_pol_c    1.4036    0.27131     0.19329     0.44468    4.5358           0      0            1    0.00025955    8.1479e-12    0.5814     0.78744    0.96858    1.0696    1.1441    1.1704    1.2297    1.2998    1.3957    1.4958    1.5796     1.622    1.6866     1.745    1.8571     2.052     2.289
-
-</pre><pre class="codeoutput">xxx All Variables PERCENTILES AND STATS xxx
-tb_outcomes_meansdperc: mean, sd, percentiles
-                     mean        sd       coefofvar      min       max       pYis0     pYls0     pYgr0     pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15        p20        p25       p35       p50       p65        p75         p80         p85        p90        p95       p99      p99_9 
-                   ________    _______    _________    _______    ______    _______    _____    _______    _________    __________    _______    _______    _______    _______    _______    _______    _______    ______    ______    ______    ________    ________    _______    _______    _______    ______    ______
-
-    cl_mt_pol_a    0.083735    0.23518      2.8087           0    45.995    0.74808      0      0.25192      0.74808    3.4466e-36          0          0          0          0          0          0          0         0         0         0    0.066756    0.066756    0.13351    0.26702    0.46729    1.2016    2.2029
-    cl_mt_coh        1.3658     0.6001     0.43937     0.44468    54.536          0      0            1    0.0027041    3.4466e-36    0.44468    0.59175    0.68262    0.78744    0.90837    0.90837    0.90837    1.0479    1.2088    1.3944      1.6085       1.677     1.8555     2.1292     2.5376     3.564    4.8641
-    cl_mt_pol_c      1.2821    0.41818     0.32617     0.44468    8.5411          0      0            1    0.0027041    3.4466e-36    0.44468    0.59175    0.68262    0.78744    0.90837    0.90837    0.90837    1.0479    1.2088    1.3944      1.6085      1.6102     1.7888     1.8606     2.0124    2.3992    2.7801
+    cl_mt_pol_a    1.3561     1.6272      1.1999           0        50    0.14716      0      0.85284      0.14716     6.6225e-37          0          0          0          0    0.066756    0.066756    0.13351    0.40053    0.80107    1.4019    1.9359    2.3364    2.8037    3.5381    4.6729    7.2764    10.614
+    cl_mt_coh        2.67     1.9018     0.71226     0.44468    54.536          0      0            1    0.0018354    -5.6514e-36    0.44468    0.59175    0.78744    0.90837      1.0479      1.1847     1.2772     1.5953     2.0983    2.8243     3.456    3.9083    4.4557    5.2196    6.5197    9.3272    12.872
+    cl_mt_pol_c    1.3139    0.32177     0.24489     0.44468    4.5358          0      0            1    0.0018354    -5.6514e-36    0.44468    0.59175    0.78744    0.90837     0.97846      1.0486     1.1196     1.2031     1.3131    1.4283    1.5246    1.5935    1.6353    1.7216    1.8334    2.0642     2.324
 
 </pre><pre class="codeoutput">xxx All Variables PERCENTILES AND STATS xxx
 tb_outcomes_meansdperc: mean, sd, percentiles
-                    mean       sd       coefofvar      min       max       pYis0     pYls0     pYgr0     pYisMINY     pYisMAXY       p0_1        p1         p5         p10        p15        p20        p25       p35       p50        p65         p75        p80        p85       p90        p95       p99      p99_9 
-                   ______    _______    _________    _______    ______    _______    _____    _______    ________    ___________    _______    _______    _______    _______    _______    _______    _______    ______    ______    ________    _______    _______    _______    ______    _______    ______    ______
+                    mean       sd       coefofvar      min       max       pYis0      pYls0     pYgr0     pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15        p20        p25        p35       p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
+                   ______    _______    _________    _______    ______    ________    _____    _______    _________    __________    _______    _______    _______    _______    _______    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______    ______
 
-    cl_mt_pol_a    0.1837    0.40215      2.1892           0    47.263    0.58423      0      0.41577    0.58423     -3.1624e-38          0          0          0          0          0          0          0         0         0    0.066756    0.20027    0.26702    0.40053    0.6008    0.93458    2.0027    3.3378
-    cl_mt_coh      1.4683    0.74402     0.50673     0.44468    54.536          0      0            1    0.00268     -3.1624e-38    0.44468    0.59175    0.68262    0.78744    0.90837    0.90837    0.97679    1.0479    1.2088      1.4825     1.7365     1.8822     2.0875    2.4029     2.9482    4.2617    5.8926
-    cl_mt_pol_c    1.2846    0.40112     0.31226     0.44468    7.2728          0      0            1    0.00268     -3.1624e-38    0.44468    0.59175    0.68262    0.78744    0.90837    0.90837    0.97679    1.0479    1.2088      1.3961     1.5418     1.6135     1.7237    1.8005     1.9557    2.3294     2.665
-
-</pre><pre class="codeoutput">xxx All Variables PERCENTILES AND STATS xxx
-tb_outcomes_meansdperc: mean, sd, percentiles
-                    mean        sd       coefofvar      min       max       pYis0     pYls0     pYgr0     pYisMINY      pYisMAXY       p0_1        p1         p5         p10        p15        p20       p25       p35        p50         p65        p75        p80        p85       p90       p95       p99      p99_9 
-                   _______    _______    _________    _______    ______    _______    _____    _______    _________    ___________    _______    _______    _______    _______    _______    _______    ______    ______    ________    _______    _______    _______    _______    ______    ______    ______    ______
-
-    cl_mt_pol_a    0.40859     0.7045      1.7242           0    48.531    0.38605      0      0.61395      0.38605    -2.4207e-34          0          0          0          0          0          0         0         0    0.066756    0.26702    0.53405    0.66756    0.93458    1.2684    1.8692    3.3378    5.2737
-    cl_mt_coh       1.6988     1.0188     0.59973     0.44468    54.536          0      0            1    0.0025648    -2.4207e-34    0.44468    0.59175    0.68262    0.78744    0.90837    0.90837    1.0479    1.1847      1.3944      1.709     2.0608     2.2773     2.5665    2.9878    3.7405    5.5087    7.6983
-    cl_mt_pol_c     1.2902    0.37555     0.29107     0.44468    6.0044          0      0            1    0.0025648    -2.4207e-34    0.44468    0.59175    0.68262    0.78744    0.90837    0.90837    1.0479    1.1163      1.2789       1.42     1.5485     1.6252     1.6694    1.7938    1.9402    2.2209    2.4979
+    cl_mt_pol_a    2.1541     2.1281     0.98793           0        50    0.054345      0      0.94566     0.054345    3.6589e-25          0          0          0    0.13351    0.26702    0.40053    0.53405    0.93458    1.5354    2.3364    3.0708    3.6048    4.2056    5.0067    6.4753    9.4793    13.284
+    cl_mt_coh      3.4879     2.3939     0.68635     0.44468    54.536           0      0            1    0.0011778    8.1652e-26    0.44468    0.59175    0.90837     1.1136     1.3189     1.5242     1.7295     2.1427     2.851    3.7893    4.6104    5.1533    5.8242    6.7315    8.2457    11.501    15.558
+    cl_mt_pol_c    1.3339    0.30073     0.22546     0.44468    4.5358           0      0            1    0.0011778    8.1652e-26    0.44468    0.59175    0.82447    0.93431     1.0495     1.0753     1.1363     1.2221    1.3239    1.4495    1.5401    1.5785    1.6469    1.7149    1.8367    2.0416    2.2728
 
 </pre><pre class="codeoutput">xxx All Variables PERCENTILES AND STATS xxx
 tb_outcomes_meansdperc: mean, sd, percentiles
-                    mean       sd       coefofvar      min       max       pYis0     pYls0     pYgr0     pYisMINY      pYisMAXY       p0_1        p1         p5         p10        p15        p20         p25         p35        p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
-                   ______    _______    _________    _______    ______    _______    _____    _______    _________    ___________    _______    _______    _______    _______    _______    ________    ________    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______
+                    mean       sd       coefofvar      min       max       pYis0      pYls0     pYgr0      pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15       p20       p25       p35       p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
+                   ______    _______    _________    _______    ______    ________    _____    _______    __________    __________    _______    _______    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
 
-    cl_mt_pol_a    1.0308     1.3631      1.3224           0    49.866    0.18721      0      0.81279      0.18721    -4.3701e-35          0          0          0          0          0    0.066756    0.066756    0.20027    0.53405    1.0013    1.4686    1.8024    2.2029    2.8037    3.8718    6.2083    9.1455
-    cl_mt_coh      2.3366     1.6448     0.70394     0.44468    54.536          0      0            1    0.0021034    -4.3701e-35    0.44468    0.59175    0.78744    0.90837    0.97679      1.0479      1.1847     1.3944     1.8246    2.4208     2.977    3.3609    3.8399    4.5241    5.6873    8.2303    11.446
-    cl_mt_pol_c    1.3058    0.33496     0.25653     0.44468    4.6693          0      0            1    0.0021034    -4.3701e-35    0.44468    0.59175    0.75104    0.85754    0.92596      1.0479      1.0495     1.1964     1.3293    1.4211    1.5301    1.5863    1.6619     1.717    1.8617    2.0854    2.3457
+    cl_mt_pol_a    3.6977     3.1003     0.83845           0        50    0.017355      0      0.98264      0.017355    3.3092e-13          0          0    0.20027    0.53405    0.80107    1.0681    1.3351    1.9359    2.9372    4.1389    5.2069    5.9413    6.8091    7.8772    9.8131    13.818    18.892
+    cl_mt_coh      5.0701     3.3539      0.6615     0.44468    54.536           0      0            1    0.00053867    4.3931e-14    0.51297    0.75104     1.1616     1.5313     1.8822    2.2244    2.5532    3.2348    4.3167    5.6323    6.7821    7.4931    8.4356    9.6142    11.638    15.825    21.151
+    cl_mt_pol_c    1.3724    0.27887     0.20319     0.44468    4.5358           0      0            1    0.00053867    4.3931e-14    0.51297    0.68262    0.91004     1.0127     1.0753     1.148    1.1796    1.2572    1.3766      1.48    1.5509    1.6069    1.6536     1.732    1.8283     2.042     2.259
 
 </pre><pre class="codeoutput">xxx All Variables PERCENTILES AND STATS xxx
 tb_outcomes_meansdperc: mean, sd, percentiles
-                    mean       sd       coefofvar      min       max       pYis0      pYls0    pYgr0      pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15       p20       p25       p35       p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
-                   ______    _______    _________    _______    ______    ________    _____    ______    __________    __________    _______    _______    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
+                    mean        sd       coefofvar      min       max       pYis0     pYls0     pYgr0     pYisMINY      pYisMAXY       p0_1        p1         p5         p10        p15        p20         p25         p35        p50        p65       p75       p80       p85       p90       p95       p99      p99_9 
+                   _______    _______    _________    _______    ______    _______    _____    _______    _________    ___________    _______    _______    _______    _______    _______    ________    ________    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______
 
-    cl_mt_pol_a    5.4081     4.7673     0.88152           0        50    0.025303      0      0.9747      0.025303    1.2197e-07          0          0    0.13351    0.53405    0.93458    1.3351    1.8024    2.6702    4.2056    6.0748    7.8104    8.8785    10.147    11.949     14.82    20.961    28.772
-    cl_mt_coh      6.8233     5.0167     0.73523     0.44468    54.536           0      0           1    0.00057637    6.7203e-09    0.51297    0.68262     1.1296     1.5997     2.0742    2.5506    3.0295     3.988    5.6323     7.614     9.393    10.488    11.815    13.693    16.673    23.012      31.1
-    cl_mt_pol_c    1.4152    0.27424     0.19378     0.44468    4.5358           0      0           1    0.00057637    6.7203e-09    0.51297    0.68262      0.968     1.0619     1.1463    1.2041    1.2422    1.3216    1.4183    1.5159    1.5952    1.6331    1.6877    1.7595    1.8589    2.0683    2.3223
+    cl_mt_pol_a    0.87993      1.135      1.2898           0    49.266    0.18444      0      0.81556      0.18444    -3.2806e-34          0          0          0          0          0    0.066756    0.066756    0.20027    0.46729    0.86782    1.2684    1.5354    1.8692    2.3364    3.2043    5.2069    7.6769
+    cl_mt_coh       2.1819     1.4307     0.65572     0.44468    54.536          0      0            1    0.0021472    -3.2806e-34    0.44468    0.59175    0.75104    0.90837    0.97679      1.0479      1.1847       1.39     1.7562     2.2839    2.7629    3.0872    3.4977    4.0718    5.0715    7.2611    9.9981
+    cl_mt_pol_c      1.302    0.34404     0.26424     0.44468    5.2701          0      0            1    0.0021472    -3.2806e-34    0.44468    0.59175    0.75104    0.85587    0.90837      1.0448      1.0495     1.1914     1.2889     1.4161    1.5268     1.583    1.6631    1.7532    1.8701    2.1355    2.4096
+
+</pre><pre class="codeoutput">xxx All Variables PERCENTILES AND STATS xxx
+tb_outcomes_meansdperc: mean, sd, percentiles
+                    mean       sd      coefofvar      min       max       pYis0      pYls0     pYgr0      pYisMINY      pYisMAXY      p0_1        p1         p5         p10       p15        p20       p25       p35       p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
+                   ______    ______    _________    _______    ______    ________    _____    _______    __________    __________    _______    _______    _______    _______    ______    _______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a    2.6882    2.2985     0.85505           0        50    0.022747      0      0.97725      0.022747    7.7051e-25          0          0    0.13351    0.33378    0.6008    0.80107    1.0013    1.4019    2.0694     3.004    3.8051    4.2724    4.9399    5.8077    7.2764    10.347    14.152
+    cl_mt_coh      4.0354    2.5644     0.63549     0.44468    54.536           0      0            1    0.00069867    1.7195e-25    0.51297    0.68262     1.0479     1.3669    1.6193     1.8822    2.1427     2.626    3.4471    4.4247    5.3035    5.8616    6.5747    7.5326    9.0668    12.351    16.448
+    cl_mt_pol_c    1.3472    0.2931     0.21756     0.44468    4.5358           0      0            1    0.00069867    1.7195e-25    0.51297    0.68262     0.8788    0.98277    1.0579     1.0878     1.147    1.2321    1.3339    1.4617    1.5501    1.5885    1.6581    1.7154    1.8288    2.0475     2.289
+
+</pre><pre class="codeoutput">xxx All Variables PERCENTILES AND STATS xxx
+tb_outcomes_meansdperc: mean, sd, percentiles
+                    mean       sd       coefofvar      min       max       pYis0      pYls0     pYgr0     pYisMINY      pYisMAXY      p0_1        p1         p5         p10         p15        p20        p25        p35        p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
+                   ______    _______    _________    _______    ______    ________    _____    _______    _________    __________    _______    _______    _______    ________    _______    _______    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a    1.3965     1.4961      1.0714           0    49.733    0.097068      0      0.90293     0.097068    1.6042e-35          0          0          0    0.066756    0.13351    0.20027    0.26702    0.53405    0.93458    1.4686    2.0027    2.3364     2.737    3.4045    4.4059    6.7423    9.6128
+    cl_mt_coh      2.7114     1.7806     0.65672     0.44468    54.536           0      0            1    0.0015919    1.6042e-35    0.44468    0.59175    0.78744     0.97679     1.1163     1.2664     1.4033     1.7321     2.2244    2.8997    3.5156    3.9083    4.4051    5.0982    6.2614    8.7843    11.925
+    cl_mt_pol_c    1.3149    0.32318     0.24578     0.44468    4.8028           0      0            1    0.0015919    1.6042e-35    0.44468    0.59175    0.78744     0.90837     0.9818     1.0512     1.0828     1.2014     1.3006      1.43    1.5201    1.5935    1.6382    1.7249    1.8672    2.0988    2.3761
+
+</pre><pre class="codeoutput">xxx All Variables PERCENTILES AND STATS xxx
+tb_outcomes_meansdperc: mean, sd, percentiles
+                    mean        sd       coefofvar      min       max       pYis0     pYls0     pYgr0     pYisMINY      pYisMAXY       p0_1        p1         p5         p10        p15        p20         p25        p35        p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
+                   _______    _______    _________    _______    ______    _______    _____    _______    _________    ___________    _______    _______    _______    _______    _______    ________    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a    0.98362      1.208      1.2281           0    49.399    0.16083      0      0.83917      0.16083    -2.4321e-35          0          0          0          0          0    0.066756    0.13351    0.26702    0.53405    1.0013    1.4019    1.6689    2.0694    2.5367    3.4713     5.474    8.0774
+    cl_mt_coh       2.2882     1.5018      0.6563     0.44468    54.536          0      0            1    0.0020305    -2.4321e-35    0.44468    0.59175    0.78744    0.90837     1.0023      1.1136     1.2088     1.4584      1.869    2.4142    2.9086    3.2419    3.6721    4.2771    5.3035    7.5697    10.402
+    cl_mt_pol_c     1.3046    0.33924     0.26004     0.44468    5.1366          0      0            1    0.0020305    -2.4321e-35    0.44468    0.59175    0.75271    0.85754    0.94188      1.0479     1.0512     1.1931     1.2906    1.4183    1.5284    1.5847    1.6636    1.7521    1.8722    2.1343    2.4113
+
+</pre><pre class="codeoutput">xxx All Variables PERCENTILES AND STATS xxx
+tb_outcomes_meansdperc: mean, sd, percentiles
+                    mean       sd       coefofvar      min       max       pYis0     pYls0     pYgr0     pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15         p20        p25        p35       p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
+                   ______    _______    _________    _______    ______    _______    _____    _______    _________    __________    _______    _______    _______    _______    ________    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a    1.6093     1.7793      1.1056           0        50    0.11609      0      0.88391      0.11609    6.9078e-36          0          0          0          0    0.066756    0.20027    0.26702    0.53405    1.0013    1.6689    2.3364     2.737     3.271    4.0053    5.2069    7.9439    11.415
+    cl_mt_coh      2.9295     2.0516     0.70031     0.44468    54.536          0      0            1    0.0015989    1.9689e-37    0.44468    0.59175    0.78744    0.97679      1.1136     1.2531      1.414     1.7562    2.3523    3.1247    3.8506    4.2879    4.8841    5.6986    7.0536    9.9645    13.636
+    cl_mt_pol_c    1.3202    0.31397     0.23782     0.44468    4.5358          0      0            1    0.0015989    1.9689e-37    0.44468    0.59175    0.78744    0.90837     0.99939     1.0512     1.1246     1.2097    1.3106    1.4361    1.5279    1.5709    1.6415    1.7265    1.8372    2.0554    2.2924
+
+</pre><pre class="codeoutput">xxx All Variables PERCENTILES AND STATS xxx
+tb_outcomes_meansdperc: mean, sd, percentiles
+                    mean        sd       coefofvar      min       max       pYis0     pYls0     pYgr0     pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15        p20       p25       p35        p50        p65        p75        p80        p85       p90       p95       p99      p99_9 
+                   _______    _______    _________    _______    ______    _______    _____    _______    _________    __________    _______    _______    _______    _______    _______    _______    ______    ______    _______    _______    _______    _______    _______    ______    ______    ______    ______
+
+    cl_mt_pol_a    0.42388    0.68692      1.6205           0    48.198    0.36219      0      0.63781      0.36219    1.3281e-34          0          0          0          0          0          0         0         0    0.13351    0.33378    0.53405    0.66756    0.93458    1.2684    1.8024     3.271    5.0067
+    cl_mt_coh       1.7145     1.0068     0.58724     0.44468    54.536          0      0            1    0.0025385    1.3281e-34    0.44468    0.59175    0.68262    0.78744    0.90837    0.90837    1.0479    1.2088     1.4033     1.7454     2.0786     2.2928      2.606    3.0188    3.7297    5.4115    7.4776
+    cl_mt_pol_c     1.2906    0.37495     0.29053     0.44468    6.3382          0      0            1    0.0025385    1.3281e-34    0.44468    0.59175    0.68262    0.78744    0.90837    0.90837    1.0479     1.118     1.2805     1.4027     1.5485     1.6252      1.667    1.7921    1.9418    2.2259     2.551
+
+</pre><pre class="codeoutput">xxx All Variables PERCENTILES AND STATS xxx
+tb_outcomes_meansdperc: mean, sd, percentiles
+                    mean       sd      coefofvar      min       max       pYis0      pYls0     pYgr0     pYisMINY     pYisMAXY      p0_1        p1          p5         p10        p15        p20       p25        p35       p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
+                   ______    ______    _________    _______    ______    ________    _____    _______    ________    __________    _______    _______    ________    _______    _______    _______    ______    _______    ______    ______    ______    ______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a    2.0871    1.9955      0.9561           0        50    0.046263      0      0.95374    0.046263     3.132e-34          0          0    0.066756    0.13351    0.33378    0.46729    0.6008    0.93458    1.5354    2.2697     3.004    3.4045    4.0053    4.8064    6.0748    8.9453    12.483
+    cl_mt_coh      3.4193     2.266      0.6627     0.44468    54.536           0      0            1    0.001113    8.4729e-35    0.44468    0.66017     0.90837     1.1296     1.3444     1.5313    1.7365     2.1471    2.8402    3.7208    4.4824    5.0031    5.6301    6.4775    7.9036    10.956    14.786
+    cl_mt_pol_c    1.3322    0.3035     0.22783     0.44468    4.5358           0      0            1    0.001113    8.4729e-35    0.44468    0.65149     0.85587    0.93264     1.0094     1.0619    1.1353     1.2188    1.3223    1.4478    1.5384    1.5785    1.6481    1.7299     1.845    2.0675     2.311
+
+</pre><pre class="codeoutput">xxx All Variables PERCENTILES AND STATS xxx
+tb_outcomes_meansdperc: mean, sd, percentiles
+                    mean       sd       coefofvar      min       max       pYis0     pYls0     pYgr0     pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15         p20         p25        p35        p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
+                   ______    _______    _________    _______    ______    _______    _____    _______    _________    __________    _______    _______    _______    _______    ________    ________    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a    1.1386     1.3637      1.1977           0    49.666    0.14889      0      0.85111      0.14889    1.2546e-34          0          0          0          0    0.066756    0.066756    0.13351    0.33378    0.66756    1.1348    1.6021    1.9359    2.3364    2.9372    3.9386    6.1415    8.9453
+    cl_mt_coh      2.4471     1.6498     0.67421     0.44468    54.536          0      0            1    0.0019181    1.2546e-34    0.44468    0.59175    0.78744    0.90837      1.0452      1.1296     1.2531     1.5268     1.9614    2.5665    3.1459    3.5156     3.988    4.6588     5.767     8.219    11.296
+    cl_mt_pol_c    1.3085    0.33161     0.25344     0.44468    4.8696          0      0            1    0.0019181    1.2546e-34    0.44468    0.59175    0.78744    0.90837     0.97679      1.0479     1.0536     1.1981     1.2956    1.4228    1.5268    1.5885    1.6636    1.7195    1.8705    2.0971    2.3679
+
+</pre><pre class="codeoutput">xxx All Variables PERCENTILES AND STATS xxx
+tb_outcomes_meansdperc: mean, sd, percentiles
+                    mean       sd       coefofvar      min       max       pYis0     pYls0     pYgr0     pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15        p20       p25       p35       p50        p65        p75        p80        p85        p90       p95       p99      p99_9 
+                   ______    _______    _________    _______    ______    _______    _____    _______    _________    __________    _______    _______    _______    _______    _______    _______    ______    ______    ______    _______    _______    _______    _______    _______    ______    ______    ______
+
+    cl_mt_pol_a    0.2523    0.51259      2.0317           0    47.864    0.54616      0      0.45384      0.54616    1.2465e-35          0          0          0          0          0          0         0         0         0    0.13351    0.26702    0.40053    0.53405    0.80107    1.2684    2.5367    4.0721
+    cl_mt_coh      1.5386    0.84068     0.54639     0.44468    54.536          0      0            1    0.0026521    1.2465e-35    0.44468    0.59175    0.68262    0.78744    0.90837    0.90837    1.0479    1.0479    1.2772     1.5997     1.8138     1.9924     2.2244     2.5773    3.2219    4.7272    6.5768
+    cl_mt_pol_c    1.2863     0.3918     0.30459     0.44468     6.672          0      0            1    0.0026521    1.2465e-35    0.44468    0.59175    0.68262    0.78744    0.90837    0.90837    1.0469    1.0479    1.2581     1.3977     1.5434     1.6169     1.7237     1.8055    1.9619    2.2726     2.601
+
+</pre><pre class="codeoutput">xxx All Variables PERCENTILES AND STATS xxx
+tb_outcomes_meansdperc: mean, sd, percentiles
+                    mean       sd       coefofvar      min       max       pYis0     pYls0     pYgr0     pYisMINY      pYisMAXY       p0_1        p1         p5         p10        p15        p20         p25        p35        p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
+                   ______    _______    _________    _______    ______    _______    _____    _______    _________    ___________    _______    _______    _______    _______    _______    ________    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a    1.0094     1.2625      1.2508           0    49.533    0.16961      0      0.83039      0.16961    -2.4726e-34          0          0          0          0          0    0.066756    0.13351    0.26702    0.53405    1.0013    1.4019    1.7356    2.1362    2.6702    3.6048     5.741    8.4112
+    cl_mt_coh      2.3146     1.5523     0.67066     0.44468    54.536          0      0            1    0.0020492    -2.4726e-34    0.44468    0.59175    0.78744    0.90837    0.97679      1.1136     1.2088     1.4558      1.869    2.4208    2.9616    3.3037    3.7405    4.3873    5.4403    7.8063     10.72
+    cl_mt_pol_c    1.3052    0.33724     0.25837     0.44468    5.0031          0      0            1    0.0020492    -2.4726e-34    0.44468    0.59175    0.75271    0.85754     0.9293      1.0479     1.0519     1.1496     1.2939    1.4194    1.5268    1.5852    1.6636    1.7504    1.8722    2.1274    2.3646
+
+</pre><pre class="codeoutput">xxx All Variables PERCENTILES AND STATS xxx
+tb_outcomes_meansdperc: mean, sd, percentiles
+                    mean       sd       coefofvar      min       max       pYis0      pYls0     pYgr0     pYisMINY      pYisMAXY       p0_1        p1         p5         p10         p15        p20        p25        p35       p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
+                   ______    _______    _________    _______    ______    ________    _____    _______    _________    ___________    _______    _______    _______    ________    _______    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a    1.7461     1.7465      1.0002           0        50    0.061551      0      0.93845     0.061551    -1.3067e-35          0          0          0    0.066756    0.20027    0.33378    0.46729    0.73431    1.2016    1.8692      2.47    2.8705    3.4045    4.0721    5.2737    7.8104    11.081
+    cl_mt_coh      3.0698     2.0237     0.65924     0.44468    54.536           0      0            1    0.0013269    -1.3067e-35    0.44468    0.59175    0.85587      1.0479     1.2505       1.39     1.5926     1.9418    2.5576    3.3103    4.0034    4.4669    5.0209    5.7932    7.0825    9.8725    13.344
+    cl_mt_pol_c    1.3237    0.31227     0.23592     0.44468    4.5358           0      0            1    0.0013269    -1.3067e-35    0.44468    0.59175    0.80203     0.91004    0.98514     1.0552     1.1282     1.2097    1.3106    1.4395    1.5301    1.5702    1.6453    1.7299    1.8434    2.0837    2.3427
+
+</pre><pre class="codeoutput">xxx All Variables PERCENTILES AND STATS xxx
+tb_outcomes_meansdperc: mean, sd, percentiles
+                    mean        sd       coefofvar      min       max       pYis0     pYls0     pYgr0     pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15        p20       p25       p35        p50        p65       p75        p80       p85       p90       p95       p99      p99_9 
+                   _______    _______    _________    _______    ______    _______    _____    _______    _________    __________    _______    _______    _______    _______    _______    _______    ______    ______    _______    _______    ______    _______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a    0.44962     0.7408      1.6476           0    48.531    0.36482      0      0.63518      0.36482    -5.286e-37          0          0          0          0          0          0         0         0    0.13351    0.33378    0.6008    0.73431    1.0013    1.3351    2.0027    3.5381     5.474
+    cl_mt_coh       1.7409     1.0542     0.60555     0.44468    54.536          0      0            1    0.0025341    -5.286e-37    0.44468    0.59175    0.68262    0.78744    0.90837    0.90837    1.0479    1.2088      1.414     1.7454    2.1292     2.3479    2.6349    3.0872    3.8665    5.6538    7.8747
+    cl_mt_pol_c     1.2912    0.37211     0.28818     0.44468    6.0044          0      0            1    0.0025341    -5.286e-37    0.44468    0.59175    0.68262    0.78744    0.90837    0.90837    1.0479     1.118     1.2805       1.42    1.5496     1.6269     1.667    1.7904    1.9123    2.2192    2.4997
+
+</pre><pre class="codeoutput">xxx All Variables PERCENTILES AND STATS xxx
+tb_outcomes_meansdperc: mean, sd, percentiles
+                    mean       sd       coefofvar      min       max       pYis0      pYls0     pYgr0     pYisMINY      pYisMAXY      p0_1        p1         p5         p10         p15        p20        p25        p35       p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
+                   ______    _______    _________    _______    ______    ________    _____    _______    _________    __________    _______    _______    _______    ________    _______    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a     2.456     2.5596      1.0422           0        50    0.088721      0      0.91128     0.088721    1.5546e-15          0          0          0    0.066756    0.20027    0.33378    0.53405    0.93458    1.6689    2.6702    3.5381    4.2056    4.8732    5.9413    7.6101    11.348    15.955
+    cl_mt_coh      3.7974     2.8145     0.74116     0.44468    54.536           0      0            1    0.0012568    2.2105e-16    0.44468    0.59175    0.85587      1.0479     1.2531     1.4628     1.6877     2.1667    3.0322    4.1248    5.0893    5.7248    6.5262    7.6299    9.4089    13.294    18.178
+    cl_mt_pol_c    1.3414    0.29335     0.21869     0.44468    4.5358           0      0            1    0.0012568    2.2105e-16    0.44468    0.59175     0.8037     0.97467     1.0495     1.1246     1.1437     1.2288    1.3543    1.4578    1.5434     1.583    1.6348    1.7049    1.8172    2.0103    2.2461
+
+</pre><pre class="codeoutput">xxx All Variables PERCENTILES AND STATS xxx
+tb_outcomes_meansdperc: mean, sd, percentiles
+                    mean       sd       coefofvar      min       max       pYis0      pYls0    pYgr0      pYisMINY      pYisMAXY      p0_1       p1         p5        p10       p15       p20       p25       p35       p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
+                   ______    _______    _________    _______    ______    ________    _____    ______    __________    __________    ______    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a    6.8995     5.3311     0.77268           0        50    0.010397      0      0.9896      0.010397    5.0558e-07         0          0     0.6008    1.2016    1.8024    2.2697    2.8705    3.9386     5.741    7.8772    9.7463    10.881    12.283    14.152     17.29    23.698    31.976
+    cl_mt_coh       8.352      5.586     0.66883     0.44468    54.536           0      0           1    0.00026602    2.6544e-08    0.5814    0.86544     1.5953    2.3036    2.9611     3.534    4.1314    5.2946    7.1927    9.3957    11.325    12.541    13.993    15.969     19.18    25.818    34.357
+    cl_mt_pol_c    1.4525    0.27274     0.18777     0.44468    4.5358           0      0           1    0.00026602    2.6544e-08    0.5814    0.79835    0.99348    1.1112    1.1704    1.2392    1.2715    1.3527    1.4467    1.5459     1.628     1.677    1.7228    1.8012    1.9068    2.1254    2.3729
+
+</pre><pre class="codeoutput">xxx All Variables PERCENTILES AND STATS xxx
+tb_outcomes_meansdperc: mean, sd, percentiles
+                    mean       sd       coefofvar      min       max       pYis0      pYls0     pYgr0     pYisMINY      pYisMAXY       p0_1        p1         p5         p10         p15        p20        p25       p35       p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
+                   ______    _______    _________    _______    ______    ________    _____    _______    _________    ___________    _______    _______    _______    ________    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a    1.6344     1.7459      1.0682           0        50    0.090995      0      0.90901     0.090995    -1.0983e-36          0          0          0    0.066756    0.13351    0.20027    0.33378    0.6008    1.0681    1.7356    2.3364     2.737     3.271    4.0053    5.2069    7.8104    11.148
+    cl_mt_coh      2.9552     2.0205     0.68371     0.44468    54.536           0      0            1    0.0014906      2.645e-37    0.44468    0.59175    0.78744     0.99272     1.1296     1.3189     1.4628    1.8138    2.4164    3.1734    3.8665    4.3301    4.8841    5.6873    6.9982    9.8277    13.386
+    cl_mt_pol_c    1.3209    0.31404     0.23775     0.44468    4.5358           0      0            1    0.0014906      2.645e-37    0.44468    0.59175    0.78744     0.90837    0.98347     1.0529     1.1263    1.2088    1.3106    1.4361    1.5279    1.5686    1.6419    1.7266    1.8389    2.0604    2.3257
 
 </pre><h2 id="24">Store Results to Table</h2><pre class="codeinput"><span class="comment">% Append Simulation Loop Statistics</span>
 tb_outcomes_meansdperc = result_map(<span class="string">'tb_outcomes_meansdperc'</span>);
@@ -802,35 +911,150 @@ tb_simu_info.Properties.RowNames = (variablenames);
 <span class="comment">% Table</span>
 tb_outcomes_simu = [tb_simu_info tb_outcomes_meansdperc];
 </pre><pre class="codeinput"><span class="keyword">end</span>
-</pre><pre class="codeoutput">xxxxx fl_crra = 2 xxxxx
-xxxxx fl_crra = 3 xxxxx
-xxxxx fl_crra = 4 xxxxx
-xxxxx fl_crra = 5 xxxxx
----------------------------
-xxxxxxxxxxxxxxxxxxxxxxxxxxx
-  Columns 1 through 5
+</pre><pre class="codeoutput">xxxxx Shift to: xxxxx
+           fl_crra    fl_beta
+           _______    _______
 
-    'Vary '    'Discount'    ' ('    'fl_beta'    '): '
+    j=2    2.1446     0.95494
 
-  Column 6
+xxxxx Shift to: xxxxx
+           fl_crra    fl_beta
+           _______    _______
 
-    '0.87       0.895 &#8230;'
+    j=3    1.9074     0.94245
 
-fl_crra:1.5
-fl_beta:0.94
-fl_w:1.28
-fl_r_save:0.025
-fl_z_rho:0.8
-fl_z_sig:0.2
-fl_a_max:50
-it_z_n:15
-it_a_n:750
-xxxxxxxxxxxxxxxxxxxxxxxxxxx
-xxxxx fl_beta = 0.87 xxxxx
-xxxxx fl_beta = 0.895 xxxxx
-xxxxx fl_beta = 0.92 xxxxx
-xxxxx fl_beta = 0.945 xxxxx
-xxxxx fl_beta = 0.97 xxxxx
+xxxxx Shift to: xxxxx
+           fl_crra    fl_beta
+           _______    _______
+
+    j=4    3.2053     0.9311 
+
+xxxxx Shift to: xxxxx
+           fl_crra    fl_beta
+           _______    _______
+
+    j=5    3.8779     0.94224
+
+xxxxx Shift to: xxxxx
+           fl_crra    fl_beta
+           _______    _______
+
+    j=6    2.6924     0.9023 
+
+xxxxx Shift to: xxxxx
+           fl_crra    fl_beta
+           _______    _______
+
+    j=7    4.9231     0.90618
+
+xxxxx Shift to: xxxxx
+           fl_crra    fl_beta
+           _______    _______
+
+    j=8    3.7393     0.89283
+
+xxxxx Shift to: xxxxx
+           fl_crra    fl_beta
+           _______    _______
+
+    j=9    2.9237     0.89937
+
+xxxxx Shift to: xxxxx
+            fl_crra    fl_beta
+            _______    _______
+
+    j=10    2.5685     0.9331 
+
+xxxxx Shift to: xxxxx
+            fl_crra    fl_beta
+            _______    _______
+
+    j=11    2.3727     0.87921
+
+xxxxx Shift to: xxxxx
+            fl_crra    fl_beta
+            _______    _______
+
+    j=12    3.9162     0.91337
+
+xxxxx Shift to: xxxxx
+            fl_crra    fl_beta
+            _______    _______
+
+    j=13    2.7543     0.91309
+
+xxxxx Shift to: xxxxx
+            fl_crra    fl_beta
+            _______    _______
+
+    j=14    1.2387     0.91937
+
+xxxxx Shift to: xxxxx
+            fl_crra    fl_beta
+            _______    _______
+
+    j=15    2.5922     0.91258
+
+xxxxx Shift to: xxxxx
+            fl_crra    fl_beta
+            _______    _______
+
+    j=16     3.952     0.90123
+
+xxxxx Shift to: xxxxx
+            fl_crra    fl_beta
+            _______    _______
+
+    j=17     1.73      0.91264
+
+xxxxx Shift to: xxxxx
+            fl_crra    fl_beta
+            _______    _______
+
+    j=18    1.7018     0.95934
+
+xxxxx Shift to: xxxxx
+            fl_crra    fl_beta
+            _______    _______
+
+    j=19    3.1262     0.96442
+
+xxxxx Shift to: xxxxx
+            fl_crra    fl_beta
+            _______    _______
+
+    j=20    3.1273     0.92018
+
+-------------------------
+xxxxxx tb_outcomes xxxxxx
+                      variablenames    it_pcombi_ctr    fl_crra    fl_beta     mean       sd       coefofvar      min       max       pYis0      pYls0     pYgr0      pYisMINY      pYisMAXY       p0_1        p1         p5         p10         p15         p20         p25        p35        p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
+                      _____________    _____________    _______    _______    ______    _______    _________    _______    ______    ________    _____    _______    __________    ___________    _______    _______    _______    ________    ________    ________    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_a_v1    'cl_mt_pol_a'          1          3.7859     0.93344    2.8959     2.5842     0.89238           0        50    0.032683      0      0.96732      0.032683     1.3544e-17          0          0    0.13351     0.33378     0.53405     0.73431    0.93458     1.4019     2.2029    3.2043    4.1389    4.7397    5.4072    6.4085    8.0107    11.549    15.888
+    cl_mt_coh_v1      'cl_mt_coh'            1          3.7859     0.93344    4.2483     2.8433     0.66928     0.44468    54.536           0      0            1    0.00078348     2.6934e-18    0.51297    0.68262     1.0023      1.3189      1.5953       1.869       2.14     2.6766     3.5796    4.6788    5.6456    6.2722    7.0558    8.1197    9.8303    13.514    18.141
+    cl_mt_pol_c_v1    'cl_mt_pol_c'          1          3.7859     0.93344    1.3524      0.288     0.21296     0.44468    4.5358           0      0            1    0.00078348     2.6934e-18    0.51297    0.68262    0.88213     0.98277      1.0595      1.1313      1.152     1.2371      1.344    1.4667    1.5359    1.5931    1.6394    1.7169    1.8301    2.0449    2.2623
+    cl_mt_pol_a_v2    'cl_mt_pol_a'          2          2.1446     0.95494    2.6171     2.6169     0.99994           0        50    0.068867      0      0.93113      0.068867     1.7986e-15          0          0          0    0.066756     0.26702     0.46729    0.66756     1.0681     1.8692    2.8705    3.8051    4.4059    5.1402    6.2083    7.8772    11.549    16.222
+    cl_mt_coh_v2      'cl_mt_coh'            2          2.1446     0.95494    3.9625     2.8722     0.72483     0.44468    54.536           0      0            1     0.0011444     2.5529e-16    0.44468    0.59175    0.90837      1.1163      1.3341      1.5926     1.8049     2.3036     3.1931    4.3301    5.3035    5.9744    6.7512    7.8882    9.6694    13.567    18.449
+    cl_mt_pol_c_v2    'cl_mt_pol_c'          2          2.1446     0.95494    1.3454    0.29084     0.21617     0.44468    4.5358           0      0            1     0.0011444     2.5529e-16    0.44468    0.59175    0.85587     0.97846      1.0519       1.128     1.1454     1.2321     1.3577    1.4617    1.5375    1.5868    1.6327    1.7087     1.822    2.0115    2.2527
+    cl_mt_pol_a_v3    'cl_mt_pol_a'          3          1.9074     0.94245    1.3561     1.6272      1.1999           0        50     0.14716      0      0.85284       0.14716     6.6225e-37          0          0          0           0    0.066756    0.066756    0.13351    0.40053    0.80107    1.4019    1.9359    2.3364    2.8037    3.5381    4.6729    7.2764    10.614
+    cl_mt_coh_v3      'cl_mt_coh'            3          1.9074     0.94245      2.67     1.9018     0.71226     0.44468    54.536           0      0            1     0.0018354    -5.6514e-36    0.44468    0.59175    0.78744     0.90837      1.0479      1.1847     1.2772     1.5953     2.0983    2.8243     3.456    3.9083    4.4557    5.2196    6.5197    9.3272    12.872
+    cl_mt_pol_c_v3    'cl_mt_pol_c'          3          1.9074     0.94245    1.3139    0.32177     0.24489     0.44468    4.5358           0      0            1     0.0018354    -5.6514e-36    0.44468    0.59175    0.78744     0.90837     0.97846      1.0486     1.1196     1.2031     1.3131    1.4283    1.5246    1.5935    1.6353    1.7216    1.8334    2.0642     2.324
+    cl_mt_pol_a_v4    'cl_mt_pol_a'          4          3.2053      0.9311    2.1541     2.1281     0.98793           0        50    0.054345      0      0.94566      0.054345     3.6589e-25          0          0          0     0.13351     0.26702     0.40053    0.53405    0.93458     1.5354    2.3364    3.0708    3.6048    4.2056    5.0067    6.4753    9.4793    13.284
+
+                       variablenames    it_pcombi_ctr    fl_crra    fl_beta     mean       sd       coefofvar      min       max       pYis0      pYls0     pYgr0      pYisMINY      pYisMAXY       p0_1        p1         p5         p10         p15        p20        p25        p35       p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
+                       _____________    _____________    _______    _______    ______    _______    _________    _______    ______    ________    _____    _______    __________    ___________    _______    _______    _______    ________    _______    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______    ______
+
+    cl_mt_pol_c_v17    'cl_mt_pol_c'         17            1.73     0.91264    1.2912    0.37211     0.28818     0.44468    6.0044           0      0            1     0.0025341     -5.286e-37    0.44468    0.59175    0.68262     0.78744    0.90837    0.90837     1.0479      1.118    1.2805      1.42    1.5496    1.6269     1.667    1.7904    1.9123    2.2192    2.4997
+    cl_mt_pol_a_v18    'cl_mt_pol_a'         18          1.7018     0.95934     2.456     2.5596      1.0422           0        50    0.088721      0      0.91128      0.088721     1.5546e-15          0          0          0    0.066756    0.20027    0.33378    0.53405    0.93458    1.6689    2.6702    3.5381    4.2056    4.8732    5.9413    7.6101    11.348    15.955
+    cl_mt_coh_v18      'cl_mt_coh'           18          1.7018     0.95934    3.7974     2.8145     0.74116     0.44468    54.536           0      0            1     0.0012568     2.2105e-16    0.44468    0.59175    0.85587      1.0479     1.2531     1.4628     1.6877     2.1667    3.0322    4.1248    5.0893    5.7248    6.5262    7.6299    9.4089    13.294    18.178
+    cl_mt_pol_c_v18    'cl_mt_pol_c'         18          1.7018     0.95934    1.3414    0.29335     0.21869     0.44468    4.5358           0      0            1     0.0012568     2.2105e-16    0.44468    0.59175     0.8037     0.97467     1.0495     1.1246     1.1437     1.2288    1.3543    1.4578    1.5434     1.583    1.6348    1.7049    1.8172    2.0103    2.2461
+    cl_mt_pol_a_v19    'cl_mt_pol_a'         19          3.1262     0.96442    6.8995     5.3311     0.77268           0        50    0.010397      0       0.9896      0.010397     5.0558e-07          0          0     0.6008      1.2016     1.8024     2.2697     2.8705     3.9386     5.741    7.8772    9.7463    10.881    12.283    14.152     17.29    23.698    31.976
+    cl_mt_coh_v19      'cl_mt_coh'           19          3.1262     0.96442     8.352      5.586     0.66883     0.44468    54.536           0      0            1    0.00026602     2.6544e-08     0.5814    0.86544     1.5953      2.3036     2.9611      3.534     4.1314     5.2946    7.1927    9.3957    11.325    12.541    13.993    15.969     19.18    25.818    34.357
+    cl_mt_pol_c_v19    'cl_mt_pol_c'         19          3.1262     0.96442    1.4525    0.27274     0.18777     0.44468    4.5358           0      0            1    0.00026602     2.6544e-08     0.5814    0.79835    0.99348      1.1112     1.1704     1.2392     1.2715     1.3527    1.4467    1.5459     1.628     1.677    1.7228    1.8012    1.9068    2.1254    2.3729
+    cl_mt_pol_a_v20    'cl_mt_pol_a'         20          3.1273     0.92018    1.6344     1.7459      1.0682           0        50    0.090995      0      0.90901      0.090995    -1.0983e-36          0          0          0    0.066756    0.13351    0.20027    0.33378     0.6008    1.0681    1.7356    2.3364     2.737     3.271    4.0053    5.2069    7.8104    11.148
+    cl_mt_coh_v20      'cl_mt_coh'           20          3.1273     0.92018    2.9552     2.0205     0.68371     0.44468    54.536           0      0            1     0.0014906      2.645e-37    0.44468    0.59175    0.78744     0.99272     1.1296     1.3189     1.4628     1.8138    2.4164    3.1734    3.8665    4.3301    4.8841    5.6873    6.9982    9.8277    13.386
+    cl_mt_pol_c_v20    'cl_mt_pol_c'         20          3.1273     0.92018    1.3209    0.31404     0.23775     0.44468    4.5358           0      0            1     0.0014906      2.645e-37    0.44468    0.59175    0.78744     0.90837    0.98347     1.0529     1.1263     1.2088    1.3106    1.4361    1.5279    1.5686    1.6419    1.7266    1.8389    2.0604    2.3257
+
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% Simulate Savings Model Along Various Parameter Arrays
@@ -843,8 +1067,23 @@ function [tb_outcomes, support_map, param_desc_map] = ff_az_test_gen(varargin)
 %% FF_AZ_TEST_GEN post solution simulation
 % Simulate the model along various dimensions
 %
-% @param bl_simu_cross boolean cross vs gridd simulation. cross: with
+% @param st_simu_type string cross vs gridd simulation. cross: with
 % (x,y), vary X fixing y, vary Y fixing x. grid: all (x,y) \in (X,Y)
+%
+% # _st_simu_type_ = 'c' for cross simulate, if 'c', then each array value
+% of param_tstar_map container is simulated over one by one. So if there
+% are two arrays associated with two keys in param_tstar_map with length N1
+% and N2, the total number of simulations equals to N1 + N2.
+% # _st_simu_type_ = 'g' for grid simulate, if 'g', then all possible
+% combinations of the arrays in param_tstar_map are used to create
+% combinations of parameter values. So if there are two arrays with lengths
+% N1 and N2, there will be N1*N2 number of simulations
+% # _st_simu_type_ = 'r' for random simulate, if 'r', then should specify
+% param_map('it_st_simu_type_g_seed') value. Only the minimum and the
+% maximum values for each array in param_tstar_map matters. Based on these
+% minimum and maximum, and also what is in
+% param_map('it_st_simu_type_g_simun'). Random parameter values will be
+% drawn. 
 %
 % @param it_size_type integer: 
 %  param_map support_map param_tstar_map param_desc_map
@@ -894,7 +1133,7 @@ function [tb_outcomes, support_map, param_desc_map] = ff_az_test_gen(varargin)
 % Loops to Vary for Simulations Below
 it_size_type = 2;
 cl_st_param_keys = {'fl_crra', 'fl_beta'};
-bl_simu_cross = true; % if false, simu full grid
+st_simu_type = 'r'; % 'c' for cross or 'g' for grid or 'r' rand
 
 %% Default Parameters
 
@@ -917,6 +1156,10 @@ support_map('st_mat_test_path') = [st_matimg_path_root '/test/ff_az_ds_vecsv/mat
 % generate, if file exists does not generate.
 support_map('bl_replacefile') = true;
 support_map('bl_display_simu_stats') = true;
+
+% param map modification
+param_map('it_st_simu_type_g_seed') = 123;
+param_map('it_st_simu_type_g_simun') = 20;
 
 %% Array Parameters
 
@@ -950,7 +1193,7 @@ param_desc_map(ls_st_param_key{9}) = {'Asset Grid N'};
 
 %% Default
 
-default_params = {bl_simu_cross it_size_type cl_st_param_keys ...
+default_params = {st_simu_type it_size_type cl_st_param_keys ...
                     param_map support_map param_tstar_map param_desc_map};
 
 %% Parse Inputs
@@ -959,7 +1202,7 @@ default_params = {bl_simu_cross it_size_type cl_st_param_keys ...
 params_len = length(varargin);
 [default_params{1:params_len}] = varargin{:};
 
-bl_simu_cross = default_params{1};
+st_simu_type = default_params{1};
 it_size_type = default_params{2};
 cl_st_param_keys = default_params{3};
 
@@ -980,9 +1223,11 @@ param_map('ar_param_keys_idx') = ar_param_keys_idx;
 % If bl_replacefile is true, that means the existing file must be replaced,
 % which will set bl_gen to true
 
-params_group = values(support_map, ...
-    {'bl_replacefile', 'bl_display_simu_stats'});
+params_group = values(support_map, {'bl_replacefile', 'bl_display_simu_stats'});
 [bl_replacefile, bl_display_simu_stats] = params_group{:};
+
+params_group = values(param_map, {'it_st_simu_type_g_seed', 'it_st_simu_type_g_simun'});
+[it_st_simu_type_g_seed, it_st_simu_type_g_simun] = params_group{:};
 
 %% Store Mat Strings
 %
@@ -997,8 +1242,8 @@ it_total_length = sum(cell2mat(cellfun(@(m) length(param_tstar_map(m)), ...
 support_map('st_mat_test_prefix') = [''];
 support_map('st_mat_test_name_main') = ['r'];
 support_map('st_mat_test_suffix') = ['_g' strrep(num2str(ar_param_keys_idx), '  ', '') ...
-                                     '_c' num2str(bl_simu_cross) 't' num2str(it_size_type) ...
-                                     'l' num2str(it_total_length)];
+                                     '_c' st_simu_type ...
+                                     '_t' num2str(it_size_type) 'l' num2str(it_total_length)];
 
 %% Set Solve Sizes
 
@@ -1067,7 +1312,7 @@ else
     % value point.
     %
     
-    if (bl_simu_cross)
+    if (strcmp(st_simu_type, 'c'))
         
         for it_pcombi_ctr = 1:length(cl_st_param_keys)
             
@@ -1125,28 +1370,38 @@ else
     % all possible combinations of X and Y arrays.
     %
     
-    if (~bl_simu_cross)
+    if (ismember(st_simu_type, ["g", "r"]))
+        
         % Get Arrays to be Meshed in Cells
         cl_ar_param_subset_values = values(param_tstar_map, cl_st_param_keys);
         
         % Generate all possible combinations of parameters subsets
-        cl_mt_all = cl_ar_param_subset_values;
-        [cl_mt_all{:}] = ndgrid(cl_ar_param_subset_values{:});
-        mt_param_vals_combi = cell2mat(cellfun(@(m) m(:), cl_mt_all, 'uni', 0));
+        if (strcmp(st_simu_type, 'g'))
+            cl_mt_all = cl_ar_param_subset_values;
+            [cl_mt_all{:}] = ndgrid(cl_ar_param_subset_values{:});
+            mt_param_vals_combi = cell2mat(cellfun(@(m) m(:), cl_mt_all, 'uni', 0));
+        elseif (strcmp(st_simu_type, 'r'))
+            % random draw within max and min N count
+            rng(it_st_simu_type_g_seed);            
+            mt_param_vals_combi = cell2mat(cellfun(@(m) ...
+                                       rand([it_st_simu_type_g_simun,1]).*(max(param_tstar_map(m)) - min(param_tstar_map(m))) ...
+                                       + min(param_tstar_map(m)), ...
+                                       cl_st_param_keys, 'UniformOutput', false));
+        end
         
         % Sizes
         it_test_combi_n = size(mt_param_vals_combi,1);
         
-        % Convert from Matrix to Table for Clarity
+        % Show Combinations of Parameters Simulating over, convert from Matrix to Table for Clarity
         tb_pvals_combi = array2table(mt_param_vals_combi);
-        tb_pvals_combi.Properties.VariableNames = ls_st_param_key(cl_st_param_keys);
+        tb_pvals_combi.Properties.VariableNames = cl_st_param_keys;
         tb_pvals_combi.Properties.RowNames = strcat('j=', string(1:size(mt_param_vals_combi,1)));
         clear mt_param_vals_combi;
         
         % Display
         disp(head(tb_pvals_combi, 10));
         disp(tail(tb_pvals_combi, 10));
-        
+                
         for it_pcombi_ctr = 1:it_test_combi_n
             
             tb_row_param_adj_cur = tb_pvals_combi(it_pcombi_ctr, :);

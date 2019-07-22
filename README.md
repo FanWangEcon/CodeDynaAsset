@@ -127,7 +127,7 @@ Simulate and graph effects of changing parameters on outcomes.
 **Simulation Functions**:
 
 1.  *az* model [simulate model](https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_test_gen.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solvepost/ff_az_test_gen.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_test_gen.html)
-    * cross and grid simulation
+    * *cross* vs *full grid* vs *random* simulation
     * outputs to table where columns are statistics, rows are variables, groups of rows are different simulations
 2. *az* model [graphi simulation results](https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_test_analyze.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solvepost/ff_az_test_analyze.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_test_analyze.html)
     * graph various aggregate and distributional outcomes

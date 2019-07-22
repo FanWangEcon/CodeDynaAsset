@@ -39,7 +39,7 @@ close all;
 clear all;
 
 % Start Profiling
-bl_profile = true;
+bl_profile = false;
 if (bl_profile)
     profile off;
     profile on;
