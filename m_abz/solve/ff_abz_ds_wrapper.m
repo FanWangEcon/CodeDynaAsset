@@ -26,7 +26,7 @@ function [result_map] = ff_abz_ds_wrapper(varargin)
 % # it_subset = 8 is matlab publish
 % # it_subset = 9 is invoke operational (only final stats) and coh graph
 
-it_param_set = 6;
+it_param_set = 8;
 bl_input_override = true;
 [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
 
@@ -39,13 +39,13 @@ bl_input_override = true;
 
 % These parameters below for comparison with abz_fibs model
 % param_map('fl_r_save') = 0.025;
-param_map('fl_c_min') = 0.02;
-param_map('fl_z_r_borr_poiss_mean') = 20;
-param_map('fl_z_r_borr_max') = 0.035;
-param_map('fl_z_r_borr_min') = 0.035;
-param_map('fl_z_r_borr_n') = 1;
-param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
-param_map('bl_default') = true;
+% param_map('fl_c_min') = 0.02;
+% param_map('fl_z_r_borr_poiss_mean') = 20;
+% param_map('fl_z_r_borr_max') = 0.035;
+% param_map('fl_z_r_borr_min') = 0.035;
+% param_map('fl_z_r_borr_n') = 1;
+% param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+% param_map('bl_default') = true;
 
 % param_map('st_analytical_stationary_type') = 'loop';
 % param_map('st_analytical_stationary_type') = 'vector';

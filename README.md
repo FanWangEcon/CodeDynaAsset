@@ -80,7 +80,7 @@ Deriving asset distributions relies on two functions from the [/tools/](https://
 3. all model [distributional statistics](https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/fft_disc_rand_var_stats.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html)
     * table: mean, sd, percentiles, fraction of outcome/asset held by household up to x percentile
 4. all model [store statistics to container](https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_ds_post_stats.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solvepost/ff_az_ds_post_stats.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_ds_post_stats.html)
-    * This is a manager file 
+    * This is a manager file
 
 
 ## 1.3 Solution Support (AZ)
@@ -131,7 +131,7 @@ Simulate and graph effects of changing parameters on outcomes.
 1.  *az* model [simulate model](https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_test_gen.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solvepost/ff_az_test_gen.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_test_gen.html)
     * *cross* vs *full grid* vs *random* simulation
     * outputs to table where columns are statistics, rows are variables, groups of rows are different simulations
-2. *az* model [graphi simulation results](https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_test_analyze.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solvepost/ff_az_test_analyze.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_test_analyze.html)
+2. *az* model [graph simulation results](https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_test_analyze.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/solvepost/ff_az_test_analyze.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_test_analyze.html)
     * graph various aggregate and distributional outcomes
 
 **Simulation Results**:
@@ -142,6 +142,8 @@ Simulate and graph effects of changing parameters on outcomes.
     * cross test, [adjust shock persistence and variance](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_shock/html/fsi_az_ds_vecsv_shock_cross.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/test/ff_az_ds_vecsv/test_shock/fsi_az_ds_vecsv_shock_cross.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_shock/html/fsi_az_ds_vecsv_shock_cross.html)
 3. *az* the effects *prices* on distributional outcomes
     * cross test, [adjust wage and savings rate](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_price/html/fsi_az_ds_vecsv_price_cross.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/test/ff_az_ds_vecsv/test_price/fsi_az_ds_vecsv_price_cross.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_price/html/fsi_az_ds_vecsv_price_cross.html)
+4. *az* the effects *preference + shocks + prices* on distributional outcomes
+    * random test, [adjust preference shocks prices](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_joint/html/fsi_az_ds_vecsv_joint_rand.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/test/ff_az_ds_vecsv/test_joint/fsi_az_ds_vecsv_joint_rand.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_joint/html/fsi_az_ds_vecsv_joint_rand.html)
 
 # 2. The Savings + Borrowing Problem (ABZ)
 

@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Test Preference With Default (Save + Borr Distribution)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-06-29"><meta name="DC.source" content="fsi_abz_ds_vecsv_pref_default.m"><style type="text/css">
+      --><title>Test Preference With Default (Save + Borr Distribution)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-22"><meta name="DC.source" content="fsi_abz_ds_vecsv_pref_default.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -76,14 +76,9 @@ ar_fl_crra = [1, 1.5, 2.0];
 <span class="comment">% ar_it_a_n_hg = [750, 1250, 1750, 2250];</span>
 <span class="comment">% ar_it_z_n_hg = [15, 19, 23, 27];</span>
 ar_it_a_n_hg = [750];
-ar_it_z_n_hg = [15];
 
 <span class="comment">% Borrowing/Savings Parameters</span>
 bl_default = true;
-fl_c_min = 0.01; <span class="comment">% irrelevant when bl_default = false</span>
-fl_b_bd = -20;
-fl_r_save = 0.02;
-fl_r_borr = 0.065;
 </pre><h2 id="2">Simulate Model with Discount Low</h2><pre class="codeinput"><span class="keyword">for</span> fl_crra = ar_fl_crra
 
     disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
@@ -98,7 +93,6 @@ fl_r_borr = 0.065;
     disp(<span class="string">''</span>);
 
     <span class="comment">% Call Default Parameters &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param&gt;</span>
-    bl_input_override = true;
     it_param_set = 9;
     [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
 
@@ -108,12 +102,6 @@ fl_r_borr = 0.065;
 
     <span class="comment">% Borrowing Parameters</span>
     param_map(<span class="string">'bl_default'</span>) = bl_default;
-    param_map(<span class="string">'fl_c_min'</span>) = fl_c_min;
-    param_map(<span class="string">'fl_b_bd'</span>) = fl_b_bd;
-
-    <span class="comment">% Interest Rates</span>
-    param_map(<span class="string">'fl_r_save'</span>) = fl_r_save;
-    param_map(<span class="string">'fl_r_borr'</span>) = fl_r_borr;
 
     <span class="comment">% Display Parameters</span>
     support_map(<span class="string">'bl_display'</span>) = false;
@@ -124,16 +112,16 @@ fl_r_borr = 0.065;
     <span class="keyword">for</span> it_accuracy = 1:length(ar_it_a_n_hg)
         <span class="comment">% Accuracy Regular</span>
         param_map(<span class="string">'it_a_n'</span>) = ar_it_a_n_hg(it_accuracy);
-        param_map(<span class="string">'it_z_n'</span>) = ar_it_z_n_hg(it_accuracy);
+        it_z_n = param_map(<span class="string">'it_z_n'</span>);
         disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
-        disp([<span class="string">'it_a_n = '</span> num2str(ar_it_a_n_hg(it_accuracy)) <span class="string">', it_z_n = '</span> num2str(ar_it_z_n_hg(it_accuracy))]);
+        disp([<span class="string">'it_a_n = '</span> num2str(ar_it_a_n_hg(it_accuracy)) <span class="string">', it_z_n = '</span> it_z_n]);
         disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
         <span class="comment">% Call Grid Generator &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid&gt;</span>
-        [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+        [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map);
         <span class="comment">% Call Dynamic Programming Problem &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv&gt;</span>
         result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
         <span class="comment">% Call Distribution CProgram</span>
-        result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+        result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map);
     <span class="keyword">end</span>
 
     <span class="comment">% Snap</span>
@@ -150,17 +138,69 @@ fl_crra = 1
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
-it_a_n = 750, it_z_n = 15
+it_a_n = 750, it_z_n = K
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
-Elapsed time is 2.220333 seconds.
-Elapsed time is 0.696437 seconds.
+Elapsed time is 12.880806 seconds.
+Elapsed time is 8.953036 seconds.
+xxx PERCENTILES AND STATS xxx
 tb_outcomes_meansdperc: mean, sd, percentiles
-                      mean        sd      coefofvar      min       max       pYis0      pYls0       pYgr0       pYisMINY      pYisMAXY       p0_1        p1         p5         p10        p15        p20        p25        p35        p50        p65        p75        p80        p85         p90       p95       p99      p99_9 
-                     _______    ______    _________    _______    ______    _______    _______    _________    __________    ___________    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    ________    _______    ______    ______    ______
+xxx All Variables Fraction of Y Held up to Percentile xxx
+tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
+xxx Variance and Covariance xxx
+tb_outcomes_covvar: variance correlation
+    OriginalVariableNames    cl_mt_pol_a     cl_mt_coh     cl_mt_pol_c
+    _____________________    ___________    ___________    ___________
 
-    cl_mt_pol_a      -9.4044     6.638    -0.70584         -20    46.916    0.13811    0.86189    7.995e-32       0.13811    -7.0176e-35        -20        -20        -20        -20    -16.729    -16.168    -15.701    -12.523     -8.972    -5.7009    -3.0841    -2.7103     -2.0561          0         0         0         0
-    cl_mt_pol_coh    -8.7357    7.0971    -0.81243     -20.855    54.286          0    0.85594      0.14406    0.00045829    -7.0176e-35    -20.787    -20.617    -20.252    -19.906    -16.609     -16.01    -15.475    -12.043    -8.3447    -4.8627    -2.2749    -1.5781    -0.33417    0.90837    1.3944    1.8555    2.4692
-    cl_mt_pol_c       3.4417    1.4011     0.40709        0.01    7.3699          0          0            1       0.13811    -7.0176e-35       0.01       0.01       0.01       0.01     3.2911     3.5945     3.7229     3.8541     3.9423     4.0098      4.064     4.1273      4.2214     4.3126    4.4855     4.872    5.2336
+    'mean'                       -9.0662        -8.5735         3.4737
+    'sd'                          6.6964         7.3124         1.4697
+    'coefofvar'                 -0.73861       -0.85291         0.4231
+    'min'                            -20        -21.455           0.01
+    'max'                         47.477         54.536         7.0592
+    'pYis0'                      0.14533              0              0
+    'pYls0'                      0.85467         0.8445              0
+    'pYgr0'                   6.7905e-33         0.1555              1
+    'pYisMINY'                   0.14536     0.00029767        0.14533
+    'pYisMAXY'               -1.5821e-35    -1.5821e-35    -1.5821e-35
+    'p0_1'                           -20        -21.387           0.01
+    'p1'                             -20        -21.113           0.01
+    'p5'                             -20        -20.691           0.01
+    'p10'                            -20        -20.291           0.01
+    'p15'                        -16.449        -16.617         3.2782
+    'p20'                        -15.701        -15.823          3.675
+    'p25'                        -15.234        -15.326         3.7302
+    'p35'                        -11.776         -11.48         3.8028
+    'p50'                        -8.3178        -7.6507         3.9139
+    'p65'                        -5.1402        -4.2736         4.0471
+    'p75'                        -2.8972        -2.1246         4.1933
+    'p80'                        -2.3364        -1.3059           4.27
+    'p85'                        -1.5888        0.44468         4.3901
+    'p90'                              0         1.0479         4.5279
+    'p95'                              0         1.3944         4.7526
+    'p99'                              0         1.8555         5.1987
+    'p99_9'                            0         2.8484         5.7025
+    'fl_cov_cl_mt_pol_a'          44.841         11.604        -6.2116
+    'fl_cor_cl_mt_pol_a'               1        0.23698       -0.63116
+    'fl_cov_cl_mt_coh'            11.604         53.471         6.2734
+    'fl_cor_cl_mt_coh'           0.23698              1        0.58374
+    'fl_cov_cl_mt_pol_c'         -6.2116         6.2734           2.16
+    'fl_cor_cl_mt_pol_c'        -0.63116        0.58374              1
+    'fracByP0_1'                 0.32066      0.0026397     0.00041836
+    'fracByP1'                   0.32066       0.037955     0.00041836
+    'fracByP5'                   0.32066         0.1579     0.00041836
+    'fracByP10'                  0.32066        0.26492     0.00041836
+    'fracByP15'                  0.33079        0.35674      0.0046052
+    'fracByP20'                   0.4223        0.45089       0.056096
+    'fracByP25'                  0.50799        0.54208        0.10911
+    'fracByP35'                  0.65412        0.69685        0.21735
+    'fracByP50'                  0.81917        0.86807        0.38371
+    'fracByP65'                  0.93262        0.97249         0.5594
+    'fracByP75'                  0.97962          1.008        0.67467
+    'fracByP80'                  0.99268         1.0178        0.73538
+    'fracByP85'                  0.99961         1.0217        0.79772
+    'fracByP90'                        1         1.0148        0.86171
+    'fracByP95'                        1         1.0076        0.92781
+    'fracByP99'                        1         1.0024        0.98437
+    'fracByP99_9'                      1         1.0001        0.99831
 
 </pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -169,17 +209,69 @@ fl_crra = 1.5
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
-it_a_n = 750, it_z_n = 15
+it_a_n = 750, it_z_n = K
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
-Elapsed time is 2.768589 seconds.
-Elapsed time is 0.517789 seconds.
+Elapsed time is 9.348130 seconds.
+Elapsed time is 7.070764 seconds.
+xxx PERCENTILES AND STATS xxx
 tb_outcomes_meansdperc: mean, sd, percentiles
-                      mean        sd       coefofvar      min       max       pYis0       pYls0      pYgr0      pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15        p20        p25        p35        p50         p65         p75          p80        p85        p90       p95       p99      p99_9 
-                     _______    _______    _________    _______    ______    ________    _______    _______    __________    __________    _______    _______    _______    _______    _______    _______    _______    _______    _______    _________    ________    _________    ______    _______    ______    ______    ______
+xxx All Variables Fraction of Y Held up to Percentile xxx
+tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
+xxx Variance and Covariance xxx
+tb_outcomes_covvar: variance correlation
+    OriginalVariableNames    cl_mt_pol_a     cl_mt_coh     cl_mt_pol_c
+    _____________________    ___________    ___________    ___________
 
-    cl_mt_pol_a      -4.6003     5.5202     -1.1999         -20    49.252    0.035766    0.81951    0.14472      0.014018    2.3961e-35        -20        -20    -16.729    -13.551    -11.028    -9.0654    -7.3832    -5.0467    -2.7103       -1.215    -0.46729    -0.093458         0    0.37383    1.1215    3.0841    5.6075
-    cl_mt_pol_coh    -3.6268     5.9557     -1.6421     -20.855    54.286           0    0.65409    0.34591    7.6262e-05    2.3961e-35    -20.617    -20.091    -16.558    -13.237     -10.55    -8.4443    -6.7043     -4.166    -1.7009    -0.046999     0.79721       1.1092    1.4897     1.9898    2.9196    5.0967    7.9007
-    cl_mt_pol_c       1.2376    0.26919      0.2175        0.01    5.0335           0          0          1      0.013046    2.3961e-35       0.01       0.01     1.0483     1.0656     1.0786     1.0907     1.1023     1.1242     1.1686       1.2396      1.3094       1.3791    1.4916     1.6141    1.7704    2.0316    2.3082
+    'mean'                       -0.7175        0.46554         1.2713
+    'sd'                          3.4938         3.8937        0.31999
+    'coefofvar'                  -4.8694         8.3637         0.2517
+    'min'                            -20        -21.455           0.01
+    'max'                         49.533         54.536         5.0031
+    'pYis0'                     0.052979              0              0
+    'pYls0'                      0.48326        0.24558              0
+    'pYgr0'                      0.46376        0.75442              1
+    'pYisMINY'                  0.004358     1.5096e-05      0.0042782
+    'pYisMAXY'               -1.1977e-34    -1.1977e-34    -1.1977e-34
+    'p0_1'                           -20        -20.992           0.01
+    'p1'                         -16.916        -17.103        0.87296
+    'p5'                         -7.6636        -7.1924        0.91048
+    'p10'                        -3.5514        -2.8014        0.93636
+    'p15'                        -2.1495        -1.2804        0.95644
+    'p20'                        -1.4019       -0.46265        0.97436
+    'p25'                       -0.93458       0.064028        0.99459
+    'p35'                       -0.37383        0.64506         1.0734
+    'p50'                              0         1.1437         1.2088
+    'p65'                        0.28037         1.6877         1.3991
+    'p75'                        0.65421         2.1667         1.5159
+    'p80'                        0.93458         2.5237         1.5384
+    'p85'                         1.3084         2.9271         1.6374
+    'p90'                         1.8692         3.5774          1.699
+    'p95'                         2.8037         4.5782         1.8337
+    'p99'                         4.8598         6.9505         2.0907
+    'p99_9'                       7.5701         9.9201         2.3687
+    'fl_cov_cl_mt_pol_a'          12.207         12.614        0.47086
+    'fl_cor_cl_mt_pol_a'               1        0.92726        0.42116
+    'fl_cov_cl_mt_coh'            12.614         15.161        0.68458
+    'fl_cor_cl_mt_coh'           0.92726              1        0.54945
+    'fl_cov_cl_mt_pol_c'         0.47086        0.68458         0.1024
+    'fl_cor_cl_mt_pol_c'         0.42116        0.54945              1
+    'fracByP0_1'                 0.12148      -0.048191     3.3652e-05
+    'fracByP1'                   0.26264       -0.41434      0.0039813
+    'fracByP5'                   0.91133        -1.3986       0.032343
+    'fracByP10'                   1.2785        -1.8894       0.069016
+    'fracByP15'                   1.4694        -2.0981        0.10558
+    'fracByP20'                     1.59        -2.1892        0.14517
+    'fracByP25'                   1.6641        -2.2097        0.18353
+    'fracByP35'                   1.7513        -2.1274        0.26301
+    'fracByP50'                    1.781        -1.8318        0.40344
+    'fracByP65'                   1.7525        -1.3648        0.55589
+    'fracByP75'                   1.6858       -0.96308        0.66429
+    'fracByP80'                   1.6299       -0.71064        0.72545
+    'fracByP85'                   1.5456       -0.42414         0.7869
+    'fracByP90'                   1.4372      -0.073568        0.85146
+    'fracByP95'                   1.2762        0.35228        0.92147
+    'fracByP99'                   1.0844        0.82312         0.9828
+    'fracByP99_9'                  1.012        0.97634        0.99809
 
 </pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -188,17 +280,69 @@ fl_crra = 2
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
-it_a_n = 750, it_z_n = 15
+it_a_n = 750, it_z_n = K
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
-Elapsed time is 3.466968 seconds.
-Elapsed time is 0.197790 seconds.
+Elapsed time is 14.092855 seconds.
+Elapsed time is 5.053599 seconds.
+xxx PERCENTILES AND STATS xxx
 tb_outcomes_meansdperc: mean, sd, percentiles
-                       mean        sd       coefofvar      min       max       pYis0       pYls0      pYgr0      pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15        p20        p25        p35        p50         p65         p75        p80       p85       p90       p95       p99      p99_9 
-                     ________    _______    _________    _______    ______    ________    _______    _______    __________    __________    _______    _______    _______    _______    _______    _______    _______    _______    ________    ________    _______    _______    ______    ______    ______    ______    ______
+xxx All Variables Fraction of Y Held up to Percentile xxx
+tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
+xxx Variance and Covariance xxx
+tb_outcomes_covvar: variance correlation
+    OriginalVariableNames    cl_mt_pol_a    cl_mt_coh     cl_mt_pol_c
+    _____________________    ___________    __________    ___________
 
-    cl_mt_pol_a       -2.0628     3.7494     -1.8176         -20    49.813    0.021383    0.69556    0.28305    0.00044644    1.9251e-22    -19.346    -14.766    -9.1589    -7.0093    -5.6075    -4.5794    -3.8318    -2.6168      -1.215    -0.28037    0.28037    0.56075     1.028    1.5888    2.7103    5.0467    8.1308
-    cl_mt_pol_coh    -0.93665     4.1052     -4.3829     -20.855    54.286           0    0.51323    0.48677    6.2565e-06    1.9251e-22    -19.456    -14.617    -8.6468     -6.276    -4.8246    -3.7679    -2.8855      -1.58    -0.10835     0.95975     1.6085     1.9898    2.5228    3.2291    4.4294    7.0449    10.379
-    cl_mt_pol_c        1.1372    0.36218     0.31848        0.01    4.4727           0          0          1    0.00054285    1.9251e-22    0.26975    0.37068    0.54599    0.68797    0.77844    0.84527    0.90089    0.98885      1.0934      1.2431     1.3981     1.4513      1.53    1.6411    1.7711    1.9888    2.2468
+    'mean'                       0.45506        1.7143        1.2604 
+    'sd'                          2.1517        2.4669       0.33768 
+    'coefofvar'                   4.7283        1.4391       0.26791 
+    'min'                            -20       -21.455          0.01 
+    'max'                             50        54.536        4.5358 
+    'pYis0'                     0.059336             0             0 
+    'pYls0'                      0.36199       0.18563             0 
+    'pYgr0'                      0.57868       0.81437             1 
+    'pYisMINY'                5.2495e-05    2.9593e-07    6.0343e-05 
+    'pYisMAXY'               -2.2026e-35    2.9296e-36    2.9296e-36 
+    'p0_1'                       -11.495       -11.326        0.3796 
+    'p1'                         -5.0467       -4.4342       0.54362 
+    'p5'                         -2.7103       -1.9756       0.74991 
+    'p10'                        -1.7757       -0.9433       0.84548 
+    'p15'                         -1.215      -0.32627       0.91221 
+    'p20'                       -0.84112       0.12683       0.95987 
+    'p25'                       -0.56075       0.48122       0.99102 
+    'p35'                      -0.093458       0.97903        1.0865 
+    'p50'                        0.28037        1.5268        1.2581 
+    'p65'                        0.84112        2.2566        1.4178 
+    'p75'                         1.4019        2.9093        1.5035 
+    'p80'                         1.7757        3.3313        1.5546 
+    'p85'                          2.243        3.8851        1.6102 
+    'p90'                         2.9907        4.6514        1.7051 
+    'p95'                         4.1121        5.9193        1.8344 
+    'p99'                          6.729        8.7503         2.037 
+    'p99_9'                           10        12.242        2.3165 
+    'fl_cov_cl_mt_pol_a'          4.6297        5.2862       0.65594 
+    'fl_cor_cl_mt_pol_a'               1        0.9959       0.90277 
+    'fl_cov_cl_mt_coh'            5.2862        6.0856       0.77153 
+    'fl_cor_cl_mt_coh'            0.9959             1       0.92616 
+    'fl_cov_cl_mt_pol_c'         0.65594       0.77153       0.11403 
+    'fl_cor_cl_mt_pol_c'         0.90277       0.92616             1 
+    'fracByP0_1'               -0.032799    -0.0087894    0.00027104 
+    'fracByP1'                  -0.16369     -0.041225      0.003694 
+    'fracByP5'                  -0.49517      -0.10814      0.025006 
+    'fracByP10'                 -0.74629        -0.149      0.057087 
+    'fracByP15'                 -0.91261      -0.16701      0.091992 
+    'fracByP20'                  -1.0162      -0.16951       0.12929 
+    'fracByP25'                  -1.0818      -0.16061       0.16828 
+    'fracByP35'                  -1.1438      -0.11686       0.25007 
+    'fracByP50'                  -1.1035     -0.006582       0.38929 
+    'fracByP65'                  -0.9294       0.15912       0.54891 
+    'fracByP75'                 -0.67376       0.30707       0.66277 
+    'fracByP80'                 -0.51282       0.39669       0.72387 
+    'fracByP85'                 -0.28689       0.50329        0.7865 
+    'fracByP90'                 0.014012       0.62547        0.8525 
+    'fracByP95'                  0.37656       0.77762       0.92226 
+    'fracByP99'                  0.82534       0.94013       0.98302 
+    'fracByP99_9'                0.97571       0.99207       0.99811 
 
 </pre><h2 id="3">Simulate Model with Discount Medium</h2><pre class="codeinput">close <span class="string">all</span>
 
@@ -216,7 +360,6 @@ tb_outcomes_meansdperc: mean, sd, percentiles
     disp(<span class="string">''</span>);
 
     <span class="comment">% Call Default Parameters &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param&gt;</span>
-    bl_input_override = true;
     it_param_set = 9;
     [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
 
@@ -226,12 +369,6 @@ tb_outcomes_meansdperc: mean, sd, percentiles
 
     <span class="comment">% Borrowing Parameters</span>
     param_map(<span class="string">'bl_default'</span>) = bl_default;
-    param_map(<span class="string">'fl_c_min'</span>) = fl_c_min;
-    param_map(<span class="string">'fl_b_bd'</span>) = fl_b_bd;
-
-    <span class="comment">% Interest Rates</span>
-    param_map(<span class="string">'fl_r_save'</span>) = fl_r_save;
-    param_map(<span class="string">'fl_r_borr'</span>) = fl_r_borr;
 
     <span class="comment">% Display Parameters</span>
     support_map(<span class="string">'bl_display'</span>) = false;
@@ -242,16 +379,16 @@ tb_outcomes_meansdperc: mean, sd, percentiles
     <span class="keyword">for</span> it_accuracy = 1:length(ar_it_a_n_hg)
         <span class="comment">% Accuracy Regular</span>
         param_map(<span class="string">'it_a_n'</span>) = ar_it_a_n_hg(it_accuracy);
-        param_map(<span class="string">'it_z_n'</span>) = ar_it_z_n_hg(it_accuracy);
+        it_z_n = param_map(<span class="string">'it_z_n'</span>);
         disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
-        disp([<span class="string">'it_a_n = '</span> num2str(ar_it_a_n_hg(it_accuracy)) <span class="string">', it_z_n = '</span> num2str(ar_it_z_n_hg(it_accuracy))]);
+        disp([<span class="string">'it_a_n = '</span> num2str(ar_it_a_n_hg(it_accuracy)) <span class="string">', it_z_n = '</span> it_z_n]);
         disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
         <span class="comment">% Call Grid Generator &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid&gt;</span>
-        [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+        [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map);
         <span class="comment">% Call Dynamic Programming Problem &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv&gt;</span>
         result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
         <span class="comment">% Call Distribution CProgram</span>
-        result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+        result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map);
     <span class="keyword">end</span>
 
     <span class="comment">% Snap</span>
@@ -268,17 +405,69 @@ fl_crra = 1
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
-it_a_n = 750, it_z_n = 15
+it_a_n = 750, it_z_n = K
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
-Elapsed time is 2.571748 seconds.
-Elapsed time is 0.218563 seconds.
+Elapsed time is 17.119755 seconds.
+Elapsed time is 26.110272 seconds.
+xxx PERCENTILES AND STATS xxx
 tb_outcomes_meansdperc: mean, sd, percentiles
-                      mean        sd      coefofvar      min       max       pYis0      pYls0        pYgr0        pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15        p20        p25        p35        p50        p65        p75        p80         p85        p90       p95       p99      p99_9 
-                     _______    ______    _________    _______    ______    _______    _______    ___________    __________    __________    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _________    ______    ______    ______    ______
+xxx All Variables Fraction of Y Held up to Percentile xxx
+tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
+xxx Variance and Covariance xxx
+tb_outcomes_covvar: variance correlation
+    OriginalVariableNames    cl_mt_pol_a     cl_mt_coh     cl_mt_pol_c
+    _____________________    ___________    ___________    ___________
 
-    cl_mt_pol_a      -9.1475    6.6362    -0.72547         -20    48.598    0.13661    0.86339    -1.5534e-32       0.13661    2.9049e-36        -20        -20        -20        -20    -16.449    -15.981    -15.421     -12.15    -8.5981    -5.3271    -2.8037    -2.5234      -1.7757         0         0         0         0
-    cl_mt_pol_coh    -8.4621    7.1008    -0.83913     -20.855    54.286          0    0.85268        0.14732    0.00045365    2.9049e-36    -20.787    -20.617    -20.252    -19.906    -16.337    -15.811    -15.228    -11.683    -7.8621    -4.4264    -1.9781     -1.293    -0.038066    0.9461    1.3944    1.8555    2.6493
-    cl_mt_pol_c       3.4283    1.3963      0.4073        0.01    6.5101          0          0              1       0.13661    5.6812e-09       0.01       0.01       0.01       0.01     3.4726     3.6336     3.6892     3.7321      3.816     3.9415     4.0682     4.1574       4.2569    4.3894     4.624    5.0345    5.4327
+    'mean'                       -8.8183        -8.3041        3.4478 
+    'sd'                          6.6945         7.3158        1.4679 
+    'coefofvar'                 -0.75916         -0.881       0.42576 
+    'min'                            -20        -21.455          0.01 
+    'max'                         49.346         54.536        7.0515 
+    'pYis0'                      0.14337              0             0 
+    'pYls0'                      0.85663           0.84             0 
+    'pYgr0'                   4.8289e-32           0.16             1 
+    'pYisMINY'                   0.14302     0.00029794       0.14301 
+    'pYisMAXY'               -2.7006e-34    -2.7006e-34    3.3181e-10 
+    'p0_1'                           -20        -21.387          0.01 
+    'p1'                             -20        -21.113          0.01 
+    'p5'                             -20        -20.691          0.01 
+    'p10'                            -20        -20.291          0.01 
+    'p15'                        -16.075        -16.329         3.315 
+    'p20'                        -15.514        -15.607        3.5112 
+    'p25'                        -15.047        -15.103        3.5452 
+    'p35'                        -11.402        -11.103        3.6647 
+    'p50'                        -7.8505        -7.2019        3.8092 
+    'p65'                        -4.8598        -3.9054        4.0211 
+    'p75'                        -2.6168        -1.8176        4.2027 
+    'p80'                        -2.1495        -1.0522         4.321 
+    'p85'                         -1.215        0.52517        4.4473 
+    'p90'                              0         1.0479        4.6158 
+    'p95'                              0         1.3944         4.886 
+    'p99'                              0         1.8555        5.3616 
+    'p99_9'                            0         2.8484        5.8911 
+    'fl_cov_cl_mt_pol_a'          44.817         12.205       -6.7424 
+    'fl_cor_cl_mt_pol_a'               1        0.24921      -0.68611 
+    'fl_cov_cl_mt_coh'            12.205         53.521        5.4972 
+    'fl_cor_cl_mt_coh'           0.24921              1       0.51188 
+    'fl_cov_cl_mt_pol_c'         -6.7424         5.4972        2.1548 
+    'fl_cor_cl_mt_pol_c'        -0.68611        0.51188             1 
+    'fracByP0_1'                 0.32436        0.00272    0.00041479 
+    'fracByP1'                   0.32436       0.038787    0.00041479 
+    'fracByP5'                   0.32436        0.16073    0.00041479 
+    'fracByP10'                  0.32436         0.2693    0.00041479 
+    'fracByP15'                  0.34087        0.36701     0.0070622 
+    'fracByP20'                  0.42903        0.46313      0.057149 
+    'fracByP25'                  0.51806        0.55549       0.10984 
+    'fracByP35'                  0.66974        0.70995       0.21406 
+    'fracByP50'                   0.8324        0.87921       0.37671 
+    'fracByP65'                  0.93497        0.97866       0.54614 
+    'fracByP75'                  0.98131         1.0117       0.66535 
+    'fracByP80'                  0.99357           1.02       0.72777 
+    'fracByP85'                  0.99972         1.0226        0.7906 
+    'fracByP90'                        1         1.0155       0.85633 
+    'fracByP95'                        1         1.0081       0.92541 
+    'fracByP99'                        1         1.0027       0.98375 
+    'fracByP99_9'                      1         1.0002       0.99826 
 
 </pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -287,17 +476,69 @@ fl_crra = 1.5
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
-it_a_n = 750, it_z_n = 15
+it_a_n = 750, it_z_n = K
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
-Elapsed time is 2.941449 seconds.
-Elapsed time is 0.462474 seconds.
+Elapsed time is 20.783823 seconds.
+Elapsed time is 7.942736 seconds.
+xxx PERCENTILES AND STATS xxx
 tb_outcomes_meansdperc: mean, sd, percentiles
-                      mean        sd       coefofvar      min       max       pYis0       pYls0      pYgr0      pYisMINY      pYisMAXY      p0_1        p1         p5         p10         p15         p20         p25        p35        p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
-                     _______    _______    _________    _______    ______    ________    _______    _______    __________    __________    _______    _______    _______    ________    ________    ________    ________    ______    _______    ______    ______    ______    ______    ______    ______    ______    ______
+xxx All Variables Fraction of Y Held up to Percentile xxx
+tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
+xxx Variance and Covariance xxx
+tb_outcomes_covvar: variance correlation
+    OriginalVariableNames    cl_mt_pol_a    cl_mt_coh     cl_mt_pol_c
+    _____________________    ___________    __________    ___________
 
-    cl_mt_pol_a      0.53138     3.0403      5.7214         -20        50    0.055336     0.3357    0.60896     0.0013719    3.5327e-27        -20     -12.15    -3.3645     -1.8692      -1.215    -0.74766    -0.46729         0    0.37383    1.1215    1.7757     2.243    2.8037    3.6449    5.0467    7.9439    11.776
-    cl_mt_pol_coh     1.7909     3.3412      1.8657     -20.855    54.286           0    0.17236    0.82764    7.6874e-06    7.8835e-28    -19.906     -11.73    -2.5753    -0.98094    -0.24606     0.21508     0.59814    1.0593     1.6854    2.5289    3.3009    3.7826    4.4294    5.2934    6.7589    9.9133    13.962
-    cl_mt_pol_c       1.2864    0.29285     0.22766        0.01    4.2858           0          0          1     0.0013306    7.8835e-28       0.01    0.82857    0.87716     0.92123     0.96044     0.98872      1.0252    1.1432     1.3009    1.4237    1.4911    1.5508     1.603    1.6833    1.7714    1.9992    2.2069
+    'mean'                       1.9272          3.249        1.3246 
+    'sd'                         2.5151         2.7871       0.29922 
+    'coefofvar'                   1.305        0.85781       0.22589 
+    'min'                           -20        -21.455          0.01 
+    'max'                            50         54.536        4.5358 
+    'pYis0'                    0.042245              0             0 
+    'pYls0'                     0.14114       0.035318             0 
+    'pYgr0'                     0.81661        0.96468             1 
+    'pYisMINY'               0.00013577     5.0916e-07     0.0001349 
+    'pYisMAXY'               3.1694e-17       4.91e-18      4.91e-18 
+    'p0_1'                      -9.4393        -9.1858       0.65129 
+    'p1'                        -1.7757        -1.0221       0.71221 
+    'p5'                       -0.56075        0.27327       0.83253 
+    'p10'                      -0.18692        0.68838        0.8838 
+    'p15'                             0        0.94716       0.98371 
+    'p20'                      0.093458         1.1437        1.0502 
+    'p25'                       0.18692         1.3622        1.1153 
+    'p35'                       0.56075         1.8001        1.2174 
+    'p50'                         1.215         2.5806        1.3326 
+    'p65'                        2.1495         3.5977        1.4551 
+    'p75'                        2.9907         4.5354        1.5191 
+    'p80'                        3.5514         5.1126        1.5898 
+    'p85'                        4.2991         5.8897        1.6296 
+    'p90'                        5.2336          6.926         1.692 
+    'p95'                        6.8224         8.6545        1.8095 
+    'p99'                        10.374         12.321        2.0089 
+    'p99_9'                      14.766         17.015        2.2332 
+    'fl_cov_cl_mt_pol_a'         6.3259         6.9697       0.63844 
+    'fl_cor_cl_mt_pol_a'              1        0.99428       0.84834 
+    'fl_cov_cl_mt_coh'           6.9697         7.7677       0.73163 
+    'fl_cor_cl_mt_coh'          0.99428              1       0.87732 
+    'fl_cov_cl_mt_pol_c'        0.63844        0.73163      0.089531 
+    'fl_cor_cl_mt_pol_c'        0.84834        0.87732             1 
+    'fracByP0_1'             -0.0075405      -0.004496    0.00042244 
+    'fracByP1'                -0.021298      -0.010865     0.0051027 
+    'fracByP5'                -0.043248      -0.013104       0.02825 
+    'fracByP10'                -0.05206     -0.0053692      0.061125 
+    'fracByP15'               -0.053441      0.0077941      0.097527 
+    'fracByP20'               -0.051293       0.024082        0.1372 
+    'fracByP25'               -0.048653       0.043444       0.17933 
+    'fracByP35'               -0.028003       0.092115       0.26526 
+    'fracByP50'                0.042991        0.19423       0.41157 
+    'fracByP65'                 0.17927        0.33533       0.56794 
+    'fracByP75'                 0.31014        0.45869       0.67913 
+    'fracByP80'                 0.39815        0.53321       0.73781 
+    'fracByP85'                 0.50145        0.61665       0.79917 
+    'fracByP90'                 0.61771        0.71426       0.86146 
+    'fracByP95'                 0.76819        0.83274       0.92736 
+    'fracByP99'                 0.93832        0.95585       0.98409 
+    'fracByP99_9'               0.99143        0.99421       0.99825 
 
 </pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -306,17 +547,69 @@ fl_crra = 2
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
-it_a_n = 750, it_z_n = 15
+it_a_n = 750, it_z_n = K
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
-Elapsed time is 3.530349 seconds.
-Elapsed time is 0.252077 seconds.
+Elapsed time is 18.039799 seconds.
+Elapsed time is 4.387218 seconds.
+xxx PERCENTILES AND STATS xxx
 tb_outcomes_meansdperc: mean, sd, percentiles
-                      mean       sd       coefofvar      min       max       pYis0       pYls0      pYgr0      pYisMINY      pYisMAXY      p0_1        p1         p5         p10         p15         p20         p25         p35        p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
-                     ______    _______    _________    _______    ______    ________    _______    _______    __________    __________    _______    _______    _______    ________    ________    ________    ________    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______
+xxx All Variables Fraction of Y Held up to Percentile xxx
+tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
+xxx Variance and Covariance xxx
+tb_outcomes_covvar: variance correlation
+    OriginalVariableNames    cl_mt_pol_a     cl_mt_coh     cl_mt_pol_c
+    _____________________    ___________    ___________    ___________
 
-    cl_mt_pol_a      1.3786     2.8816      2.0902         -20        50    0.036779    0.28066    0.68256    7.3425e-06    1.5291e-17    -9.1589    -5.1402    -2.6168     -1.5888    -0.93458    -0.56075    -0.18692    0.18692    0.93458    1.8692    2.8037     3.271    4.0187    5.0467    6.6355    10.187    14.673
-    cl_mt_pol_coh    2.6668     3.1552      1.1832     -20.855    54.286           0    0.14678    0.85322    1.0817e-07     3.029e-18    -8.7429    -4.4844     -1.779    -0.64419    0.014384     0.51024      0.8488      1.385     2.2369    3.2915    4.2542    4.8312    5.6236    6.6977    8.4331     12.15    16.837
-    cl_mt_pol_c      1.2883    0.29443     0.22854        0.01    4.2858           0          0          1    9.1504e-06     3.029e-18      0.431    0.65925    0.82747     0.90832     0.96299     0.99861      1.0479     1.1832     1.3145    1.4347      1.49    1.5514    1.5957    1.6561    1.7695    1.9605    2.1645
+    'mean'                       2.7558          4.0997        1.3439 
+    'sd'                         3.0797          3.3399       0.28839 
+    'coefofvar'                  1.1175         0.81466       0.21459 
+    'min'                           -20         -21.455          0.01 
+    'max'                            50          54.536        4.5358 
+    'pYis0'                    0.028102               0             0 
+    'pYls0'                     0.11399        0.034526             0 
+    'pYgr0'                     0.85791         0.96547             1 
+    'pYisMINY'               5.0554e-07      2.8275e-09    5.4247e-07 
+    'pYisMAXY'               8.4503e-13      1.0739e-13    1.0739e-13 
+    'p0_1'                      -3.4579         -2.8321        0.5567 
+    'p1'                        -1.6822        -0.95477       0.70972 
+    'p5'                       -0.56075         0.29435       0.85427 
+    'p10'                     -0.093458         0.80767       0.91001 
+    'p15'                      0.093458          1.1437        1.0301 
+    'p20'                       0.28037          1.4004        1.1075 
+    'p25'                       0.46729          1.6877        1.1553 
+    'p35'                         1.028          2.2625        1.2345 
+    'p50'                        1.9626          3.3163        1.3513 
+    'p65'                        3.1776          4.5782         1.473 
+    'p75'                        4.2056          5.7418        1.5268 
+    'p80'                        4.8598          6.4537        1.5736 
+    'p85'                        5.7009          7.3547        1.6506 
+    'p90'                        6.9159          8.6545        1.7018 
+    'p95'                         8.785          10.613        1.8141 
+    'p99'                        12.991          14.977        1.9934 
+    'p99_9'                      18.318           20.48        2.2169 
+    'fl_cov_cl_mt_pol_a'         9.4848          10.278       0.79327 
+    'fl_cor_cl_mt_pol_a'              1         0.99923       0.89314 
+    'fl_cov_cl_mt_coh'           10.278          11.155       0.87646 
+    'fl_cor_cl_mt_coh'          0.99923               1       0.90994 
+    'fl_cov_cl_mt_pol_c'        0.79327         0.87646      0.083171 
+    'fl_cor_cl_mt_pol_c'        0.89314         0.90994             1 
+    'fracByP0_1'             -0.0016247     -0.00095061    0.00037227 
+    'fracByP1'               -0.0096452      -0.0043862     0.0048045 
+    'fracByP5'                -0.023911       -0.006006      0.029022 
+    'fracByP10'               -0.029114       0.0014433      0.061792 
+    'fracByP15'               -0.028452        0.014383       0.09798 
+    'fracByP20'               -0.024039         0.02979       0.13833 
+    'fracByP25'               -0.018419        0.048783       0.18206 
+    'fracByP35'                0.012579        0.096182        0.2712 
+    'fracByP50'                0.093808         0.19953       0.41574 
+    'fracByP65'                  0.2372          0.3423        0.5729 
+    'fracByP75'                 0.36122         0.46743       0.68364 
+    'fracByP80'                 0.44727         0.54158        0.7413 
+    'fracByP85'                  0.5399         0.62498       0.80162 
+    'fracByP90'                 0.65198           0.722       0.86328 
+    'fracByP95'                 0.79443         0.83853       0.92812 
+    'fracByP99'                 0.94611         0.95785       0.98435 
+    'fracByP99_9'               0.99279         0.99449       0.99828 
 
 </pre><h2 id="4">Simulate Model with Discount High</h2><pre class="codeinput">close <span class="string">all</span>
 
@@ -334,7 +627,6 @@ tb_outcomes_meansdperc: mean, sd, percentiles
     disp(<span class="string">''</span>);
 
     <span class="comment">% Call Default Parameters &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param&gt;</span>
-    bl_input_override = true;
     it_param_set = 9;
     [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
 
@@ -344,12 +636,6 @@ tb_outcomes_meansdperc: mean, sd, percentiles
 
     <span class="comment">% Borrowing Parameters</span>
     param_map(<span class="string">'bl_default'</span>) = bl_default;
-    param_map(<span class="string">'fl_c_min'</span>) = fl_c_min;
-    param_map(<span class="string">'fl_b_bd'</span>) = fl_b_bd;
-
-    <span class="comment">% Interest Rates</span>
-    param_map(<span class="string">'fl_r_save'</span>) = fl_r_save;
-    param_map(<span class="string">'fl_r_borr'</span>) = fl_r_borr;
 
     <span class="comment">% Display Parameters</span>
     support_map(<span class="string">'bl_display'</span>) = false;
@@ -360,16 +646,16 @@ tb_outcomes_meansdperc: mean, sd, percentiles
     <span class="keyword">for</span> it_accuracy = 1:length(ar_it_a_n_hg)
         <span class="comment">% Accuracy Regular</span>
         param_map(<span class="string">'it_a_n'</span>) = ar_it_a_n_hg(it_accuracy);
-        param_map(<span class="string">'it_z_n'</span>) = ar_it_z_n_hg(it_accuracy);
+        it_z_n = param_map(<span class="string">'it_z_n'</span>);
         disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
-        disp([<span class="string">'it_a_n = '</span> num2str(ar_it_a_n_hg(it_accuracy)) <span class="string">', it_z_n = '</span> num2str(ar_it_z_n_hg(it_accuracy))]);
+        disp([<span class="string">'it_a_n = '</span> num2str(ar_it_a_n_hg(it_accuracy)) <span class="string">', it_z_n = '</span> it_z_n]);
         disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
         <span class="comment">% Call Grid Generator &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid&gt;</span>
-        [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+        [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map);
         <span class="comment">% Call Dynamic Programming Problem &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv&gt;</span>
         result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
         <span class="comment">% Call Distribution CProgram</span>
-        result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+        result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map);
     <span class="keyword">end</span>
 
     <span class="comment">% Snap</span>
@@ -387,17 +673,69 @@ fl_crra = 1
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
-it_a_n = 750, it_z_n = 15
+it_a_n = 750, it_z_n = K
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
-Elapsed time is 2.946042 seconds.
-Elapsed time is 0.922061 seconds.
+Elapsed time is 17.431554 seconds.
+Elapsed time is 15.361391 seconds.
+xxx PERCENTILES AND STATS xxx
 tb_outcomes_meansdperc: mean, sd, percentiles
-                      mean        sd      coefofvar      min       max       pYis0      pYls0       pYgr0        pYisMINY      pYisMAXY      p0_1        p1         p5         p10        p15        p20        p25        p35        p50        p65        p75        p80        p85       p90       p95       p99      p99_9 
-                     _______    ______    _________    _______    ______    _______    _______    __________    __________    __________    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    ______    ______    ______    ______
+xxx All Variables Fraction of Y Held up to Percentile xxx
+tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
+xxx Variance and Covariance xxx
+tb_outcomes_covvar: variance correlation
+    OriginalVariableNames    cl_mt_pol_a    cl_mt_coh     cl_mt_pol_c
+    _____________________    ___________    __________    ___________
 
-    cl_mt_pol_a      -8.8713    6.6397    -0.74845         -20        50    0.13477    0.86488    0.00035345       0.13465    1.5647e-35        -20        -20        -20        -20    -16.168    -15.794    -15.327    -11.776    -8.2243    -5.0467    -2.6168    -2.3364    -1.4953         0         0         0         0
-    cl_mt_pol_coh    -8.1679    7.1108    -0.87058     -20.855    54.286          0     0.8457        0.1543    0.00044769     3.435e-38    -20.787    -20.617    -20.252    -19.906    -16.112    -15.574    -15.013    -11.331    -7.4489    -4.0283    -1.7391    -1.0939    0.24937    1.0479    1.3944    1.8555    2.8484
-    cl_mt_pol_c       3.4067    1.4015     0.41141        0.01    6.7092          0          0             1       0.13465    2.9286e-09       0.01       0.01       0.01       0.01     3.3393     3.4505     3.5158     3.6135      3.749     3.9469     4.1149     4.2268     4.3566    4.5047    4.7776    5.2199    5.6682
+    'mean'                       -8.5487       -8.0111        3.4167 
+    'sd'                          6.6976        7.3258         1.477 
+    'coefofvar'                 -0.78347      -0.91446       0.43228 
+    'min'                            -20       -21.455          0.01 
+    'max'                             50        54.536        7.2251 
+    'pYis0'                      0.14161             0             0 
+    'pYls0'                      0.85751       0.83262             0 
+    'pYgr0'                   0.00087805       0.16738             1 
+    'pYisMINY'                   0.14035     0.0002975       0.14035 
+    'pYisMAXY'               -5.1023e-34    2.0405e-35    3.1389e-17 
+    'p0_1'                           -20       -21.387          0.01 
+    'p1'                             -20       -21.113          0.01 
+    'p5'                             -20       -20.691          0.01 
+    'p10'                            -20       -20.291          0.01 
+    'p15'                        -15.794       -16.079        2.9816 
+    'p20'                        -15.234       -15.389        3.2908 
+    'p25'                         -14.86       -14.863        3.3712 
+    'p35'                        -11.121       -10.777        3.5279 
+    'p50'                        -7.4766       -6.7831        3.7245 
+    'p65'                         -4.486       -3.4659        3.9995 
+    'p75'                        -2.3364       -1.5105        4.2466 
+    'p80'                        -1.8692      -0.74521        4.3756 
+    'p85'                       -0.84112       0.65658        4.5183 
+    'p90'                              0        1.0479        4.7326 
+    'p95'                              0        1.3944        5.0181 
+    'p99'                              0        2.1405         5.542 
+    'p99_9'                            0        2.8764        6.1006 
+    'fl_cov_cl_mt_pol_a'          44.858        12.963       -7.2841 
+    'fl_cor_cl_mt_pol_a'               1       0.26419      -0.73635 
+    'fl_cov_cl_mt_coh'            12.963        53.667        4.7052 
+    'fl_cor_cl_mt_coh'           0.26419             1       0.43486 
+    'fl_cov_cl_mt_pol_c'         -7.2841        4.7052        2.1814 
+    'fl_cor_cl_mt_pol_c'        -0.73635       0.43486             1 
+    'fracByP0_1'                 0.32836     0.0028072    0.00041077 
+    'fracByP1'                   0.32836      0.039695    0.00041077 
+    'fracByP5'                   0.32836       0.16386    0.00041077 
+    'fracByP10'                  0.32836       0.27416    0.00041077 
+    'fracByP15'                  0.34695       0.37887      0.011384 
+    'fracByP20'                  0.45836       0.47825      0.070207 
+    'fracByP25'                  0.53124       0.57124       0.10432 
+    'fracByP35'                  0.67622       0.72547       0.20916 
+    'fracByP50'                  0.83925       0.89127       0.36457 
+    'fracByP65'                   0.9386       0.98637       0.53437 
+    'fracByP75'                  0.98301        1.0159       0.65574 
+    'fracByP80'                  0.99427        1.0231       0.71888 
+    'fracByP85'                  0.99991        1.0241       0.78353 
+    'fracByP90'                        1        1.0169       0.85202 
+    'fracByP95'                        1        1.0093       0.92208 
+    'fracByP99'                        1        1.0018       0.98336 
+    'fracByP99_9'                      1        1.0004        0.9982 
 
 </pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -406,17 +744,69 @@ fl_crra = 1.5
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
-it_a_n = 750, it_z_n = 15
+it_a_n = 750, it_z_n = K
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
-Elapsed time is 7.238246 seconds.
-Elapsed time is 0.267458 seconds.
+Elapsed time is 46.532180 seconds.
+Elapsed time is 13.427932 seconds.
+xxx PERCENTILES AND STATS xxx
 tb_outcomes_meansdperc: mean, sd, percentiles
-                      mean       sd       coefofvar      min       max        pYis0        pYls0        pYgr0      pYisMINY      pYisMAXY       p0_1        p1         p5       p10       p15       p20       p25       p35       p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
-                     ______    _______    _________    _______    ______    _________    __________    _______    __________    __________    ________    _______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
+xxx All Variables Fraction of Y Held up to Percentile xxx
+tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
+xxx Variance and Covariance xxx
+tb_outcomes_covvar: variance correlation
+    OriginalVariableNames    cl_mt_pol_a    cl_mt_coh     cl_mt_pol_c
+    _____________________    ___________    __________    ___________
 
-    cl_mt_pol_a      23.105     13.055     0.56502         -20        50    0.0015108     0.0041783    0.99431    2.3777e-07     0.0037824    -0.65421    0.46729    3.3645    6.1682    8.4112    10.467    12.336    16.075     22.15    28.785    33.458    35.981    38.692    41.776    45.327    49.252        50
-    cl_mt_pol_coh    24.847     13.374     0.53823     -20.855    54.286            0    0.00083742    0.99916    1.4659e-09    0.00010894    0.090715     1.5245     4.575    7.4953    9.8691    11.915    13.792    17.695    23.892    30.615    35.426    38.023    40.788    43.989    47.633    51.762    53.279
-    cl_mt_pol_c       1.742    0.32844     0.18854        0.01    4.2858            0             0          1    2.3777e-07    0.00010894      0.7457     1.0168    1.2547    1.3335    1.3874    1.4526    1.5135    1.6067     1.733    1.8654    1.9663    2.0219    2.0889    2.1551    2.2601     2.502    3.2785
+    'mean'                       47.188         49.647        2.4597 
+    'sd'                         2.7258         2.9581       0.32762 
+    'coefofvar'                0.057764       0.059582        0.1332 
+    'min'                           -20        -21.455          0.01 
+    'max'                            50         54.536        5.6839 
+    'pYis0'                  1.9667e-12              0             0 
+    'pYls0'                  3.2212e-12     3.9699e-13             0 
+    'pYgr0'                           1              1             1 
+    'pYisMINY'                3.191e-17     1.4284e-19    3.1907e-17 
+    'pYisMAXY'                  0.11417      0.0017239    3.7765e-24 
+    'p0_1'                       34.486         36.359        1.8629 
+    'p1'                         38.598         40.611         1.972 
+    'p5'                         41.682         43.799        2.1133 
+    'p10'                        43.364         45.535          2.17 
+    'p15'                        44.393         46.602        2.2074 
+    'p20'                         45.14         47.382        2.2343 
+    'p25'                        45.794         48.052        2.2574 
+    'p35'                        46.822         49.106        2.3032 
+    'p50'                        47.944         50.328        2.3957 
+    'p65'                        48.785         51.303        2.4801 
+    'p75'                        49.346         51.901        2.5452 
+    'p80'                        49.626         52.202        2.6374 
+    'p85'                        49.813         52.459        2.6576 
+    'p90'                            50         52.763        2.8585 
+    'p95'                            50         53.106        3.1055 
+    'p99'                            50         53.719        3.7192 
+    'p99_9'                          50         54.536        4.5358 
+    'fl_cov_cl_mt_pol_a'         7.4297         8.0363       0.60654 
+    'fl_cor_cl_mt_pol_a'              1        0.99669        0.6792 
+    'fl_cov_cl_mt_coh'           8.0363         8.7502       0.71387 
+    'fl_cor_cl_mt_coh'          0.99669              1       0.73661 
+    'fl_cov_cl_mt_pol_c'        0.60654        0.71387       0.10734 
+    'fl_cor_cl_mt_pol_c'         0.6792        0.73661             1 
+    'fracByP0_1'             0.00071291     0.00069592    0.00073979 
+    'fracByP1'                0.0079917      0.0078568     0.0078685 
+    'fracByP5'                 0.043203       0.042184      0.041439 
+    'fracByP10'                0.089167       0.087202      0.085016 
+    'fracByP15'                 0.13805         0.1344       0.12942 
+    'fracByP20'                  0.1854         0.1814       0.17453 
+    'fracByP25'                 0.23463        0.22979       0.22039 
+    'fracByP35'                 0.33637        0.32749       0.31476 
+    'fracByP50'                 0.48597        0.47735       0.45658 
+    'fracByP65'                 0.63499        0.63212       0.60549 
+    'fracByP75'                  0.7416        0.73478       0.70851 
+    'fracByP80'                 0.80204        0.79083       0.76341 
+    'fracByP85'                 0.85108         0.8449       0.81325 
+    'fracByP90'                       1        0.89621       0.89199 
+    'fracByP95'                       1        0.95937       0.94246 
+    'fracByP99'                       1        0.99288       0.98881 
+    'fracByP99_9'                     1              1             1 
 
 </pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -425,17 +815,69 @@ fl_crra = 2
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
-it_a_n = 750, it_z_n = 15
+it_a_n = 750, it_z_n = K
 xxxxxxxxxxxxxxxxxxxxxxxxxxx
-Elapsed time is 6.618773 seconds.
-Elapsed time is 0.199191 seconds.
+Elapsed time is 37.775814 seconds.
+Elapsed time is 7.330586 seconds.
+xxx PERCENTILES AND STATS xxx
 tb_outcomes_meansdperc: mean, sd, percentiles
-                      mean       sd       coefofvar      min       max        pYis0         pYls0       pYgr0      pYisMINY      pYisMAXY       p0_1         p1         p5       p10       p15       p20       p25       p35       p50       p65       p75       p80       p85       p90       p95       p99      p99_9 
-                     ______    _______    _________    _______    ______    __________    _________    _______    __________    __________    _________    _______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______
+xxx All Variables Fraction of Y Held up to Percentile xxx
+tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
+xxx Variance and Covariance xxx
+tb_outcomes_covvar: variance correlation
+    OriginalVariableNames    cl_mt_pol_a    cl_mt_coh     cl_mt_pol_c
+    _____________________    ___________    __________    ___________
 
-    cl_mt_pol_a      25.262     12.968     0.51332         -20        50    0.00088329    0.0034514    0.99567    3.3547e-10     0.0055629     -0.84112    0.84112    4.5794    7.9439    10.561    12.804     14.86    18.879     24.86    31.215    35.794    38.131    40.654    43.364    46.449    49.626        50
-    cl_mt_pol_coh    27.047     13.285     0.49117     -20.855    54.286             0    0.0010933    0.99891    4.0387e-12    0.00014826    -0.084225     1.9314    5.8142    9.3066    11.981    14.298    16.366     20.52    26.641    33.143    37.809    40.216    42.771    45.566    48.772    52.187    53.469
-    cl_mt_pol_c      1.7851    0.32807     0.18378        0.01    4.2858             0            0          1    3.3546e-10    0.00014826      0.81117     1.0938    1.2854    1.3695    1.4312    1.4956    1.5593    1.6497    1.7831    1.9152    2.0069    2.0591    2.1219    2.1867    2.2967    2.5527    3.4692
+    'mean'                       46.456         48.898        2.4414 
+    'sd'                         3.4404         3.6687       0.31931 
+    'coefofvar'                0.074057       0.075029       0.13079 
+    'min'                           -20        -21.455          0.01 
+    'max'                            50         54.536        4.5358 
+    'pYis0'                  2.4834e-09              0             0 
+    'pYls0'                  7.1138e-09     1.2286e-09             0 
+    'pYgr0'                           1              1             1 
+    'pYisMINY'               2.5589e-16     1.4569e-18     2.548e-16 
+    'pYisMAXY'                 0.098601      0.0015428     0.0015428 
+    'p0_1'                       28.037         29.845        1.7828 
+    'p1'                         34.953         36.916        1.9551 
+    'p5'                          39.72         41.826        2.0859 
+    'p10'                        41.869         44.016        2.1504 
+    'p15'                        43.084         45.323         2.187 
+    'p20'                        44.019         46.315        2.2161 
+    'p25'                         44.86         47.081        2.2407 
+    'p35'                        45.981         48.316        2.3141 
+    'p50'                         47.29         49.711         2.384 
+    'p65'                        48.411          50.92        2.4708 
+    'p75'                        49.159         51.679        2.5346 
+    'p80'                        49.439          52.01        2.5681 
+    'p85'                         49.72         52.357        2.6444 
+    'p90'                        49.907         52.644        2.7994 
+    'p95'                            50         53.106        3.1055 
+    'p99'                            50         53.719        3.7192 
+    'p99_9'                          50         54.536        4.5358 
+    'fl_cov_cl_mt_pol_a'         11.836         12.597       0.76065 
+    'fl_cor_cl_mt_pol_a'              1        0.99803        0.6924 
+    'fl_cov_cl_mt_coh'           12.597          13.46       0.86261 
+    'fl_cor_cl_mt_coh'          0.99803              1       0.73635 
+    'fl_cov_cl_mt_pol_c'        0.76065        0.86261       0.10196 
+    'fl_cor_cl_mt_pol_c'         0.6924        0.73635             1 
+    'fracByP0_1'             0.00054538      0.0005488     0.0007003 
+    'fracByP1'                0.0070098       0.006928     0.0077126 
+    'fracByP5'                 0.039928       0.039868      0.041091 
+    'fracByP10'                0.085386       0.083894      0.084728 
+    'fracByP15'                 0.13023        0.12945       0.12923 
+    'fracByP20'                  0.1764        0.17694       0.17429 
+    'fracByP25'                 0.23197        0.22433        0.2201 
+    'fracByP35'                 0.32459        0.32176       0.31284 
+    'fracByP50'                 0.47487        0.47369       0.45765 
+    'fracByP65'                 0.62928        0.62787       0.60853 
+    'fracByP75'                  0.7448        0.73183       0.71045 
+    'fracByP80'                 0.79363        0.78529       0.76109 
+    'fracByP85'                 0.84814        0.83859       0.81972 
+    'fracByP90'                 0.89388        0.89743       0.87067 
+    'fracByP95'                       1        0.96368       0.94872 
+    'fracByP99'                       1        0.99351       0.98988 
+    'fracByP99_9'                     1              1             1 
 
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
@@ -482,14 +924,9 @@ ar_fl_crra = [1, 1.5, 2.0];
 % ar_it_a_n_hg = [750, 1250, 1750, 2250];
 % ar_it_z_n_hg = [15, 19, 23, 27];
 ar_it_a_n_hg = [750];
-ar_it_z_n_hg = [15];
 
 % Borrowing/Savings Parameters
 bl_default = true; 
-fl_c_min = 0.01; % irrelevant when bl_default = false
-fl_b_bd = -20;   
-fl_r_save = 0.02;
-fl_r_borr = 0.065;
 
 %% Simulate Model with Discount Low
 
@@ -507,7 +944,6 @@ for fl_crra = ar_fl_crra
     disp('');
 
     % Call Default Parameters <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param>
-    bl_input_override = true;
     it_param_set = 9;
     [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
 
@@ -517,13 +953,7 @@ for fl_crra = ar_fl_crra
 
     % Borrowing Parameters
     param_map('bl_default') = bl_default;
-    param_map('fl_c_min') = fl_c_min;
-    param_map('fl_b_bd') = fl_b_bd;
-    
-    % Interest Rates
-    param_map('fl_r_save') = fl_r_save;
-    param_map('fl_r_borr') = fl_r_borr;
-        
+            
     % Display Parameters
     support_map('bl_display') = false;
     support_map('bl_display_final') = false;
@@ -533,16 +963,16 @@ for fl_crra = ar_fl_crra
     for it_accuracy = 1:length(ar_it_a_n_hg)
         % Accuracy Regular
         param_map('it_a_n') = ar_it_a_n_hg(it_accuracy);
-        param_map('it_z_n') = ar_it_z_n_hg(it_accuracy);        
+        it_z_n = param_map('it_z_n');
         disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
-        disp(['it_a_n = ' num2str(ar_it_a_n_hg(it_accuracy)) ', it_z_n = ' num2str(ar_it_z_n_hg(it_accuracy))]);
+        disp(['it_a_n = ' num2str(ar_it_a_n_hg(it_accuracy)) ', it_z_n = ' it_z_n]);
         disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
         % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
-        [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+        [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map);
         % Call Dynamic Programming Problem <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv>
         result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
         % Call Distribution CProgram
-        result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+        result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map);
     end
 
     % Snap
@@ -571,7 +1001,6 @@ for fl_crra = ar_fl_crra
     disp('');
 
     % Call Default Parameters <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param>
-    bl_input_override = true;
     it_param_set = 9;
     [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
 
@@ -581,12 +1010,6 @@ for fl_crra = ar_fl_crra
 
     % Borrowing Parameters
     param_map('bl_default') = bl_default;
-    param_map('fl_c_min') = fl_c_min;
-    param_map('fl_b_bd') = fl_b_bd;
-    
-    % Interest Rates
-    param_map('fl_r_save') = fl_r_save;
-    param_map('fl_r_borr') = fl_r_borr;
     
     % Display Parameters
     support_map('bl_display') = false;
@@ -597,16 +1020,16 @@ for fl_crra = ar_fl_crra
     for it_accuracy = 1:length(ar_it_a_n_hg)
         % Accuracy Regular
         param_map('it_a_n') = ar_it_a_n_hg(it_accuracy);
-        param_map('it_z_n') = ar_it_z_n_hg(it_accuracy);        
+        it_z_n = param_map('it_z_n');
         disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
-        disp(['it_a_n = ' num2str(ar_it_a_n_hg(it_accuracy)) ', it_z_n = ' num2str(ar_it_z_n_hg(it_accuracy))]);
+        disp(['it_a_n = ' num2str(ar_it_a_n_hg(it_accuracy)) ', it_z_n = ' it_z_n]);
         disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
         % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
-        [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+        [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map);
         % Call Dynamic Programming Problem <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv>
         result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
         % Call Distribution CProgram
-        result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+        result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map);
     end
 
     % Snap
@@ -635,7 +1058,6 @@ for fl_crra = ar_fl_crra
     disp('');
 
     % Call Default Parameters <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param>
-    bl_input_override = true;
     it_param_set = 9;
     [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
 
@@ -645,12 +1067,6 @@ for fl_crra = ar_fl_crra
 
     % Borrowing Parameters
     param_map('bl_default') = bl_default;
-    param_map('fl_c_min') = fl_c_min;
-    param_map('fl_b_bd') = fl_b_bd;
-    
-    % Interest Rates
-    param_map('fl_r_save') = fl_r_save;
-    param_map('fl_r_borr') = fl_r_borr;
     
     % Display Parameters
     support_map('bl_display') = false;
@@ -661,16 +1077,16 @@ for fl_crra = ar_fl_crra
     for it_accuracy = 1:length(ar_it_a_n_hg)
         % Accuracy Regular
         param_map('it_a_n') = ar_it_a_n_hg(it_accuracy);
-        param_map('it_z_n') = ar_it_z_n_hg(it_accuracy);        
+        it_z_n = param_map('it_z_n');
         disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
-        disp(['it_a_n = ' num2str(ar_it_a_n_hg(it_accuracy)) ', it_z_n = ' num2str(ar_it_z_n_hg(it_accuracy))]);
+        disp(['it_a_n = ' num2str(ar_it_a_n_hg(it_accuracy)) ', it_z_n = ' it_z_n]);
         disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
         % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
-        [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+        [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map);
         % Call Dynamic Programming Problem <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv>
         result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
         % Call Distribution CProgram
-        result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+        result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map);
     end
 
     % Snap

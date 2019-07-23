@@ -76,7 +76,7 @@ param_map('bl_b_is_principle') = true;
 
 % Minimum Consumption, c_min is for default, when c < 0, replace utility
 % with fl_nan_replace.
-param_map('fl_c_min') = 0.001;
+param_map('fl_c_min') = 0.01;
 
 %% 2b. Set Asset Grid Parameters
 % see
@@ -105,7 +105,7 @@ param_map('fl_r_save') = 0.025;
 
 param_map('st_z_r_borr_drv_ele_type') = 'unif';
 param_map('st_z_r_borr_drv_prb_type') = 'poiss';
-param_map('fl_z_r_borr_poiss_mean') = 1.75;
+param_map('fl_z_r_borr_poiss_mean') = 10;
 param_map('fl_z_r_borr_max') = 0.095;
 param_map('fl_z_r_borr_min') = 0.025;
 param_map('fl_z_r_borr_n') = 5;
@@ -193,6 +193,8 @@ support_map('st_img_path') = [st_matimg_path_root '/solve/img/'];
 support_map('st_img_prefix') = [''];
 support_map('st_img_name_main') = ['_default'];
 support_map('st_img_suffix') = ['_p' num2str(it_subset) '.png'];
+% Testing Path
+support_map('st_mat_test_path') = [st_matimg_path_root '/test/ff_az_ds_vecsv/mat/'];
 
 % Sub-function graphing controls
 support_map('bl_graph_funcgrids') = false;

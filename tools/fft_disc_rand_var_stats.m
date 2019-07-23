@@ -50,7 +50,7 @@ function [ds_stats_map] = fft_disc_rand_var_stats(varargin)
 %
 % * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html fft_disc_rand_var_stats>
 % * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html fft_disc_rand_var_mass2outcomes>
-% * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2covcor.html fft_disc_rand_var_mass2outcomes>
+% * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2covcor.html fft_disc_rand_var_mass2covcor>
 %
 
 %% Default

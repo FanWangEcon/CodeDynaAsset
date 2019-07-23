@@ -157,6 +157,8 @@ support_map('st_img_path') = [st_matimg_path_root '/solve/img/'];
 support_map('st_img_prefix') = [''];
 support_map('st_img_name_main') = ['_default'];
 support_map('st_img_suffix') = ['_p' num2str(it_subset) '.png'];
+% Testing Path
+support_map('st_mat_test_path') = [st_matimg_path_root '/test/ff_az_ds_vecsv/mat/'];
 
 % Sub-function graphing controls
 support_map('bl_graph_funcgrids') = false;

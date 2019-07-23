@@ -71,7 +71,7 @@ function [ar_choice_prob_byY, ar_choice_unique_sorted_byY, ...
 %
 % * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html fft_disc_rand_var_stats>
 % * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html fft_disc_rand_var_mass2outcomes>
-% * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2covcor.html fft_disc_rand_var_mass2outcomes>
+% * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2covcor.html fft_disc_rand_var_mass2covcor>
 %
 
 %% Default

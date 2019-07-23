@@ -36,12 +36,16 @@ cl_st_param_keys = {'fl_crra','fl_beta','fl_r_save','fl_z_rho','fl_z_sig'};
 % Generate Benchmark Parameters
 it_param_set = 9;
 [param_map, support_map] = ffs_az_set_default_param(it_param_set);
+
+param_map('it_st_simu_type_g_seed') = 123;
+param_map('it_st_simu_type_g_simun') = 100;
+
 support_map('bl_replacefile') = false;
 support_map('bl_graph_onebyones') = true;
 support_map('bl_display_graph_stats') = false;
 
 % Generate Arrays of Parameter Values to Loop Over
-it_simu_vec_len = 20;
+it_simu_vec_len = 2;
 param_tstar_map = containers.Map('KeyType','char', 'ValueType','any');
 param_tstar_map('fl_crra') = linspace(1, 5, it_simu_vec_len);
 param_tstar_map('fl_beta') = linspace(0.87, 0.97, it_simu_vec_len);
@@ -56,15 +60,6 @@ param_tstar_map('fl_z_sig') = linspace(0.05, 0.95, it_simu_vec_len);
 
 %% Denser Simulation
 it_size_type = 3;
-
-% Generate Arrays of Parameter Values to Loop Over
-it_simu_vec_len = 100;
-param_tstar_map = containers.Map('KeyType','char', 'ValueType','any');
-param_tstar_map('fl_crra') = linspace(1, 5, it_simu_vec_len);
-param_tstar_map('fl_beta') = linspace(0.87, 0.97, it_simu_vec_len);
-param_tstar_map('fl_r_save') = linspace(0, 0.06, it_simu_vec_len);
-param_tstar_map('fl_z_rho') = linspace(0, 0.985, it_simu_vec_len);
-param_tstar_map('fl_z_sig') = linspace(0.05, 0.95, it_simu_vec_len);
 
 % Simulate along parameters
 [tb_outcomes, support_map] = ff_az_test_analyze( ...

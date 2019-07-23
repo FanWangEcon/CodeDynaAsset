@@ -20,6 +20,8 @@
 % <https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_shock/html/fsi_az_ds_vecsv_shock_cross.html fsi_az_ds_vecsv_shock_cross>
 % * _PRICE_ savings only wage and interest rate testing cross: adjust wage and savings rate
 % <https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_price/html/fsi_az_ds_vecsv_price_cross.html fsi_az_ds_vecsv_price_cross>
+% * _JOINT_ all parameters random draws joint test
+% <https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_joint/html/fsi_az_ds_vecsv_joint_rand.html fsi_az_ds_vecsv_joint_rand>
 %
 
 %% Simulate and Graph
@@ -29,7 +31,7 @@
 % is needed.
 
 % Set which to graph, simulate over which variables
-ar_it_plot_sets = [1,2,3,4,5,6];
+ar_it_plot_sets = [1,2,3,4,5,6,7];
 bl_simu_cross = 'c';
 it_size_type = 2;
 cl_st_param_keys = {'fl_crra', 'fl_beta'};

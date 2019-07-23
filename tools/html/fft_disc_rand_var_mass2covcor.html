@@ -67,7 +67,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
   </style></head><body><div class="content"><h1>Compute Covariance, Correlation for cov(x,y) given X(a,z), Y(a,z) and f(a,z)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FFT_DISC_RAND_VAR_MASS2COVCOR find cov(x,y) given X(a,z), Y(a,z) and f(a,z)</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">1. Compute Covariance</a></li><li><a href="#6">2. Compute Correlation</a></li><li><a href="#7">Display</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [fl_cov_xy, fl_cor_xy] = fft_disc_rand_var_mass2covcor(varargin)
-</pre><h2 id="2">FFT_DISC_RAND_VAR_MASS2COVCOR find cov(x,y) given X(a,z), Y(a,z) and f(a,z)</h2><p>Having computed elsewhere E(X), E(Y), and SD(X), SD(Y), and given X(a,z) and Y(a,z), which are the optimal choices along the endogenous state space grid a, and the exogenous state space grid z, and given also f(a,z), the probability mass function over (a,z), we compute covariance and correlation between outcomes X and Y.</p><div><ul><li>Covariance</li></ul></div><p><img src="fft_disc_rand_var_mass2covcor_eq05840240166657787077.png" alt="$$\mathrm{Cov}\left(x,y\right) = \sum_{a} \sum_{z} f(a,z) \cdot \left( x(a,z) - \mu_x \right) \cdot \left( y(a,z) - \mu_y \right)$$" style="width:361px;height:31px;"></p><div><ul><li>Correlation</li></ul></div><p><img src="fft_disc_rand_var_mass2covcor_eq16097707096021807928.png" alt="$$\rho_{x,y} = \frac{\mathrm{Cov}\left(x,y\right)}{\sigma_x \cdot \sigma_y}$$" style="width:105px;height:35px;"></p><p>@param st_var_name string name of the variable (choice/outcome) been analyzed</p><p>@param mt_choice_bystates matrix N by M of choices along two dimensions, N could be endogenous states, M could be exogenous shocks, or vice-versa</p><p>@param mt_dist_bystates matrix N by M of probability mass on states, N could be endogenous states, M could be exogenous shocks, or vice versa</p><p>@return tb_choice_drv_cur_byY table table containing two columns, unique outcomes/choices y from y(a,z) and probability mass associated with each y f(y)</p><p>@return ar_choice_prob_byY table array probability mass associated with each y f(y), second column from tb_choice_drv_cur_byY, dimension unknown, determined by y(a,z) function</p><p>@return ar_choice_unique_sorted_byY table array unique Ys, dimension unknown, determined by y(a,z) function</p><p>@return mt_choice_prob_byYZ matrix f(y,z), meaning for y outcomes along the column dimension.</p><p>@return mt_choice_prob_byYA matrix f(y,a), meaning for y outcomes along the row dimension.</p><p>@seealso</p><div><ul><li><a href="https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html">fft_disc_rand_var_stats</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html">fft_disc_rand_var_mass2outcomes</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2covcor.html">fft_disc_rand_var_mass2outcomes</a></li></ul></div><h2 id="3">Default</h2><p>use binomial as test case, z maps to binomial win prob, remember binom approximates normal.</p><pre class="codeinput"><span class="keyword">if</span> (~isempty(varargin))
+</pre><h2 id="2">FFT_DISC_RAND_VAR_MASS2COVCOR find cov(x,y) given X(a,z), Y(a,z) and f(a,z)</h2><p>Having computed elsewhere E(X), E(Y), and SD(X), SD(Y), and given X(a,z) and Y(a,z), which are the optimal choices along the endogenous state space grid a, and the exogenous state space grid z, and given also f(a,z), the probability mass function over (a,z), we compute covariance and correlation between outcomes X and Y.</p><div><ul><li>Covariance</li></ul></div><p><img src="fft_disc_rand_var_mass2covcor_eq05840240166657787077.png" alt="$$\mathrm{Cov}\left(x,y\right) = \sum_{a} \sum_{z} f(a,z) \cdot \left( x(a,z) - \mu_x \right) \cdot \left( y(a,z) - \mu_y \right)$$" style="width:361px;height:31px;"></p><div><ul><li>Correlation</li></ul></div><p><img src="fft_disc_rand_var_mass2covcor_eq16097707096021807928.png" alt="$$\rho_{x,y} = \frac{\mathrm{Cov}\left(x,y\right)}{\sigma_x \cdot \sigma_y}$$" style="width:105px;height:35px;"></p><p>@param st_var_name string name of the variable (choice/outcome) been analyzed</p><p>@param mt_choice_bystates matrix N by M of choices along two dimensions, N could be endogenous states, M could be exogenous shocks, or vice-versa</p><p>@param mt_dist_bystates matrix N by M of probability mass on states, N could be endogenous states, M could be exogenous shocks, or vice versa</p><p>@return tb_choice_drv_cur_byY table table containing two columns, unique outcomes/choices y from y(a,z) and probability mass associated with each y f(y)</p><p>@return ar_choice_prob_byY table array probability mass associated with each y f(y), second column from tb_choice_drv_cur_byY, dimension unknown, determined by y(a,z) function</p><p>@return ar_choice_unique_sorted_byY table array unique Ys, dimension unknown, determined by y(a,z) function</p><p>@return mt_choice_prob_byYZ matrix f(y,z), meaning for y outcomes along the column dimension.</p><p>@return mt_choice_prob_byYA matrix f(y,a), meaning for y outcomes along the row dimension.</p><p>@seealso</p><div><ul><li><a href="https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html">fft_disc_rand_var_stats</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html">fft_disc_rand_var_mass2outcomes</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2covcor.html">fft_disc_rand_var_mass2covcor</a></li></ul></div><h2 id="3">Default</h2><p>use binomial as test case, z maps to binomial win prob, remember binom approximates normal.</p><pre class="codeinput"><span class="keyword">if</span> (~isempty(varargin))
 
     <span class="comment">% if invoked from outside overrid fully</span>
     [covvar_input_map] = varargin{:};
@@ -164,12 +164,20 @@ tb_disc_cumu
     x_outcomeDiscreteVal    x_outcomeDiscreteValProbMass     CDF      cumsumFrac
     ____________________    ____________________________    ______    __________
 
-             -7                        0.051764             5.1764      3.2699  
-             -6                        0.050217             10.198      5.9889  
-             -5                         0.10978             21.176      10.942  
-             -4                       0.0014875             21.324      10.996  
-             -3                         0.11706             33.031      14.165  
-             -2                       0.0080324             33.834       14.31  
+             -7                       0.051764              5.1764      3.2699  
+             -6                       0.050217              10.198      5.9889  
+             -5                        0.10978              21.176      10.942  
+             -4                      0.0014875              21.324      10.996  
+             -3                        0.11706              33.031      14.165  
+             -2                      0.0080324              33.834       14.31  
+             -1                        0.21033              54.867      16.208  
+              0                       0.064259              61.293      16.208  
+              2                       0.049682              66.261      15.311  
+              3                       0.096388                75.9      12.702  
+
+    x_outcomeDiscreteVal    x_outcomeDiscreteValProbMass     CDF      cumsumFrac
+    ____________________    ____________________________    ______    __________
+
              -1                         0.21033             54.867      16.208  
               0                        0.064259             61.293      16.208  
               2                        0.049682             66.261      15.311  
@@ -243,26 +251,20 @@ tb_disc_cumu
             3.5617                   3.7187e-06             22.312     -0.0027776
             4.0352                    0.0059499             22.907    -6.2407e-05
             5.1855                    0.0054218             23.449      0.0031172
-            5.2138                     0.064259             29.875       0.041007
-            5.8844                   0.00011156             29.886       0.041081
-              6.05                     0.036146             33.501       0.065812
-            6.2166                     0.074374             40.938         0.1181
-            6.5321                     0.096388             50.577         0.1893
-            8.6906                    0.0014875             50.726        0.19077
-            9.6914                     0.085679             59.294        0.28467
-             9.946                     0.024097             61.703        0.31178
-            11.641                    0.0074374             62.447        0.32157
-            12.628                    0.0013387             62.581        0.32348
-            13.231                     0.028917             65.473        0.36675
-            13.357                     0.018593             67.332        0.39484
-            13.799                      0.12852             80.184        0.59539
-            13.901                     0.000119             80.196        0.59558
-             15.71                     0.024097             82.605        0.63839
-            16.255                    0.0080324             83.409        0.65316
-            16.887                     0.092967             92.705         0.8307
-            18.136                     0.022848              94.99        0.87756
-             19.35                    0.0036146             95.352        0.88547
-            21.786                     0.046484                100              1
+
+    y_outcomeDiscreteVal    y_outcomeDiscreteValProbMass     CDF      cumsumFrac
+    ____________________    ____________________________    ______    __________
+
+           13.231                     0.028917              65.473     0.36675  
+           13.357                     0.018593              67.332     0.39484  
+           13.799                      0.12852              80.184     0.59539  
+           13.901                     0.000119              80.196     0.59558  
+            15.71                     0.024097              82.605     0.63839  
+           16.255                    0.0080324              83.409     0.65316  
+           16.887                     0.092967              92.705      0.8307  
+           18.136                     0.022848               94.99     0.87756  
+            19.35                    0.0036146              95.352     0.88547  
+           21.786                     0.046484                 100           1  
 
 tb_prob_drv
     percentiles    y_outcomeDiscreteValPercentileValues    fracOfSumHeldBelowThisPercentile
@@ -540,7 +542,7 @@ function [fl_cov_xy, fl_cor_xy] = fft_disc_rand_var_mass2covcor(varargin)
 %
 % * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html fft_disc_rand_var_stats>
 % * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html fft_disc_rand_var_mass2outcomes>
-% * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2covcor.html fft_disc_rand_var_mass2outcomes>
+% * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2covcor.html fft_disc_rand_var_mass2covcor>
 %
 
 %% Default

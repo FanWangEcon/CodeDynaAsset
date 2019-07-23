@@ -47,8 +47,6 @@ ar_it_z_n_hg = [15];
 bl_default = true;
 fl_c_min = 10^-300; % cmin so low default exists but never chosen
 fl_b_bd = -20;
-fl_r_save = 0.02;
-fl_r_borr = 0.065;
 
 %% Simulate Model with Discount Low
 
@@ -78,11 +76,7 @@ for fl_crra = ar_fl_crra
     param_map('bl_default') = bl_default;
     param_map('fl_c_min') = fl_c_min;
     param_map('fl_b_bd') = fl_b_bd;
-    
-    % Interest Rates
-    param_map('fl_r_save') = fl_r_save;
-    param_map('fl_r_borr') = fl_r_borr;
-        
+            
     % Display Parameters
     support_map('bl_display') = false;
     support_map('bl_display_final') = false;
@@ -92,9 +86,9 @@ for fl_crra = ar_fl_crra
     for it_accuracy = 1:length(ar_it_a_n_hg)
         % Accuracy Regular
         param_map('it_a_n') = ar_it_a_n_hg(it_accuracy);
-        param_map('it_z_n') = ar_it_z_n_hg(it_accuracy);        
+        it_z_n = param_map('it_z_n');
         disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
-        disp(['it_a_n = ' num2str(ar_it_a_n_hg(it_accuracy)) ', it_z_n = ' num2str(ar_it_z_n_hg(it_accuracy))]);
+        disp(['it_a_n = ' num2str(ar_it_a_n_hg(it_accuracy)) ', it_z_n = ' it_z_n]);
         disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
         % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
         [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
@@ -143,10 +137,6 @@ for fl_crra = ar_fl_crra
     param_map('fl_c_min') = fl_c_min;
     param_map('fl_b_bd') = fl_b_bd;
     
-    % Interest Rates
-    param_map('fl_r_save') = fl_r_save;
-    param_map('fl_r_borr') = fl_r_borr;
-    
     % Display Parameters
     support_map('bl_display') = false;
     support_map('bl_display_final') = false;
@@ -156,9 +146,9 @@ for fl_crra = ar_fl_crra
     for it_accuracy = 1:length(ar_it_a_n_hg)
         % Accuracy Regular
         param_map('it_a_n') = ar_it_a_n_hg(it_accuracy);
-        param_map('it_z_n') = ar_it_z_n_hg(it_accuracy);        
+        it_z_n = param_map('it_z_n');
         disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
-        disp(['it_a_n = ' num2str(ar_it_a_n_hg(it_accuracy)) ', it_z_n = ' num2str(ar_it_z_n_hg(it_accuracy))]);
+        disp(['it_a_n = ' num2str(ar_it_a_n_hg(it_accuracy)) ', it_z_n = ' it_z_n]);
         disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
         % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
         [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
@@ -207,10 +197,6 @@ for fl_crra = ar_fl_crra
     param_map('fl_c_min') = fl_c_min;
     param_map('fl_b_bd') = fl_b_bd;
     
-    % Interest Rates
-    param_map('fl_r_save') = fl_r_save;
-    param_map('fl_r_borr') = fl_r_borr;
-    
     % Display Parameters
     support_map('bl_display') = false;
     support_map('bl_display_final') = false;
@@ -220,9 +206,9 @@ for fl_crra = ar_fl_crra
     for it_accuracy = 1:length(ar_it_a_n_hg)
         % Accuracy Regular
         param_map('it_a_n') = ar_it_a_n_hg(it_accuracy);
-        param_map('it_z_n') = ar_it_z_n_hg(it_accuracy);        
+        it_z_n = param_map('it_z_n');
         disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
-        disp(['it_a_n = ' num2str(ar_it_a_n_hg(it_accuracy)) ', it_z_n = ' num2str(ar_it_z_n_hg(it_accuracy))]);
+        disp(['it_a_n = ' num2str(ar_it_a_n_hg(it_accuracy)) ', it_z_n = ' it_z_n]);
         disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
         % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
         [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);

@@ -58,7 +58,7 @@ function [result_map] = ff_az_ds_post_stats(varargin)
 %
 % * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html fft_disc_rand_var_stats>
 % * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html fft_disc_rand_var_mass2outcomes>
-% * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2covcor.html fft_disc_rand_var_mass2outcomes>
+% * <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2covcor.html fft_disc_rand_var_mass2covcor>
 %
 
 %% Default
@@ -74,6 +74,7 @@ end
 if (bl_input_override)
     % if invoked from outside overrid fully
     [support_map, result_map, mt_dist_az, ~] = varargin{:};
+    bl_display_final_dist_detail_local = false;
 else
     clear all;
     close all;
@@ -115,7 +116,7 @@ else
     support_map = containers.Map('KeyType','char', 'ValueType','any');    
     support_map('bl_display_final_dist') = true;
     support_map('bl_display_final_dist_detail') = true;
-    
+    bl_display_final_dist_detail_local = true;
 end
 
 %% Parse
@@ -233,6 +234,36 @@ for it_outcome_ctr=1:length(ar_st_pol_names)
 
 end
 
+if (bl_display_final_dist || bl_display_final_dist_detail)
+    
+    disp('xxx PERCENTILES AND STATS xxx')        
+    tb_outcomes_meansdperc = array2table(mt_outcomes_meansdperc);
+    ar_fl_percentiles = ds_stats_map('ar_fl_percentiles');
+    cl_col_names = ['mean', 'sd', 'coefofvar', 'min', 'max', ...
+                    'pYis0', 'pYls0', 'pYgr0', 'pYisMINY', 'pYisMAXY', ...
+                    strcat('p', string(ar_fl_percentiles))];
+    tb_outcomes_meansdperc.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_outcomes_meansdperc.Properties.RowNames = matlab.lang.makeValidName(cl_outcome_names);
+    disp('tb_outcomes_meansdperc: mean, sd, percentiles')
+    
+    if (bl_display_final_dist_detail_local)    
+        disp(rows2vars(tb_outcomes_meansdperc));
+    end
+
+    % Process Aset Held by up to percentiles    
+    disp('xxx All Variables Fraction of Y Held up to Percentile xxx')
+    tb_outcomes_fracheld = array2table(mt_outcomes_fracheld);
+    cl_col_names = [strcat('fracByP', string(ar_fl_percentiles))];
+    tb_outcomes_fracheld.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
+    tb_outcomes_fracheld.Properties.RowNames = matlab.lang.makeValidName(cl_outcome_names);
+    disp('tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile')
+    
+    if (bl_display_final_dist_detail_local)    
+        disp(rows2vars(tb_outcomes_fracheld));
+    end
+    
+end
+
 %% Covariance and Correlation
 % Having computed elsewhere E(X), E(Y), and SD(X), SD(Y), and given X(a,z)
 % and Y(a,z), which are the optimal choices along the endogenous state
@@ -308,63 +339,32 @@ for it_outcome_x_ctr=1:length(ar_st_pol_names)
     
 end
 
+if (bl_display_final_dist || bl_display_final_dist_detail)
+    
+    disp('xxx Variance and Covariance xxx')    
+    tb_outcomes_covvar = array2table(mt_outcomes_covvar);
+    tb_outcomes_covvar.Properties.VariableNames = matlab.lang.makeValidName(ar_st_covvar);
+    tb_outcomes_covvar.Properties.RowNames = matlab.lang.makeValidName(cl_outcome_names);
+    disp('tb_outcomes_covvar: variance correlation')
+    
+    if (bl_display_final_dist_detail_local)    
+        disp(rows2vars(tb_outcomes_covvar));
+    end
+    
+end
+
 %% *f(y), f(c), f(a)*: Store Statistics Shared Table All Outcomes
 
 % Add to result_map
 mt_outcomes = [mt_outcomes_meansdperc, mt_outcomes_covvar, mt_outcomes_fracheld];
 result_map('mt_outcomes') = mt_outcomes;
 
-% Display
-if (bl_display_final_dist)
-
-    disp('xxx All Variables PERCENTILES AND STATS xxx')
+if (bl_display_final_dist || bl_display_final_dist_detail)
     
-    % Process mean and and percentiles
-    tb_outcomes_meansdperc = array2table(mt_outcomes_meansdperc);
-    ar_fl_percentiles = ds_stats_map('ar_fl_percentiles');
-    cl_col_names = ['mean', 'sd', 'coefofvar', 'min', 'max', ...
-                    'pYis0', 'pYls0', 'pYgr0', 'pYisMINY', 'pYisMAXY', ...
-                    strcat('p', string(ar_fl_percentiles))];
-    tb_outcomes_meansdperc.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
-    tb_outcomes_meansdperc.Properties.RowNames = matlab.lang.makeValidName(cl_outcome_names);
-    disp('tb_outcomes_meansdperc: mean, sd, percentiles')
-    disp(tb_outcomes_meansdperc);
-    result_map('tb_outcomes_meansdperc') = tb_outcomes_meansdperc;
-    
-    % Process covariance and correlation
-    tb_outcomes_covvar = array2table(mt_outcomes_covvar);
-    tb_outcomes_covvar.Properties.VariableNames = matlab.lang.makeValidName(ar_st_covvar);
-    tb_outcomes_covvar.Properties.RowNames = matlab.lang.makeValidName(cl_outcome_names);
-    disp('tb_outcomes_covvar: variance correlation')
-    disp(tb_outcomes_covvar);
-    
-    % Process Aset Held by up to percentiles
-    tb_outcomes_fracheld = array2table(mt_outcomes_fracheld);
-    cl_col_names = [strcat('fracByP', string(ar_fl_percentiles))];
-    tb_outcomes_fracheld.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
-    tb_outcomes_fracheld.Properties.RowNames = matlab.lang.makeValidName(cl_outcome_names);
-    
-    
-    % All Outcomes Together
     tb_outcomes = [tb_outcomes_meansdperc, tb_outcomes_covvar, tb_outcomes_fracheld];
     result_map('tb_outcomes') = tb_outcomes;        
     
+    disp(rows2vars(tb_outcomes));
+    
 end
-
-if (bl_display_final_dist_detail)
-    
-    disp('xxx All Variables Fraction of Y Held up to Percentile xxx')
-    
-    % Process Aset Held by up to percentiles
-    tb_outcomes_fracheld = array2table(mt_outcomes_fracheld);
-    cl_col_names = [strcat('fracByP', string(ar_fl_percentiles))];
-    tb_outcomes_fracheld.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
-    tb_outcomes_fracheld.Properties.RowNames = matlab.lang.makeValidName(cl_outcome_names);
-    
-    disp('tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile')
-    disp(tb_outcomes_fracheld);
-    result_map('tb_outcomes_fracheld') = tb_outcomes_fracheld;    
-end
-
-
 end

@@ -187,8 +187,14 @@ for it_plot = ar_it_plot_sets
         ar_st_variablenames_plot =  {'cl_mt_coh', 'cl_mt_pol_a', 'cl_mt_pol_c'};
         ar_st_legend_plot =  {'coh=wealth', 'savings', 'consumption'};
         ar_st_colnames_plot =  repmat({'fl_cor_cl_mt_pol_c'}, [1, length(ar_st_variablenames_plot)]);
-        st_title = 'Correlation with Consumption)';
+        st_title = 'Correlation with Consumption';
         st_ytitle = 'Correlation Coefficient';
+    elseif (it_plot == 8)
+        ar_st_variablenames_plot =  {'cl_mt_pol_a', 'cl_mt_pol_c'};
+        ar_st_legend_plot =  {'savings', 'consumption'};
+        ar_st_colnames_plot =  repmat({'pYisMINY'}, [1, length(ar_st_variablenames_plot)]);
+        st_title = 'Default Fraction';
+        st_ytitle = 'Default Fraction';        
     end
     
     cl_ar_st_variablenames{it_plot_ctr} = ar_st_variablenames_plot;

@@ -2,7 +2,7 @@
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
-  
+
 %%
 function [tb_outcomes, support_map, param_desc_map] = ff_az_test_gen(varargin)
 %% FF_AZ_TEST_GEN post solution simulation
@@ -24,9 +24,9 @@ function [tb_outcomes, support_map, param_desc_map] = ff_az_test_gen(varargin)
 % maximum values for each array in param_tstar_map matters. Based on these
 % minimum and maximum, and also what is in
 % param_map('it_st_simu_type_g_simun'). Random parameter values will be
-% drawn. 
+% drawn.
 %
-% @param it_size_type integer: 
+% @param it_size_type integer:
 %  param_map support_map param_tstar_map param_desc_map
 % # it_size_type = 1 is quick grid
 % # it_size_type = 2 is standard grid
@@ -41,7 +41,7 @@ function [tb_outcomes, support_map, param_desc_map] = ff_az_test_gen(varargin)
 %
 % @param param_tstar_map container map of arrays with keys that are
 % parameter keys. This could be specified outside with array values to
-% override defaults here. 
+% override defaults here.
 %
 % @param param_desc_map container map of strings for each parameter key.
 %
@@ -90,6 +90,7 @@ support_map('bl_mat_test') = true;
 st_matimg_path_root = support_map('st_matimg_path_root');
 % test_borinf for default: cl_st_param_keys = [3, 8, 9]
 support_map('st_mat_test_path') = [st_matimg_path_root '/test/ff_az_ds_vecsv/mat/'];
+support_map('st_mat_test_prefix') = [''];
 
 % Generate or Load
 % if bl_replacefile is true, that means even if file already exists,
@@ -180,7 +181,6 @@ params_group = values(param_map, {'it_st_simu_type_g_seed', 'it_st_simu_type_g_s
 it_total_length = sum(cell2mat(cellfun(@(m) length(param_tstar_map(m)), ...
                                 cl_st_param_keys, 'UniformOutput', false)));
 
-support_map('st_mat_test_prefix') = [''];
 support_map('st_mat_test_name_main') = ['r'];
 support_map('st_mat_test_suffix') = ['_g' strrep(num2str(ar_param_keys_idx), '  ', '') ...
                                      '_c' st_simu_type ...
@@ -189,21 +189,21 @@ support_map('st_mat_test_suffix') = ['_g' strrep(num2str(ar_param_keys_idx), '  
 %% Set Solve Sizes
 
 if (it_size_type == 1)
-    
+
     % Basic Test Run
     param_map('it_z_n') = 11;
     param_map('it_a_n') = 100;
-        
+
 elseif (it_size_type == 2)
-    
+
     % Full Run
-    
+
 elseif (it_size_type == 3)
-    
+
     % Denser Run
     param_map('it_z_n') = 27;
     param_map('it_a_n') = 2250;
-    
+
 end
 
 %% Parase Preference and Shock Parameters
@@ -228,22 +228,22 @@ st_file_path_full = [st_mat_test_path, st_file_name];
 bl_mat_exists = isfile(st_file_path_full);
 
 if ( ~bl_replacefile && bl_mat_exists )
-    
+
     st_loaded = load(st_file_path_full, 'tb_outcomes');
-    tb_outcomes = st_loaded.tb_outcomes; 
-    
+    tb_outcomes = st_loaded.tb_outcomes;
+
 else
     %% Initialize Storage
-    
+
     disp('---------------------------');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp(['Vary These Parameters:' cl_st_param_keys]);
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('---------------------------');
-    
+
     % cl_tb_outcomes_meansdperc_wthinfo = cell([length(cl_st_param_keys), 1]);
     tb_outcomes = [];
-    
+
     %% Simulate 1: Cross Simulation, fix one point, extend parameters in each direction
     % Given X and Y parameters, simulate along an array of x values fixing y
     % value, then simulate along an array of y values fixing x value. Along the
@@ -252,19 +252,19 @@ else
     % benchmark parameter value, or perhaps some estimated/calibrated parameter
     % value point.
     %
-    
+
     if (strcmp(st_simu_type, 'c'))
-        
+
         for it_pcombi_ctr = 1:length(cl_st_param_keys)
-            
+
             st_param_key = cl_st_param_keys{it_pcombi_ctr};
-            
+
             % Display Current Parameter been Varied
             % Parameter Key for Paraemter Getting Updated
             ar_param_values = param_tstar_map(st_param_key);
             st_param_desc = param_desc_map(st_param_key);
             fl_param_val_benchmark = param_map(st_param_key);
-            
+
             disp('---------------------------');
             disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
             disp(['Vary ' st_param_desc ' (' st_param_key '): ' num2str(ar_param_values)]);
@@ -272,15 +272,15 @@ else
                 disp([ ls_st_param_key{it_param_all_ctr} ':' num2str(param_map(ls_st_param_key{it_param_all_ctr}))]);
             end
             disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
-            
+
             % Simulate Model over Parameter Array Values
             for it_cur_param = 1:1:length(ar_param_values)
-                
+
                 % Adjust Value for Current Parameter been Varied
                 fl_param_val = ar_param_values(it_cur_param);
                 param_map(st_param_key) = fl_param_val;
                 disp(['xxxxx ' st_param_key ' = ' num2str(fl_param_val) ' xxxxx']);
-                
+
                 % Simulate Model
                 ar_simu_info = [find(strcmp(ls_st_param_key, st_param_key)), ...
                     it_cur_param, cell2mat(values(param_map, cl_st_param_keys))];
@@ -290,32 +290,32 @@ else
                     strcat(variablenames, '_p', num2str(it_pcombi_ctr), 'v', num2str(it_cur_param));
                 var_param_key = repmat({st_param_key}, [length(variablenames),1]);
                 tb_outcomes_simu = addvars(tb_outcomes_simu, variablenames, var_param_key, 'Before', 1);
-                
+
                 % Combine Results from Different Parameters in Shared Table
                 if (it_pcombi_ctr == 1 && it_cur_param == 1)
                     tb_outcomes = tb_outcomes_simu;
                 else
                     tb_outcomes = [tb_outcomes; tb_outcomes_simu];
                 end
-                
+
             end
-            
+
             % Reset Base Parameters, parameters already grabbed out, updating
             param_map(st_param_key) = fl_param_val_benchmark;
         end
     end
-    
+
     %% Simulate 2: Full Grid Simulation, Simulate Along Full Grid
     % To explore the effects of parameters on model outcomes, simulate the
     % model along full grids. Given X and Y parameters, this means simulate at
     % all possible combinations of X and Y arrays.
     %
-    
+
     if (ismember(st_simu_type, ["g", "r"]))
-        
+
         % Get Arrays to be Meshed in Cells
         cl_ar_param_subset_values = values(param_tstar_map, cl_st_param_keys);
-        
+
         % Generate all possible combinations of parameters subsets
         if (strcmp(st_simu_type, 'g'))
             cl_mt_all = cl_ar_param_subset_values;
@@ -323,55 +323,55 @@ else
             mt_param_vals_combi = cell2mat(cellfun(@(m) m(:), cl_mt_all, 'uni', 0));
         elseif (strcmp(st_simu_type, 'r'))
             % random draw within max and min N count
-            rng(it_st_simu_type_g_seed);            
+            rng(it_st_simu_type_g_seed);
             mt_param_vals_combi = cell2mat(cellfun(@(m) ...
                                        rand([it_st_simu_type_g_simun,1]).*(max(param_tstar_map(m)) - min(param_tstar_map(m))) ...
                                        + min(param_tstar_map(m)), ...
                                        cl_st_param_keys, 'UniformOutput', false));
         end
-        
+
         % Sizes
         it_test_combi_n = size(mt_param_vals_combi,1);
-        
+
         % Show Combinations of Parameters Simulating over, convert from Matrix to Table for Clarity
         tb_pvals_combi = array2table(mt_param_vals_combi);
         tb_pvals_combi.Properties.VariableNames = cl_st_param_keys;
         tb_pvals_combi.Properties.RowNames = strcat('j=', string(1:size(mt_param_vals_combi,1)));
         clear mt_param_vals_combi;
-        
+
         % Display
         disp(head(tb_pvals_combi, 10));
         disp(tail(tb_pvals_combi, 10));
-                
+
         for it_pcombi_ctr = 1:it_test_combi_n
-            
+
             tb_row_param_adj_cur = tb_pvals_combi(it_pcombi_ctr, :);
-            
+
             disp(['xxxxx Shift to: xxxxx']);
             disp(tb_row_param_adj_cur)
-            
+
             % Display Current Parameter been Varied
             for st_param_key = cl_st_param_keys
                 param_map(st_param_key{1}) = tb_row_param_adj_cur{1, st_param_key};
             end
-            
+
             % Simulate Model
             ar_simu_info = [it_pcombi_ctr, cell2mat(values(param_map, cl_st_param_keys))];
             cl_col_names = [{'it_pcombi_ctr'} cl_st_param_keys];
             [tb_outcomes_simu, variablenames] = simu_model_gen_stats(param_map, support_map, ar_simu_info, cl_col_names);
             tb_outcomes_simu.Properties.RowNames = strcat(variablenames, '_v', num2str(it_pcombi_ctr));
             tb_outcomes_simu = addvars(tb_outcomes_simu, variablenames, 'Before', 1);
-            
+
             % Combine Results from Different Parameters in Shared Table
             if (it_pcombi_ctr == 1)
                 tb_outcomes = tb_outcomes_simu;
             else
                 tb_outcomes = [tb_outcomes; tb_outcomes_simu];
             end
-            
+
         end
     end
-    
+
     % Table Output
     if (bl_display_simu_stats)
         disp('-------------------------');
@@ -379,7 +379,7 @@ else
         disp(head(tb_outcomes, 10));
         disp(tail(tb_outcomes, 10));
     end
-    
+
     %% Save Mat
     if (bl_mat_test)
         clear armt_map result_map
@@ -387,7 +387,7 @@ else
         st_file_name = [st_mat_test_prefix st_mat_test_name_main st_mat_test_suffix];
         save(strcat(st_mat_test_path, st_file_name));
     end
-    
+
 end
 
 end
@@ -398,13 +398,19 @@ function [tb_outcomes_simu, variablenames] = simu_model_gen_stats(param_map, sup
 cl_st_param_keys = param_map('cl_st_param_keys');
 
 %% Reset Parameters that are determined by other parameters
+st_model = param_map('st_model');
 it_a_n = param_map('it_a_n');
 it_z_n = param_map('it_z_n');
-disp(['xxxxx it_a_n = ' num2str(it_a_n) ', it_z_n = ' num2str(it_z_n) ' xxxxx']);
+disp(['xxxxx st_model = ' st_model ', it_a_n = ' num2str(it_a_n) ', it_z_n = ' num2str(it_z_n) ' xxxxx']);
 
 %% Simulate Model
-[armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map);
-result_map = ff_az_vf_vecsv(param_map, support_map, armt_map, func_map);
+if (ismember(st_model, ["abz"]))
+    [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map);
+    result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
+elseif (ismember(st_model, ["az"]))
+    [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map);
+    result_map = ff_az_vf_vecsv(param_map, support_map, armt_map, func_map);
+end
 result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map);
 
 %% Store Results to Table
