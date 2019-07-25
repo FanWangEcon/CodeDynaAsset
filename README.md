@@ -157,7 +157,7 @@ Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_
 
 - savings and borrowing (with default) with minimum income
 - **750** grid points for asset states/choices
-- **75** grid points for shocks: **15** wage, **5** borrow interest
+- **55** grid points for shocks: **11** wage, **5** borrow interest
 - [other parameters](https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_default_param.html)
 
 Using three algorithm that provide identical solutions:
@@ -207,6 +207,8 @@ We solved the exogenously incomplete borrowing and savings problem in *1.4*. Now
 
 **Asset Distribution Testing**
 
+1. *abz* model overall speed test
+    * 1.9 seconds for [benchmark simulation](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_speed/html/fsi_az_ds_vecsv_speed.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/test/ff_az_ds_vecsv/test_speed/fsi_az_ds_vecsv_speed.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_speed/html/fsi_az_ds_vecsv_speed.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_speed/profile/fsi_az_ds_vecsv_speedff_az_ds_vecsv_default_p9/file0.html)    
 1. *abz* borrowing interest rates, bounds, and minimum c
    * [no default](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_borr/html/fsi_abz_ds_vecsv_nbc.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/test/ff_az_ds_vecsv/test_borr/fsi_abz_ds_vecsv_nbc.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_borr/html/fsi_abz_ds_vecsv_nbc.html)
    * [default](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_borr/html/fsi_abz_ds_vecsv_default.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/test/ff_az_ds_vecsv/test_borr/fsi_abz_ds_vecsv_default.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_borr/html/fsi_abz_ds_vecsv_default.html)
@@ -218,6 +220,28 @@ We solved the exogenously incomplete borrowing and savings problem in *1.4*. Now
     * [no default](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_ds_vecsv_shk_nbc.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/test/ff_az_ds_vecsv/test_shock/fsi_abz_ds_vecsv_shk_nbc.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_ds_vecsv_shk_nbc.html)
     * [default](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_ds_vecsv_shk_default.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/test/ff_az_ds_vecsv/test_shock/fsi_abz_ds_vecsv_shk_default.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_ds_vecsv_shk_default.html)
     * [default (low min c)](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_ds_vecsv_shk_default_lowcmin.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/test/ff_az_ds_vecsv/test_shock/fsi_abz_ds_vecsv_shk_default_lowcmin.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_ds_vecsv_shk_default_lowcmin.html)
+
+## 2.5 Simulations (ABZ)
+
+Simulate and graph effects of changing parameters on outcomes.
+
+**Simulation Functions**:
+
+Share functions with *az* from *1.5* above, model (1) [simulate model](https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_test_gen.html) (2) [graph simulation results](https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_test_analyze.html)
+
+**Simulation Results**:
+
+1. *abz* the effects *borrowing parameters* on distributional outcomes
+    * cross test, **no default**, [adjust wage and savings rate](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_borr/html/fsi_abz_ds_vecsv_nbc_cross.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/test/ff_az_ds_vecsv/test_borr/fsi_abz_ds_vecsv_nbc_cross.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_borr/html/fsi_abz_ds_vecsv_nbc_cross.html)
+    * cross test, **default**, [adjust wage and savings rate](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_price/html/fsi_abz_ds_vecsv_default_cross.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/test/ff_az_ds_vecsv/test_price/fsi_abz_ds_vecsv_default_cross.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_price/html/fsi_abz_ds_vecsv_default_cross.html)    
+2. *abz* the effects *preference parameters* on distributional outcomes
+    * cross test, **no default**, [adjust discount and risk aversion](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_pref/html/fsi_az_ds_vecsv_pref_nbc_cross.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/test/ff_az_ds_vecsv/test_pref/fsi_az_ds_vecsv_pref_nbc_cross.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_pref/html/fsi_az_ds_vecsv_pref_nbc_cross.html)
+    * cross test, **default**, [adjust discount and risk aversion](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_pref/html/fsi_az_ds_vecsv_pref_default_cross.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/test/ff_az_ds_vecsv/test_pref/fsi_az_ds_vecsv_pref_default_cross.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_pref/html/fsi_az_ds_vecsv_pref_default_cross.html)
+3. *abz* the effects *shock parameters* on distributional outcomes
+    * cross test, **no default**, [adjust shock persistence and variance](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_ds_vecsv_shk_nbc_cross.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/test/ff_az_ds_vecsv/test_shock/fsi_abz_ds_vecsv_shk_nbc_cross.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_ds_vecsv_shk_nbc_cross.html)
+    * cross test, **default**, [adjust shock persistence and variance](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_ds_vecsv_shk_default_cross.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/test/ff_az_ds_vecsv/test_shock/fsi_abz_ds_vecsv_shk_default_cross.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_ds_vecsv_shk_default_cross.html)    
+4. *abz* the effects *preference + shocks + prices* on distributional outcomes
+    * random test, **default**, [adjust preference shocks prices](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_joint/html/fsi_az_ds_vecsv_joint_rand.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/test/ff_az_ds_vecsv/test_joint/fsi_az_ds_vecsv_joint_rand.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_joint/html/fsi_az_ds_vecsv_joint_rand.html)
 
 
 # 3. The Risky + Safe Asset Problem (Part 1)

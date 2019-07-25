@@ -3,29 +3,25 @@
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 %
-% Testing the
-% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html
-% ff_az_ds_vecsv> program for solving the savings + borrowing problem using
-% full-states-markov eigenvector-sparse-matrix approach.
-%
-% defaults in ffs_abz_set_default_param.m are:
-%
-% * param_map('fl_beta') = 0.94;
-% * param_map('fl_crra') = 1.5;
-%
-% Test across various discount and risk aversion levels. 
-%
-% Default allowed, but cmin very low, so people might not default at all. 
+% Default allowed, but cmin very low, so people might not default at all.
 %
 % @seealso
 %
-% * test interest rate no default: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_borr/html/fsi_abz_ds_vecsv_nbc.html fsi_abz_ds_vecsv_nbc> 
-% * test interest rate default: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_borr/html/fsi_abz_ds_vecsv_default.html fsi_abz_ds_vecsv_default> 
-% * test shock no default: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_ds_vecsv_shk_nbc.html fsi_abz_ds_vecsv_shk_nbc>
-% * test shock default: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_ds_vecsv_shk_default.html fsi_abz_ds_vecsv_shk_default>
+% * test speed: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_speed/html/fsi_az_ds_vecsv_speed.html fsi_az_ds_vecsv_speed>
+% * test joint *RANDOM*: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_joint/html/fsi_az_ds_vecsv_joint_rand.html fsi_az_ds_vecsv_joint_rand>
+% * test interest rate no default: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_borr/html/fsi_abz_ds_vecsv_nbc.html fsi_abz_ds_vecsv_nbc>
+% * test interest rate no default *CROSS*: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_borr/html/fsi_abz_ds_vecsv_nbc_cross.html fsi_abz_ds_vecsv_nbc_cross>
+% * test interest rate default: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_borr/html/fsi_abz_ds_vecsv_default.html fsi_abz_ds_vecsv_default>
+% * test interest rate default *CROSS*: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_borr/html/fsi_abz_ds_vecsv_default_cross.html fsi_abz_ds_vecsv_default_cross>
 % * test shock default (very low cmin): <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_ds_vecsv_shk_default_lowcmin.html fsi_abz_ds_vecsv_shk_default_lowcmin>
+% * test shock no default: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_ds_vecsv_shk_nbc.html fsi_abz_ds_vecsv_shk_nbc>
+% * test shock no default *CROSS*: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_ds_vecsv_shk_nbc_cross.html fsi_abz_ds_vecsv_shk_nbc_cross>
+% * test shock default: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_ds_vecsv_shk_default.html fsi_abz_ds_vecsv_shk_default>
+% * test shock default *CROSS*: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_ds_vecsv_shk_default_cross.html fsi_abz_ds_vecsv_shk_default_cross>
 % * test preference no default: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_pref/html/fsi_abz_ds_vecsv_pref_nbc.html fsi_abz_ds_vecsv_pref_nbc>
+% * test preference no default *CROSS*: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_pref/html/fsi_abz_ds_vecsv_pref_nbc_cross.html fsi_abz_ds_vecsv_pref_nbc_cross>
 % * test preference default: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_pref/html/fsi_abz_ds_vecsv_pref_default.html fsi_abz_ds_vecsv_pref_default>
+% * test preference default *CROSS*: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_pref/html/fsi_abz_ds_vecsv_pref_default_cross.html fsi_abz_ds_vecsv_pref_default_cross>
 % * test preference default (very low cmin): <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_pref/html/fsi_abz_ds_vecsv_pref_default_lowcmin.html fsi_abz_ds_vecsv_pref_default_lowcmin>
 %
 
@@ -38,10 +34,7 @@ ar_fl_beta = [0.94, 0.96, 0.98];
 ar_fl_crra = [1, 1.5, 2.0];
 
 % Accuracy
-% ar_it_a_n_hg = [750, 1250, 1750, 2250];
-% ar_it_z_n_hg = [15, 19, 23, 27];
 ar_it_a_n_hg = [750];
-ar_it_z_n_hg = [15];
 
 % Borrowing/Savings Parameters
 bl_default = true;
@@ -76,13 +69,13 @@ for fl_crra = ar_fl_crra
     param_map('bl_default') = bl_default;
     param_map('fl_c_min') = fl_c_min;
     param_map('fl_b_bd') = fl_b_bd;
-            
+
     % Display Parameters
     support_map('bl_display') = false;
     support_map('bl_display_final') = false;
     support_map('bl_time') = true;
     support_map('bl_profile') = false;
-    
+
     for it_accuracy = 1:length(ar_it_a_n_hg)
         % Accuracy Regular
         param_map('it_a_n') = ar_it_a_n_hg(it_accuracy);
@@ -136,7 +129,7 @@ for fl_crra = ar_fl_crra
     param_map('bl_default') = bl_default;
     param_map('fl_c_min') = fl_c_min;
     param_map('fl_b_bd') = fl_b_bd;
-    
+
     % Display Parameters
     support_map('bl_display') = false;
     support_map('bl_display_final') = false;
@@ -196,7 +189,7 @@ for fl_crra = ar_fl_crra
     param_map('bl_default') = bl_default;
     param_map('fl_c_min') = fl_c_min;
     param_map('fl_b_bd') = fl_b_bd;
-    
+
     % Display Parameters
     support_map('bl_display') = false;
     support_map('bl_display_final') = false;

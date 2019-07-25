@@ -82,6 +82,9 @@ st_simu_type = 'r'; % 'c' for cross or 'g' for grid or 'r' rand
 it_param_set = 9;
 [param_map, support_map] = ffs_az_set_default_param(it_param_set);
 
+% allows verticle cleaner display of stats. Which is useful.
+support_map('bl_display_final_dist_detail') = true;
+
 % Timer
 support_map('bl_timer') = true;
 
@@ -104,11 +107,17 @@ param_map('it_st_simu_type_g_seed') = 123;
 param_map('it_st_simu_type_g_simun') = 20;
 
 %% Array Parameters
+% keys here for az, abz models
 
 ls_st_param_key = {'fl_crra', 'fl_beta', ...
                     'fl_w', 'fl_r_save', ...
                     'fl_z_rho', 'fl_z_sig', ...
-                    'fl_a_max', 'it_z_n', 'it_a_n'};
+                    'fl_a_max', 'it_z_n', 'it_a_n', ...
+                    ...
+                    'fl_z_r_borr_poiss_mean', 'fl_z_r_borr_max', ...
+                    'fl_b_bd', 'fl_c_min', 'fl_z_r_borr_n',...
+                    'fl_z_wage_rho', 'fl_z_wage_sig', ...
+                    };
 
 param_tstar_map = containers.Map('KeyType','char', 'ValueType','any');
 it_simu_vec_len = 5;
@@ -122,6 +131,14 @@ param_tstar_map(ls_st_param_key{7}) = linspace(50, 80, it_simu_vec_len);
 param_tstar_map(ls_st_param_key{8}) = unique(round(linspace(5, 25, it_simu_vec_len)));
 param_tstar_map(ls_st_param_key{9}) = unique(round(linspace(100, 2500, it_simu_vec_len)));
 
+param_tstar_map(ls_st_param_key{10}) = linspace(5, 20, it_simu_vec_len);
+param_tstar_map(ls_st_param_key{11}) = linspace(0.095, 0.150, it_simu_vec_len);
+param_tstar_map(ls_st_param_key{12}) = linspace(-20, -5, it_simu_vec_len);
+param_tstar_map(ls_st_param_key{13}) = linspace(0.03, 0.001, it_simu_vec_len);
+param_tstar_map(ls_st_param_key{14}) = 5:4:25;
+param_tstar_map(ls_st_param_key{15}) = linspace(0, 0.99, it_simu_vec_len);
+param_tstar_map(ls_st_param_key{16}) = linspace(0.01, 0.5, it_simu_vec_len);
+
 param_desc_map = containers.Map('KeyType','char', 'ValueType','any');
 param_desc_map(ls_st_param_key{1}) = {'CRRA'};
 param_desc_map(ls_st_param_key{2}) = {'Discount'};
@@ -132,6 +149,15 @@ param_desc_map(ls_st_param_key{6}) = {'Shock SD'};
 param_desc_map(ls_st_param_key{7}) = {'Max Asset Bound'};
 param_desc_map(ls_st_param_key{8}) = {'Shock Grid N'};
 param_desc_map(ls_st_param_key{9}) = {'Asset Grid N'};
+
+param_desc_map(ls_st_param_key{10}) = {'pois-max(shift br r mean)'};
+param_desc_map(ls_st_param_key{11}) = {'max borrow r'};
+param_desc_map(ls_st_param_key{12}) = {'borrow bound'};
+param_desc_map(ls_st_param_key{13}) = {'minimum consumption'};
+param_desc_map(ls_st_param_key{14}) = {'borrow shock n'};
+param_desc_map(ls_st_param_key{15}) = {'Inc/Prod Shock Persistence'};
+param_desc_map(ls_st_param_key{16}) = {'Inc/Prod Shock SD'};
+
 
 %% Default
 
@@ -165,6 +191,9 @@ param_map('ar_param_keys_idx') = ar_param_keys_idx;
 % If bl_replacefile is true, that means the existing file must be replaced,
 % which will set bl_gen to true
 
+params_group = values(param_map, {'st_model'});
+[st_model] = params_group{:};
+
 params_group = values(support_map, {'bl_replacefile', 'bl_display_simu_stats'});
 [bl_replacefile, bl_display_simu_stats] = params_group{:};
 
@@ -189,21 +218,37 @@ support_map('st_mat_test_suffix') = ['_g' strrep(num2str(ar_param_keys_idx), '  
 %% Set Solve Sizes
 
 if (it_size_type == 1)
-
+    
     % Basic Test Run
-    param_map('it_z_n') = 11;
+    
     param_map('it_a_n') = 100;
+    
+    if (ismember(st_model, ["az"]))
+        param_map('it_z_n') = 11;
+    elseif (ismember(st_model, ["abz"]))
+        param_map('fl_z_r_borr_n') = 5;
+        param_map('it_z_wage_n') = 11;
+        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');        
+    end
 
 elseif (it_size_type == 2)
 
     % Full Run
 
 elseif (it_size_type == 3)
-
+    
     % Denser Run
-    param_map('it_z_n') = 27;
-    param_map('it_a_n') = 2250;
-
+    
+    if (ismember(st_model, ["az"]))
+        param_map('it_a_n') = 2250;
+        param_map('it_z_n') = 27;
+    elseif (ismember(st_model, ["abz"]))
+        param_map('it_a_n') = 1250;
+        param_map('fl_z_r_borr_n') = 11;
+        param_map('it_z_wage_n') = 11;
+        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');                
+    end
+    
 end
 
 %% Parase Preference and Shock Parameters
@@ -279,6 +324,7 @@ else
                 % Adjust Value for Current Parameter been Varied
                 fl_param_val = ar_param_values(it_cur_param);
                 param_map(st_param_key) = fl_param_val;
+                param_map = map_correction(param_map);
                 disp(['xxxxx ' st_param_key ' = ' num2str(fl_param_val) ' xxxxx']);
 
                 % Simulate Model
@@ -354,7 +400,8 @@ else
             for st_param_key = cl_st_param_keys
                 param_map(st_param_key{1}) = tb_row_param_adj_cur{1, st_param_key};
             end
-
+            param_map = map_correction(param_map);
+            
             % Simulate Model
             ar_simu_info = [it_pcombi_ctr, cell2mat(values(param_map, cl_st_param_keys))];
             cl_col_names = [{'it_pcombi_ctr'} cl_st_param_keys];
@@ -424,4 +471,13 @@ tb_simu_info.Properties.RowNames = (variablenames);
 
 % Table
 tb_outcomes_simu = [tb_simu_info tb_outcomes_meansdperc];
+end
+
+%% Map Corrections
+function param_map = map_correction(param_map)
+    
+    if (isKey(param_map, 'fl_z_r_borr_n'))
+        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');    
+    end
+    
 end

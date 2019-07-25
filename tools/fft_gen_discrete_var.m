@@ -49,7 +49,7 @@ else
     param_dsv_map = containers.Map('KeyType','char', 'ValueType','any');
     
     param_dsv_map('fl_binom_p') = 0.25;
-    param_dsv_map('fl_poiss_mean') = 20;
+    param_dsv_map('fl_poiss_mean') = 5;
     param_dsv_map('fl_logspace_adj') = 0.075;
     
     param_dsv_map('st_drv_ele_type') = 'unif';

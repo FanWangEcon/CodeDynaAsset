@@ -122,8 +122,10 @@ param_desc_map = [param_desc_map; default_params{8}];
 
 %% Parse Parameters 2
 
-params_group = values(support_map, ...
-    {'bl_graph_onebyones', 'bl_display_graph_stats'});
+params_group = values(param_map, {'st_model'});
+[st_model] = params_group{:};
+
+params_group = values(support_map, {'bl_graph_onebyones', 'bl_display_graph_stats'});
 [bl_graph_onebyones, bl_display_graph_stats] = params_group{:};
 
 %% Cross-Simulate Model Along Parameters
@@ -154,17 +156,17 @@ for it_plot = ar_it_plot_sets
         st_title = 'Consumption Percentiles';
         st_ytitle = 'C Distribution';
     elseif (it_plot == 2)
-        ar_st_colnames_plot =  {'mean', 'sd'};
-        ar_st_variablenames_plot =  repmat({'cl_mt_pol_c'}, [1, length(ar_st_colnames_plot)]);
-        ar_st_legend_plot =  ar_st_colnames_plot;
-        st_title = 'Consumption Mean and SD';
-        st_ytitle = 'C Mean and SD';
-    elseif (it_plot == 3)
         ar_st_colnames_plot =  {'p1', 'p25', 'p50', 'mean', 'p75', 'p99'};
         ar_st_variablenames_plot =  repmat({'cl_mt_pol_a'}, [1, length(ar_st_colnames_plot)]);
         ar_st_legend_plot =  ar_st_colnames_plot;
         st_title = 'Savings Percentiles';
         st_ytitle = 'A Distribution';
+    elseif (it_plot == 3)
+        ar_st_colnames_plot =  {'mean', 'sd'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_pol_c'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  ar_st_colnames_plot;
+        st_title = 'Consumption Mean and SD';
+        st_ytitle = 'C Mean and SD';
     elseif (it_plot == 4)
         ar_st_colnames_plot =  {'mean', 'sd'};
         ar_st_variablenames_plot =  repmat({'cl_mt_pol_a'}, [1, length(ar_st_colnames_plot)]);
@@ -172,24 +174,36 @@ for it_plot = ar_it_plot_sets
         st_title = 'Savings Mean and SD';
         st_ytitle = 'A Mean and SD';
     elseif (it_plot == 5)
+        ar_st_colnames_plot =  {'sd'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_pol_c'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  ar_st_colnames_plot;
+        st_title = 'Consumption Standard Deviation';
+        st_ytitle = 'Standard Deviation';
+    elseif (it_plot == 6)
+        ar_st_colnames_plot =  {'sd'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_pol_a'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  ar_st_colnames_plot;
+        st_title = 'Savings Standard Deviation';
+        st_ytitle = 'Standard Deviation';
+    elseif (it_plot == 7)
         ar_st_variablenames_plot =  {'cl_mt_coh', 'cl_mt_pol_a', 'cl_mt_pol_c'};
         ar_st_legend_plot =  {'coh=wealth', 'savings', 'consumption'};
         ar_st_colnames_plot =  repmat({'mean'}, [1, length(ar_st_variablenames_plot)]);
         st_title = 'Aggregate Outcomes (wealth, savings, consumption)';
         st_ytitle = 'Aggregate Levels';
-    elseif (it_plot == 6)
+    elseif (it_plot == 8)
         ar_st_variablenames_plot =  {'cl_mt_coh', 'cl_mt_pol_a', 'cl_mt_pol_c'};
         ar_st_legend_plot =  {'coh=wealth', 'savings', 'consumption'};
         ar_st_colnames_plot =  repmat({'coefofvar'}, [1, length(ar_st_variablenames_plot)]);
         st_title = 'Coef of Variation (wealth, savings, consumption)';
         st_ytitle = 'Coefficient of Variation (SD/Mean)';        
-    elseif (it_plot == 7)
+    elseif (it_plot == 9)
         ar_st_variablenames_plot =  {'cl_mt_coh', 'cl_mt_pol_a', 'cl_mt_pol_c'};
         ar_st_legend_plot =  {'coh=wealth', 'savings', 'consumption'};
         ar_st_colnames_plot =  repmat({'fl_cor_cl_mt_pol_c'}, [1, length(ar_st_variablenames_plot)]);
         st_title = 'Correlation with Consumption';
         st_ytitle = 'Correlation Coefficient';
-    elseif (it_plot == 8)
+    elseif (it_plot == 10)
         ar_st_variablenames_plot =  {'cl_mt_pol_a', 'cl_mt_pol_c'};
         ar_st_legend_plot =  {'savings', 'consumption'};
         ar_st_colnames_plot =  repmat({'pYisMINY'}, [1, length(ar_st_variablenames_plot)]);
@@ -225,9 +239,9 @@ for it_pcombi_ctr = 1:length(cl_st_param_keys)
     
     % get data
     if (strcmp(st_simu_type, 'c'))
-        mt_cur_data = tb_outcomes(strcmp(tb_outcomes.var_param_key, st_param_key), :);
+        tb_cur_data = tb_outcomes(strcmp(tb_outcomes.var_param_key, st_param_key), :);
     elseif (ismember(st_simu_type, ["g", "r"]))
-        mt_cur_data = tb_outcomes;
+        tb_cur_data = tb_outcomes;
     end    
     st_x_label = st_param_desc;
     
@@ -237,12 +251,22 @@ for it_pcombi_ctr = 1:length(cl_st_param_keys)
         % Get x variable and label
         cl_legend = cl_ar_st_legend{it_plot};
         ar_st_variablenames_plot = cl_ar_st_variablenames{it_plot};
-        ar_st_colnames_plot = cl_ar_st_colnames{it_plot};
-        
-        mt_graph_data = mt_cur_data(:, [{st_param_key}, ar_st_colnames_plot]);
-        
+        ar_st_colnames_plot = cl_ar_st_colnames{it_plot};        
+        st_title = cl_st_title{it_plot};
+        st_ytitle = cl_st_ytitle{it_plot};
+                
         if (bl_display_graph_stats)
-            disp(mt_graph_data)
+            disp(['------------------------'])
+            disp(['xxxxx ' st_title ' xxxxx'])
+            disp(['xxxxx ' st_ytitle ' xxxxx'])
+            disp(['------------------------'])
+            tb_graph_data = tb_cur_data(:, [{st_param_key}, ar_st_colnames_plot]);
+            if (size(tb_graph_data,1) >= 25)
+                disp(head(tb_graph_data, 13));
+                disp(tail(tb_graph_data, 13));
+            else
+                disp(tb_graph_data);
+            end
         end
         
         %% Generate Graphs
@@ -286,11 +310,11 @@ for it_pcombi_ctr = 1:length(cl_st_param_keys)
             st_lnwth = cl_line_csizes{it_fig};
             
             % Access Y Outcomes
-            ar_cur_rows = strcmp(mt_cur_data.variablenames, ar_st_variablenames_plot(it_fig));
+            ar_cur_rows = strcmp(tb_cur_data.variablenames, ar_st_variablenames_plot(it_fig));
             st_cur_stat_col = ar_st_colnames_plot{it_fig};
             
             % Access X and Y Values
-            mt_graph_data = mt_cur_data(ar_cur_rows, {st_param_key, st_cur_stat_col});
+            mt_graph_data = tb_cur_data(ar_cur_rows, {st_param_key, st_cur_stat_col});
             % Access Y Values
             ar_y = mt_graph_data{:, st_cur_stat_col};
             % Access X Values
@@ -319,8 +343,8 @@ for it_pcombi_ctr = 1:length(cl_st_param_keys)
         
         % 9. Titling etc
         grid on;
-        title(strrep(cl_st_title{it_plot}, '_', '\_'));
-        ylabel(strrep(cl_st_ytitle{it_plot}, '_', '\_'));        
+        title(strrep(st_title, '_', '\_'));
+        ylabel(strrep(st_ytitle, '_', '\_'));        
         st_xlabel = strrep(st_x_label, '_', '\_');
         if (strcmp(st_simu_type, 'c'))        
             xlabel(st_xlabel);

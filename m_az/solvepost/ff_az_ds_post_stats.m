@@ -236,7 +236,6 @@ end
 
 if (bl_display_final_dist || bl_display_final_dist_detail)
     
-    disp('xxx PERCENTILES AND STATS xxx')        
     tb_outcomes_meansdperc = array2table(mt_outcomes_meansdperc);
     ar_fl_percentiles = ds_stats_map('ar_fl_percentiles');
     cl_col_names = ['mean', 'sd', 'coefofvar', 'min', 'max', ...
@@ -244,21 +243,20 @@ if (bl_display_final_dist || bl_display_final_dist_detail)
                     strcat('p', string(ar_fl_percentiles))];
     tb_outcomes_meansdperc.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
     tb_outcomes_meansdperc.Properties.RowNames = matlab.lang.makeValidName(cl_outcome_names);
-    disp('tb_outcomes_meansdperc: mean, sd, percentiles')
     
     if (bl_display_final_dist_detail_local)    
+        disp('xxx tb_outcomes_meansdperc: mean, sd, percentiles xxx')
         disp(rows2vars(tb_outcomes_meansdperc));
     end
 
     % Process Aset Held by up to percentiles    
-    disp('xxx All Variables Fraction of Y Held up to Percentile xxx')
     tb_outcomes_fracheld = array2table(mt_outcomes_fracheld);
     cl_col_names = [strcat('fracByP', string(ar_fl_percentiles))];
     tb_outcomes_fracheld.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
     tb_outcomes_fracheld.Properties.RowNames = matlab.lang.makeValidName(cl_outcome_names);
-    disp('tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile')
     
     if (bl_display_final_dist_detail_local)    
+        disp('xxx tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile xxx')
         disp(rows2vars(tb_outcomes_fracheld));
     end
     
@@ -341,13 +339,12 @@ end
 
 if (bl_display_final_dist || bl_display_final_dist_detail)
     
-    disp('xxx Variance and Covariance xxx')    
     tb_outcomes_covvar = array2table(mt_outcomes_covvar);
     tb_outcomes_covvar.Properties.VariableNames = matlab.lang.makeValidName(ar_st_covvar);
     tb_outcomes_covvar.Properties.RowNames = matlab.lang.makeValidName(cl_outcome_names);
-    disp('tb_outcomes_covvar: variance correlation')
     
     if (bl_display_final_dist_detail_local)    
+        disp('xxx tb_outcomes_covvar: variance correlation xxx')
         disp(rows2vars(tb_outcomes_covvar));
     end
     
@@ -364,7 +361,11 @@ if (bl_display_final_dist || bl_display_final_dist_detail)
     tb_outcomes = [tb_outcomes_meansdperc, tb_outcomes_covvar, tb_outcomes_fracheld];
     result_map('tb_outcomes') = tb_outcomes;        
     
-    disp(rows2vars(tb_outcomes));
+    if (bl_display_final_dist_detail)
+        disp(rows2vars(tb_outcomes));
+    else
+        disp(tb_outcomes);
+    end
     
 end
 end

@@ -119,7 +119,7 @@ param_map('fl_z_r_borr_n') = 5;
 % ffto_gen_tauchen_jhl> for standard implementation of ar1 shock process
 % using these parameters.
 
-param_map('it_z_wage_n') = 15;
+param_map('it_z_wage_n') = 11;
 param_map('fl_z_wage_mu') = 0;
 param_map('fl_z_wage_rho') = 0.8;
 param_map('fl_z_wage_sig') = 0.2;

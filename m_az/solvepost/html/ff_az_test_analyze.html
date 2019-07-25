@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Analyze Distributional Results</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-22"><meta name="DC.source" content="ff_az_test_analyze.m"><style type="text/css">
+      --><title>Analyze Distributional Results</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-23"><meta name="DC.source" content="ff_az_test_analyze.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -100,8 +100,10 @@ param_map = [param_map; default_params{5}];
 support_map = [support_map; default_params{6}];
 param_tstar_map = [param_tstar_map; default_params{7}];
 param_desc_map = [param_desc_map; default_params{8}];
-</pre><h2 id="7">Parse Parameters 2</h2><pre class="codeinput">params_group = values(support_map, <span class="keyword">...</span>
-    {<span class="string">'bl_graph_onebyones'</span>, <span class="string">'bl_display_graph_stats'</span>});
+</pre><h2 id="7">Parse Parameters 2</h2><pre class="codeinput">params_group = values(param_map, {<span class="string">'st_model'</span>});
+[st_model] = params_group{:};
+
+params_group = values(support_map, {<span class="string">'bl_graph_onebyones'</span>, <span class="string">'bl_display_graph_stats'</span>});
 [bl_graph_onebyones, bl_display_graph_stats] = params_group{:};
 </pre><h2 id="8">Cross-Simulate Model Along Parameters</h2><pre class="codeinput">[tb_outcomes, support_map, param_desc_map] = ff_az_test_gen( <span class="keyword">...</span>
     st_simu_type, it_size_type, cl_st_param_keys, <span class="keyword">...</span>
@@ -493,6 +495,12 @@ it_plot_ctr = 0;
         ar_st_colnames_plot =  repmat({<span class="string">'fl_cor_cl_mt_pol_c'</span>}, [1, length(ar_st_variablenames_plot)]);
         st_title = <span class="string">'Correlation with Consumption'</span>;
         st_ytitle = <span class="string">'Correlation Coefficient'</span>;
+    <span class="keyword">elseif</span> (it_plot == 8)
+        ar_st_variablenames_plot =  {<span class="string">'cl_mt_pol_a'</span>, <span class="string">'cl_mt_pol_c'</span>};
+        ar_st_legend_plot =  {<span class="string">'savings'</span>, <span class="string">'consumption'</span>};
+        ar_st_colnames_plot =  repmat({<span class="string">'pYisMINY'</span>}, [1, length(ar_st_variablenames_plot)]);
+        st_title = <span class="string">'Default Fraction'</span>;
+        st_ytitle = <span class="string">'Default Fraction'</span>;
     <span class="keyword">end</span>
 
     cl_ar_st_variablenames{it_plot_ctr} = ar_st_variablenames_plot;
@@ -517,9 +525,9 @@ cl_st_param_desc = cellfun(@(m) m{1}, cl_st_param_desc, <span class="string">'Un
 
     <span class="comment">% get data</span>
     <span class="keyword">if</span> (strcmp(st_simu_type, <span class="string">'c'</span>))
-        mt_cur_data = tb_outcomes(strcmp(tb_outcomes.var_param_key, st_param_key), :);
+        tb_cur_data = tb_outcomes(strcmp(tb_outcomes.var_param_key, st_param_key), :);
     <span class="keyword">elseif</span> (ismember(st_simu_type, [<span class="string">"g"</span>, <span class="string">"r"</span>]))
-        mt_cur_data = tb_outcomes;
+        tb_cur_data = tb_outcomes;
     <span class="keyword">end</span>
     st_x_label = st_param_desc;
 </pre><h2 id="13">Loop over Subplots (different sets of Outcomes)</h2><pre class="codeinput">    <span class="keyword">for</span> it_plot=1:1:it_plot_n
@@ -527,13 +535,27 @@ cl_st_param_desc = cellfun(@(m) m{1}, cl_st_param_desc, <span class="string">'Un
         cl_legend = cl_ar_st_legend{it_plot};
         ar_st_variablenames_plot = cl_ar_st_variablenames{it_plot};
         ar_st_colnames_plot = cl_ar_st_colnames{it_plot};
-
-        mt_graph_data = mt_cur_data(:, [{st_param_key}, ar_st_colnames_plot]);
+        st_title = cl_st_title{it_plot};
+        st_ytitle = cl_st_ytitle{it_plot};
 
         <span class="keyword">if</span> (bl_display_graph_stats)
-            disp(mt_graph_data)
+            disp([<span class="string">'------------------------'</span>])
+            disp([<span class="string">'xxxxx '</span> st_title <span class="string">' xxxxx'</span>])
+            disp([<span class="string">'xxxxx '</span> st_ytitle <span class="string">' xxxxx'</span>])
+            disp([<span class="string">'------------------------'</span>])
+            tb_graph_data = tb_cur_data(:, [{st_param_key}, ar_st_colnames_plot]);
+            <span class="keyword">if</span> (size(tb_graph_data,1) &gt;= 25)
+                disp(head(tb_graph_data, 13));
+                disp(tail(tb_graph_data, 13));
+            <span class="keyword">else</span>
+                disp(tb_graph_data);
+            <span class="keyword">end</span>
         <span class="keyword">end</span>
-</pre><pre class="codeoutput">                        fl_crra       p1         p25        p50        mean        p75       p99  
+</pre><pre class="codeoutput">------------------------
+xxxxx Consumption Percentiles xxxxx
+xxxxx C Distribution xxxxx
+------------------------
+                        fl_crra       p1         p25        p50        mean        p75       p99  
                         _______    ________    _______    ________    _______    _______    ______
 
     cl_mt_pol_a_p1v1       1              0          0    0.066756    0.39061    0.46729    3.3378
@@ -552,7 +574,11 @@ cl_st_param_desc = cellfun(@(m) m{1}, cl_st_param_desc, <span class="string">'Un
     cl_mt_coh_p1v5         5        0.88789     3.3876      5.5612     6.3472     8.4421    18.681
     cl_mt_pol_c_p1v5       5        0.78744     1.2297      1.3957     1.4036     1.5796     2.052
 
-</pre><pre class="codeoutput">                        fl_crra     mean        sd   
+</pre><pre class="codeoutput">------------------------
+xxxxx Consumption Mean and SD xxxxx
+xxxxx C Mean and SD xxxxx
+------------------------
+                        fl_crra     mean        sd   
                         _______    _______    _______
 
     cl_mt_pol_a_p1v1       1       0.39061    0.70074
@@ -571,7 +597,11 @@ cl_st_param_desc = cellfun(@(m) m{1}, cl_st_param_desc, <span class="string">'Un
     cl_mt_coh_p1v5         5        6.3472     3.9417
     cl_mt_pol_c_p1v5       5        1.4036    0.27131
 
-</pre><pre class="codeoutput">                        fl_crra     mean        sd   
+</pre><pre class="codeoutput">------------------------
+xxxxx Savings Mean and SD xxxxx
+xxxxx A Mean and SD xxxxx
+------------------------
+                        fl_crra     mean        sd   
                         _______    _______    _______
 
     cl_mt_pol_a_p1v1       1       0.39061    0.70074
@@ -590,7 +620,11 @@ cl_st_param_desc = cellfun(@(m) m{1}, cl_st_param_desc, <span class="string">'Un
     cl_mt_coh_p1v5         5        6.3472     3.9417
     cl_mt_pol_c_p1v5       5        1.4036    0.27131
 
-</pre><pre class="codeoutput">                        fl_crra     mean      mean_1     mean_2 
+</pre><pre class="codeoutput">------------------------
+xxxxx Aggregate Outcomes (wealth, savings, consumption) xxxxx
+xxxxx Aggregate Levels xxxxx
+------------------------
+                        fl_crra     mean      mean_1     mean_2 
                         _______    _______    _______    _______
 
     cl_mt_pol_a_p1v1       1       0.39061    0.39061    0.39061
@@ -609,7 +643,11 @@ cl_st_param_desc = cellfun(@(m) m{1}, cl_st_param_desc, <span class="string">'Un
     cl_mt_coh_p1v5         5        6.3472     6.3472     6.3472
     cl_mt_pol_c_p1v5       5        1.4036     1.4036     1.4036
 
-</pre><pre class="codeoutput">                        fl_crra    coefofvar    coefofvar_1    coefofvar_2
+</pre><pre class="codeoutput">------------------------
+xxxxx Coef of Variation (wealth, savings, consumption) xxxxx
+xxxxx Coefficient of Variation (SD/Mean) xxxxx
+------------------------
+                        fl_crra    coefofvar    coefofvar_1    coefofvar_2
                         _______    _________    ___________    ___________
 
     cl_mt_pol_a_p1v1       1         1.7939        1.7939         1.7939  
@@ -628,7 +666,11 @@ cl_st_param_desc = cellfun(@(m) m{1}, cl_st_param_desc, <span class="string">'Un
     cl_mt_coh_p1v5         5          0.621         0.621          0.621  
     cl_mt_pol_c_p1v5       5        0.19329       0.19329        0.19329  
 
-</pre><pre class="codeoutput">                        fl_crra    fl_cor_cl_mt_pol_c    fl_cor_cl_mt_pol_c_1    fl_cor_cl_mt_pol_c_2
+</pre><pre class="codeoutput">------------------------
+xxxxx Correlation with Consumption xxxxx
+xxxxx Correlation Coefficient xxxxx
+------------------------
+                        fl_crra    fl_cor_cl_mt_pol_c    fl_cor_cl_mt_pol_c_1    fl_cor_cl_mt_pol_c_2
                         _______    __________________    ____________________    ____________________
 
     cl_mt_pol_a_p1v1       1            0.74346                0.74346                 0.74346       
@@ -647,7 +689,11 @@ cl_st_param_desc = cellfun(@(m) m{1}, cl_st_param_desc, <span class="string">'Un
     cl_mt_coh_p1v5         5            0.93242                0.93242                 0.93242       
     cl_mt_pol_c_p1v5       5                  1                      1                       1       
 
-</pre><pre class="codeoutput">                        fl_beta      p1         p25         p50         mean        p75        p99  
+</pre><pre class="codeoutput">------------------------
+xxxxx Consumption Percentiles xxxxx
+xxxxx C Distribution xxxxx
+------------------------
+                        fl_beta      p1         p25         p50         mean        p75        p99  
                         _______    _______    ________    ________    ________    ________    ______
 
     cl_mt_pol_a_p2v1      0.87           0           0           0    0.083735    0.066756    1.2016
@@ -666,7 +712,11 @@ cl_st_param_desc = cellfun(@(m) m{1}, cl_st_param_desc, <span class="string">'Un
     cl_mt_coh_p2v5        0.97     0.68262      3.0295      5.6323      6.8233       9.393    23.012
     cl_mt_pol_c_p2v5      0.97     0.68262      1.2422      1.4183      1.4152      1.5952    2.0683
 
-</pre><pre class="codeoutput">                        fl_beta      mean        sd   
+</pre><pre class="codeoutput">------------------------
+xxxxx Consumption Mean and SD xxxxx
+xxxxx C Mean and SD xxxxx
+------------------------
+                        fl_beta      mean        sd   
                         _______    ________    _______
 
     cl_mt_pol_a_p2v1      0.87     0.083735    0.23518
@@ -685,7 +735,11 @@ cl_st_param_desc = cellfun(@(m) m{1}, cl_st_param_desc, <span class="string">'Un
     cl_mt_coh_p2v5        0.97       6.8233     5.0167
     cl_mt_pol_c_p2v5      0.97       1.4152    0.27424
 
-</pre><pre class="codeoutput">                        fl_beta      mean        sd   
+</pre><pre class="codeoutput">------------------------
+xxxxx Savings Mean and SD xxxxx
+xxxxx A Mean and SD xxxxx
+------------------------
+                        fl_beta      mean        sd   
                         _______    ________    _______
 
     cl_mt_pol_a_p2v1      0.87     0.083735    0.23518
@@ -704,7 +758,11 @@ cl_st_param_desc = cellfun(@(m) m{1}, cl_st_param_desc, <span class="string">'Un
     cl_mt_coh_p2v5        0.97       6.8233     5.0167
     cl_mt_pol_c_p2v5      0.97       1.4152    0.27424
 
-</pre><pre class="codeoutput">                        fl_beta      mean       mean_1      mean_2 
+</pre><pre class="codeoutput">------------------------
+xxxxx Aggregate Outcomes (wealth, savings, consumption) xxxxx
+xxxxx Aggregate Levels xxxxx
+------------------------
+                        fl_beta      mean       mean_1      mean_2 
                         _______    ________    ________    ________
 
     cl_mt_pol_a_p2v1      0.87     0.083735    0.083735    0.083735
@@ -723,7 +781,11 @@ cl_st_param_desc = cellfun(@(m) m{1}, cl_st_param_desc, <span class="string">'Un
     cl_mt_coh_p2v5        0.97       6.8233      6.8233      6.8233
     cl_mt_pol_c_p2v5      0.97       1.4152      1.4152      1.4152
 
-</pre><pre class="codeoutput">                        fl_beta    coefofvar    coefofvar_1    coefofvar_2
+</pre><pre class="codeoutput">------------------------
+xxxxx Coef of Variation (wealth, savings, consumption) xxxxx
+xxxxx Coefficient of Variation (SD/Mean) xxxxx
+------------------------
+                        fl_beta    coefofvar    coefofvar_1    coefofvar_2
                         _______    _________    ___________    ___________
 
     cl_mt_pol_a_p2v1      0.87       2.8087        2.8087         2.8087  
@@ -742,7 +804,11 @@ cl_st_param_desc = cellfun(@(m) m{1}, cl_st_param_desc, <span class="string">'Un
     cl_mt_coh_p2v5        0.97      0.73523       0.73523        0.73523  
     cl_mt_pol_c_p2v5      0.97      0.19378       0.19378        0.19378  
 
-</pre><pre class="codeoutput">                        fl_beta    fl_cor_cl_mt_pol_c    fl_cor_cl_mt_pol_c_1    fl_cor_cl_mt_pol_c_2
+</pre><pre class="codeoutput">------------------------
+xxxxx Correlation with Consumption xxxxx
+xxxxx Correlation Coefficient xxxxx
+------------------------
+                        fl_beta    fl_cor_cl_mt_pol_c    fl_cor_cl_mt_pol_c_1    fl_cor_cl_mt_pol_c_2
                         _______    __________________    ____________________    ____________________
 
     cl_mt_pol_a_p2v1      0.87           0.6606                 0.6606                  0.6606       
@@ -801,11 +867,11 @@ cl_st_param_desc = cellfun(@(m) m{1}, cl_st_param_desc, <span class="string">'Un
             st_lnwth = cl_line_csizes{it_fig};
 
             <span class="comment">% Access Y Outcomes</span>
-            ar_cur_rows = strcmp(mt_cur_data.variablenames, ar_st_variablenames_plot(it_fig));
+            ar_cur_rows = strcmp(tb_cur_data.variablenames, ar_st_variablenames_plot(it_fig));
             st_cur_stat_col = ar_st_colnames_plot{it_fig};
 
             <span class="comment">% Access X and Y Values</span>
-            mt_graph_data = mt_cur_data(ar_cur_rows, {st_param_key, st_cur_stat_col});
+            mt_graph_data = tb_cur_data(ar_cur_rows, {st_param_key, st_cur_stat_col});
             <span class="comment">% Access Y Values</span>
             ar_y = mt_graph_data{:, st_cur_stat_col};
             <span class="comment">% Access X Values</span>
@@ -834,8 +900,8 @@ cl_st_param_desc = cellfun(@(m) m{1}, cl_st_param_desc, <span class="string">'Un
 
         <span class="comment">% 9. Titling etc</span>
         grid <span class="string">on</span>;
-        title(strrep(cl_st_title{it_plot}, <span class="string">'_'</span>, <span class="string">'\_'</span>));
-        ylabel(strrep(cl_st_ytitle{it_plot}, <span class="string">'_'</span>, <span class="string">'\_'</span>));
+        title(strrep(st_title, <span class="string">'_'</span>, <span class="string">'\_'</span>));
+        ylabel(strrep(st_ytitle, <span class="string">'_'</span>, <span class="string">'\_'</span>));
         st_xlabel = strrep(st_x_label, <span class="string">'_'</span>, <span class="string">'\_'</span>);
         <span class="keyword">if</span> (strcmp(st_simu_type, <span class="string">'c'</span>))
             xlabel(st_xlabel);
@@ -984,8 +1050,10 @@ param_desc_map = [param_desc_map; default_params{8}];
 
 %% Parse Parameters 2
 
-params_group = values(support_map, ...
-    {'bl_graph_onebyones', 'bl_display_graph_stats'});
+params_group = values(param_map, {'st_model'});
+[st_model] = params_group{:};
+
+params_group = values(support_map, {'bl_graph_onebyones', 'bl_display_graph_stats'});
 [bl_graph_onebyones, bl_display_graph_stats] = params_group{:};
 
 %% Cross-Simulate Model Along Parameters
@@ -1051,6 +1119,12 @@ for it_plot = ar_it_plot_sets
         ar_st_colnames_plot =  repmat({'fl_cor_cl_mt_pol_c'}, [1, length(ar_st_variablenames_plot)]);
         st_title = 'Correlation with Consumption';
         st_ytitle = 'Correlation Coefficient';
+    elseif (it_plot == 8)
+        ar_st_variablenames_plot =  {'cl_mt_pol_a', 'cl_mt_pol_c'};
+        ar_st_legend_plot =  {'savings', 'consumption'};
+        ar_st_colnames_plot =  repmat({'pYisMINY'}, [1, length(ar_st_variablenames_plot)]);
+        st_title = 'Default Fraction';
+        st_ytitle = 'Default Fraction';        
     end
     
     cl_ar_st_variablenames{it_plot_ctr} = ar_st_variablenames_plot;
@@ -1081,9 +1155,9 @@ for it_pcombi_ctr = 1:length(cl_st_param_keys)
     
     % get data
     if (strcmp(st_simu_type, 'c'))
-        mt_cur_data = tb_outcomes(strcmp(tb_outcomes.var_param_key, st_param_key), :);
+        tb_cur_data = tb_outcomes(strcmp(tb_outcomes.var_param_key, st_param_key), :);
     elseif (ismember(st_simu_type, ["g", "r"]))
-        mt_cur_data = tb_outcomes;
+        tb_cur_data = tb_outcomes;
     end    
     st_x_label = st_param_desc;
     
@@ -1093,12 +1167,22 @@ for it_pcombi_ctr = 1:length(cl_st_param_keys)
         % Get x variable and label
         cl_legend = cl_ar_st_legend{it_plot};
         ar_st_variablenames_plot = cl_ar_st_variablenames{it_plot};
-        ar_st_colnames_plot = cl_ar_st_colnames{it_plot};
-        
-        mt_graph_data = mt_cur_data(:, [{st_param_key}, ar_st_colnames_plot]);
-        
+        ar_st_colnames_plot = cl_ar_st_colnames{it_plot};        
+        st_title = cl_st_title{it_plot};
+        st_ytitle = cl_st_ytitle{it_plot};
+                
         if (bl_display_graph_stats)
-            disp(mt_graph_data)
+            disp(['REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH'])
+            disp(['xxxxx ' st_title ' xxxxx'])
+            disp(['xxxxx ' st_ytitle ' xxxxx'])
+            disp(['REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH'])
+            tb_graph_data = tb_cur_data(:, [{st_param_key}, ar_st_colnames_plot]);
+            if (size(tb_graph_data,1) >= 25)
+                disp(head(tb_graph_data, 13));
+                disp(tail(tb_graph_data, 13));
+            else
+                disp(tb_graph_data);
+            end
         end
         
         %% Generate Graphs
@@ -1142,11 +1226,11 @@ for it_pcombi_ctr = 1:length(cl_st_param_keys)
             st_lnwth = cl_line_csizes{it_fig};
             
             % Access Y Outcomes
-            ar_cur_rows = strcmp(mt_cur_data.variablenames, ar_st_variablenames_plot(it_fig));
+            ar_cur_rows = strcmp(tb_cur_data.variablenames, ar_st_variablenames_plot(it_fig));
             st_cur_stat_col = ar_st_colnames_plot{it_fig};
             
             % Access X and Y Values
-            mt_graph_data = mt_cur_data(ar_cur_rows, {st_param_key, st_cur_stat_col});
+            mt_graph_data = tb_cur_data(ar_cur_rows, {st_param_key, st_cur_stat_col});
             % Access Y Values
             ar_y = mt_graph_data{:, st_cur_stat_col};
             % Access X Values
@@ -1175,8 +1259,8 @@ for it_pcombi_ctr = 1:length(cl_st_param_keys)
         
         % 9. Titling etc
         grid on;
-        title(strrep(cl_st_title{it_plot}, '_', '\_'));
-        ylabel(strrep(cl_st_ytitle{it_plot}, '_', '\_'));        
+        title(strrep(st_title, '_', '\_'));
+        ylabel(strrep(st_ytitle, '_', '\_'));        
         st_xlabel = strrep(st_x_label, '_', '\_');
         if (strcmp(st_simu_type, 'c'))        
             xlabel(st_xlabel);
