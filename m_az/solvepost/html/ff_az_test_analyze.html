@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Analyze Distributional Results</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-23"><meta name="DC.source" content="ff_az_test_analyze.m"><style type="text/css">
+      --><title>Analyze Distributional Results</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-26"><meta name="DC.source" content="ff_az_test_analyze.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Analyze Distributional Results</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_AZ_TEST_ANALYZE post solution simulation</a></li><li><a href="#3">Default Parameter</a></li><li><a href="#4">Array Parameters</a></li><li><a href="#5">Default</a></li><li><a href="#6">Parse Parameters 1</a></li><li><a href="#7">Parse Parameters 2</a></li><li><a href="#8">Cross-Simulate Model Along Parameters</a></li><li><a href="#9">Specify Outcome Variables to Plot</a></li><li><a href="#10">Get Var Descs</a></li><li><a href="#11">Graph Outcomes</a></li><li><a href="#13">Loop over Subplots (different sets of Outcomes)</a></li><li><a href="#15">Generate Graphs</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [tb_outcomes, support_map] = ff_az_test_analyze(varargin)
+  </style></head><body><div class="content"><h1>Analyze Distributional Results</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_AZ_TEST_ANALYZE post solution simulation</a></li><li><a href="#3">Default Parameter</a></li><li><a href="#4">Array Parameters</a></li><li><a href="#5">Default</a></li><li><a href="#6">Parse Parameters 1</a></li><li><a href="#7">Parse Parameters 2</a></li><li><a href="#8">Cross-Simulate Model Along Parameters</a></li><li><a href="#9">Specify Outcome Variables to Plot</a></li><li><a href="#11">List graphing options for az and abz models, some also for akz models</a></li><li><a href="#12">list graphing options only for akz models</a></li><li><a href="#13">Store to cells</a></li><li><a href="#15">Get Var Descs</a></li><li><a href="#16">Graph Outcomes</a></li><li><a href="#18">Loop over Subplots (different sets of Outcomes)</a></li><li><a href="#20">Generate Graphs</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [tb_outcomes, support_map] = ff_az_test_analyze(varargin)
 </pre><h2 id="2">FF_AZ_TEST_ANALYZE post solution simulation</h2><p>Simulate the model along various dimensions, and produce graphical outputs to show aggregate/distributional statistics.</p><p>@ar_it_plot_sets array integer array of which statistics graphs to generate, see line 128. Could add additional statistics to that conditional list.</p><p>@param st_simu_type string cross vs gridd simulation. cross: with (x,y), vary X fixing y, vary Y fixing x. grid: all (x,y) \in (X,Y)</p><div><ol><li><i>st_simu_type</i> = 'c' for cross simulate, if 'c', then each array value of param_tstar_map container is simulated over one by one. So if there are two arrays associated with two keys in param_tstar_map with length N1 and N2, the total number of simulations equals to N1 + N2.</li><li><i>st_simu_type</i> = 'g' for grid simulate, if 'g', then all possible combinations of the arrays in param_tstar_map are used to create combinations of parameter values. So if there are two arrays with lengths N1 and N2, there will be N1*N2 number of simulations</li><li><i>st_simu_type</i> = 'r' for random simulate, if 'r', then should specify param_map('it_st_simu_type_g_seed') value. Only the minimum and the maximum values for each array in param_tstar_map matters. Based on these minimum and maximum, and also what is in param_map('it_st_simu_type_g_simun'). Random parameter values will be drawn.</li></ol></div><p>@param it_size_type integer:</p><div><ol><li>it_size_type = 1 is quick grid</li><li>it_size_type = 2 is standard grid</li><li>it_size_type = 3 is denser grid</li></ol></div><p>@param cl_st_param_keys cell string cell array container parameters that we are simulating over</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param param_tstar_map container map of arrays with keys that are parameter keys. This could be specified outside with array values to override defaults here.</p><p>@param param_desc_map container map of strings for each parameter key.</p><p>@param tb_outcomes table table of simulation outcomes for various statistics for each set of parameters. Columns are statistics, rows are outcome variables, groups of rows are different simulations.</p><p>@include</p><div><ul><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_test_gen.html">ff_az_test_gen</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html">ff_az_ds_vecsv</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_set_default_param.html">ffs_az_set_default_param</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_get_funcgrid.html">ffs_az_get_funcgrid</a></li></ul></div><p>@seealso</p><div><ul><li><i>SPEED</i> savings only overall benchmark speed testing: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_speed/html/fsi_az_ds_vecsv_speed.html">fsi_az_ds_vecsv_speed</a></li><li><i>PREFERENCE</i> savings only preference testing: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_pref/html/fsi_az_ds_vecsv_pref.html">fsi_az_ds_vecsv_pref</a></li><li><i>PREFERENCE</i> savings only preference testing cross: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_pref/html/fsi_az_ds_vecsv_pref_cross.html">fsi_az_ds_vecsv_pref_cross</a></li><li><i>SHOCK</i> savings only shock testing: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_shock/html/fsi_az_ds_vecsv_shock.html">fsi_az_ds_vecsv_shock</a></li><li><i>SHOCK</i> savings only shock testing cross: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_shock/html/fsi_az_ds_vecsv_shock_cross.html">fsi_az_ds_vecsv_shock_cross</a></li><li><i>PRICE</i> savings only wage and interest rate testing cross: adjust wage and savings rate <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_price/html/fsi_az_ds_vecsv_price_cross.html">fsi_az_ds_vecsv_price_cross</a></li></ul></div><h2 id="3">Default Parameter</h2><pre class="codeinput">ar_it_plot_sets = [1,2,4,5,6,7];
 it_param_set = 9;
 [param_map, support_map] = ffs_az_set_default_param(it_param_set);
@@ -351,7 +351,7 @@ CONTAINER NAME: PARAM_TSTAR_MAP
 ----------------------------------------
   Map with properties:
 
-        Count: 9
+        Count: 16
       KeyType: char
     ValueType: any
 
@@ -366,56 +366,105 @@ fl_a_max :mu= 65 ,sd= 11.8585 ,min= 50 ,max= 80
 
     zi_1_r1      50        57.5        65        72.5        80   
 
-pos = 2 ; key = fl_beta ;rown= 1 ,coln= 5
+pos = 2 ; key = fl_b_bd ;rown= 1 ,coln= 5
+fl_b_bd :mu= -12.5 ,sd= 5.9293 ,min= -20 ,max= -5
+               zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5
+               _______    _______    _______    _______    _______
+
+    zi_1_r1      -20      -16.25      -12.5      -8.75       -5   
+
+pos = 3 ; key = fl_beta ;rown= 1 ,coln= 5
 fl_beta :mu= 0.92 ,sd= 0.039528 ,min= 0.87 ,max= 0.97
                zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5
                _______    _______    _______    _______    _______
 
     zi_1_r1     0.87       0.895      0.92       0.945      0.97  
 
-pos = 3 ; key = fl_crra ;rown= 1 ,coln= 5
+pos = 4 ; key = fl_c_min ;rown= 1 ,coln= 5
+fl_c_min :mu= 0.0155 ,sd= 0.011463 ,min= 0.001 ,max= 0.03
+               zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5
+               _______    _______    _______    _______    _______
+
+    zi_1_r1     0.03      0.02275    0.0155     0.00825     0.001 
+
+pos = 5 ; key = fl_crra ;rown= 1 ,coln= 5
 fl_crra :mu= 3 ,sd= 1.5811 ,min= 1 ,max= 5
                zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5
                _______    _______    _______    _______    _______
 
     zi_1_r1       1          2          3          4          5   
 
-pos = 4 ; key = fl_r_save ;rown= 1 ,coln= 5
+pos = 6 ; key = fl_r_save ;rown= 1 ,coln= 5
 fl_r_save :mu= 0.025 ,sd= 0.011859 ,min= 0.01 ,max= 0.04
                zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5
                _______    _______    _______    _______    _______
 
     zi_1_r1     0.01      0.0175      0.025     0.0325      0.04  
 
-pos = 5 ; key = fl_w ;rown= 1 ,coln= 5
+pos = 7 ; key = fl_w ;rown= 1 ,coln= 5
 fl_w :mu= 1.25 ,sd= 0.11859 ,min= 1.1 ,max= 1.4
                zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5
                _______    _______    _______    _______    _______
 
     zi_1_r1      1.1       1.175      1.25       1.325       1.4  
 
-pos = 6 ; key = fl_z_rho ;rown= 1 ,coln= 5
+pos = 8 ; key = fl_z_r_borr_max ;rown= 1 ,coln= 5
+fl_z_r_borr_max :mu= 0.1225 ,sd= 0.021741 ,min= 0.095 ,max= 0.15
+               zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5
+               _______    _______    _______    _______    _______
+
+    zi_1_r1     0.095     0.10875    0.1225     0.13625     0.15  
+
+pos = 9 ; key = fl_z_r_borr_n ;rown= 1 ,coln= 6
+fl_z_r_borr_n :mu= 15 ,sd= 7.4833 ,min= 5 ,max= 25
+               zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5    zi_6_c6
+               _______    _______    _______    _______    _______    _______
+
+    zi_1_r1       5          9         13         17         21         25   
+
+pos = 10 ; key = fl_z_r_borr_poiss_mean ;rown= 1 ,coln= 5
+fl_z_r_borr_poiss_mean :mu= 12.5 ,sd= 5.9293 ,min= 5 ,max= 20
+               zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5
+               _______    _______    _______    _______    _______
+
+    zi_1_r1       5        8.75       12.5       16.25       20   
+
+pos = 11 ; key = fl_z_rho ;rown= 1 ,coln= 5
 fl_z_rho :mu= 0.495 ,sd= 0.39133 ,min= 0 ,max= 0.99
                zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5
                _______    _______    _______    _______    _______
 
     zi_1_r1       0       0.2475      0.495     0.7425      0.99  
 
-pos = 7 ; key = fl_z_sig ;rown= 1 ,coln= 5
+pos = 12 ; key = fl_z_sig ;rown= 1 ,coln= 5
 fl_z_sig :mu= 0.255 ,sd= 0.19369 ,min= 0.01 ,max= 0.5
                zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5
                _______    _______    _______    _______    _______
 
     zi_1_r1     0.01      0.1325      0.255     0.3775       0.5  
 
-pos = 8 ; key = it_a_n ;rown= 1 ,coln= 5
+pos = 13 ; key = fl_z_wage_rho ;rown= 1 ,coln= 5
+fl_z_wage_rho :mu= 0.495 ,sd= 0.39133 ,min= 0 ,max= 0.99
+               zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5
+               _______    _______    _______    _______    _______
+
+    zi_1_r1       0       0.2475      0.495     0.7425      0.99  
+
+pos = 14 ; key = fl_z_wage_sig ;rown= 1 ,coln= 5
+fl_z_wage_sig :mu= 0.255 ,sd= 0.19369 ,min= 0.01 ,max= 0.5
+               zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5
+               _______    _______    _______    _______    _______
+
+    zi_1_r1     0.01      0.1325      0.255     0.3775       0.5  
+
+pos = 15 ; key = it_a_n ;rown= 1 ,coln= 5
 it_a_n :mu= 1300 ,sd= 948.6833 ,min= 100 ,max= 2500
                zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5
                _______    _______    _______    _______    _______
 
     zi_1_r1      100        700       1300       1900       2500  
 
-pos = 9 ; key = it_z_n ;rown= 1 ,coln= 5
+pos = 16 ; key = it_z_n ;rown= 1 ,coln= 5
 it_z_n :mu= 15 ,sd= 7.9057 ,min= 5 ,max= 25
                zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5
                _______    _______    _______    _______    _______
@@ -426,18 +475,25 @@ it_z_n :mu= 15 ,sd= 7.9057 ,min= 5 ,max= 25
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Matrix in Container and Sizes and Basic Statistics
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                 i    idx    rowN    colN    mean       std       min     max 
-                 _    ___    ____    ____    _____    ________    ____    ____
+                              i     idx    rowN    colN     mean       std        min     max 
+                              __    ___    ____    ____    ______    ________    _____    ____
 
-    fl_a_max     1     1      1       5         65      11.859      50      80
-    fl_beta      2     2      1       5       0.92    0.039528    0.87    0.97
-    fl_crra      3     3      1       5          3      1.5811       1       5
-    fl_r_save    4     4      1       5      0.025    0.011859    0.01    0.04
-    fl_w         5     5      1       5       1.25     0.11859     1.1     1.4
-    fl_z_rho     6     6      1       5      0.495     0.39133       0    0.99
-    fl_z_sig     7     7      1       5      0.255     0.19369    0.01     0.5
-    it_a_n       8     8      1       5       1300      948.68     100    2500
-    it_z_n       9     9      1       5         15      7.9057       5      25
+    fl_a_max                   1     1      1       5          65      11.859       50      80
+    fl_b_bd                    2     2      1       5       -12.5      5.9293      -20      -5
+    fl_beta                    3     3      1       5        0.92    0.039528     0.87    0.97
+    fl_c_min                   4     4      1       5      0.0155    0.011463    0.001    0.03
+    fl_crra                    5     5      1       5           3      1.5811        1       5
+    fl_r_save                  6     6      1       5       0.025    0.011859     0.01    0.04
+    fl_w                       7     7      1       5        1.25     0.11859      1.1     1.4
+    fl_z_r_borr_max            8     8      1       5      0.1225    0.021741    0.095    0.15
+    fl_z_r_borr_n              9     9      1       6          15      7.4833        5      25
+    fl_z_r_borr_poiss_mean    10    10      1       5        12.5      5.9293        5      20
+    fl_z_rho                  11    11      1       5       0.495     0.39133        0    0.99
+    fl_z_sig                  12    12      1       5       0.255     0.19369     0.01     0.5
+    fl_z_wage_rho             13    13      1       5       0.495     0.39133        0    0.99
+    fl_z_wage_sig             14    14      1       5       0.255     0.19369     0.01     0.5
+    it_a_n                    15    15      1       5        1300      948.68      100    2500
+    it_z_n                    16    16      1       5          15      7.9057        5      25
 
 </pre><h2 id="9">Specify Outcome Variables to Plot</h2><pre class="codeinput">it_plot_n = length(ar_it_plot_sets);
 [it_plot_rows, it_plot_cols] = deal(round(it_plot_n/3), 3);
@@ -450,27 +506,25 @@ cl_st_ytitle = cell([it_plot_n,1]);
 
 it_plot_ctr = 0;
 <span class="keyword">for</span> it_plot = ar_it_plot_sets
-
-    it_plot_ctr = it_plot_ctr + 1;
-
-    <span class="keyword">if</span> (it_plot == 1)
+</pre><pre class="codeinput">    it_plot_ctr = it_plot_ctr + 1;
+</pre><h2 id="11">List graphing options for az and abz models, some also for akz models</h2><pre class="codeinput">    <span class="keyword">if</span> (it_plot == 1)
         ar_st_colnames_plot =  {<span class="string">'p1'</span>, <span class="string">'p25'</span>, <span class="string">'p50'</span>, <span class="string">'mean'</span>, <span class="string">'p75'</span>, <span class="string">'p99'</span>};
         ar_st_variablenames_plot =  repmat({<span class="string">'cl_mt_pol_c'</span>}, [1, length(ar_st_colnames_plot)]);
         ar_st_legend_plot =  ar_st_colnames_plot;
         st_title = <span class="string">'Consumption Percentiles'</span>;
         st_ytitle = <span class="string">'C Distribution'</span>;
     <span class="keyword">elseif</span> (it_plot == 2)
-        ar_st_colnames_plot =  {<span class="string">'mean'</span>, <span class="string">'sd'</span>};
-        ar_st_variablenames_plot =  repmat({<span class="string">'cl_mt_pol_c'</span>}, [1, length(ar_st_colnames_plot)]);
-        ar_st_legend_plot =  ar_st_colnames_plot;
-        st_title = <span class="string">'Consumption Mean and SD'</span>;
-        st_ytitle = <span class="string">'C Mean and SD'</span>;
-    <span class="keyword">elseif</span> (it_plot == 3)
         ar_st_colnames_plot =  {<span class="string">'p1'</span>, <span class="string">'p25'</span>, <span class="string">'p50'</span>, <span class="string">'mean'</span>, <span class="string">'p75'</span>, <span class="string">'p99'</span>};
         ar_st_variablenames_plot =  repmat({<span class="string">'cl_mt_pol_a'</span>}, [1, length(ar_st_colnames_plot)]);
         ar_st_legend_plot =  ar_st_colnames_plot;
         st_title = <span class="string">'Savings Percentiles'</span>;
         st_ytitle = <span class="string">'A Distribution'</span>;
+    <span class="keyword">elseif</span> (it_plot == 3)
+        ar_st_colnames_plot =  {<span class="string">'mean'</span>, <span class="string">'sd'</span>};
+        ar_st_variablenames_plot =  repmat({<span class="string">'cl_mt_pol_c'</span>}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  ar_st_colnames_plot;
+        st_title = <span class="string">'Consumption Mean and SD'</span>;
+        st_ytitle = <span class="string">'C Mean and SD'</span>;
     <span class="keyword">elseif</span> (it_plot == 4)
         ar_st_colnames_plot =  {<span class="string">'mean'</span>, <span class="string">'sd'</span>};
         ar_st_variablenames_plot =  repmat({<span class="string">'cl_mt_pol_a'</span>}, [1, length(ar_st_colnames_plot)]);
@@ -478,41 +532,88 @@ it_plot_ctr = 0;
         st_title = <span class="string">'Savings Mean and SD'</span>;
         st_ytitle = <span class="string">'A Mean and SD'</span>;
     <span class="keyword">elseif</span> (it_plot == 5)
+        ar_st_colnames_plot =  {<span class="string">'sd'</span>};
+        ar_st_variablenames_plot =  repmat({<span class="string">'cl_mt_pol_c'</span>}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  ar_st_colnames_plot;
+        st_title = <span class="string">'Consumption Standard Deviation'</span>;
+        st_ytitle = <span class="string">'Standard Deviation'</span>;
+    <span class="keyword">elseif</span> (it_plot == 6)
+        ar_st_colnames_plot =  {<span class="string">'sd'</span>};
+        ar_st_variablenames_plot =  repmat({<span class="string">'cl_mt_pol_a'</span>}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  ar_st_colnames_plot;
+        st_title = <span class="string">'Savings Standard Deviation'</span>;
+        st_ytitle = <span class="string">'Standard Deviation'</span>;
+    <span class="keyword">elseif</span> (it_plot == 7)
         ar_st_variablenames_plot =  {<span class="string">'cl_mt_coh'</span>, <span class="string">'cl_mt_pol_a'</span>, <span class="string">'cl_mt_pol_c'</span>};
         ar_st_legend_plot =  {<span class="string">'coh=wealth'</span>, <span class="string">'savings'</span>, <span class="string">'consumption'</span>};
         ar_st_colnames_plot =  repmat({<span class="string">'mean'</span>}, [1, length(ar_st_variablenames_plot)]);
         st_title = <span class="string">'Aggregate Outcomes (wealth, savings, consumption)'</span>;
         st_ytitle = <span class="string">'Aggregate Levels'</span>;
-    <span class="keyword">elseif</span> (it_plot == 6)
+    <span class="keyword">elseif</span> (it_plot == 8)
         ar_st_variablenames_plot =  {<span class="string">'cl_mt_coh'</span>, <span class="string">'cl_mt_pol_a'</span>, <span class="string">'cl_mt_pol_c'</span>};
         ar_st_legend_plot =  {<span class="string">'coh=wealth'</span>, <span class="string">'savings'</span>, <span class="string">'consumption'</span>};
         ar_st_colnames_plot =  repmat({<span class="string">'coefofvar'</span>}, [1, length(ar_st_variablenames_plot)]);
         st_title = <span class="string">'Coef of Variation (wealth, savings, consumption)'</span>;
         st_ytitle = <span class="string">'Coefficient of Variation (SD/Mean)'</span>;
-    <span class="keyword">elseif</span> (it_plot == 7)
+    <span class="keyword">elseif</span> (it_plot == 9)
         ar_st_variablenames_plot =  {<span class="string">'cl_mt_coh'</span>, <span class="string">'cl_mt_pol_a'</span>, <span class="string">'cl_mt_pol_c'</span>};
         ar_st_legend_plot =  {<span class="string">'coh=wealth'</span>, <span class="string">'savings'</span>, <span class="string">'consumption'</span>};
         ar_st_colnames_plot =  repmat({<span class="string">'fl_cor_cl_mt_pol_c'</span>}, [1, length(ar_st_variablenames_plot)]);
         st_title = <span class="string">'Correlation with Consumption'</span>;
         st_ytitle = <span class="string">'Correlation Coefficient'</span>;
-    <span class="keyword">elseif</span> (it_plot == 8)
+    <span class="keyword">elseif</span> (it_plot == 10)
         ar_st_variablenames_plot =  {<span class="string">'cl_mt_pol_a'</span>, <span class="string">'cl_mt_pol_c'</span>};
         ar_st_legend_plot =  {<span class="string">'savings'</span>, <span class="string">'consumption'</span>};
         ar_st_colnames_plot =  repmat({<span class="string">'pYisMINY'</span>}, [1, length(ar_st_variablenames_plot)]);
         st_title = <span class="string">'Default Fraction'</span>;
         st_ytitle = <span class="string">'Default Fraction'</span>;
     <span class="keyword">end</span>
-
-    cl_ar_st_variablenames{it_plot_ctr} = ar_st_variablenames_plot;
+</pre><h2 id="12">list graphing options only for akz models</h2><pre class="codeinput">    <span class="keyword">if</span> (it_plot == 101)
+        ar_st_colnames_plot =  {<span class="string">'p1'</span>, <span class="string">'p25'</span>, <span class="string">'p50'</span>, <span class="string">'mean'</span>, <span class="string">'p75'</span>, <span class="string">'p99'</span>};
+        ar_st_variablenames_plot =  repmat({<span class="string">'cl_mt_pol_k'</span>}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  ar_st_colnames_plot;
+        st_title = <span class="string">'Risky Capital Percentiles'</span>;
+        st_ytitle = <span class="string">'K Distribution'</span>;
+    <span class="keyword">elseif</span> (it_plot == 102)
+        ar_st_colnames_plot =  {<span class="string">'mean'</span>, <span class="string">'sd'</span>};
+        ar_st_variablenames_plot =  repmat({<span class="string">'cl_mt_pol_k'</span>}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  ar_st_colnames_plot;
+        st_title = <span class="string">'Risky Capital Mean and SD'</span>;
+        st_ytitle = <span class="string">'K Mean and SD'</span>;
+    <span class="keyword">elseif</span> (it_plot == 103)
+        ar_st_colnames_plot =  {<span class="string">'sd'</span>};
+        ar_st_variablenames_plot =  repmat({<span class="string">'cl_mt_pol_k'</span>}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  ar_st_colnames_plot;
+        st_title = <span class="string">'Risky Capital Standard Deviation'</span>;
+        st_ytitle = <span class="string">'Standard Deviation'</span>;
+    <span class="keyword">elseif</span> (it_plot == 104)
+        ar_st_variablenames_plot =  {<span class="string">'cl_mt_coh'</span>, <span class="string">'cl_mt_pol_a'</span>, <span class="string">'cl_mt_pol_k'</span>, <span class="string">'cl_mt_pol_c'</span>};
+        ar_st_legend_plot =  {<span class="string">'coh=wealth'</span>, <span class="string">'savings'</span>, <span class="string">'risky k'</span>, <span class="string">'consumption'</span>};
+        ar_st_colnames_plot =  repmat({<span class="string">'mean'</span>}, [1, length(ar_st_variablenames_plot)]);
+        st_title = <span class="string">'Aggregate Outcomes (wealth, a, k, consumption)'</span>;
+        st_ytitle = <span class="string">'Aggregate Levels'</span>;
+    <span class="keyword">elseif</span> (it_plot == 105)
+        ar_st_variablenames_plot =  {<span class="string">'cl_mt_coh'</span>, <span class="string">'cl_mt_pol_a'</span>, <span class="string">'cl_mt_pol_k'</span>, <span class="string">'cl_mt_pol_c'</span>};
+        ar_st_legend_plot =  {<span class="string">'coh=wealth'</span>, <span class="string">'savings'</span>, <span class="string">'risky k'</span>, <span class="string">'consumption'</span>};
+        ar_st_colnames_plot =  repmat({<span class="string">'coefofvar'</span>}, [1, length(ar_st_variablenames_plot)]);
+        st_title = <span class="string">'Coef of Variation (wealth, a, k, consumption)'</span>;
+        st_ytitle = <span class="string">'Coefficient of Variation (SD/Mean)'</span>;
+    <span class="keyword">elseif</span> (it_plot == 106)
+        ar_st_variablenames_plot =  {<span class="string">'cl_mt_coh'</span>, <span class="string">'cl_mt_pol_a'</span>, <span class="string">'cl_mt_pol_k'</span>, <span class="string">'cl_mt_pol_c'</span>};
+        ar_st_legend_plot =  {<span class="string">'coh=wealth'</span>, <span class="string">'savings'</span>, <span class="string">'risky k'</span>, <span class="string">'consumption'</span>};
+        ar_st_colnames_plot =  repmat({<span class="string">'fl_cor_cl_mt_pol_c'</span>}, [1, length(ar_st_variablenames_plot)]);
+        st_title = <span class="string">'Correlation with Consumption'</span>;
+        st_ytitle = <span class="string">'Correlation Coefficient'</span>;
+    <span class="keyword">end</span>
+</pre><h2 id="13">Store to cells</h2><pre class="codeinput">    cl_ar_st_variablenames{it_plot_ctr} = ar_st_variablenames_plot;
     cl_ar_st_legend{it_plot_ctr} = ar_st_legend_plot;
     cl_ar_st_colnames{it_plot_ctr} = ar_st_colnames_plot;
     cl_st_title{it_plot_ctr} = st_title;
     cl_st_ytitle{it_plot_ctr} = st_ytitle;
-
-<span class="keyword">end</span>
-</pre><h2 id="10">Get Var Descs</h2><pre class="codeinput">cl_st_param_desc = values(param_desc_map, cl_st_param_keys);
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><h2 id="15">Get Var Descs</h2><pre class="codeinput">cl_st_param_desc = values(param_desc_map, cl_st_param_keys);
 cl_st_param_desc = cellfun(@(m) m{1}, cl_st_param_desc, <span class="string">'UniformOutput'</span>, false);
-</pre><h2 id="11">Graph Outcomes</h2><pre class="codeinput">close <span class="string">all</span>;
+</pre><h2 id="16">Graph Outcomes</h2><pre class="codeinput">close <span class="string">all</span>;
 
 <span class="keyword">for</span> it_pcombi_ctr = 1:length(cl_st_param_keys)
 </pre><pre class="codeinput">    st_param_key = cl_st_param_keys{it_pcombi_ctr};
@@ -530,7 +631,7 @@ cl_st_param_desc = cellfun(@(m) m{1}, cl_st_param_desc, <span class="string">'Un
         tb_cur_data = tb_outcomes;
     <span class="keyword">end</span>
     st_x_label = st_param_desc;
-</pre><h2 id="13">Loop over Subplots (different sets of Outcomes)</h2><pre class="codeinput">    <span class="keyword">for</span> it_plot=1:1:it_plot_n
+</pre><h2 id="18">Loop over Subplots (different sets of Outcomes)</h2><pre class="codeinput">    <span class="keyword">for</span> it_plot=1:1:it_plot_n
 </pre><pre class="codeinput">        <span class="comment">% Get x variable and label</span>
         cl_legend = cl_ar_st_legend{it_plot};
         ar_st_variablenames_plot = cl_ar_st_variablenames{it_plot};
@@ -575,27 +676,27 @@ xxxxx C Distribution xxxxx
     cl_mt_pol_c_p1v5       5        0.78744     1.2297      1.3957     1.4036     1.5796     2.052
 
 </pre><pre class="codeoutput">------------------------
-xxxxx Consumption Mean and SD xxxxx
-xxxxx C Mean and SD xxxxx
+xxxxx Savings Percentiles xxxxx
+xxxxx A Distribution xxxxx
 ------------------------
-                        fl_crra     mean        sd   
-                        _______    _______    _______
+                        fl_crra       p1         p25        p50        mean        p75       p99  
+                        _______    ________    _______    ________    _______    _______    ______
 
-    cl_mt_pol_a_p1v1       1       0.39061    0.70074
-    cl_mt_coh_p1v1         1        1.6804     1.0129
-    cl_mt_pol_c_p1v1       1        1.2898    0.37696
-    cl_mt_pol_a_p1v2       2         1.341     1.6059
-    cl_mt_coh_p1v2         2        2.6545     1.8815
-    cl_mt_pol_c_p1v2       2        1.3135     0.3224
-    cl_mt_pol_a_p1v3       3        2.4357     2.3673
-    cl_mt_coh_p1v3         3        3.7766     2.6281
-    cl_mt_pol_c_p1v3       3        1.3409    0.29467
-    cl_mt_pol_a_p1v4       4        3.6456     3.0477
-    cl_mt_coh_p1v4         4        5.0168     3.3019
-    cl_mt_pol_c_p1v4       4        1.3711     0.2794
-    cl_mt_pol_a_p1v5       5        4.9436       3.69
-    cl_mt_coh_p1v5         5        6.3472     3.9417
-    cl_mt_pol_c_p1v5       5        1.4036    0.27131
+    cl_mt_pol_a_p1v1       1              0          0    0.066756    0.39061    0.46729    3.3378
+    cl_mt_coh_p1v1         1        0.59175     1.0479      1.3944     1.6804     2.0102    5.4955
+    cl_mt_pol_c_p1v1       1        0.59175     1.0479      1.2789     1.2898     1.5468    2.2175
+    cl_mt_pol_a_p1v2       2              0    0.13351     0.80107      1.341     1.9359    7.2096
+    cl_mt_coh_p1v2         2        0.59175     1.2772      2.0971     2.6545     3.4471    9.2454
+    cl_mt_pol_c_p1v2       2        0.59175     1.1182      1.3039     1.3135     1.5229    2.0753
+    cl_mt_pol_a_p1v3       3              0    0.66756      1.7356     2.4357     3.4713    10.481
+    cl_mt_coh_p1v3         3        0.66017     1.8138      3.1006     3.7766     5.0209    12.488
+    cl_mt_pol_c_p1v3       3        0.65149     1.1437      1.3515     1.3409     1.5451    2.0387
+    cl_mt_pol_a_p1v4       4              0     1.3351      2.8705     3.6456     5.1402    13.551
+    cl_mt_coh_p1v4         4        0.75104     2.5532      4.2682     5.0168     6.6827    15.602
+    cl_mt_pol_c_p1v4       4        0.68262     1.1763      1.3732     1.3711     1.5497    2.0408
+    cl_mt_pol_a_p1v5       5       0.066756     2.1362      4.1389     4.9436     6.8758    16.622
+    cl_mt_coh_p1v5         5        0.88789     3.3876      5.5612     6.3472     8.4421    18.681
+    cl_mt_pol_c_p1v5       5        0.78744     1.2297      1.3957     1.4036     1.5796     2.052
 
 </pre><pre class="codeoutput">------------------------
 xxxxx Savings Mean and SD xxxxx
@@ -619,6 +720,52 @@ xxxxx A Mean and SD xxxxx
     cl_mt_pol_a_p1v5       5        4.9436       3.69
     cl_mt_coh_p1v5         5        6.3472     3.9417
     cl_mt_pol_c_p1v5       5        1.4036    0.27131
+
+</pre><pre class="codeoutput">------------------------
+xxxxx Consumption Standard Deviation xxxxx
+xxxxx Standard Deviation xxxxx
+------------------------
+                        fl_crra      sd   
+                        _______    _______
+
+    cl_mt_pol_a_p1v1       1       0.70074
+    cl_mt_coh_p1v1         1        1.0129
+    cl_mt_pol_c_p1v1       1       0.37696
+    cl_mt_pol_a_p1v2       2        1.6059
+    cl_mt_coh_p1v2         2        1.8815
+    cl_mt_pol_c_p1v2       2        0.3224
+    cl_mt_pol_a_p1v3       3        2.3673
+    cl_mt_coh_p1v3         3        2.6281
+    cl_mt_pol_c_p1v3       3       0.29467
+    cl_mt_pol_a_p1v4       4        3.0477
+    cl_mt_coh_p1v4         4        3.3019
+    cl_mt_pol_c_p1v4       4        0.2794
+    cl_mt_pol_a_p1v5       5          3.69
+    cl_mt_coh_p1v5         5        3.9417
+    cl_mt_pol_c_p1v5       5       0.27131
+
+</pre><pre class="codeoutput">------------------------
+xxxxx Savings Standard Deviation xxxxx
+xxxxx Standard Deviation xxxxx
+------------------------
+                        fl_crra      sd   
+                        _______    _______
+
+    cl_mt_pol_a_p1v1       1       0.70074
+    cl_mt_coh_p1v1         1        1.0129
+    cl_mt_pol_c_p1v1       1       0.37696
+    cl_mt_pol_a_p1v2       2        1.6059
+    cl_mt_coh_p1v2         2        1.8815
+    cl_mt_pol_c_p1v2       2        0.3224
+    cl_mt_pol_a_p1v3       3        2.3673
+    cl_mt_coh_p1v3         3        2.6281
+    cl_mt_pol_c_p1v3       3       0.29467
+    cl_mt_pol_a_p1v4       4        3.0477
+    cl_mt_coh_p1v4         4        3.3019
+    cl_mt_pol_c_p1v4       4        0.2794
+    cl_mt_pol_a_p1v5       5          3.69
+    cl_mt_coh_p1v5         5        3.9417
+    cl_mt_pol_c_p1v5       5       0.27131
 
 </pre><pre class="codeoutput">------------------------
 xxxxx Aggregate Outcomes (wealth, savings, consumption) xxxxx
@@ -644,52 +791,6 @@ xxxxx Aggregate Levels xxxxx
     cl_mt_pol_c_p1v5       5        1.4036     1.4036     1.4036
 
 </pre><pre class="codeoutput">------------------------
-xxxxx Coef of Variation (wealth, savings, consumption) xxxxx
-xxxxx Coefficient of Variation (SD/Mean) xxxxx
-------------------------
-                        fl_crra    coefofvar    coefofvar_1    coefofvar_2
-                        _______    _________    ___________    ___________
-
-    cl_mt_pol_a_p1v1       1         1.7939        1.7939         1.7939  
-    cl_mt_coh_p1v1         1        0.60276       0.60276        0.60276  
-    cl_mt_pol_c_p1v1       1        0.29227       0.29227        0.29227  
-    cl_mt_pol_a_p1v2       2         1.1976        1.1976         1.1976  
-    cl_mt_coh_p1v2         2        0.70878       0.70878        0.70878  
-    cl_mt_pol_c_p1v2       2        0.24545       0.24545        0.24545  
-    cl_mt_pol_a_p1v3       3         0.9719        0.9719         0.9719  
-    cl_mt_coh_p1v3         3        0.69588       0.69588        0.69588  
-    cl_mt_pol_c_p1v3       3        0.21975       0.21975        0.21975  
-    cl_mt_pol_a_p1v4       4          0.836         0.836          0.836  
-    cl_mt_coh_p1v4         4        0.65817       0.65817        0.65817  
-    cl_mt_pol_c_p1v4       4        0.20377       0.20377        0.20377  
-    cl_mt_pol_a_p1v5       5        0.74641       0.74641        0.74641  
-    cl_mt_coh_p1v5         5          0.621         0.621          0.621  
-    cl_mt_pol_c_p1v5       5        0.19329       0.19329        0.19329  
-
-</pre><pre class="codeoutput">------------------------
-xxxxx Correlation with Consumption xxxxx
-xxxxx Correlation Coefficient xxxxx
-------------------------
-                        fl_crra    fl_cor_cl_mt_pol_c    fl_cor_cl_mt_pol_c_1    fl_cor_cl_mt_pol_c_2
-                        _______    __________________    ____________________    ____________________
-
-    cl_mt_pol_a_p1v1       1            0.74346                0.74346                 0.74346       
-    cl_mt_coh_p1v1         1            0.88652                0.88652                 0.88652       
-    cl_mt_pol_c_p1v1       1                  1                      1                       1       
-    cl_mt_pol_a_p1v2       2            0.82757                0.82757                 0.82757       
-    cl_mt_coh_p1v2         2            0.87773                0.87773                 0.87773       
-    cl_mt_pol_c_p1v2       2                  1                      1                       1       
-    cl_mt_pol_a_p1v3       3            0.87152                0.87152                 0.87152       
-    cl_mt_coh_p1v3         3            0.89716                0.89716                 0.89716       
-    cl_mt_pol_c_p1v3       3                  1                      1                       1       
-    cl_mt_pol_a_p1v4       4            0.90175                0.90175                 0.90175       
-    cl_mt_coh_p1v4         4            0.91696                0.91696                 0.91696       
-    cl_mt_pol_c_p1v4       4                  1                      1                       1       
-    cl_mt_pol_a_p1v5       5            0.92249                0.92249                 0.92249       
-    cl_mt_coh_p1v5         5            0.93242                0.93242                 0.93242       
-    cl_mt_pol_c_p1v5       5                  1                      1                       1       
-
-</pre><pre class="codeoutput">------------------------
 xxxxx Consumption Percentiles xxxxx
 xxxxx C Distribution xxxxx
 ------------------------
@@ -713,27 +814,27 @@ xxxxx C Distribution xxxxx
     cl_mt_pol_c_p2v5      0.97     0.68262      1.2422      1.4183      1.4152      1.5952    2.0683
 
 </pre><pre class="codeoutput">------------------------
-xxxxx Consumption Mean and SD xxxxx
-xxxxx C Mean and SD xxxxx
+xxxxx Savings Percentiles xxxxx
+xxxxx A Distribution xxxxx
 ------------------------
-                        fl_beta      mean        sd   
-                        _______    ________    _______
+                        fl_beta      p1         p25         p50         mean        p75        p99  
+                        _______    _______    ________    ________    ________    ________    ______
 
-    cl_mt_pol_a_p2v1      0.87     0.083735    0.23518
-    cl_mt_coh_p2v1        0.87       1.3658     0.6001
-    cl_mt_pol_c_p2v1      0.87       1.2821    0.41818
-    cl_mt_pol_a_p2v2     0.895       0.1837    0.40215
-    cl_mt_coh_p2v2       0.895       1.4683    0.74402
-    cl_mt_pol_c_p2v2     0.895       1.2846    0.40112
-    cl_mt_pol_a_p2v3      0.92      0.40859     0.7045
-    cl_mt_coh_p2v3        0.92       1.6988     1.0188
-    cl_mt_pol_c_p2v3      0.92       1.2902    0.37555
-    cl_mt_pol_a_p2v4     0.945       1.0308     1.3631
-    cl_mt_coh_p2v4       0.945       2.3366     1.6448
-    cl_mt_pol_c_p2v4     0.945       1.3058    0.33496
-    cl_mt_pol_a_p2v5      0.97       5.4081     4.7673
-    cl_mt_coh_p2v5        0.97       6.8233     5.0167
-    cl_mt_pol_c_p2v5      0.97       1.4152    0.27424
+    cl_mt_pol_a_p2v1      0.87           0           0           0    0.083735    0.066756    1.2016
+    cl_mt_coh_p2v1        0.87     0.59175     0.90837      1.2088      1.3658      1.6085     3.564
+    cl_mt_pol_c_p2v1      0.87     0.59175     0.90837      1.2088      1.2821      1.6085    2.3992
+    cl_mt_pol_a_p2v2     0.895           0           0           0      0.1837     0.20027    2.0027
+    cl_mt_coh_p2v2       0.895     0.59175     0.97679      1.2088      1.4683      1.7365    4.2617
+    cl_mt_pol_c_p2v2     0.895     0.59175     0.97679      1.2088      1.2846      1.5418    2.3294
+    cl_mt_pol_a_p2v3      0.92           0           0    0.066756     0.40859     0.53405    3.3378
+    cl_mt_coh_p2v3        0.92     0.59175      1.0479      1.3944      1.6988      2.0608    5.5087
+    cl_mt_pol_c_p2v3      0.92     0.59175      1.0479      1.2789      1.2902      1.5485    2.2209
+    cl_mt_pol_a_p2v4     0.945           0    0.066756     0.53405      1.0308      1.4686    6.2083
+    cl_mt_coh_p2v4       0.945     0.59175      1.1847      1.8246      2.3366       2.977    8.2303
+    cl_mt_pol_c_p2v4     0.945     0.59175      1.0495      1.3293      1.3058      1.5301    2.0854
+    cl_mt_pol_a_p2v5      0.97           0      1.8024      4.2056      5.4081      7.8104    20.961
+    cl_mt_coh_p2v5        0.97     0.68262      3.0295      5.6323      6.8233       9.393    23.012
+    cl_mt_pol_c_p2v5      0.97     0.68262      1.2422      1.4183      1.4152      1.5952    2.0683
 
 </pre><pre class="codeoutput">------------------------
 xxxxx Savings Mean and SD xxxxx
@@ -759,6 +860,52 @@ xxxxx A Mean and SD xxxxx
     cl_mt_pol_c_p2v5      0.97       1.4152    0.27424
 
 </pre><pre class="codeoutput">------------------------
+xxxxx Consumption Standard Deviation xxxxx
+xxxxx Standard Deviation xxxxx
+------------------------
+                        fl_beta      sd   
+                        _______    _______
+
+    cl_mt_pol_a_p2v1      0.87     0.23518
+    cl_mt_coh_p2v1        0.87      0.6001
+    cl_mt_pol_c_p2v1      0.87     0.41818
+    cl_mt_pol_a_p2v2     0.895     0.40215
+    cl_mt_coh_p2v2       0.895     0.74402
+    cl_mt_pol_c_p2v2     0.895     0.40112
+    cl_mt_pol_a_p2v3      0.92      0.7045
+    cl_mt_coh_p2v3        0.92      1.0188
+    cl_mt_pol_c_p2v3      0.92     0.37555
+    cl_mt_pol_a_p2v4     0.945      1.3631
+    cl_mt_coh_p2v4       0.945      1.6448
+    cl_mt_pol_c_p2v4     0.945     0.33496
+    cl_mt_pol_a_p2v5      0.97      4.7673
+    cl_mt_coh_p2v5        0.97      5.0167
+    cl_mt_pol_c_p2v5      0.97     0.27424
+
+</pre><pre class="codeoutput">------------------------
+xxxxx Savings Standard Deviation xxxxx
+xxxxx Standard Deviation xxxxx
+------------------------
+                        fl_beta      sd   
+                        _______    _______
+
+    cl_mt_pol_a_p2v1      0.87     0.23518
+    cl_mt_coh_p2v1        0.87      0.6001
+    cl_mt_pol_c_p2v1      0.87     0.41818
+    cl_mt_pol_a_p2v2     0.895     0.40215
+    cl_mt_coh_p2v2       0.895     0.74402
+    cl_mt_pol_c_p2v2     0.895     0.40112
+    cl_mt_pol_a_p2v3      0.92      0.7045
+    cl_mt_coh_p2v3        0.92      1.0188
+    cl_mt_pol_c_p2v3      0.92     0.37555
+    cl_mt_pol_a_p2v4     0.945      1.3631
+    cl_mt_coh_p2v4       0.945      1.6448
+    cl_mt_pol_c_p2v4     0.945     0.33496
+    cl_mt_pol_a_p2v5      0.97      4.7673
+    cl_mt_coh_p2v5        0.97      5.0167
+    cl_mt_pol_c_p2v5      0.97     0.27424
+
+</pre><pre class="codeoutput">------------------------
 xxxxx Aggregate Outcomes (wealth, savings, consumption) xxxxx
 xxxxx Aggregate Levels xxxxx
 ------------------------
@@ -781,53 +928,7 @@ xxxxx Aggregate Levels xxxxx
     cl_mt_coh_p2v5        0.97       6.8233      6.8233      6.8233
     cl_mt_pol_c_p2v5      0.97       1.4152      1.4152      1.4152
 
-</pre><pre class="codeoutput">------------------------
-xxxxx Coef of Variation (wealth, savings, consumption) xxxxx
-xxxxx Coefficient of Variation (SD/Mean) xxxxx
-------------------------
-                        fl_beta    coefofvar    coefofvar_1    coefofvar_2
-                        _______    _________    ___________    ___________
-
-    cl_mt_pol_a_p2v1      0.87       2.8087        2.8087         2.8087  
-    cl_mt_coh_p2v1        0.87      0.43937       0.43937        0.43937  
-    cl_mt_pol_c_p2v1      0.87      0.32617       0.32617        0.32617  
-    cl_mt_pol_a_p2v2     0.895       2.1892        2.1892         2.1892  
-    cl_mt_coh_p2v2       0.895      0.50673       0.50673        0.50673  
-    cl_mt_pol_c_p2v2     0.895      0.31226       0.31226        0.31226  
-    cl_mt_pol_a_p2v3      0.92       1.7242        1.7242         1.7242  
-    cl_mt_coh_p2v3        0.92      0.59973       0.59973        0.59973  
-    cl_mt_pol_c_p2v3      0.92      0.29107       0.29107        0.29107  
-    cl_mt_pol_a_p2v4     0.945       1.3224        1.3224         1.3224  
-    cl_mt_coh_p2v4       0.945      0.70394       0.70394        0.70394  
-    cl_mt_pol_c_p2v4     0.945      0.25653       0.25653        0.25653  
-    cl_mt_pol_a_p2v5      0.97      0.88152       0.88152        0.88152  
-    cl_mt_coh_p2v5        0.97      0.73523       0.73523        0.73523  
-    cl_mt_pol_c_p2v5      0.97      0.19378       0.19378        0.19378  
-
-</pre><pre class="codeoutput">------------------------
-xxxxx Correlation with Consumption xxxxx
-xxxxx Correlation Coefficient xxxxx
-------------------------
-                        fl_beta    fl_cor_cl_mt_pol_c    fl_cor_cl_mt_pol_c_1    fl_cor_cl_mt_pol_c_2
-                        _______    __________________    ____________________    ____________________
-
-    cl_mt_pol_a_p2v1      0.87           0.6606                 0.6606                  0.6606       
-    cl_mt_coh_p2v1        0.87          0.95574                0.95574                 0.95574       
-    cl_mt_pol_c_p2v1      0.87                1                      1                       1       
-    cl_mt_pol_a_p2v2     0.895          0.71583                0.71583                 0.71583       
-    cl_mt_coh_p2v2       0.895          0.92604                0.92604                 0.92604       
-    cl_mt_pol_c_p2v2     0.895                1                      1                       1       
-    cl_mt_pol_a_p2v3      0.92          0.75717                0.75717                 0.75717       
-    cl_mt_coh_p2v3        0.92          0.89218                0.89218                 0.89218       
-    cl_mt_pol_c_p2v3      0.92                1                      1                       1       
-    cl_mt_pol_a_p2v4     0.945          0.80495                0.80495                 0.80495       
-    cl_mt_coh_p2v4       0.945          0.87075                0.87075                 0.87075       
-    cl_mt_pol_c_p2v4     0.945                1                      1                       1       
-    cl_mt_pol_a_p2v5      0.97          0.90439                0.90439                 0.90439       
-    cl_mt_coh_p2v5        0.97           0.9141                 0.9141                  0.9141       
-    cl_mt_pol_c_p2v5      0.97                1                      1                       1       
-
-</pre><h2 id="15">Generate Graphs</h2><pre class="codeinput">        <span class="keyword">if</span> (bl_graph_onebyones)
+</pre><h2 id="20">Generate Graphs</h2><pre class="codeinput">        <span class="keyword">if</span> (bl_graph_onebyones)
             figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
         <span class="keyword">else</span>
             subplot(it_plot_rows,it_plot_cols,it_plot);
@@ -873,9 +974,9 @@ xxxxx Correlation Coefficient xxxxx
             <span class="comment">% Access X and Y Values</span>
             mt_graph_data = tb_cur_data(ar_cur_rows, {st_param_key, st_cur_stat_col});
             <span class="comment">% Access Y Values</span>
-            ar_y = mt_graph_data{:, st_cur_stat_col};
+            ar_y = real(mt_graph_data{:, st_cur_stat_col});
             <span class="comment">% Access X Values</span>
-            ar_x = mt_graph_data{:, st_param_key};
+            ar_x = real(mt_graph_data{:, st_param_key});
 
             <span class="comment">% Plot Scatter</span>
             ls_chart(it_graph_counter) = scatter(ar_x', ar_y', it_csize, ar_color, st_shape);
@@ -1077,6 +1178,7 @@ for it_plot = ar_it_plot_sets
     
     it_plot_ctr = it_plot_ctr + 1;
     
+    %% List graphing options for az and abz models, some also for akz models
     if (it_plot == 1)
         ar_st_colnames_plot =  {'p1', 'p25', 'p50', 'mean', 'p75', 'p99'};
         ar_st_variablenames_plot =  repmat({'cl_mt_pol_c'}, [1, length(ar_st_colnames_plot)]);
@@ -1084,17 +1186,17 @@ for it_plot = ar_it_plot_sets
         st_title = 'Consumption Percentiles';
         st_ytitle = 'C Distribution';
     elseif (it_plot == 2)
-        ar_st_colnames_plot =  {'mean', 'sd'};
-        ar_st_variablenames_plot =  repmat({'cl_mt_pol_c'}, [1, length(ar_st_colnames_plot)]);
-        ar_st_legend_plot =  ar_st_colnames_plot;
-        st_title = 'Consumption Mean and SD';
-        st_ytitle = 'C Mean and SD';
-    elseif (it_plot == 3)
         ar_st_colnames_plot =  {'p1', 'p25', 'p50', 'mean', 'p75', 'p99'};
         ar_st_variablenames_plot =  repmat({'cl_mt_pol_a'}, [1, length(ar_st_colnames_plot)]);
         ar_st_legend_plot =  ar_st_colnames_plot;
         st_title = 'Savings Percentiles';
         st_ytitle = 'A Distribution';
+    elseif (it_plot == 3)
+        ar_st_colnames_plot =  {'mean', 'sd'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_pol_c'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  ar_st_colnames_plot;
+        st_title = 'Consumption Mean and SD';
+        st_ytitle = 'C Mean and SD';
     elseif (it_plot == 4)
         ar_st_colnames_plot =  {'mean', 'sd'};
         ar_st_variablenames_plot =  repmat({'cl_mt_pol_a'}, [1, length(ar_st_colnames_plot)]);
@@ -1102,24 +1204,36 @@ for it_plot = ar_it_plot_sets
         st_title = 'Savings Mean and SD';
         st_ytitle = 'A Mean and SD';
     elseif (it_plot == 5)
+        ar_st_colnames_plot =  {'sd'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_pol_c'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  ar_st_colnames_plot;
+        st_title = 'Consumption Standard Deviation';
+        st_ytitle = 'Standard Deviation';
+    elseif (it_plot == 6)
+        ar_st_colnames_plot =  {'sd'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_pol_a'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  ar_st_colnames_plot;
+        st_title = 'Savings Standard Deviation';
+        st_ytitle = 'Standard Deviation';
+    elseif (it_plot == 7)
         ar_st_variablenames_plot =  {'cl_mt_coh', 'cl_mt_pol_a', 'cl_mt_pol_c'};
         ar_st_legend_plot =  {'coh=wealth', 'savings', 'consumption'};
         ar_st_colnames_plot =  repmat({'mean'}, [1, length(ar_st_variablenames_plot)]);
         st_title = 'Aggregate Outcomes (wealth, savings, consumption)';
         st_ytitle = 'Aggregate Levels';
-    elseif (it_plot == 6)
+    elseif (it_plot == 8)
         ar_st_variablenames_plot =  {'cl_mt_coh', 'cl_mt_pol_a', 'cl_mt_pol_c'};
         ar_st_legend_plot =  {'coh=wealth', 'savings', 'consumption'};
         ar_st_colnames_plot =  repmat({'coefofvar'}, [1, length(ar_st_variablenames_plot)]);
         st_title = 'Coef of Variation (wealth, savings, consumption)';
         st_ytitle = 'Coefficient of Variation (SD/Mean)';        
-    elseif (it_plot == 7)
+    elseif (it_plot == 9)
         ar_st_variablenames_plot =  {'cl_mt_coh', 'cl_mt_pol_a', 'cl_mt_pol_c'};
         ar_st_legend_plot =  {'coh=wealth', 'savings', 'consumption'};
         ar_st_colnames_plot =  repmat({'fl_cor_cl_mt_pol_c'}, [1, length(ar_st_variablenames_plot)]);
         st_title = 'Correlation with Consumption';
         st_ytitle = 'Correlation Coefficient';
-    elseif (it_plot == 8)
+    elseif (it_plot == 10)
         ar_st_variablenames_plot =  {'cl_mt_pol_a', 'cl_mt_pol_c'};
         ar_st_legend_plot =  {'savings', 'consumption'};
         ar_st_colnames_plot =  repmat({'pYisMINY'}, [1, length(ar_st_variablenames_plot)]);
@@ -1127,6 +1241,47 @@ for it_plot = ar_it_plot_sets
         st_ytitle = 'Default Fraction';        
     end
     
+    %% list graphing options only for akz models
+    if (it_plot == 101)
+        ar_st_colnames_plot =  {'p1', 'p25', 'p50', 'mean', 'p75', 'p99'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_pol_k'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  ar_st_colnames_plot;
+        st_title = 'Risky Capital Percentiles';
+        st_ytitle = 'K Distribution';
+    elseif (it_plot == 102)
+        ar_st_colnames_plot =  {'mean', 'sd'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_pol_k'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  ar_st_colnames_plot;
+        st_title = 'Risky Capital Mean and SD';
+        st_ytitle = 'K Mean and SD';
+    elseif (it_plot == 103)
+        ar_st_colnames_plot =  {'sd'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_pol_k'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  ar_st_colnames_plot;
+        st_title = 'Risky Capital Standard Deviation';
+        st_ytitle = 'Standard Deviation';
+    elseif (it_plot == 104)
+        ar_st_variablenames_plot =  {'cl_mt_coh', 'cl_mt_pol_a', 'cl_mt_pol_k', 'cl_mt_pol_c'};
+        ar_st_legend_plot =  {'coh=wealth', 'savings', 'risky k', 'consumption'};
+        ar_st_colnames_plot =  repmat({'mean'}, [1, length(ar_st_variablenames_plot)]);
+        st_title = 'Aggregate Outcomes (wealth, a, k, consumption)';
+        st_ytitle = 'Aggregate Levels';
+    elseif (it_plot == 105)
+        ar_st_variablenames_plot =  {'cl_mt_coh', 'cl_mt_pol_a', 'cl_mt_pol_k', 'cl_mt_pol_c'};
+        ar_st_legend_plot =  {'coh=wealth', 'savings', 'risky k', 'consumption'};
+        ar_st_colnames_plot =  repmat({'coefofvar'}, [1, length(ar_st_variablenames_plot)]);
+        st_title = 'Coef of Variation (wealth, a, k, consumption)';
+        st_ytitle = 'Coefficient of Variation (SD/Mean)';        
+    elseif (it_plot == 106)
+        ar_st_variablenames_plot =  {'cl_mt_coh', 'cl_mt_pol_a', 'cl_mt_pol_k', 'cl_mt_pol_c'};
+        ar_st_legend_plot =  {'coh=wealth', 'savings', 'risky k', 'consumption'};
+        ar_st_colnames_plot =  repmat({'fl_cor_cl_mt_pol_c'}, [1, length(ar_st_variablenames_plot)]);
+        st_title = 'Correlation with Consumption';
+        st_ytitle = 'Correlation Coefficient';
+    end
+    
+    
+    %% Store to cells
     cl_ar_st_variablenames{it_plot_ctr} = ar_st_variablenames_plot;
     cl_ar_st_legend{it_plot_ctr} = ar_st_legend_plot;
     cl_ar_st_colnames{it_plot_ctr} = ar_st_colnames_plot;
@@ -1232,9 +1387,9 @@ for it_pcombi_ctr = 1:length(cl_st_param_keys)
             % Access X and Y Values
             mt_graph_data = tb_cur_data(ar_cur_rows, {st_param_key, st_cur_stat_col});
             % Access Y Values
-            ar_y = mt_graph_data{:, st_cur_stat_col};
+            ar_y = real(mt_graph_data{:, st_cur_stat_col});
             % Access X Values
-            ar_x = mt_graph_data{:, st_param_key};
+            ar_x = real(mt_graph_data{:, st_param_key});
             
             % Plot Scatter            
             ls_chart(it_graph_counter) = scatter(ar_x', ar_y', it_csize, ar_color, st_shape);

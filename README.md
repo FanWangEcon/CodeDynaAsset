@@ -395,6 +395,29 @@ We solve the joint asset choice problem using the *optimized-vectorized* method 
 3. *iwkz* model shift shock persistence
     * [constant (financial investment) return to scale](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_prod/html/fsi_iwkz_vf_vecsv_crs.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_iwkz_vf_vecsv/test_prod/fsi_iwkz_vf_vecsv_crs.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_vf_vecsv/test_prod/html/fsi_iwkz_vf_vecsv_crs.html)
 
+## 3.7 Simulations (iWKZ)
+
+Simulate and graph effects of changing parameters on outcomes.
+
+**Simulation Functions**:
+
+Share functions with *az* from *1.5* above, model (1) [simulate model](https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_test_gen.html) (2) [graph simulation results](https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_test_analyze.html)
+
+**Simulation Results**:
+
+1. *iwkz* the effects *preference parameters* on distributional outcomes
+    * sample simulate, [adjust discount and risk aversion](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_ikwz_ds_vecsv/test_pref/html/fsi_ikwz_ds_vecsv_pref.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_ikwz_ds_vecsv/test_pref/fsi_ikwz_ds_vecsv_pref.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_ikwz_ds_vecsv/test_pref/html/fsi_ikwz_ds_vecsv_pref.html)
+    * cross test, [adjust discount and risk aversion](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_ikwz_ds_vecsv/test_pref/html/fsi_ikwz_ds_vecsv_pref_cross.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_ikwz_ds_vecsv/test_pref/fsi_ikwz_ds_vecsv_pref_cross.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_ikwz_ds_vecsv/test_pref/html/fsi_ikwz_ds_vecsv_pref_cross.html)
+2. *iwkz* the effects production function *shock parameters* on distributional outcomes
+    * sample simulate, [adjust shock persistence and variance](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_ikwz_ds_vecsv/test_shock/html/fsi_ikwz_ds_vecsv_shock.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_ikwz_ds_vecsv/test_shock/fsi_ikwz_ds_vecsv_shock.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_ikwz_ds_vecsv/test_shock/html/fsi_ikwz_ds_vecsv_shock.html)
+    * cross test, [adjust shock persistence and variance](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_ikwz_ds_vecsv/test_shock/html/fsi_ikwz_ds_vecsv_shock_cross.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_ikwz_ds_vecsv/test_shock/fsi_ikwz_ds_vecsv_shock_cross.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_ikwz_ds_vecsv/test_shock/html/fsi_ikwz_ds_vecsv_shock_cross.html)    
+3. *iwkz* the effects production function *elasticity and depreciation parameters* on distributional outcomes
+    * sample simulate, [adjust shock persistence and variance](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_ikwz_ds_vecsv/test_prod/html/fsi_ikwz_ds_vecsv_prod.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_ikwz_ds_vecsv/test_prod/fsi_ikwz_ds_vecsv_shock.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_ikwz_ds_vecsv/test_prod/html/fsi_ikwz_ds_vecsv_prod.html)
+    * cross test, [adjust shock persistence and variance](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_ikwz_ds_vecsv/test_prod/html/fsi_ikwz_ds_vecsv_prod_cross.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_ikwz_ds_vecsv/test_prod/fsi_ikwz_ds_vecsv_shock_cross.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_ikwz_ds_vecsv/test_prod/html/fsi_ikwz_ds_vecsv_prod_cross.html)
+4. *iwkz* the effects *price parameters* on distributional outcomes
+    * cross test, [adjust min income and savings rate](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_ikwz_ds_vecsv/test_prod/html/fsi_ikwz_ds_vecsv_prod_cross.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_ikwz_ds_vecsv/test_prod/fsi_ikwz_ds_vecsv_shock_cross.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_ikwz_ds_vecsv/test_prod/html/fsi_ikwz_ds_vecsv_prod_cross.html)          
+5. *iwkz* the effects *preference + shocks + prices* on distributional outcomes
+    * cross test, [adjust preference shocks prices](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_ikwz_ds_vecsv/test_joint/html/fsi_ikwz_ds_vecsv_joint_rand.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_akz/test/ff_ikwz_ds_vecsv/test_joint/fsi_ikwz_ds_vecsv_joint_rand.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_ikwz_ds_vecsv/test_joint/html/fsi_ikwz_ds_vecsv_joint_rand.html)
 
 # 4. The Risky + Safe Asset Problem (Part 2)
 

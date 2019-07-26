@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Simulate Savings Model Along Various Parameter Arrays</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-23"><meta name="DC.source" content="ff_az_test_gen.m"><style type="text/css">
+      --><title>Simulate Savings Model Along Various Parameter Arrays</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-26"><meta name="DC.source" content="ff_az_test_gen.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Simulate Savings Model Along Various Parameter Arrays</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_AZ_TEST_GEN post solution simulation</a></li><li><a href="#3">Default Parameter Loops</a></li><li><a href="#4">Default Parameters</a></li><li><a href="#5">Array Parameters</a></li><li><a href="#6">Default</a></li><li><a href="#7">Parse Inputs</a></li><li><a href="#8">Parse Generate or Get Current</a></li><li><a href="#9">Store Mat Strings</a></li><li><a href="#10">Set Solve Sizes</a></li><li><a href="#11">Parase Preference and Shock Parameters</a></li><li><a href="#12">Display support_map</a></li><li><a href="#13">Generate New or Obtain Existing Mat</a></li><li><a href="#14">Initialize Storage</a></li><li><a href="#15">Simulate 1: Cross Simulation, fix one point, extend parameters in each direction</a></li><li><a href="#16">Simulate 2: Full Grid Simulation, Simulate Along Full Grid</a></li><li><a href="#17">Save Mat</a></li><li><a href="#20">Simulate Model given Parameter and Process Results</a></li><li><a href="#22">Reset Parameters that are determined by other parameters</a></li><li><a href="#23">Simulate Model</a></li><li><a href="#24">Store Results to Table</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [tb_outcomes, support_map, param_desc_map] = ff_az_test_gen(varargin)
+  </style></head><body><div class="content"><h1>Simulate Savings Model Along Various Parameter Arrays</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_AZ_TEST_GEN post solution simulation</a></li><li><a href="#3">Default Parameter Loops</a></li><li><a href="#4">Default Parameters</a></li><li><a href="#5">Array Parameters</a></li><li><a href="#6">Default</a></li><li><a href="#7">Parse Inputs</a></li><li><a href="#8">Parse Generate or Get Current</a></li><li><a href="#9">Store Mat Strings</a></li><li><a href="#10">Set Solve Sizes</a></li><li><a href="#11">Parase Preference and Shock Parameters</a></li><li><a href="#12">Display support_map</a></li><li><a href="#13">Generate New or Obtain Existing Mat</a></li><li><a href="#14">Initialize Storage</a></li><li><a href="#15">Simulate 1: Cross Simulation, fix one point, extend parameters in each direction</a></li><li><a href="#16">Simulate 2: Full Grid Simulation, Simulate Along Full Grid</a></li><li><a href="#17">Save Mat</a></li><li><a href="#20">Simulate Model given Parameter and Process Results</a></li><li><a href="#22">Reset Parameters that are determined by other parameters</a></li><li><a href="#23">Simulate Model</a></li><li><a href="#24">Store Results to Table</a></li><li><a href="#26">Map Corrections</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [tb_outcomes, support_map, param_desc_map] = ff_az_test_gen(varargin)
 </pre><h2 id="2">FF_AZ_TEST_GEN post solution simulation</h2><p>Simulate the model along various dimensions</p><p>@param st_simu_type string cross vs gridd simulation. cross: with (x,y), vary X fixing y, vary Y fixing x. grid: all (x,y) \in (X,Y)</p><div><ol><li><i>st_simu_type</i> = 'c' for cross simulate, if 'c', then each array value of param_tstar_map container is simulated over one by one. So if there are two arrays associated with two keys in param_tstar_map with length N1 and N2, the total number of simulations equals to N1 + N2.</li><li><i>st_simu_type</i> = 'g' for grid simulate, if 'g', then all possible combinations of the arrays in param_tstar_map are used to create combinations of parameter values. So if there are two arrays with lengths N1 and N2, there will be N1*N2 number of simulations</li><li><i>st_simu_type</i> = 'r' for random simulate, if 'r', then should specify param_map('it_st_simu_type_g_seed') value. Only the minimum and the maximum values for each array in param_tstar_map matters. Based on these minimum and maximum, and also what is in param_map('it_st_simu_type_g_simun'). Random parameter values will be drawn.</li></ol></div><p>@param it_size_type integer:  param_map support_map param_tstar_map param_desc_map # it_size_type = 1 is quick grid # it_size_type = 2 is standard grid # it_size_type = 3 is denser grid</p><p>@param cl_st_param_keys cell string cell array container parameters that we are simulating over</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param param_tstar_map container map of arrays with keys that are parameter keys. This could be specified outside with array values to override defaults here.</p><p>@param param_desc_map container map of strings for each parameter key.</p><p>@param tb_outcomes table table of simulation outcomes for various statistics for each set of parameters. Columns are statistics, rows are outcome variables, groups of rows are different simulations.</p><p>@include</p><div><ul><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html">ff_az_ds_vecsv</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_set_default_param.html">ffs_az_set_default_param</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_get_funcgrid.html">ffs_az_get_funcgrid</a></li></ul></div><p>@seealso</p><div><ul><li><i>SPEED</i> savings only overall benchmark speed testing: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_speed/html/fsi_az_ds_vecsv_speed.html">fsi_az_ds_vecsv_speed</a></li><li><i>PREFERENCE</i> savings only preference testing: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_pref/html/fsi_az_ds_vecsv_pref.html">fsi_az_ds_vecsv_pref</a></li><li><i>PREFERENCE</i> savings only preference testing cross: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_pref/html/fsi_az_ds_vecsv_pref_cross.html">fsi_az_ds_vecsv_pref_cross</a></li><li><i>SHOCK</i> savings only shock testing: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_shock/html/fsi_az_ds_vecsv_shock.html">fsi_az_ds_vecsv_shock</a></li><li><i>SHOCK</i> savings only shock testing cross: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_shock/html/fsi_az_ds_vecsv_shock_cross.html">fsi_az_ds_vecsv_shock_cross</a></li><li><i>PRICE</i> savings only wage and interest rate testing cross: adjust wage and savings rate <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_price/html/fsi_az_ds_vecsv_price_cross.html">fsi_az_ds_vecsv_price_cross</a></li></ul></div><h2 id="3">Default Parameter Loops</h2><pre class="codeinput"><span class="comment">% Loops to Vary for Simulations Below</span>
 it_size_type = 2;
 cl_st_param_keys = {<span class="string">'fl_crra'</span>, <span class="string">'fl_beta'</span>};
@@ -98,10 +98,15 @@ support_map(<span class="string">'bl_display_simu_stats'</span>) = true;
 <span class="comment">% param map modification</span>
 param_map(<span class="string">'it_st_simu_type_g_seed'</span>) = 123;
 param_map(<span class="string">'it_st_simu_type_g_simun'</span>) = 20;
-</pre><h2 id="5">Array Parameters</h2><pre class="codeinput">ls_st_param_key = {<span class="string">'fl_crra'</span>, <span class="string">'fl_beta'</span>, <span class="keyword">...</span>
+</pre><h2 id="5">Array Parameters</h2><p>keys here for az, abz models</p><pre class="codeinput">ls_st_param_key = {<span class="string">'fl_crra'</span>, <span class="string">'fl_beta'</span>, <span class="keyword">...</span>
                     <span class="string">'fl_w'</span>, <span class="string">'fl_r_save'</span>, <span class="keyword">...</span>
                     <span class="string">'fl_z_rho'</span>, <span class="string">'fl_z_sig'</span>, <span class="keyword">...</span>
-                    <span class="string">'fl_a_max'</span>, <span class="string">'it_z_n'</span>, <span class="string">'it_a_n'</span>};
+                    <span class="string">'fl_a_max'</span>, <span class="string">'it_z_n'</span>, <span class="string">'it_a_n'</span>, <span class="keyword">...</span>
+                    <span class="keyword">...</span>
+                    <span class="string">'fl_z_r_borr_poiss_mean'</span>, <span class="string">'fl_z_r_borr_max'</span>, <span class="keyword">...</span>
+                    <span class="string">'fl_b_bd'</span>, <span class="string">'fl_c_min'</span>, <span class="string">'fl_z_r_borr_n'</span>,<span class="keyword">...</span>
+                    <span class="string">'fl_z_wage_rho'</span>, <span class="string">'fl_z_wage_sig'</span>, <span class="keyword">...</span>
+                    };
 
 param_tstar_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
 it_simu_vec_len = 5;
@@ -115,6 +120,14 @@ param_tstar_map(ls_st_param_key{7}) = linspace(50, 80, it_simu_vec_len);
 param_tstar_map(ls_st_param_key{8}) = unique(round(linspace(5, 25, it_simu_vec_len)));
 param_tstar_map(ls_st_param_key{9}) = unique(round(linspace(100, 2500, it_simu_vec_len)));
 
+param_tstar_map(ls_st_param_key{10}) = linspace(5, 20, it_simu_vec_len);
+param_tstar_map(ls_st_param_key{11}) = linspace(0.095, 0.150, it_simu_vec_len);
+param_tstar_map(ls_st_param_key{12}) = linspace(-20, -5, it_simu_vec_len);
+param_tstar_map(ls_st_param_key{13}) = linspace(0.03, 0.001, it_simu_vec_len);
+param_tstar_map(ls_st_param_key{14}) = 5:4:25;
+param_tstar_map(ls_st_param_key{15}) = linspace(0, 0.99, it_simu_vec_len);
+param_tstar_map(ls_st_param_key{16}) = linspace(0.01, 0.5, it_simu_vec_len);
+
 param_desc_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
 param_desc_map(ls_st_param_key{1}) = {<span class="string">'CRRA'</span>};
 param_desc_map(ls_st_param_key{2}) = {<span class="string">'Discount'</span>};
@@ -125,6 +138,14 @@ param_desc_map(ls_st_param_key{6}) = {<span class="string">'Shock SD'</span>};
 param_desc_map(ls_st_param_key{7}) = {<span class="string">'Max Asset Bound'</span>};
 param_desc_map(ls_st_param_key{8}) = {<span class="string">'Shock Grid N'</span>};
 param_desc_map(ls_st_param_key{9}) = {<span class="string">'Asset Grid N'</span>};
+
+param_desc_map(ls_st_param_key{10}) = {<span class="string">'pois-max(shift br r mean)'</span>};
+param_desc_map(ls_st_param_key{11}) = {<span class="string">'max borrow r'</span>};
+param_desc_map(ls_st_param_key{12}) = {<span class="string">'borrow bound'</span>};
+param_desc_map(ls_st_param_key{13}) = {<span class="string">'minimum consumption'</span>};
+param_desc_map(ls_st_param_key{14}) = {<span class="string">'borrow shock n'</span>};
+param_desc_map(ls_st_param_key{15}) = {<span class="string">'Inc/Prod Shock Persistence'</span>};
+param_desc_map(ls_st_param_key{16}) = {<span class="string">'Inc/Prod Shock SD'</span>};
 </pre><h2 id="6">Default</h2><pre class="codeinput">default_params = {st_simu_type it_size_type cl_st_param_keys <span class="keyword">...</span>
                     param_map support_map param_tstar_map param_desc_map};
 </pre><h2 id="7">Parse Inputs</h2><p>override default set above if any parameters are updated</p><pre class="codeinput">params_len = length(varargin);
@@ -145,7 +166,10 @@ param_map(<span class="string">'cl_st_param_keys'</span>) = cl_st_param_keys;
 ar_param_keys_idx = cell2mat(cellfun(@(m) find(strcmp(ls_st_param_key, m)), <span class="keyword">...</span>
     cl_st_param_keys, <span class="string">'UniformOutput'</span>, false));
 param_map(<span class="string">'ar_param_keys_idx'</span>) = ar_param_keys_idx;
-</pre><h2 id="8">Parse Generate or Get Current</h2><p>if bl_gen = true, generate, if bl_gen = false, get saved file and output. If bl_replacefile is true, that means the existing file must be replaced, which will set bl_gen to true</p><pre class="codeinput">params_group = values(support_map, {<span class="string">'bl_replacefile'</span>, <span class="string">'bl_display_simu_stats'</span>});
+</pre><h2 id="8">Parse Generate or Get Current</h2><p>if bl_gen = true, generate, if bl_gen = false, get saved file and output. If bl_replacefile is true, that means the existing file must be replaced, which will set bl_gen to true</p><pre class="codeinput">params_group = values(param_map, {<span class="string">'st_model'</span>});
+[st_model] = params_group{:};
+
+params_group = values(support_map, {<span class="string">'bl_replacefile'</span>, <span class="string">'bl_display_simu_stats'</span>});
 [bl_replacefile, bl_display_simu_stats] = params_group{:};
 
 params_group = values(param_map, {<span class="string">'it_st_simu_type_g_seed'</span>, <span class="string">'it_st_simu_type_g_simun'</span>});
@@ -160,15 +184,29 @@ support_map(<span class="string">'st_mat_test_suffix'</span>) = [<span class="st
 </pre><h2 id="10">Set Solve Sizes</h2><pre class="codeinput"><span class="keyword">if</span> (it_size_type == 1)
 
     <span class="comment">% Basic Test Run</span>
-
-    param_map(<span class="string">'it_a_n'</span>) = 100;
-
     <span class="keyword">if</span> (ismember(st_model, [<span class="string">"az"</span>]))
+
         param_map(<span class="string">'it_z_n'</span>) = 11;
+
+        param_map(<span class="string">'it_a_n'</span>) = 100;
+
     <span class="keyword">elseif</span> (ismember(st_model, [<span class="string">"abz"</span>]))
+
         param_map(<span class="string">'fl_z_r_borr_n'</span>) = 5;
-        param_map(<span class="string">'it_z_wage_n'</span>) = 15;
+        param_map(<span class="string">'it_z_wage_n'</span>) = 11;
         param_map(<span class="string">'it_z_n'</span>) = param_map(<span class="string">'it_z_wage_n'</span>) * param_map(<span class="string">'fl_z_r_borr_n'</span>);
+
+        param_map(<span class="string">'it_a_n'</span>) = 100;
+
+    <span class="keyword">elseif</span> (ismember(st_model, [<span class="string">"akz_wkz_iwkz"</span>]))
+
+        param_map(<span class="string">'it_z_n'</span>) = 11;
+
+        param_map(<span class="string">'it_w_n'</span>) = 20;
+        param_map(<span class="string">'it_ak_n'</span>) = param_map(<span class="string">'it_w_n'</span>);
+        param_map(<span class="string">'fl_coh_interp_grid_gap'</span>) = 0.2;
+        param_map(<span class="string">'it_c_interp_grid_gap'</span>) = 10^-4;
+
     <span class="keyword">end</span>
 
 <span class="keyword">elseif</span> (it_size_type == 2)
@@ -178,14 +216,29 @@ support_map(<span class="string">'st_mat_test_suffix'</span>) = [<span class="st
 <span class="keyword">elseif</span> (it_size_type == 3)
 
     <span class="comment">% Denser Run</span>
-
-    param_map(<span class="string">'it_a_n'</span>) = 2250;
     <span class="keyword">if</span> (ismember(st_model, [<span class="string">"az"</span>]))
+
         param_map(<span class="string">'it_z_n'</span>) = 27;
+
+        param_map(<span class="string">'it_a_n'</span>) = 2250;
+
     <span class="keyword">elseif</span> (ismember(st_model, [<span class="string">"abz"</span>]))
-        param_map(<span class="string">'fl_z_r_borr_n'</span>) = 15;
-        param_map(<span class="string">'it_z_wage_n'</span>) = 21;
+
+        param_map(<span class="string">'fl_z_r_borr_n'</span>) = 11;
+        param_map(<span class="string">'it_z_wage_n'</span>) = 11;
         param_map(<span class="string">'it_z_n'</span>) = param_map(<span class="string">'it_z_wage_n'</span>) * param_map(<span class="string">'fl_z_r_borr_n'</span>);
+
+        param_map(<span class="string">'it_a_n'</span>) = 1250;
+
+    <span class="keyword">elseif</span> (ismember(st_model, [<span class="string">"akz_wkz_iwkz"</span>]))
+
+        param_map(<span class="string">'it_z_n'</span>) = 15;
+
+        param_map(<span class="string">'it_w_n'</span>) = 100;
+        param_map(<span class="string">'it_ak_n'</span>) = param_map(<span class="string">'it_w_n'</span>);
+        param_map(<span class="string">'fl_coh_interp_grid_gap'</span>) = 0.05;
+        param_map(<span class="string">'it_c_interp_grid_gap'</span>) = 10^-4;
+
     <span class="keyword">end</span>
 
 <span class="keyword">end</span>
@@ -436,7 +489,7 @@ CONTAINER NAME: PARAM_TSTAR_MAP
 ----------------------------------------
   Map with properties:
 
-        Count: 9
+        Count: 16
       KeyType: char
     ValueType: any
 
@@ -451,56 +504,105 @@ fl_a_max :mu= 65 ,sd= 11.8585 ,min= 50 ,max= 80
 
     zi_1_r1      50        57.5        65        72.5        80   
 
-pos = 2 ; key = fl_beta ;rown= 1 ,coln= 5
+pos = 2 ; key = fl_b_bd ;rown= 1 ,coln= 5
+fl_b_bd :mu= -12.5 ,sd= 5.9293 ,min= -20 ,max= -5
+               zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5
+               _______    _______    _______    _______    _______
+
+    zi_1_r1      -20      -16.25      -12.5      -8.75       -5   
+
+pos = 3 ; key = fl_beta ;rown= 1 ,coln= 5
 fl_beta :mu= 0.92 ,sd= 0.039528 ,min= 0.87 ,max= 0.97
                zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5
                _______    _______    _______    _______    _______
 
     zi_1_r1     0.87       0.895      0.92       0.945      0.97  
 
-pos = 3 ; key = fl_crra ;rown= 1 ,coln= 5
+pos = 4 ; key = fl_c_min ;rown= 1 ,coln= 5
+fl_c_min :mu= 0.0155 ,sd= 0.011463 ,min= 0.001 ,max= 0.03
+               zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5
+               _______    _______    _______    _______    _______
+
+    zi_1_r1     0.03      0.02275    0.0155     0.00825     0.001 
+
+pos = 5 ; key = fl_crra ;rown= 1 ,coln= 5
 fl_crra :mu= 3 ,sd= 1.5811 ,min= 1 ,max= 5
                zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5
                _______    _______    _______    _______    _______
 
     zi_1_r1       1          2          3          4          5   
 
-pos = 4 ; key = fl_r_save ;rown= 1 ,coln= 5
+pos = 6 ; key = fl_r_save ;rown= 1 ,coln= 5
 fl_r_save :mu= 0.025 ,sd= 0.011859 ,min= 0.01 ,max= 0.04
                zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5
                _______    _______    _______    _______    _______
 
     zi_1_r1     0.01      0.0175      0.025     0.0325      0.04  
 
-pos = 5 ; key = fl_w ;rown= 1 ,coln= 5
+pos = 7 ; key = fl_w ;rown= 1 ,coln= 5
 fl_w :mu= 1.25 ,sd= 0.11859 ,min= 1.1 ,max= 1.4
                zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5
                _______    _______    _______    _______    _______
 
     zi_1_r1      1.1       1.175      1.25       1.325       1.4  
 
-pos = 6 ; key = fl_z_rho ;rown= 1 ,coln= 5
+pos = 8 ; key = fl_z_r_borr_max ;rown= 1 ,coln= 5
+fl_z_r_borr_max :mu= 0.1225 ,sd= 0.021741 ,min= 0.095 ,max= 0.15
+               zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5
+               _______    _______    _______    _______    _______
+
+    zi_1_r1     0.095     0.10875    0.1225     0.13625     0.15  
+
+pos = 9 ; key = fl_z_r_borr_n ;rown= 1 ,coln= 6
+fl_z_r_borr_n :mu= 15 ,sd= 7.4833 ,min= 5 ,max= 25
+               zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5    zi_6_c6
+               _______    _______    _______    _______    _______    _______
+
+    zi_1_r1       5          9         13         17         21         25   
+
+pos = 10 ; key = fl_z_r_borr_poiss_mean ;rown= 1 ,coln= 5
+fl_z_r_borr_poiss_mean :mu= 12.5 ,sd= 5.9293 ,min= 5 ,max= 20
+               zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5
+               _______    _______    _______    _______    _______
+
+    zi_1_r1       5        8.75       12.5       16.25       20   
+
+pos = 11 ; key = fl_z_rho ;rown= 1 ,coln= 5
 fl_z_rho :mu= 0.495 ,sd= 0.39133 ,min= 0 ,max= 0.99
                zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5
                _______    _______    _______    _______    _______
 
     zi_1_r1       0       0.2475      0.495     0.7425      0.99  
 
-pos = 7 ; key = fl_z_sig ;rown= 1 ,coln= 5
+pos = 12 ; key = fl_z_sig ;rown= 1 ,coln= 5
 fl_z_sig :mu= 0.255 ,sd= 0.19369 ,min= 0.01 ,max= 0.5
                zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5
                _______    _______    _______    _______    _______
 
     zi_1_r1     0.01      0.1325      0.255     0.3775       0.5  
 
-pos = 8 ; key = it_a_n ;rown= 1 ,coln= 5
+pos = 13 ; key = fl_z_wage_rho ;rown= 1 ,coln= 5
+fl_z_wage_rho :mu= 0.495 ,sd= 0.39133 ,min= 0 ,max= 0.99
+               zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5
+               _______    _______    _______    _______    _______
+
+    zi_1_r1       0       0.2475      0.495     0.7425      0.99  
+
+pos = 14 ; key = fl_z_wage_sig ;rown= 1 ,coln= 5
+fl_z_wage_sig :mu= 0.255 ,sd= 0.19369 ,min= 0.01 ,max= 0.5
+               zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5
+               _______    _______    _______    _______    _______
+
+    zi_1_r1     0.01      0.1325      0.255     0.3775       0.5  
+
+pos = 15 ; key = it_a_n ;rown= 1 ,coln= 5
 it_a_n :mu= 1300 ,sd= 948.6833 ,min= 100 ,max= 2500
                zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5
                _______    _______    _______    _______    _______
 
     zi_1_r1      100        700       1300       1900       2500  
 
-pos = 9 ; key = it_z_n ;rown= 1 ,coln= 5
+pos = 16 ; key = it_z_n ;rown= 1 ,coln= 5
 it_z_n :mu= 15 ,sd= 7.9057 ,min= 5 ,max= 25
                zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5
                _______    _______    _______    _______    _______
@@ -511,18 +613,25 @@ it_z_n :mu= 15 ,sd= 7.9057 ,min= 5 ,max= 25
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Matrix in Container and Sizes and Basic Statistics
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                 i    idx    rowN    colN    mean       std       min     max 
-                 _    ___    ____    ____    _____    ________    ____    ____
+                              i     idx    rowN    colN     mean       std        min     max 
+                              __    ___    ____    ____    ______    ________    _____    ____
 
-    fl_a_max     1     1      1       5         65      11.859      50      80
-    fl_beta      2     2      1       5       0.92    0.039528    0.87    0.97
-    fl_crra      3     3      1       5          3      1.5811       1       5
-    fl_r_save    4     4      1       5      0.025    0.011859    0.01    0.04
-    fl_w         5     5      1       5       1.25     0.11859     1.1     1.4
-    fl_z_rho     6     6      1       5      0.495     0.39133       0    0.99
-    fl_z_sig     7     7      1       5      0.255     0.19369    0.01     0.5
-    it_a_n       8     8      1       5       1300      948.68     100    2500
-    it_z_n       9     9      1       5         15      7.9057       5      25
+    fl_a_max                   1     1      1       5          65      11.859       50      80
+    fl_b_bd                    2     2      1       5       -12.5      5.9293      -20      -5
+    fl_beta                    3     3      1       5        0.92    0.039528     0.87    0.97
+    fl_c_min                   4     4      1       5      0.0155    0.011463    0.001    0.03
+    fl_crra                    5     5      1       5           3      1.5811        1       5
+    fl_r_save                  6     6      1       5       0.025    0.011859     0.01    0.04
+    fl_w                       7     7      1       5        1.25     0.11859      1.1     1.4
+    fl_z_r_borr_max            8     8      1       5      0.1225    0.021741    0.095    0.15
+    fl_z_r_borr_n              9     9      1       6          15      7.4833        5      25
+    fl_z_r_borr_poiss_mean    10    10      1       5        12.5      5.9293        5      20
+    fl_z_rho                  11    11      1       5       0.495     0.39133        0    0.99
+    fl_z_sig                  12    12      1       5       0.255     0.19369     0.01     0.5
+    fl_z_wage_rho             13    13      1       5       0.495     0.39133        0    0.99
+    fl_z_wage_sig             14    14      1       5       0.255     0.19369     0.01     0.5
+    it_a_n                    15    15      1       5        1300      948.68      100    2500
+    it_z_n                    16    16      1       5          15      7.9057        5      25
 
 </pre><h2 id="13">Generate New or Obtain Existing Mat</h2><p>Mat file folder and mat file name</p><pre class="codeinput"><span class="keyword">if</span> ~exist(st_mat_test_path,<span class="string">'dir'</span>); mkdir(st_mat_test_path); <span class="keyword">end</span>
 st_file_name = [st_mat_test_prefix st_mat_test_name_main st_mat_test_suffix <span class="string">'.mat'</span>];
@@ -576,6 +685,7 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxx
                 <span class="comment">% Adjust Value for Current Parameter been Varied</span>
                 fl_param_val = ar_param_values(it_cur_param);
                 param_map(st_param_key) = fl_param_val;
+                param_map = map_correction(param_map);
                 disp([<span class="string">'xxxxx '</span> st_param_key <span class="string">' = '</span> num2str(fl_param_val) <span class="string">' xxxxx'</span>]);
 
                 <span class="comment">% Simulate Model</span>
@@ -644,6 +754,7 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxx
             <span class="keyword">for</span> st_param_key = cl_st_param_keys
                 param_map(st_param_key{1}) = tb_row_param_adj_cur{1, st_param_key};
             <span class="keyword">end</span>
+            param_map = map_correction(param_map);
 
             <span class="comment">% Simulate Model</span>
             ar_simu_info = [it_pcombi_ctr, cell2mat(values(param_map, cl_st_param_keys))];
@@ -714,9 +825,18 @@ xxxxx Shift to: xxxxx
 </pre><h2 id="20">Simulate Model given Parameter and Process Results</h2><pre class="codeinput"><span class="keyword">function</span> [tb_outcomes_simu, variablenames] = simu_model_gen_stats(param_map, support_map, ar_simu_info, cl_col_names)
 </pre><pre class="codeinput">cl_st_param_keys = param_map(<span class="string">'cl_st_param_keys'</span>);
 </pre><h2 id="22">Reset Parameters that are determined by other parameters</h2><pre class="codeinput">st_model = param_map(<span class="string">'st_model'</span>);
-it_a_n = param_map(<span class="string">'it_a_n'</span>);
-it_z_n = param_map(<span class="string">'it_z_n'</span>);
-disp([<span class="string">'xxxxx st_model = '</span> st_model <span class="string">', it_a_n = '</span> num2str(it_a_n) <span class="string">', it_z_n = '</span> num2str(it_z_n) <span class="string">' xxxxx'</span>]);
+<span class="keyword">if</span> (ismember(st_model, [<span class="string">"az"</span>,<span class="string">"abz"</span>]))
+    it_a_n = param_map(<span class="string">'it_a_n'</span>);
+    it_z_n = param_map(<span class="string">'it_z_n'</span>);
+    disp([<span class="string">'xxxxx st_model = '</span> st_model <span class="string">', it_a_n = '</span> num2str(it_a_n) <span class="string">', it_z_n = '</span> num2str(it_z_n) <span class="string">' xxxxx'</span>]);
+<span class="keyword">elseif</span> (ismember(st_model, [<span class="string">"akz_wkz_iwkz"</span>]))
+    it_w_n = param_map(<span class="string">'it_w_n'</span>);
+    it_ak_n = param_map(<span class="string">'it_ak_n'</span>);
+    it_z_n = param_map(<span class="string">'it_z_n'</span>);
+    disp([<span class="string">'xxxxx st_model = '</span> st_model <span class="keyword">...</span>
+          <span class="string">', it_w_n = '</span> num2str(it_w_n) <span class="string">', it_ak_n = '</span> num2str(it_ak_n) <span class="keyword">...</span>
+          <span class="string">', it_z_n = '</span> num2str(it_z_n) <span class="string">' xxxxx'</span>]);
+<span class="keyword">end</span>
 </pre><pre class="codeoutput">xxxxx st_model = az, it_a_n = 750, it_z_n = 15 xxxxx
 </pre><pre class="codeoutput">xxxxx st_model = az, it_a_n = 750, it_z_n = 15 xxxxx
 </pre><pre class="codeoutput">xxxxx st_model = az, it_a_n = 750, it_z_n = 15 xxxxx
@@ -737,12 +857,15 @@ disp([<span class="string">'xxxxx st_model = '</span> st_model <span class="stri
 </pre><pre class="codeoutput">xxxxx st_model = az, it_a_n = 750, it_z_n = 15 xxxxx
 </pre><pre class="codeoutput">xxxxx st_model = az, it_a_n = 750, it_z_n = 15 xxxxx
 </pre><pre class="codeoutput">xxxxx st_model = az, it_a_n = 750, it_z_n = 15 xxxxx
-</pre><h2 id="23">Simulate Model</h2><pre class="codeinput"><span class="keyword">if</span> (ismember(st_model, [<span class="string">"abz"</span>]))
-    [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map);
-    result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
-<span class="keyword">elseif</span> (ismember(st_model, [<span class="string">"az"</span>]))
+</pre><h2 id="23">Simulate Model</h2><pre class="codeinput"><span class="keyword">if</span> (ismember(st_model, [<span class="string">"az"</span>]))
     [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map);
     result_map = ff_az_vf_vecsv(param_map, support_map, armt_map, func_map);
+<span class="keyword">elseif</span> (ismember(st_model, [<span class="string">"abz"</span>]))
+    [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map);
+    result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
+<span class="keyword">elseif</span> (ismember(st_model, [<span class="string">"akz_wkz_iwkz"</span>]))
+    [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map);
+    result_map = ff_iwkz_vf_vecsv(param_map, support_map, armt_map, func_map);
 <span class="keyword">end</span>
 result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map);
 </pre><pre class="codeoutput">----------------------------------------
@@ -976,12 +1099,6 @@ tb_prob_drv
          99                        2.0449                                  0.98416           
        99.9                        2.2623                                  0.99826           
 
-xxx PERCENTILES AND STATS xxx
-tb_outcomes_meansdperc: mean, sd, percentiles
-xxx All Variables Fraction of Y Held up to Percentile xxx
-tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
-xxx Variance and Covariance xxx
-tb_outcomes_covvar: variance correlation
     OriginalVariableNames    cl_mt_pol_a    cl_mt_coh     cl_mt_pol_c
     _____________________    ___________    __________    ___________
 
@@ -1267,12 +1384,6 @@ tb_prob_drv
          99                        2.0115                                  0.98424           
        99.9                        2.2527                                  0.99827           
 
-xxx PERCENTILES AND STATS xxx
-tb_outcomes_meansdperc: mean, sd, percentiles
-xxx All Variables Fraction of Y Held up to Percentile xxx
-tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
-xxx Variance and Covariance xxx
-tb_outcomes_covvar: variance correlation
     OriginalVariableNames    cl_mt_pol_a    cl_mt_coh     cl_mt_pol_c
     _____________________    ___________    __________    ___________
 
@@ -1558,12 +1669,6 @@ tb_prob_drv
          99                        2.0642                                  0.98346           
        99.9                         2.324                                  0.99819           
 
-xxx PERCENTILES AND STATS xxx
-tb_outcomes_meansdperc: mean, sd, percentiles
-xxx All Variables Fraction of Y Held up to Percentile xxx
-tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
-xxx Variance and Covariance xxx
-tb_outcomes_covvar: variance correlation
     OriginalVariableNames    cl_mt_pol_a     cl_mt_coh     cl_mt_pol_c
     _____________________    ___________    ___________    ___________
 
@@ -1849,12 +1954,6 @@ tb_prob_drv
          99                        2.0416                                  0.98385           
        99.9                        2.2728                                  0.99822           
 
-xxx PERCENTILES AND STATS xxx
-tb_outcomes_meansdperc: mean, sd, percentiles
-xxx All Variables Fraction of Y Held up to Percentile xxx
-tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
-xxx Variance and Covariance xxx
-tb_outcomes_covvar: variance correlation
     OriginalVariableNames    cl_mt_pol_a    cl_mt_coh     cl_mt_pol_c
     _____________________    ___________    __________    ___________
 
@@ -2140,12 +2239,6 @@ tb_prob_drv
          99                         2.042                                  0.98446           
        99.9                         2.259                                  0.99829           
 
-xxx PERCENTILES AND STATS xxx
-tb_outcomes_meansdperc: mean, sd, percentiles
-xxx All Variables Fraction of Y Held up to Percentile xxx
-tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
-xxx Variance and Covariance xxx
-tb_outcomes_covvar: variance correlation
     OriginalVariableNames    cl_mt_pol_a    cl_mt_coh     cl_mt_pol_c
     _____________________    ___________    __________    ___________
 
@@ -2431,12 +2524,6 @@ tb_prob_drv
          99                        2.1355                                  0.98275           
        99.9                        2.4096                                  0.99809           
 
-xxx PERCENTILES AND STATS xxx
-tb_outcomes_meansdperc: mean, sd, percentiles
-xxx All Variables Fraction of Y Held up to Percentile xxx
-tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
-xxx Variance and Covariance xxx
-tb_outcomes_covvar: variance correlation
     OriginalVariableNames    cl_mt_pol_a     cl_mt_coh     cl_mt_pol_c
     _____________________    ___________    ___________    ___________
 
@@ -2722,12 +2809,6 @@ tb_prob_drv
          99                        2.0475                                  0.98394           
        99.9                         2.289                                  0.99824           
 
-xxx PERCENTILES AND STATS xxx
-tb_outcomes_meansdperc: mean, sd, percentiles
-xxx All Variables Fraction of Y Held up to Percentile xxx
-tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
-xxx Variance and Covariance xxx
-tb_outcomes_covvar: variance correlation
     OriginalVariableNames    cl_mt_pol_a    cl_mt_coh     cl_mt_pol_c
     _____________________    ___________    __________    ___________
 
@@ -3013,12 +3094,6 @@ tb_prob_drv
          99                        2.0988                                  0.98314           
        99.9                        2.3761                                  0.99815           
 
-xxx PERCENTILES AND STATS xxx
-tb_outcomes_meansdperc: mean, sd, percentiles
-xxx All Variables Fraction of Y Held up to Percentile xxx
-tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
-xxx Variance and Covariance xxx
-tb_outcomes_covvar: variance correlation
     OriginalVariableNames    cl_mt_pol_a    cl_mt_coh     cl_mt_pol_c
     _____________________    ___________    __________    ___________
 
@@ -3304,12 +3379,6 @@ tb_prob_drv
          99                        2.1343                                  0.98276           
        99.9                        2.4113                                  0.99809           
 
-xxx PERCENTILES AND STATS xxx
-tb_outcomes_meansdperc: mean, sd, percentiles
-xxx All Variables Fraction of Y Held up to Percentile xxx
-tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
-xxx Variance and Covariance xxx
-tb_outcomes_covvar: variance correlation
     OriginalVariableNames    cl_mt_pol_a     cl_mt_coh     cl_mt_pol_c
     _____________________    ___________    ___________    ___________
 
@@ -3595,12 +3664,6 @@ tb_prob_drv
          99                        2.0554                                  0.98358           
        99.9                        2.2924                                   0.9982           
 
-xxx PERCENTILES AND STATS xxx
-tb_outcomes_meansdperc: mean, sd, percentiles
-xxx All Variables Fraction of Y Held up to Percentile xxx
-tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
-xxx Variance and Covariance xxx
-tb_outcomes_covvar: variance correlation
     OriginalVariableNames    cl_mt_pol_a    cl_mt_coh     cl_mt_pol_c
     _____________________    ___________    __________    ___________
 
@@ -3886,12 +3949,6 @@ tb_prob_drv
          99                        2.2259                                  0.98172           
        99.9                         2.551                                  0.99798           
 
-xxx PERCENTILES AND STATS xxx
-tb_outcomes_meansdperc: mean, sd, percentiles
-xxx All Variables Fraction of Y Held up to Percentile xxx
-tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
-xxx Variance and Covariance xxx
-tb_outcomes_covvar: variance correlation
     OriginalVariableNames    cl_mt_pol_a    cl_mt_coh     cl_mt_pol_c
     _____________________    ___________    __________    ___________
 
@@ -4177,12 +4234,6 @@ tb_prob_drv
          99                        2.0675                                  0.98375           
        99.9                         2.311                                  0.99822           
 
-xxx PERCENTILES AND STATS xxx
-tb_outcomes_meansdperc: mean, sd, percentiles
-xxx All Variables Fraction of Y Held up to Percentile xxx
-tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
-xxx Variance and Covariance xxx
-tb_outcomes_covvar: variance correlation
     OriginalVariableNames    cl_mt_pol_a    cl_mt_coh     cl_mt_pol_c
     _____________________    ___________    __________    ___________
 
@@ -4468,12 +4519,6 @@ tb_prob_drv
          99                        2.0971                                  0.98304           
        99.9                        2.3679                                  0.99814           
 
-xxx PERCENTILES AND STATS xxx
-tb_outcomes_meansdperc: mean, sd, percentiles
-xxx All Variables Fraction of Y Held up to Percentile xxx
-tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
-xxx Variance and Covariance xxx
-tb_outcomes_covvar: variance correlation
     OriginalVariableNames    cl_mt_pol_a    cl_mt_coh     cl_mt_pol_c
     _____________________    ___________    __________    ___________
 
@@ -4759,12 +4804,6 @@ tb_prob_drv
          99                        2.2726                                  0.98134           
        99.9                         2.601                                  0.99794           
 
-xxx PERCENTILES AND STATS xxx
-tb_outcomes_meansdperc: mean, sd, percentiles
-xxx All Variables Fraction of Y Held up to Percentile xxx
-tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
-xxx Variance and Covariance xxx
-tb_outcomes_covvar: variance correlation
     OriginalVariableNames    cl_mt_pol_a    cl_mt_coh     cl_mt_pol_c
     _____________________    ___________    __________    ___________
 
@@ -5050,12 +5089,6 @@ tb_prob_drv
          99                        2.1274                                  0.98296           
        99.9                        2.3646                                  0.99812           
 
-xxx PERCENTILES AND STATS xxx
-tb_outcomes_meansdperc: mean, sd, percentiles
-xxx All Variables Fraction of Y Held up to Percentile xxx
-tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
-xxx Variance and Covariance xxx
-tb_outcomes_covvar: variance correlation
     OriginalVariableNames    cl_mt_pol_a     cl_mt_coh     cl_mt_pol_c
     _____________________    ___________    ___________    ___________
 
@@ -5341,12 +5374,6 @@ tb_prob_drv
          99                        2.0837                                  0.98343           
        99.9                        2.3427                                  0.99818           
 
-xxx PERCENTILES AND STATS xxx
-tb_outcomes_meansdperc: mean, sd, percentiles
-xxx All Variables Fraction of Y Held up to Percentile xxx
-tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
-xxx Variance and Covariance xxx
-tb_outcomes_covvar: variance correlation
     OriginalVariableNames    cl_mt_pol_a     cl_mt_coh     cl_mt_pol_c
     _____________________    ___________    ___________    ___________
 
@@ -5632,12 +5659,6 @@ tb_prob_drv
          99                        2.2192                                  0.98206           
        99.9                        2.4997                                  0.99801           
 
-xxx PERCENTILES AND STATS xxx
-tb_outcomes_meansdperc: mean, sd, percentiles
-xxx All Variables Fraction of Y Held up to Percentile xxx
-tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
-xxx Variance and Covariance xxx
-tb_outcomes_covvar: variance correlation
     OriginalVariableNames    cl_mt_pol_a    cl_mt_coh     cl_mt_pol_c
     _____________________    ___________    __________    ___________
 
@@ -5923,12 +5944,6 @@ tb_prob_drv
          99                        2.0103                                   0.9843           
        99.9                        2.2461                                  0.99827           
 
-xxx PERCENTILES AND STATS xxx
-tb_outcomes_meansdperc: mean, sd, percentiles
-xxx All Variables Fraction of Y Held up to Percentile xxx
-tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
-xxx Variance and Covariance xxx
-tb_outcomes_covvar: variance correlation
     OriginalVariableNames    cl_mt_pol_a    cl_mt_coh     cl_mt_pol_c
     _____________________    ___________    __________    ___________
 
@@ -6214,12 +6229,6 @@ tb_prob_drv
          99                        2.1254                                  0.98465           
        99.9                        2.3729                                  0.99829           
 
-xxx PERCENTILES AND STATS xxx
-tb_outcomes_meansdperc: mean, sd, percentiles
-xxx All Variables Fraction of Y Held up to Percentile xxx
-tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
-xxx Variance and Covariance xxx
-tb_outcomes_covvar: variance correlation
     OriginalVariableNames    cl_mt_pol_a    cl_mt_coh     cl_mt_pol_c
     _____________________    ___________    __________    ___________
 
@@ -6505,12 +6514,6 @@ tb_prob_drv
          99                        2.0604                                   0.9835           
        99.9                        2.3257                                  0.99818           
 
-xxx PERCENTILES AND STATS xxx
-tb_outcomes_meansdperc: mean, sd, percentiles
-xxx All Variables Fraction of Y Held up to Percentile xxx
-tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
-xxx Variance and Covariance xxx
-tb_outcomes_covvar: variance correlation
     OriginalVariableNames    cl_mt_pol_a    cl_mt_coh     cl_mt_pol_c
     _____________________    ___________    __________    ___________
 
@@ -6581,115 +6584,115 @@ tb_outcomes_simu = [tb_simu_info tb_outcomes_meansdperc];
 
     j=2    2.1446     0.95494
 
-xxxxx Shift to: xxxxx
+</pre><pre class="codeoutput">xxxxx Shift to: xxxxx
            fl_crra    fl_beta
            _______    _______
 
     j=3    1.9074     0.94245
 
-xxxxx Shift to: xxxxx
+</pre><pre class="codeoutput">xxxxx Shift to: xxxxx
            fl_crra    fl_beta
            _______    _______
 
     j=4    3.2053     0.9311 
 
-xxxxx Shift to: xxxxx
+</pre><pre class="codeoutput">xxxxx Shift to: xxxxx
            fl_crra    fl_beta
            _______    _______
 
     j=5    3.8779     0.94224
 
-xxxxx Shift to: xxxxx
+</pre><pre class="codeoutput">xxxxx Shift to: xxxxx
            fl_crra    fl_beta
            _______    _______
 
     j=6    2.6924     0.9023 
 
-xxxxx Shift to: xxxxx
+</pre><pre class="codeoutput">xxxxx Shift to: xxxxx
            fl_crra    fl_beta
            _______    _______
 
     j=7    4.9231     0.90618
 
-xxxxx Shift to: xxxxx
+</pre><pre class="codeoutput">xxxxx Shift to: xxxxx
            fl_crra    fl_beta
            _______    _______
 
     j=8    3.7393     0.89283
 
-xxxxx Shift to: xxxxx
+</pre><pre class="codeoutput">xxxxx Shift to: xxxxx
            fl_crra    fl_beta
            _______    _______
 
     j=9    2.9237     0.89937
 
-xxxxx Shift to: xxxxx
+</pre><pre class="codeoutput">xxxxx Shift to: xxxxx
             fl_crra    fl_beta
             _______    _______
 
     j=10    2.5685     0.9331 
 
-xxxxx Shift to: xxxxx
+</pre><pre class="codeoutput">xxxxx Shift to: xxxxx
             fl_crra    fl_beta
             _______    _______
 
     j=11    2.3727     0.87921
 
-xxxxx Shift to: xxxxx
+</pre><pre class="codeoutput">xxxxx Shift to: xxxxx
             fl_crra    fl_beta
             _______    _______
 
     j=12    3.9162     0.91337
 
-xxxxx Shift to: xxxxx
+</pre><pre class="codeoutput">xxxxx Shift to: xxxxx
             fl_crra    fl_beta
             _______    _______
 
     j=13    2.7543     0.91309
 
-xxxxx Shift to: xxxxx
+</pre><pre class="codeoutput">xxxxx Shift to: xxxxx
             fl_crra    fl_beta
             _______    _______
 
     j=14    1.2387     0.91937
 
-xxxxx Shift to: xxxxx
+</pre><pre class="codeoutput">xxxxx Shift to: xxxxx
             fl_crra    fl_beta
             _______    _______
 
     j=15    2.5922     0.91258
 
-xxxxx Shift to: xxxxx
+</pre><pre class="codeoutput">xxxxx Shift to: xxxxx
             fl_crra    fl_beta
             _______    _______
 
     j=16     3.952     0.90123
 
-xxxxx Shift to: xxxxx
+</pre><pre class="codeoutput">xxxxx Shift to: xxxxx
             fl_crra    fl_beta
             _______    _______
 
     j=17     1.73      0.91264
 
-xxxxx Shift to: xxxxx
+</pre><pre class="codeoutput">xxxxx Shift to: xxxxx
             fl_crra    fl_beta
             _______    _______
 
     j=18    1.7018     0.95934
 
-xxxxx Shift to: xxxxx
+</pre><pre class="codeoutput">xxxxx Shift to: xxxxx
             fl_crra    fl_beta
             _______    _______
 
     j=19    3.1262     0.96442
 
-xxxxx Shift to: xxxxx
+</pre><pre class="codeoutput">xxxxx Shift to: xxxxx
             fl_crra    fl_beta
             _______    _______
 
     j=20    3.1273     0.92018
 
--------------------------
+</pre><pre class="codeoutput">-------------------------
 xxxxxx tb_outcomes xxxxxx
                       variablenames    it_pcombi_ctr    fl_crra    fl_beta     mean       sd       coefofvar      min       max       pYis0      pYls0     pYgr0      pYisMINY      pYisMAXY       p0_1        p1         p5         p10         p15         p20         p25        p35        p50       p65       p75       p80       p85       p90       p95       p99      p99_9     fl_cov_cl_mt_pol_a    fl_cor_cl_mt_pol_a    fl_cov_cl_mt_coh    fl_cor_cl_mt_coh    fl_cov_cl_mt_pol_c    fl_cor_cl_mt_pol_c    fracByP0_1    fracByP1     fracByP5     fracByP10     fracByP15    fracByP20    fracByP25    fracByP35    fracByP50    fracByP65    fracByP75    fracByP80    fracByP85    fracByP90    fracByP95    fracByP99    fracByP99_9
                       _____________    _____________    _______    _______    ______    _______    _________    _______    ______    ________    _____    _______    __________    ___________    _______    _______    _______    ________    ________    ________    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______    __________________    __________________    ________________    ________________    __________________    __________________    __________    _________    _________    __________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    ___________
@@ -6719,6 +6722,13 @@ xxxxxx tb_outcomes xxxxxx
     cl_mt_coh_v20      'cl_mt_coh'           20          3.1273     0.92018    2.9552     2.0205     0.68371     0.44468    54.536           0      0            1     0.0014906      2.645e-37    0.44468    0.59175    0.78744     0.99272     1.1296     1.3189     1.4628     1.8138    2.4164    3.1734    3.8665    4.3301    4.8841    5.6873    6.9982    9.8277    13.386           3.516               0.99671               4.0825                   1               0.56646              0.89273          0.00022429     0.0024692      0.01216      0.028141     0.045205     0.066906    0.090307      0.14557      0.25279      0.39306      0.51266      0.58013      0.65722      0.74693      0.85223      0.96145       0.99502  
     cl_mt_pol_c_v20    'cl_mt_pol_c'         20          3.1273     0.92018    1.3209    0.31404     0.23775     0.44468    4.5358           0      0            1     0.0014906      2.645e-37    0.44468    0.59175    0.78744     0.90837    0.98347     1.0529     1.1263     1.2088    1.3106    1.4361    1.5279    1.5686    1.6419    1.7266    1.8389    2.0604    2.3257         0.46784               0.85328              0.56646             0.89273               0.09862                    1          0.00050182     0.0055762     0.029581      0.061175     0.094816      0.13819     0.17766      0.26322      0.40872      0.56345      0.67496      0.73307      0.79455      0.85802       0.9251       0.9835       0.99818  
 
+</pre><h2 id="26">Map Corrections</h2><pre class="codeinput"><span class="keyword">function</span> param_map = map_correction(param_map)
+
+    <span class="keyword">if</span> (isKey(param_map, <span class="string">'fl_z_r_borr_n'</span>))
+        param_map(<span class="string">'it_z_n'</span>) = param_map(<span class="string">'it_z_wage_n'</span>) * param_map(<span class="string">'fl_z_r_borr_n'</span>);
+    <span class="keyword">end</span>
+
+<span class="keyword">end</span>
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% Simulate Savings Model Along Various Parameter Arrays
@@ -6830,11 +6840,17 @@ param_map('it_st_simu_type_g_seed') = 123;
 param_map('it_st_simu_type_g_simun') = 20;
 
 %% Array Parameters
+% keys here for az, abz models
 
 ls_st_param_key = {'fl_crra', 'fl_beta', ...
                     'fl_w', 'fl_r_save', ...
                     'fl_z_rho', 'fl_z_sig', ...
-                    'fl_a_max', 'it_z_n', 'it_a_n'};
+                    'fl_a_max', 'it_z_n', 'it_a_n', ...
+                    ...
+                    'fl_z_r_borr_poiss_mean', 'fl_z_r_borr_max', ...
+                    'fl_b_bd', 'fl_c_min', 'fl_z_r_borr_n',...
+                    'fl_z_wage_rho', 'fl_z_wage_sig', ...
+                    };
 
 param_tstar_map = containers.Map('KeyType','char', 'ValueType','any');
 it_simu_vec_len = 5;
@@ -6848,6 +6864,14 @@ param_tstar_map(ls_st_param_key{7}) = linspace(50, 80, it_simu_vec_len);
 param_tstar_map(ls_st_param_key{8}) = unique(round(linspace(5, 25, it_simu_vec_len)));
 param_tstar_map(ls_st_param_key{9}) = unique(round(linspace(100, 2500, it_simu_vec_len)));
 
+param_tstar_map(ls_st_param_key{10}) = linspace(5, 20, it_simu_vec_len);
+param_tstar_map(ls_st_param_key{11}) = linspace(0.095, 0.150, it_simu_vec_len);
+param_tstar_map(ls_st_param_key{12}) = linspace(-20, -5, it_simu_vec_len);
+param_tstar_map(ls_st_param_key{13}) = linspace(0.03, 0.001, it_simu_vec_len);
+param_tstar_map(ls_st_param_key{14}) = 5:4:25;
+param_tstar_map(ls_st_param_key{15}) = linspace(0, 0.99, it_simu_vec_len);
+param_tstar_map(ls_st_param_key{16}) = linspace(0.01, 0.5, it_simu_vec_len);
+
 param_desc_map = containers.Map('KeyType','char', 'ValueType','any');
 param_desc_map(ls_st_param_key{1}) = {'CRRA'};
 param_desc_map(ls_st_param_key{2}) = {'Discount'};
@@ -6858,6 +6882,15 @@ param_desc_map(ls_st_param_key{6}) = {'Shock SD'};
 param_desc_map(ls_st_param_key{7}) = {'Max Asset Bound'};
 param_desc_map(ls_st_param_key{8}) = {'Shock Grid N'};
 param_desc_map(ls_st_param_key{9}) = {'Asset Grid N'};
+
+param_desc_map(ls_st_param_key{10}) = {'pois-max(shift br r mean)'};
+param_desc_map(ls_st_param_key{11}) = {'max borrow r'};
+param_desc_map(ls_st_param_key{12}) = {'borrow bound'};
+param_desc_map(ls_st_param_key{13}) = {'minimum consumption'};
+param_desc_map(ls_st_param_key{14}) = {'borrow shock n'};
+param_desc_map(ls_st_param_key{15}) = {'Inc/Prod Shock Persistence'};
+param_desc_map(ls_st_param_key{16}) = {'Inc/Prod Shock SD'};
+
 
 %% Default
 
@@ -6891,6 +6924,9 @@ param_map('ar_param_keys_idx') = ar_param_keys_idx;
 % If bl_replacefile is true, that means the existing file must be replaced,
 % which will set bl_gen to true
 
+params_group = values(param_map, {'st_model'});
+[st_model] = params_group{:};
+
 params_group = values(support_map, {'bl_replacefile', 'bl_display_simu_stats'});
 [bl_replacefile, bl_display_simu_stats] = params_group{:};
 
@@ -6916,35 +6952,64 @@ support_map('st_mat_test_suffix') = ['_g' strrep(num2str(ar_param_keys_idx), '  
 
 if (it_size_type == 1)
     
-    % Basic Test Run
-    
-    param_map('it_a_n') = 100;
-    
+    % Basic Test Run    
     if (ismember(st_model, ["az"]))
+        
         param_map('it_z_n') = 11;
+        
+        param_map('it_a_n') = 100;
+        
     elseif (ismember(st_model, ["abz"]))
+                
         param_map('fl_z_r_borr_n') = 5;
-        param_map('it_z_wage_n') = 15;
-        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');        
-    end
+        param_map('it_z_wage_n') = 11;
+        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');                
+        
+        param_map('it_a_n') = 100;
+        
+    elseif (ismember(st_model, ["akz_wkz_iwkz"]))
+        
+        param_map('it_z_n') = 11;
 
+        param_map('it_w_n') = 20;
+        param_map('it_ak_n') = param_map('it_w_n');
+        param_map('fl_coh_interp_grid_gap') = 0.2;
+        param_map('it_c_interp_grid_gap') = 10^-4;
+        
+    end
+    
 elseif (it_size_type == 2)
 
     % Full Run
 
 elseif (it_size_type == 3)
-    
-    % Denser Run
 
-    param_map('it_a_n') = 2250;
+    % Denser Run    
     if (ismember(st_model, ["az"]))
+        
         param_map('it_z_n') = 27;
+        
+        param_map('it_a_n') = 2250;
+        
     elseif (ismember(st_model, ["abz"]))
-        param_map('fl_z_r_borr_n') = 15;
-        param_map('it_z_wage_n') = 21;
+                
+        param_map('fl_z_r_borr_n') = 11;
+        param_map('it_z_wage_n') = 11;
         param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');                
+        
+        param_map('it_a_n') = 1250;
+        
+    elseif (ismember(st_model, ["akz_wkz_iwkz"]))
+        
+        param_map('it_z_n') = 15;
+
+        param_map('it_w_n') = 100;
+        param_map('it_ak_n') = param_map('it_w_n');
+        param_map('fl_coh_interp_grid_gap') = 0.05;
+        param_map('it_c_interp_grid_gap') = 10^-4;
+        
     end
-    
+        
 end
 
 %% Parase Preference and Shock Parameters
@@ -7020,6 +7085,7 @@ else
                 % Adjust Value for Current Parameter been Varied
                 fl_param_val = ar_param_values(it_cur_param);
                 param_map(st_param_key) = fl_param_val;
+                param_map = map_correction(param_map);
                 disp(['xxxxx ' st_param_key ' = ' num2str(fl_param_val) ' xxxxx']);
 
                 % Simulate Model
@@ -7095,7 +7161,8 @@ else
             for st_param_key = cl_st_param_keys
                 param_map(st_param_key{1}) = tb_row_param_adj_cur{1, st_param_key};
             end
-
+            param_map = map_correction(param_map);
+            
             % Simulate Model
             ar_simu_info = [it_pcombi_ctr, cell2mat(values(param_map, cl_st_param_keys))];
             cl_col_names = [{'it_pcombi_ctr'} cl_st_param_keys];
@@ -7140,17 +7207,29 @@ cl_st_param_keys = param_map('cl_st_param_keys');
 
 %% Reset Parameters that are determined by other parameters
 st_model = param_map('st_model');
-it_a_n = param_map('it_a_n');
-it_z_n = param_map('it_z_n');
-disp(['xxxxx st_model = ' st_model ', it_a_n = ' num2str(it_a_n) ', it_z_n = ' num2str(it_z_n) ' xxxxx']);
+if (ismember(st_model, ["az","abz"]))
+    it_a_n = param_map('it_a_n');
+    it_z_n = param_map('it_z_n');
+    disp(['xxxxx st_model = ' st_model ', it_a_n = ' num2str(it_a_n) ', it_z_n = ' num2str(it_z_n) ' xxxxx']);
+elseif (ismember(st_model, ["akz_wkz_iwkz"]))     
+    it_w_n = param_map('it_w_n');
+    it_ak_n = param_map('it_ak_n');
+    it_z_n = param_map('it_z_n');
+    disp(['xxxxx st_model = ' st_model ...
+          ', it_w_n = ' num2str(it_w_n) ', it_ak_n = ' num2str(it_ak_n) ...
+          ', it_z_n = ' num2str(it_z_n) ' xxxxx']);
+end
 
 %% Simulate Model
-if (ismember(st_model, ["abz"]))
-    [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map);
-    result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
-elseif (ismember(st_model, ["az"]))
+if (ismember(st_model, ["az"]))
     [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map);
     result_map = ff_az_vf_vecsv(param_map, support_map, armt_map, func_map);
+elseif (ismember(st_model, ["abz"]))
+    [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map);
+    result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
+elseif (ismember(st_model, ["akz_wkz_iwkz"]))
+    [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map);
+    result_map = ff_iwkz_vf_vecsv(param_map, support_map, armt_map, func_map);    
 end
 result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map);
 
@@ -7167,5 +7246,13 @@ tb_simu_info.Properties.RowNames = (variablenames);
 tb_outcomes_simu = [tb_simu_info tb_outcomes_meansdperc];
 end
 
+%% Map Corrections
+function param_map = map_correction(param_map)
+    
+    if (isKey(param_map, 'fl_z_r_borr_n'))
+        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');    
+    end
+    
+end
 ##### SOURCE END #####
 --></body></html>

@@ -117,7 +117,8 @@ ls_st_param_key = {'fl_crra', 'fl_beta', ...
                     'fl_z_r_borr_poiss_mean', 'fl_z_r_borr_max', ...
                     'fl_b_bd', 'fl_c_min', 'fl_z_r_borr_n',...
                     'fl_z_wage_rho', 'fl_z_wage_sig', ...
-                    };
+                    ...
+                    'fl_alpha', 'fl_delta'};
 
 param_tstar_map = containers.Map('KeyType','char', 'ValueType','any');
 it_simu_vec_len = 5;
@@ -139,6 +140,9 @@ param_tstar_map(ls_st_param_key{14}) = 5:4:25;
 param_tstar_map(ls_st_param_key{15}) = linspace(0, 0.99, it_simu_vec_len);
 param_tstar_map(ls_st_param_key{16}) = linspace(0.01, 0.5, it_simu_vec_len);
 
+param_tstar_map(ls_st_param_key{17}) = linspace(0.30, 0.50, it_simu_vec_len);
+param_tstar_map(ls_st_param_key{18}) = linspace(0.02, 0.14, it_simu_vec_len);
+
 param_desc_map = containers.Map('KeyType','char', 'ValueType','any');
 param_desc_map(ls_st_param_key{1}) = {'CRRA'};
 param_desc_map(ls_st_param_key{2}) = {'Discount'};
@@ -158,6 +162,8 @@ param_desc_map(ls_st_param_key{14}) = {'borrow shock n'};
 param_desc_map(ls_st_param_key{15}) = {'Inc/Prod Shock Persistence'};
 param_desc_map(ls_st_param_key{16}) = {'Inc/Prod Shock SD'};
 
+param_desc_map(ls_st_param_key{17}) = {'Prod Func Elasticity'};
+param_desc_map(ls_st_param_key{18}) = {'Prod Func Discount'};
 
 %% Default
 
@@ -218,17 +224,31 @@ support_map('st_mat_test_suffix') = ['_g' strrep(num2str(ar_param_keys_idx), '  
 %% Set Solve Sizes
 
 if (it_size_type == 1)
-    
+
     % Basic Test Run
-    
-    param_map('it_a_n') = 100;
-    
     if (ismember(st_model, ["az"]))
+
         param_map('it_z_n') = 11;
+
+        param_map('it_a_n') = 100;
+
     elseif (ismember(st_model, ["abz"]))
+
         param_map('fl_z_r_borr_n') = 5;
         param_map('it_z_wage_n') = 11;
-        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');        
+        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+
+        param_map('it_a_n') = 100;
+
+    elseif (ismember(st_model, ["akz_wkz_iwkz"]))
+
+        param_map('it_z_n') = 11;
+
+        param_map('it_w_n') = 25;
+        param_map('it_ak_n') = param_map('it_w_n');
+        param_map('fl_coh_interp_grid_gap') = 0.2;
+        param_map('it_c_interp_grid_gap') = 10^-4;
+
     end
 
 elseif (it_size_type == 2)
@@ -236,19 +256,33 @@ elseif (it_size_type == 2)
     % Full Run
 
 elseif (it_size_type == 3)
-    
+
     % Denser Run
-    
     if (ismember(st_model, ["az"]))
-        param_map('it_a_n') = 2250;
+
         param_map('it_z_n') = 27;
+
+        param_map('it_a_n') = 2250;
+
     elseif (ismember(st_model, ["abz"]))
-        param_map('it_a_n') = 1250;
+
         param_map('fl_z_r_borr_n') = 11;
         param_map('it_z_wage_n') = 11;
-        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');                
+        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+
+        param_map('it_a_n') = 1250;
+
+    elseif (ismember(st_model, ["akz_wkz_iwkz"]))
+
+        param_map('it_z_n') = 21;
+
+        param_map('it_w_n') = 150;
+        param_map('it_ak_n') = param_map('it_w_n');
+        param_map('fl_coh_interp_grid_gap') = 0.025;
+        param_map('it_c_interp_grid_gap') = 10^-4;
+
     end
-    
+
 end
 
 %% Parase Preference and Shock Parameters
@@ -313,8 +347,8 @@ else
             disp('---------------------------');
             disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
             disp(['Vary ' st_param_desc ' (' st_param_key '): ' num2str(ar_param_values)]);
-            for it_param_all_ctr = 1:length(ls_st_param_key)
-                disp([ ls_st_param_key{it_param_all_ctr} ':' num2str(param_map(ls_st_param_key{it_param_all_ctr}))]);
+            for it_param_all_ctr = 1:length(cl_st_param_keys)
+                disp([ cl_st_param_keys{it_param_all_ctr} ':' num2str(param_map(cl_st_param_keys{it_param_all_ctr}))]);
             end
             disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
 
@@ -401,7 +435,7 @@ else
                 param_map(st_param_key{1}) = tb_row_param_adj_cur{1, st_param_key};
             end
             param_map = map_correction(param_map);
-            
+
             % Simulate Model
             ar_simu_info = [it_pcombi_ctr, cell2mat(values(param_map, cl_st_param_keys))];
             cl_col_names = [{'it_pcombi_ctr'} cl_st_param_keys];
@@ -446,19 +480,40 @@ cl_st_param_keys = param_map('cl_st_param_keys');
 
 %% Reset Parameters that are determined by other parameters
 st_model = param_map('st_model');
-it_a_n = param_map('it_a_n');
-it_z_n = param_map('it_z_n');
-disp(['xxxxx st_model = ' st_model ', it_a_n = ' num2str(it_a_n) ', it_z_n = ' num2str(it_z_n) ' xxxxx']);
+if (ismember(st_model, ["az","abz"]))
+    it_a_n = param_map('it_a_n');
+    it_z_n = param_map('it_z_n');
+    disp(['xxxxx st_model = ' st_model ', it_a_n = ' num2str(it_a_n) ', it_z_n = ' num2str(it_z_n) ' xxxxx']);
+elseif (ismember(st_model, ["akz_wkz_iwkz"]))
+    it_w_n = param_map('it_w_n');
+    it_ak_n = param_map('it_ak_n');
+    it_z_n = param_map('it_z_n');
+    disp(['xxxxx st_model = ' st_model ...
+          ', it_w_n = ' num2str(it_w_n) ', it_ak_n = ' num2str(it_ak_n) ...
+          ', it_z_n = ' num2str(it_z_n) ' xxxxx']);
+end
 
 %% Simulate Model
-if (ismember(st_model, ["abz"]))
-    [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map);
-    result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
-elseif (ismember(st_model, ["az"]))
-    [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map);
-    result_map = ff_az_vf_vecsv(param_map, support_map, armt_map, func_map);
+
+if (ismember(st_model, ["az", "abz"]))
+
+    if (ismember(st_model, ["az"]))
+        [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map);
+        result_map = ff_az_vf_vecsv(param_map, support_map, armt_map, func_map);
+    elseif (ismember(st_model, ["abz"]))
+        [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map);
+        result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
+    end
+
+    result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map);
+
+elseif (ismember(st_model, ["akz_wkz_iwkz"]))
+
+    [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map);
+    result_map = ff_iwkz_vf_vecsv(param_map, support_map, armt_map, func_map);
+    result_map = ff_iwkz_ds_vec(param_map, support_map, armt_map, func_map, result_map);
+
 end
-result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map);
 
 %% Store Results to Table
 
@@ -475,9 +530,9 @@ end
 
 %% Map Corrections
 function param_map = map_correction(param_map)
-    
+
     if (isKey(param_map, 'fl_z_r_borr_n'))
-        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');    
+        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
     end
-    
+
 end

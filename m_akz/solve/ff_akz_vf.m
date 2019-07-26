@@ -328,11 +328,11 @@ result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
 
 mt_coh = f_coh(ar_z, ar_a_meshk, ar_k_mesha);
-result_map('cl_mt_pol_coh') = {mt_coh, zeros(1)};
+result_map('cl_mt_coh') = {mt_coh, zeros(1)};
 result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
 result_map('cl_mt_pol_k') = {mt_pol_k, zeros(1)};
 result_map('cl_mt_pol_c') = {f_cons(mt_coh, mt_pol_a, mt_pol_k), zeros(1)};
-result_map('ar_st_pol_names') = ["cl_mt_pol_coh", "cl_mt_pol_a", "cl_mt_pol_k", "cl_mt_pol_c"];
+result_map('ar_st_pol_names') = ["cl_mt_coh", "cl_mt_pol_a", "cl_mt_pol_k", "cl_mt_pol_c"];
 
 if (bl_post)
     bl_input_override = true;

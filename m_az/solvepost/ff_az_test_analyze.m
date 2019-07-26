@@ -149,6 +149,7 @@ for it_plot = ar_it_plot_sets
     
     it_plot_ctr = it_plot_ctr + 1;
     
+    %% List graphing options for az and abz models, some also for akz models
     if (it_plot == 1)
         ar_st_colnames_plot =  {'p1', 'p25', 'p50', 'mean', 'p75', 'p99'};
         ar_st_variablenames_plot =  repmat({'cl_mt_pol_c'}, [1, length(ar_st_colnames_plot)]);
@@ -211,6 +212,47 @@ for it_plot = ar_it_plot_sets
         st_ytitle = 'Default Fraction';        
     end
     
+    %% list graphing options only for akz models
+    if (it_plot == 101)
+        ar_st_colnames_plot =  {'p1', 'p25', 'p50', 'mean', 'p75', 'p99'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_pol_k'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  ar_st_colnames_plot;
+        st_title = 'Risky Capital Percentiles';
+        st_ytitle = 'K Distribution';
+    elseif (it_plot == 102)
+        ar_st_colnames_plot =  {'mean', 'sd'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_pol_k'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  ar_st_colnames_plot;
+        st_title = 'Risky Capital Mean and SD';
+        st_ytitle = 'K Mean and SD';
+    elseif (it_plot == 103)
+        ar_st_colnames_plot =  {'sd'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_pol_k'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  ar_st_colnames_plot;
+        st_title = 'Risky Capital Standard Deviation';
+        st_ytitle = 'Standard Deviation';
+    elseif (it_plot == 104)
+        ar_st_variablenames_plot =  {'cl_mt_coh', 'cl_mt_pol_a', 'cl_mt_pol_c', 'cl_mt_pol_k'};
+        ar_st_legend_plot =  {'coh=wealth', 'savings', 'consumption', 'risky k'};
+        ar_st_colnames_plot =  repmat({'mean'}, [1, length(ar_st_variablenames_plot)]);
+        st_title = 'Aggregate Outcomes (wealth, a, consumption, k)';
+        st_ytitle = 'Aggregate Levels';
+    elseif (it_plot == 105)
+        ar_st_variablenames_plot =  {'cl_mt_coh', 'cl_mt_pol_a', 'cl_mt_pol_c', 'cl_mt_pol_k'};
+        ar_st_legend_plot =  {'coh=wealth', 'savings', 'consumption', 'risky k'};
+        ar_st_colnames_plot =  repmat({'coefofvar'}, [1, length(ar_st_variablenames_plot)]);
+        st_title = 'Coef of Variation (wealth, a, consumption, k)';
+        st_ytitle = 'Coefficient of Variation (SD/Mean)';        
+    elseif (it_plot == 106)
+        ar_st_variablenames_plot =  {'cl_mt_coh', 'cl_mt_pol_a', 'cl_mt_pol_c', 'cl_mt_pol_k'};
+        ar_st_legend_plot =  {'coh=wealth', 'savings', 'consumption', 'risky k'};
+        ar_st_colnames_plot =  repmat({'fl_cor_cl_mt_pol_c'}, [1, length(ar_st_variablenames_plot)]);
+        st_title = 'Correlation with Consumption';
+        st_ytitle = 'Correlation Coefficient';
+    end
+    
+    
+    %% Store to cells
     cl_ar_st_variablenames{it_plot_ctr} = ar_st_variablenames_plot;
     cl_ar_st_legend{it_plot_ctr} = ar_st_legend_plot;
     cl_ar_st_colnames{it_plot_ctr} = ar_st_colnames_plot;
@@ -316,9 +358,9 @@ for it_pcombi_ctr = 1:length(cl_st_param_keys)
             % Access X and Y Values
             mt_graph_data = tb_cur_data(ar_cur_rows, {st_param_key, st_cur_stat_col});
             % Access Y Values
-            ar_y = mt_graph_data{:, st_cur_stat_col};
+            ar_y = real(mt_graph_data{:, st_cur_stat_col});
             % Access X Values
-            ar_x = mt_graph_data{:, st_param_key};
+            ar_x = real(mt_graph_data{:, st_param_key});
             
             % Plot Scatter            
             ls_chart(it_graph_counter) = scatter(ar_x', ar_y', it_csize, ar_color, st_shape);

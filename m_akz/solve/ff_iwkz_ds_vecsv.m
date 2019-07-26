@@ -81,7 +81,7 @@ else
     % default invoke
     close all;
 
-    it_param_set = 8;
+    it_param_set = 6;
     st_akz_or_iwkz = 'iwkz';
 
     % 1. Generate Parameters
@@ -90,6 +90,8 @@ else
     % Note: param_map and support_map can be adjusted here or outside to override defaults
     % param_map('it_w_n') = 50;
     % param_map('it_z_n') = 15;
+    
+    param_map('fl_beta') = 0.90684;
 
     param_map('st_analytical_stationary_type') = 'eigenvector';
 

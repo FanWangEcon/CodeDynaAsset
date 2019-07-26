@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Graph Cash-on-Hand Tomorrow, Value, Policy given (A,Z) States Today</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-10"><meta name="DC.source" content="ff_az_vf_post_graph.m"><style type="text/css">
+      --><title>Graph Cash-on-Hand Tomorrow, Value, Policy given (A,Z) States Today</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-26"><meta name="DC.source" content="ff_az_vf_post_graph.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -67,15 +67,9 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
   </style></head><body><div class="content"><h1>Graph Cash-on-Hand Tomorrow, Value, Policy given (A,Z) States Today</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_AZ_VF_POST_GRAPH genereate 4 graphs</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Generate Limited Legends</a></li><li><a href="#6">Graphing COH today vs COH tomorrow</a></li><li><a href="#7">Graphing Values</a></li><li><a href="#8">Graphing Choice Levels</a></li><li><a href="#9">Graphing Choice Percentages</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> ff_az_vf_post_graph(varargin)
-</pre><h2 id="2">FF_AZ_VF_POST_GRAPH genereate 4 graphs</h2><p>Generates four graphs:</p><div><ol><li>Cash-On-Hand Tomorrow given Cash-on-Hand Today</li><li>Value Function Graph</li><li>Policy Function Consumption and Asset Choices, Level and log</li><li>Consumption and Asset as Percentages</li></ol></div><p>Run this function directly with randomly generates matrixes for graphs and tables.</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@param result_map container contains policy function matrix, value function matrix, iteration results; als coh consumption and other matrixes</p><p>@example</p><pre>  ff_az_vf_post_graph(param_map, support_map, armt_map, func_map, result_map);</pre><p>@include</p><div><ul><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_set_default_param.html">ffs_az_set_default_param</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_get_funcgrid.html">ffs_az_get_funcgrid</a></li></ul></div><h2 id="3">Default</h2><pre class="codeinput">params_len = length(varargin);
-bl_input_override = 0;
-<span class="keyword">if</span> (params_len == 6)
-    bl_input_override = varargin{6};
-<span class="keyword">end</span>
-
-<span class="keyword">if</span> (bl_input_override)
+</pre><h2 id="2">FF_AZ_VF_POST_GRAPH genereate 4 graphs</h2><p>Generates four graphs:</p><div><ol><li>Cash-On-Hand Tomorrow given Cash-on-Hand Today</li><li>Value Function Graph</li><li>Policy Function Consumption and Asset Choices, Level and log</li><li>Consumption and Asset as Percentages</li></ol></div><p>Run this function directly with randomly generates matrixes for graphs and tables.</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@param result_map container contains policy function matrix, value function matrix, iteration results; als coh consumption and other matrixes</p><p>@example</p><pre>  ff_az_vf_post_graph(param_map, support_map, armt_map, func_map, result_map);</pre><p>@include</p><div><ul><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_set_default_param.html">ffs_az_set_default_param</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_get_funcgrid.html">ffs_az_get_funcgrid</a></li></ul></div><h2 id="3">Default</h2><pre class="codeinput"><span class="keyword">if</span> (~isempty(varargin))
     <span class="comment">% if invoked from outside overrid fully</span>
-    [param_map, support_map, armt_map, func_map, result_map, ~] = varargin{:};
+    [param_map, support_map, armt_map, func_map, result_map] = varargin{:};
 <span class="keyword">else</span>
     clear <span class="string">all</span>;
     close <span class="string">all</span>;
@@ -122,14 +116,19 @@ params_group = values(support_map, {<span class="string">'st_title_prefix'</span
 <span class="comment">% armt_map</span>
 params_group = values(armt_map, {<span class="string">'ar_a'</span>});
 [ar_a] = params_group{:};
-<span class="keyword">if</span> (strcmp(st_model, <span class="string">'az'</span>))
-    params_group = values(armt_map, {<span class="string">'ar_z'</span>});
-    [ar_z] = params_group{:};
-<span class="keyword">elseif</span> (ismember(st_model, [<span class="string">'abz'</span>, <span class="string">'abz_fibs'</span>]))
+<span class="keyword">if</span> (ismember(st_model, [<span class="string">"abz"</span>]))
     params_group = values(armt_map, {<span class="string">'ar_z_r_borr_mesh_wage'</span>, <span class="string">'ar_z_wage_mesh_r_borr'</span>});
     [ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
     params_group = values(param_map, {<span class="string">'it_z_wage_n'</span>, <span class="string">'fl_z_r_borr_n'</span>});
     [it_z_wage_n, fl_z_r_borr_n] = params_group{:};
+<span class="keyword">elseif</span> (ismember(st_model, [<span class="string">"abzr_fibs"</span>]))
+    params_group = values(armt_map, {<span class="string">'ar_z_r_infbr_mesh_wage'</span>, <span class="string">'ar_z_wage_mesh_r_infbr'</span>});
+    [ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
+    params_group = values(param_map, {<span class="string">'it_z_wage_n'</span>, <span class="string">'fl_z_r_infbr_n'</span>});
+    [it_z_wage_n, fl_z_r_borr_n] = params_group{:};
+<span class="keyword">else</span>
+    params_group = values(armt_map, {<span class="string">'ar_z'</span>});
+    [ar_z] = params_group{:};
 <span class="keyword">end</span>
 
 <span class="comment">% func_map</span>
@@ -142,14 +141,7 @@ params_group = values(result_map, {<span class="string">'mt_val'</span>, <span c
 [mt_cons, mt_coh, mt_pol_a] = deal(cl_mt_pol_c{1}, cl_mt_coh{1}, cl_mt_pol_a{1});
 
 <span class="comment">% How many zs to Graph</span>
-</pre><h2 id="5">Generate Limited Legends</h2><pre class="codeinput"><span class="keyword">if</span> (strcmp(st_model, <span class="string">'az'</span>))
-
-    ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)) (it_z_n)]);
-    ar_it_legend2plot = fliplr(ar_it_z_graph);
-    ar_it_legend2plot_lth = ar_it_z_graph;
-    cl_st_legendCell = cellstr(num2str(ar_z', <span class="string">'shock next=%3.2f'</span>));
-
-<span class="keyword">elseif</span> (ismember(st_model, [<span class="string">'abz'</span>, <span class="string">'abz_fibs'</span>]))
+</pre><h2 id="5">Generate Limited Legends</h2><pre class="codeinput"><span class="keyword">if</span> (ismember(st_model, [<span class="string">"abz"</span>, <span class="string">"abzr_fibs"</span>]))
 
     <span class="comment">% 8 graph points, 2 levels of borrow rates, and 4 levels of rbr rates</span>
     ar_it_z_r_borr = ([1 round((fl_z_r_borr_n)/2) (fl_z_r_borr_n)]);
@@ -164,6 +156,11 @@ params_group = values(result_map, {<span class="string">'mt_val'</span>, <span c
     ar_it_legend2plot_lth = ar_it_z_graph;
     cl_st_legendCell = cellstr([num2str(ar_z_r_borr_mesh_wage', <span class="string">'zr=%3.2f;'</span>), <span class="keyword">...</span>
                           num2str(ar_z_wage_mesh_r_borr', <span class="string">'zw=%3.2f'</span>)]);
+<span class="keyword">else</span>
+    ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)) (it_z_n)]);
+    ar_it_legend2plot = fliplr(ar_it_z_graph);
+    ar_it_legend2plot_lth = ar_it_z_graph;
+    cl_st_legendCell = cellstr(num2str(ar_z', <span class="string">'shock next=%3.2f'</span>));
 <span class="keyword">end</span>
 </pre><h2 id="6">Graphing COH today vs COH tomorrow</h2><p>This plots the cash-on-hand today vs cash-on-hand tomorrow. This is an important graph that is key for analyzing the asset distribution. We would like to see at each point of the current cash-on-hand, what are the cash-on-hand that are reachable tomorrow. Note, here we are not plottin gbased on probability density for each discretized state tomorrow, just which states are reacable, meaning which states given states have non-zero probability of been reached tomorrow.</p><p><img src="ff_az_vf_post_graph_eq03695594001949585650.png" alt="$$f(\Lambda(z',a') \mid \Lambda, z)$$" style="width:105px;height:16px;"></p><p>Three possible cases:</p><div><ol><li>next period cash-on-hand is always lower than current period cash-on-hand given policy function. This means it is not possible to exceed beyond this level of cash-on-hand in the stationary distribution. If we start mass lower than this level of cash-on-hand, it will never exceed this.</li><li>next period cash-on-hand is always higher than current period cash-on-hand. Stationary distribution will never go below this level.</li><li>next period cash-on-hand is identical to today cash on hand. This is an absorbing state.</li></ol></div><p>The dimensionality of the graph is as follows:</p><div><ol><li>a_n by z_n state space and corresonding policy function</li><li>all a_n and z_n combinations, one array, policy array, than given that, the cash-on-hand next period. meshed a_n and z_n with each other, crossed with another z_n.</li><li>each color a different future z_n</li></ol></div><pre class="codeinput"><span class="keyword">if</span> (bl_graph_coh_t_coh)
 
@@ -172,12 +169,12 @@ params_group = values(result_map, {<span class="string">'mt_val'</span>, <span c
     ar_coh_full = mt_coh(:);
 
     <span class="comment">% 2. COH Next Period</span>
-    <span class="keyword">if</span> (strcmp(st_model, <span class="string">'az'</span>))
-        mt_coh_next = f_coh(ar_z, ar_pol_a_full);
-    <span class="keyword">elseif</span> (ismember(st_model, [<span class="string">'abz'</span>]))
+    <span class="keyword">if</span> (ismember(st_model, [<span class="string">"abz"</span>]))
         mt_coh_next = f_coh(ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr, ar_pol_a_full);
-    <span class="keyword">elseif</span> (ismember(st_model, [<span class="string">'abz_fibs'</span>]))
+    <span class="keyword">elseif</span> (ismember(st_model, [<span class="string">"abzr_fibs"</span>]))
         mt_coh_next = f_coh(ar_z_wage_mesh_r_borr, ar_pol_a_full);
+    <span class="keyword">else</span>
+        mt_coh_next = f_coh(ar_z, ar_pol_a_full);
     <span class="keyword">end</span>
 
 
@@ -245,7 +242,8 @@ params_group = values(result_map, {<span class="string">'mt_val'</span>, <span c
         <span class="keyword">for</span> m = 1:it_z_n
             <span class="comment">% scatter</span>
             mt_y = real(mt_outcome(:,m));
-            fig_cur_z = scatter(ar_xvar, mt_y, 1, <span class="keyword">...</span>
+            ar_x = real(ar_xvar);
+            fig_cur_z = scatter(ar_x, mt_y, 1, <span class="keyword">...</span>
                 <span class="string">'MarkerEdgeColor'</span>, clr(m,:), <span class="string">'MarkerFaceAlpha'</span>, 0.3, <span class="keyword">...</span>
                 <span class="string">'MarkerFaceColor'</span>, clr(m,:), <span class="string">'MarkerEdgeAlpha'</span>, 0.3);
             chart(m) = fig_cur_z;
@@ -291,7 +289,7 @@ params_group = values(result_map, {<span class="string">'mt_val'</span>, <span c
 
     <span class="comment">% save file</span>
     <span class="keyword">if</span> (bl_img_save)
-        mkdir(support_map(<span class="string">'st_img_path'</span>));
+        <span class="keyword">if</span> ~exist(support_map(<span class="string">'st_img_path'</span>),<span class="string">'dir'</span>); mkdir(support_map(<span class="string">'st_img_path'</span>)); <span class="keyword">end</span>
         st_file_name = [st_img_prefix st_img_name_main <span class="string">'_coh'</span> st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     <span class="keyword">end</span>
@@ -362,7 +360,7 @@ params_group = values(result_map, {<span class="string">'mt_val'</span>, <span c
 
     <span class="comment">% save file</span>
     <span class="keyword">if</span> (bl_img_save)
-        mkdir(support_map(<span class="string">'st_img_path'</span>));
+        <span class="keyword">if</span> ~exist(support_map(<span class="string">'st_img_path'</span>),<span class="string">'dir'</span>); mkdir(support_map(<span class="string">'st_img_path'</span>)); <span class="keyword">end</span>;
         st_file_name = [st_img_prefix st_img_name_main <span class="string">'_val'</span> st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     <span class="keyword">end</span>
@@ -491,7 +489,7 @@ params_group = values(result_map, {<span class="string">'mt_val'</span>, <span c
 
     <span class="comment">% save file</span>
     <span class="keyword">if</span> (bl_img_save)
-        mkdir(support_map(<span class="string">'st_img_path'</span>));
+        <span class="keyword">if</span> ~exist(support_map(<span class="string">'st_img_path'</span>),<span class="string">'dir'</span>); mkdir(support_map(<span class="string">'st_img_path'</span>)); <span class="keyword">end</span>;
         st_file_name = [st_img_prefix st_img_name_main <span class="string">'_pol_lvl'</span> st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     <span class="keyword">end</span>
@@ -598,7 +596,7 @@ params_group = values(result_map, {<span class="string">'mt_val'</span>, <span c
 
     <span class="comment">% save file</span>
     <span class="keyword">if</span> (bl_img_save)
-        mkdir(support_map(<span class="string">'st_img_path'</span>));
+        <span class="keyword">if</span> ~exist(support_map(<span class="string">'st_img_path'</span>),<span class="string">'dir'</span>); mkdir(support_map(<span class="string">'st_img_path'</span>)); <span class="keyword">end</span>;
         st_file_name = [st_img_prefix st_img_name_main <span class="string">'_pol_pct'</span> st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     <span class="keyword">end</span>
@@ -647,15 +645,9 @@ function ff_az_vf_post_graph(varargin)
 
 %% Default
 
-params_len = length(varargin);
-bl_input_override = 0;
-if (params_len == 6)
-    bl_input_override = varargin{6};
-end
-
-if (bl_input_override)
+if (~isempty(varargin))
     % if invoked from outside overrid fully
-    [param_map, support_map, armt_map, func_map, result_map, ~] = varargin{:};
+    [param_map, support_map, armt_map, func_map, result_map] = varargin{:};
 else
     clear all;
     close all;
@@ -705,14 +697,19 @@ params_group = values(support_map, {'st_title_prefix'});
 % armt_map
 params_group = values(armt_map, {'ar_a'});
 [ar_a] = params_group{:};
-if (strcmp(st_model, 'az'))
-    params_group = values(armt_map, {'ar_z'});
-    [ar_z] = params_group{:};
-elseif (ismember(st_model, ['abz', 'abz_fibs']))
+if (ismember(st_model, ["abz"]))
     params_group = values(armt_map, {'ar_z_r_borr_mesh_wage', 'ar_z_wage_mesh_r_borr'});
     [ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
     params_group = values(param_map, {'it_z_wage_n', 'fl_z_r_borr_n'});
     [it_z_wage_n, fl_z_r_borr_n] = params_group{:};    
+elseif (ismember(st_model, ["abzr_fibs"]))
+    params_group = values(armt_map, {'ar_z_r_infbr_mesh_wage', 'ar_z_wage_mesh_r_infbr'});
+    [ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
+    params_group = values(param_map, {'it_z_wage_n', 'fl_z_r_infbr_n'});
+    [it_z_wage_n, fl_z_r_borr_n] = params_group{:};    
+else
+    params_group = values(armt_map, {'ar_z'});
+    [ar_z] = params_group{:};    
 end
 
 % func_map
@@ -728,14 +725,7 @@ params_group = values(result_map, {'mt_val', 'cl_mt_pol_c', 'cl_mt_coh', 'cl_mt_
 
 %% Generate Limited Legends
 
-if (strcmp(st_model, 'az'))
-    
-    ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)) (it_z_n)]);
-    ar_it_legend2plot = fliplr(ar_it_z_graph);
-    ar_it_legend2plot_lth = ar_it_z_graph;
-    cl_st_legendCell = cellstr(num2str(ar_z', 'shock next=%3.2f'));
-    
-elseif (ismember(st_model, ['abz', 'abz_fibs']))    
+if (ismember(st_model, ["abz", "abzr_fibs"]))
     
     % 8 graph points, 2 levels of borrow rates, and 4 levels of rbr rates
     ar_it_z_r_borr = ([1 round((fl_z_r_borr_n)/2) (fl_z_r_borr_n)]);
@@ -750,6 +740,11 @@ elseif (ismember(st_model, ['abz', 'abz_fibs']))
     ar_it_legend2plot_lth = ar_it_z_graph;
     cl_st_legendCell = cellstr([num2str(ar_z_r_borr_mesh_wage', 'zr=%3.2f;'), ...
                           num2str(ar_z_wage_mesh_r_borr', 'zw=%3.2f')]);
+else
+    ar_it_z_graph = ([1 round((it_z_n)/4) round(2*((it_z_n)/4)) round(3*((it_z_n)/4)) (it_z_n)]);
+    ar_it_legend2plot = fliplr(ar_it_z_graph);
+    ar_it_legend2plot_lth = ar_it_z_graph;
+    cl_st_legendCell = cellstr(num2str(ar_z', 'shock next=%3.2f'));
 end
 
 %% Graphing COH today vs COH tomorrow
@@ -791,12 +786,12 @@ if (bl_graph_coh_t_coh)
     ar_coh_full = mt_coh(:);
 
     % 2. COH Next Period
-    if (strcmp(st_model, 'az'))
-        mt_coh_next = f_coh(ar_z, ar_pol_a_full);
-    elseif (ismember(st_model, ['abz']))
+    if (ismember(st_model, ["abz"]))
         mt_coh_next = f_coh(ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr, ar_pol_a_full);
-    elseif (ismember(st_model, ['abz_fibs']))
+    elseif (ismember(st_model, ["abzr_fibs"]))
         mt_coh_next = f_coh(ar_z_wage_mesh_r_borr, ar_pol_a_full);
+    else
+        mt_coh_next = f_coh(ar_z, ar_pol_a_full);
     end
     
 
@@ -864,7 +859,8 @@ if (bl_graph_coh_t_coh)
         for m = 1:it_z_n
             % scatter
             mt_y = real(mt_outcome(:,m));
-            fig_cur_z = scatter(ar_xvar, mt_y, 1, ...
+            ar_x = real(ar_xvar);
+            fig_cur_z = scatter(ar_x, mt_y, 1, ...
                 'MarkerEdgeColor', clr(m,:), 'MarkerFaceAlpha', 0.3, ...
                 'MarkerFaceColor', clr(m,:), 'MarkerEdgeAlpha', 0.3);
             chart(m) = fig_cur_z;
@@ -910,7 +906,7 @@ if (bl_graph_coh_t_coh)
 
     % save file
     if (bl_img_save)
-        mkdir(support_map('st_img_path'));
+        if ~exist(support_map('st_img_path'),'dir'); mkdir(support_map('st_img_path')); end
         st_file_name = [st_img_prefix st_img_name_main '_coh' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
@@ -987,7 +983,7 @@ if (bl_graph_val)
 
     % save file
     if (bl_img_save)
-        mkdir(support_map('st_img_path'));
+        if ~exist(support_map('st_img_path'),'dir'); mkdir(support_map('st_img_path')); end;
         st_file_name = [st_img_prefix st_img_name_main '_val' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
@@ -1123,7 +1119,7 @@ if (bl_graph_pol_lvl)
 
     % save file
     if (bl_img_save)
-        mkdir(support_map('st_img_path'));
+        if ~exist(support_map('st_img_path'),'dir'); mkdir(support_map('st_img_path')); end;
         st_file_name = [st_img_prefix st_img_name_main '_pol_lvl' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
@@ -1233,7 +1229,7 @@ if (bl_graph_pol_pct)
 
     % save file
     if (bl_img_save)
-        mkdir(support_map('st_img_path'));
+        if ~exist(support_map('st_img_path'),'dir'); mkdir(support_map('st_img_path')); end;
         st_file_name = [st_img_prefix st_img_name_main '_pol_pct' st_img_suffix];
         saveas(gcf, strcat(st_img_path, st_file_name));
     end
