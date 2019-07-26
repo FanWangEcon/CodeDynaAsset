@@ -64,7 +64,6 @@ if (isempty(varargin))
 else
     bl_display_defparam = false;
 end
-bl_display_defparam = false;
 default_params = {it_subset bl_display_defparam};
 [default_params{1:length(varargin)}] = varargin{:};
 [it_subset, bl_display_defparam] = default_params{:};
@@ -139,6 +138,7 @@ param_map('it_c_interp_grid_gap') = 10^-4;
 % Solution Accuracy
 param_map('it_maxiter_val') = 250;
 param_map('it_maxiter_dist') = 1000;
+param_map('it_trans_power_dist') = 1000;
 param_map('st_analytical_stationary_type') = 'eigenvector';
 param_map('fl_tol_val') = 10^-5;
 param_map('fl_tol_pol') = 10^-5;
@@ -178,6 +178,10 @@ support_map('bl_display_final_dist') = false; % print finalized results
 support_map('bl_display_final_dist_detail') = false;
 support_map('it_display_final_rowmax') = 100; % max row to print (states/iters)
 support_map('it_display_final_colmax') = 12; % max col to print (shocks)
+it_display_summmat_rowmax = 7;
+it_display_summmat_colmax = 7;
+support_map('it_display_summmat_rowmax') = it_display_summmat_rowmax;
+support_map('it_display_summmat_colmax') = it_display_summmat_colmax;
 
 % Mat File Controls
 support_map('bl_mat') = false;
@@ -331,25 +335,9 @@ if (ismember(it_subset, [5,6,7,8,9]))
 end
 
 %% Display
-
 if (bl_display_defparam)
-    disp('param_map');
-    disp(param_map);
-    param_map_keys = keys(param_map);
-    param_map_vals = values(param_map);
-    for i = 1:length(param_map)
-        st_display = strjoin(['pos =' num2str(i) '; key =' string(param_map_keys{i}) '; val =' string(param_map_vals{i})]);
-        disp(st_display);
-    end
-
-    disp('support_map')
-    disp(support_map);
-    param_map_keys = keys(support_map);
-    param_map_vals = values(support_map);
-    for i = 1:length(support_map)
-        st_display = strjoin(['pos =' num2str(i) '; key =' string(param_map_keys{i}) '; val =' string(param_map_vals{i})]);
-        disp(st_display);
-    end
+    fft_container_map_display(param_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+    fft_container_map_display(support_map, it_display_summmat_rowmax, it_display_summmat_colmax);
 end
 
 end

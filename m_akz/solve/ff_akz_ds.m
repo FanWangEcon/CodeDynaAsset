@@ -66,13 +66,8 @@ function [result_map] = ff_akz_ds(varargin)
 % # it_subset = 9 is invoke operational (only final stats) and coh graph
 %
 
-params_len = length(varargin);
-bl_input_override = 0;
-if (params_len == 6)
-    bl_input_override = varargin{6};
-end
-
-if (bl_input_override)
+if (~isempty(varargin))
+    
     % if invoked from outside override fully
     [param_map, support_map, armt_map, ~, result_map, ~] = varargin{:};
 
@@ -83,8 +78,6 @@ else
     it_param_set = 8;
     st_akz_or_wkz = 'wkz';
 
-    bl_input_override = true;
-
     % 1. Generate Parameters
     [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
 
@@ -93,7 +86,7 @@ else
     % param_map('it_z_n') = 15;
 
     % 2. Generate function and grids
-    [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
+    [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map); % 1 for override
 
     % 3. Solve value and policy function using az_vf_vecsv, if want to solve
     % other models, solve outside then provide result_map as input
@@ -306,7 +299,6 @@ end
 % fft_disc_rand_var_mass2outcomes> to compute various statistics of
 % interest.
 
-bl_input_override = true;
-result_map = ff_az_ds_post_stats(support_map, result_map, mt_dist_akz, bl_input_override);
+result_map = ff_az_ds_post_stats(support_map, result_map, mt_dist_akz);
 
 end

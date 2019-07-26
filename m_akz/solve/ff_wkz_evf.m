@@ -57,14 +57,11 @@ function [mt_ev_condi_z_max, mt_ev_condi_z_max_idx, mt_ev_condi_z_max_kp, mt_ev_
 
 %% Default
 
-params_len = length(varargin);
-bl_input_override = 0;
-if (params_len == 5)
-    bl_input_override = varargin{5};
-end
-if (bl_input_override)
+if (~isempty(varargin))
+    
     % override when called from outside
-    [mt_val, param_map, support_map, armt_map, ~] = varargin{:};
+    [mt_val, param_map, support_map, armt_map] = varargin{:};
+    
 else
     clear all;
     close all;

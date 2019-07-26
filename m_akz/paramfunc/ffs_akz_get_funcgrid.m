@@ -69,13 +69,11 @@ function [armt_map, func_map] = ffs_akz_get_funcgrid(varargin)
 
 %% Default
 
-bl_input_override = 0;
-if (length(varargin) == 3)
-    bl_input_override = varargin{3};
-end
-if (bl_input_override)
+if (~isempty(varargin))
+    
     % override when called from outside
-    [param_map, support_map, ~] = varargin{:};
+    [param_map, support_map] = varargin{:};
+    
 else
     % default internal run
     [param_map, support_map] = ffs_akz_set_default_param();

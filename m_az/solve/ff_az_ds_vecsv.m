@@ -180,7 +180,6 @@ params_group = values(armt_map, {'mt_z_trans'});
 params_group = values(param_map, { 'it_trans_power_dist', 'st_analytical_stationary_type'});
 [it_trans_power_dist, st_analytical_stationary_type] = params_group{:};
 
-
 % support_map
 params_group = values(support_map, {'bl_profile_dist', 'st_profile_path', ...
     'st_profile_prefix', 'st_profile_name_main', 'st_profile_suffix',...

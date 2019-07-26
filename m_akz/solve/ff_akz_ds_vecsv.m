@@ -51,12 +51,11 @@ st_akz_or_wkz = 'wkz';
 % Note that akz and wkz share the smae funcgrid and default_param functions
 
 % Set Parameters
-bl_input_override = true;
 [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
 support_map('bl_profile_dist') = false;
 
 % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html ffs_akz_get_funcgrid>
-[armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
+[armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map); % 1 for override
 
 %% Alternative 1: Solving the Dynamic Programming Problem (AKZ)
 
@@ -89,7 +88,7 @@ st_profile_name_main = support_map('st_profile_name_main');
 %% Derive Distribution
 
 % Call Distribution Program <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vec.html ff_az_ds_vec>
-result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map);
 
 %% End profiler and Timer
 

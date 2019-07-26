@@ -85,8 +85,6 @@ else
     it_param_set = 8;
     st_akz_or_iwkz = 'iwkz';
 
-    bl_input_override = true;
-
     % 1. Generate Parameters
     [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
 
@@ -95,7 +93,7 @@ else
     % param_map('it_z_n') = 15;
 
     % 2. Generate function and grids
-    [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
+    [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map); % 1 for override
 
     % 3. Solve value and policy function using ff_iwkz_vf_vecsv
     if (strcmp(st_akz_or_iwkz, 'iwkz'))
@@ -300,7 +298,6 @@ end
 % fft_disc_rand_var_mass2outcomes> to compute various statistics of
 % interest.
 
-bl_input_override = true;
-result_map = ff_az_ds_post_stats(support_map, result_map, mt_dist_akz, bl_input_override);
+result_map = ff_az_ds_post_stats(support_map, result_map, mt_dist_akz);
 
 end

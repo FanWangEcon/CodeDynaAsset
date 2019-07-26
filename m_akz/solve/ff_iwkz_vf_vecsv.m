@@ -1,6 +1,6 @@
 %% Risky + Safe Asset Dyna Prog Two-Step-Interpolated Solution (Optimized-Vectorized)
 % *back to <https://fanwangecon.github.io Fan>'s
-% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository> 
+% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 
 %%
@@ -10,7 +10,7 @@ function result_map = ff_iwkz_vf_vecsv(varargin)
 % capital asset problem with some ar1 shock. This is the efficient vectorized version
 % of
 % <https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_vf.html
-% ff_iwkz_vf>. See that file for more descriptions. 
+% ff_iwkz_vf>. See that file for more descriptions.
 %
 % @param param_map container parameter container
 %
@@ -24,7 +24,7 @@ function result_map = ff_iwkz_vf_vecsv(varargin)
 %
 % @return result_map container contains policy function matrix, value
 % function matrix, iteration results, and policy function, value function
-% and iteration results tables. 
+% and iteration results tables.
 %
 % keys included in result_map:
 %
@@ -79,7 +79,7 @@ bl_input_override = true;
 % param_map('it_c_interp_grid_gap') = 10^-4;
 
 % get armt and func map
-[armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
+[armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map); % 1 for override
 default_params = {param_map support_map armt_map func_map};
 
 %% Parse Parameters 1
@@ -92,8 +92,7 @@ support_map = [support_map; default_params{2}];
 if params_len >= 1 && params_len <= 2
     % If override param_map, re-generate armt and func if they are not
     % provided
-    bl_input_override = true;
-    [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override);
+    [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map);
 else
     % Override all
     armt_map = [armt_map; default_params{3}];
@@ -132,10 +131,12 @@ params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol', 
 % support_map
 params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
     'st_profile_prefix', 'st_profile_name_main', 'st_profile_suffix',...
-    'bl_time', 'bl_graph_evf', 'bl_display', 'it_display_every', 'bl_post'});
+    'bl_time', 'bl_display_defparam', 'bl_graph_evf', 'bl_display', 'it_display_every', 'bl_post'});
 [bl_profile, st_profile_path, ...
     st_profile_prefix, st_profile_name_main, st_profile_suffix, ...
-    bl_time, bl_graph_evf, bl_display, it_display_every, bl_post] = params_group{:};
+    bl_time, bl_display_defparam, bl_graph_evf, bl_display, it_display_every, bl_post] = params_group{:};
+params_group = values(support_map, {'it_display_summmat_rowmax', 'it_display_summmat_colmax'});
+[it_display_summmat_rowmax, it_display_summmat_colmax] = params_group{:};
 
 %% Initialize Output Matrixes
 
@@ -207,7 +208,7 @@ end
 % Value Function Iteration
 while bl_vfi_continue
     it_iter = it_iter + 1;
-    
+
     %% Interpolate (1) reacahble v(coh(k(w,z),b(w,z),z),z) given v(coh, z)
     % v(coh,z) solved on ar_interp_coh_grid, ar_z grids, see
     % ffs_iwkz_get_funcgrid.m. Generate interpolant based on that, Then
@@ -217,102 +218,101 @@ while bl_vfi_continue
     % Generate Interpolant for v(coh,z)
     f_grid_interpolant_value = griddedInterpolant(...
         mt_z_mesh_coh_interp_grid', mt_interp_coh_grid_mesh_z', mt_val_cur', 'linear');
-    
+
     % Interpoalte for v(coh(k(w,z),b(w,z),z),z)
     mt_val_wkb_interpolated = f_grid_interpolant_value(mt_z_mesh_coh_wkb, mt_coh_wkb);
-        
+
     %% Solve Second Stage Problem k*(w,z)
     % This is the key difference between this function and
     % <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html
-    % ffs_akz_set_functions> which solves the two stages jointly    
+    % ffs_akz_set_functions> which solves the two stages jointly
     % Interpolation first, because solution coh grid is not the same as all
-    % points reachable by k and b choices given w. 
+    % points reachable by k and b choices given w.
     support_map('bl_graph_evf') = false;
     if (it_iter == (it_maxiter_val + 1))
         support_map('bl_graph_evf') = bl_graph_evf;
     end
-    bl_input_override = true;
     [mt_ev_condi_z_max, ~, mt_ev_condi_z_max_kp, mt_ev_condi_z_max_bp] = ...
-        ff_wkz_evf(mt_val_wkb_interpolated, param_map, support_map, armt_map, bl_input_override);
-    
+        ff_wkz_evf(mt_val_wkb_interpolated, param_map, support_map, armt_map);
+
     %% Find which k choice differ across iterations?
     mt_w_kstar_diff_idx = (mt_ev_condi_z_max_kp_cur ~= mt_ev_condi_z_max_kp);
-    
+
     %% Solve First Stage Problem w*(z) given k*(w,z)
-        
+
     % loop 1: over exogenous states
     for it_z_i = 1:length(ar_z)
 
         % State Array fixed
         ar_coh_z = mt_interp_coh_grid_mesh_z(:,it_z_i);
-        
+
         % Get 2nd Stage Choice Arrays
-        % Update rows where opti k given w=k'+b' is changing        
+        % Update rows where opti k given w=k'+b' is changing
         ar_w_kstar_diff_idx = mt_w_kstar_diff_idx(:, it_z_i);
         ar_w_kstar_z = mt_ev_condi_z_max_kp(ar_w_kstar_diff_idx, it_z_i);
-        ar_w_astar_z = mt_ev_condi_z_max_bp(ar_w_kstar_diff_idx, it_z_i);        
-        
+        ar_w_astar_z = mt_ev_condi_z_max_bp(ar_w_kstar_diff_idx, it_z_i);
+
         % Consumption Update
         % Note that compared to
         % <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html
         % ffs_akz_set_functions> the mt_c here is much smaller the same
         % number of columns (states) as in the ffs_akz_set_functions file,
-        % but the number of rows equal to ar_w length.            
+        % but the number of rows equal to ar_w length.
         mt_c = f_cons(ar_coh_z', ar_w_astar_z, ar_w_kstar_z);
-                
+
         % Interpolate (2) EVAL current utility: N by N, f_util defined earlier
         mt_utility_update = f_grid_interpolant_spln(mt_c);
-        
+
         % Eliminate Complex Numbers
         mt_it_c_valid_idx = (mt_c <= fl_c_min);
-        
+
         % Update Storage
         if (it_iter == 1)
             cl_u_c_store{it_z_i} = mt_utility_update;
             cl_c_valid_idx{it_z_i} = mt_it_c_valid_idx;
         else
-            cl_u_c_store{it_z_i}(ar_w_kstar_diff_idx,:) = mt_utility_update;                
-            cl_c_valid_idx{it_z_i}(ar_w_kstar_diff_idx,:) = mt_it_c_valid_idx; 
+            cl_u_c_store{it_z_i}(ar_w_kstar_diff_idx,:) = mt_utility_update;
+            cl_c_valid_idx{it_z_i}(ar_w_kstar_diff_idx,:) = mt_it_c_valid_idx;
         end
-                
+
         % EVAL add on future utility, N by N + N by 1
         ar_evzp_ak_condi_z = mt_ev_condi_z_max(:, it_z_i);
         mt_utility = cl_u_c_store{it_z_i} + fl_beta*ar_evzp_ak_condi_z;
-        
+
         % Index update
         % using the method below is much faster than index replace
         % see <https://fanwangecon.github.io/M4Econ/support/speed/index/fs_subscript.html fs_subscript>
-        mt_it_c_valid_idx = cl_c_valid_idx{it_z_i};        
+        mt_it_c_valid_idx = cl_c_valid_idx{it_z_i};
         mt_utility = mt_utility.*(~mt_it_c_valid_idx) + fl_u_neg_c*(mt_it_c_valid_idx);
-        
+
         % Optimization: remember matlab is column major, rows must be
         % choices, columns must be states
         % <https://en.wikipedia.org/wiki/Row-_and_column-major_order COLUMN-MAJOR>
         [ar_opti_val1_z, ar_opti_idx_z] = max(mt_utility);
         mt_val(:,it_z_i) = ar_opti_val1_z;
         mt_pol_a(:,it_z_i) = mt_ev_condi_z_max_bp(ar_opti_idx_z, it_z_i);
-        mt_pol_k(:,it_z_i) = mt_ev_condi_z_max_kp(ar_opti_idx_z, it_z_i);        
+        mt_pol_k(:,it_z_i) = mt_ev_condi_z_max_kp(ar_opti_idx_z, it_z_i);
         if (it_iter == (it_maxiter_val + 1))
             mt_pol_idx(:,it_z_i) = ar_opti_idx_z;
         end
 
     end
-    
+
     %% Check Tolerance and Continuation
-    
+
     % Difference across iterations
     ar_val_diff_norm(it_iter) = norm(mt_val - mt_val_cur);
     ar_pol_diff_norm(it_iter) = norm(mt_pol_a - mt_pol_a_cur) + norm(mt_pol_k - mt_pol_k_cur);
     ar_pol_a_perc_change = sum((mt_pol_a ~= mt_pol_a_cur))/(length(ar_interp_coh_grid));
-    ar_pol_k_perc_change = sum((mt_pol_k ~= mt_pol_k_cur))/(length(ar_interp_coh_grid));    
+    ar_pol_k_perc_change = sum((mt_pol_k ~= mt_pol_k_cur))/(length(ar_interp_coh_grid));
     mt_pol_perc_change(it_iter, :) = mean([ar_pol_a_perc_change;ar_pol_k_perc_change]);
-    
+
     % Update
     mt_val_cur = mt_val;
     mt_pol_a_cur = mt_pol_a;
     mt_pol_k_cur = mt_pol_k;
     mt_ev_condi_z_max_kp_cur = mt_ev_condi_z_max_kp;
-    
+
     % Print Iteration Results
     if (bl_display && (rem(it_iter, it_display_every)==0))
         fprintf('VAL it_iter:%d, fl_diff:%d, fl_diff_pol:%d\n', ...
@@ -330,10 +330,10 @@ while bl_vfi_continue
         disp('mkp  = mean(mt_pol_k_cur,1), average choice over k')
         disp('Hval = mt_val_cur(it_ameshk_n,:), highest a state val')
         disp('Hap = mt_pol_a_cur(it_ameshk_n,:), highest a state choice')
-        disp('mak = mt_pol_k_cur(it_ameshk_n,:), highest k state choice')                
+        disp('mak = mt_pol_k_cur(it_ameshk_n,:), highest k state choice')
         disp(tb_valpol_iter);
     end
-    
+
     % Continuation Conditions:
     % 1. if value function convergence criteria reached
     % 2. if policy function variation over iterations is less than
@@ -345,9 +345,9 @@ while bl_vfi_continue
             (sum(ar_pol_diff_norm(max(1, it_iter-it_tol_pol_nochange):it_iter)) < fl_tol_pol))
         % Fix to max, run again to save results if needed
         it_iter_last = it_iter;
-        it_iter = it_maxiter_val;        
+        it_iter = it_maxiter_val;
     end
-    
+
 end
 
 % End Timer
@@ -380,15 +380,36 @@ if (bl_post)
     result_map('ar_val_diff_norm') = ar_val_diff_norm(1:it_iter_last);
     result_map('ar_pol_diff_norm') = ar_pol_diff_norm(1:it_iter_last);
     result_map('mt_pol_perc_change') = mt_pol_perc_change(1:it_iter_last, :);
-    
+
     % graphing based on coh_wkb, but that does not match optimal choice
-    % matrixes for graphs. 
+    % matrixes for graphs.
     armt_map('mt_coh_wkb') = mt_interp_coh_grid_mesh_z;
     armt_map('it_ameshk_n') = length(ar_interp_coh_grid);
     armt_map('ar_a_meshk') = mt_interp_coh_grid_mesh_z(:,1);
     armt_map('ar_k_mesha') = zeros(size(mt_interp_coh_grid_mesh_z(:,1)) + 0);
-    
+
     result_map = ff_akz_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+end
+
+%% Display Various Containers
+
+if (bl_display_defparam)
+
+    %% Display 1 support_map
+    fft_container_map_display(support_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+
+    %% Display 2 armt_map
+    fft_container_map_display(armt_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+
+    %% Display 3 param_map
+    fft_container_map_display(param_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+
+    %% Display 4 func_map
+    fft_container_map_display(func_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+
+    %% Display 5 result_map
+    fft_container_map_display(result_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+
 end
 
 end

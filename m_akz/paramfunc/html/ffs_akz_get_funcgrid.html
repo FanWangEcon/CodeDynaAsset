@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Generate States, Choices and Shocks Grids and Get Functions (Risky + Safe Asset)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-04"><meta name="DC.source" content="ffs_akz_get_funcgrid.m"><style type="text/css">
+      --><title>Generate States/Choices/Shocks Grids, get Functions (Interpolated + Risky + Safe Asset)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-26"><meta name="DC.source" content="ffs_akz_get_funcgrid.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,16 +66,12 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Generate States, Choices and Shocks Grids and Get Functions (Risky + Safe Asset)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FFS_AKZ_GET_FUNCGRID get funcs, params, states choices shocks grids</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Get Asset and Choice Grid</a></li><li><a href="#6">Get Shock Grids</a></li><li><a href="#7">Get Equations</a></li><li><a href="#8">Generate Cash-on-Hand/State Matrix</a></li><li><a href="#9">IWKZ Interpolation Cash-on-hand Interpolation Grid</a></li><li><a href="#10">IWKZ Interpolation Consumption Grid</a></li><li><a href="#11">Store</a></li><li><a href="#12">Graph</a></li><li><a href="#14">Graph 1: a and k choice grid graphs</a></li><li><a href="#15">Graph 2: coh by shock</a></li><li><a href="#16">Graph 3: coh by index</a></li><li><a href="#17">Graph 4: coh by coh</a></li><li><a href="#19">Display</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [armt_map, func_map] = ffs_akz_get_funcgrid(varargin)
+  </style></head><body><div class="content"><h1>Generate States/Choices/Shocks Grids, get Functions (Interpolated + Risky + Safe Asset)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FFS_AKZ_GET_FUNCGRID get funcs, params, states choices shocks grids</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Get Asset and Choice Grid</a></li><li><a href="#6">Get Shock Grids</a></li><li><a href="#7">Get Equations</a></li><li><a href="#8">Generate Cash-on-Hand/State Matrix</a></li><li><a href="#9">IWKZ Interpolation Cash-on-hand Interpolation Grid</a></li><li><a href="#10">IWKZ Interpolation Consumption Grid</a></li><li><a href="#11">Store</a></li><li><a href="#12">Graph</a></li><li><a href="#14">Graph 1: a and k choice grid graphs</a></li><li><a href="#15">Graph 2: coh by shock</a></li><li><a href="#16">Graph 3: coh by index</a></li><li><a href="#17">Graph 4: coh by coh</a></li><li><a href="#19">Display</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [armt_map, func_map] = ffs_akz_get_funcgrid(varargin)
 </pre><h2 id="2">FFS_AKZ_GET_FUNCGRID get funcs, params, states choices shocks grids</h2><p>Centralized gateway for retrieving parameters, and solution grids and functions.</p><p>This function services both <a href="https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_akz">m_akz</a> as well as <a href="https://github.com/FanWangEcon/CodeDynaAsset/tree/master/m_akbz">m_akbz</a> functions. This means that the function here support solving both the borrowing as well as the savings problems.</p><p>Note that while we have several versions of algorithms, one version requires interpolation, so there are several matrixes and vectors below that are specifically for that. These interpolation related matrixes and arrays are not used when we solve the wkz or akz problem, but are used when we solve the iwkz problem.</p><p>For the ikwz problem, we have two cash-on-hand matrixes: mt_coh_wkb</p><p>Note that in the m_abz problem's funcgrid function, we also called <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_gen_borrsave_grid.html">ffs_abz_gen_borrsave_grid</a> function, which generates borrowing grid depending on if default is allowed or not. In the problem here, the situation is more complicated, because now the maximum borrowing level is a function of the risky investment choice when default is not allowed. We impose a exogenous borrowing bound here.</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param bl_input_override boolean if true varargin contained param_map and support_map fully overrides local default. Local default is not invoked. This could be important for speed if this function is getting invoked within certain loops. Default is 0.</p><p>@return armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm. keys included in armt_map are described below for each group of vectors when they are stored into armt_map.</p><p>@return func_map container container with function handles for consumption cash-on-hand etc.</p><p>@example</p><pre>  it_param_set = 2; bl_input_override = true; [param_map, support_map] =
   ffs_akz_set_default_param(it_param_set); [armt_map, func_map] =
-  ffs_akz_get_funcgrid(param_map, support_map, bl_input_override);</pre><p>@include</p><p>* <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html">ffs_akz_set_functions</a> * <a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/ffto_gen_tauchen_jhl.m">ffto_gen_tauchen_jhl</a> * <a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/fft_gen_grid_loglin.m">fft_gen_grid_loglin</a></p><h2 id="3">Default</h2><pre class="codeinput">bl_input_override = 0;
-<span class="keyword">if</span> (length(varargin) == 3)
-    bl_input_override = varargin{3};
-<span class="keyword">end</span>
-<span class="keyword">if</span> (bl_input_override)
+  ffs_akz_get_funcgrid(param_map, support_map, bl_input_override);</pre><p>@include</p><p>* <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_functions.html">ffs_akz_set_functions</a> * <a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/ffto_gen_tauchen_jhl.m">ffto_gen_tauchen_jhl</a> * <a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/fft_gen_grid_loglin.m">fft_gen_grid_loglin</a></p><h2 id="3">Default</h2><pre class="codeinput"><span class="keyword">if</span> (~isempty(varargin))
     <span class="comment">% override when called from outside</span>
-    [param_map, support_map, ~] = varargin{:};
+    [param_map, support_map] = varargin{:};
 <span class="keyword">else</span>
     <span class="comment">% default internal run</span>
     [param_map, support_map] = ffs_akz_set_default_param();
@@ -1048,7 +1044,7 @@ ans =
 
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
-%% Generate States, Choices and Shocks Grids and Get Functions (Risky + Safe Asset)
+%% Generate States/Choices/Shocks Grids, get Functions (Interpolated + Risky + Safe Asset)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
@@ -1119,13 +1115,9 @@ function [armt_map, func_map] = ffs_akz_get_funcgrid(varargin)
 
 %% Default
 
-bl_input_override = 0;
-if (length(varargin) == 3)
-    bl_input_override = varargin{3};
-end
-if (bl_input_override)
+if (~isempty(varargin))
     % override when called from outside
-    [param_map, support_map, ~] = varargin{:};
+    [param_map, support_map] = varargin{:};
 else
     % default internal run
     [param_map, support_map] = ffs_akz_set_default_param();

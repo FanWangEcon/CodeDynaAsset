@@ -65,15 +65,9 @@ function [result_map] = ff_az_ds_post_stats(varargin)
 % use binomial as test case, z maps to binomial win prob, remember binom
 % approximates normal.
 
-params_len = length(varargin);
-bl_input_override = 0;
-if (params_len == 4)
-    bl_input_override = varargin{4};
-end
-
-if (bl_input_override)
+if (~isempty(varargin))
     % if invoked from outside overrid fully
-    [support_map, result_map, mt_dist_az, ~] = varargin{:};
+    [support_map, result_map, mt_dist_az] = varargin{:};
     bl_display_final_dist_detail_local = false;
 else
     clear all;

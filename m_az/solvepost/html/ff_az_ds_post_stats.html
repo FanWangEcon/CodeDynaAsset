@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Generate Statistics from Prob Mass Function over States</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-23"><meta name="DC.source" content="ff_az_ds_post_stats.m"><style type="text/css">
+      --><title>Generate Statistics from Prob Mass Function over States</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-26"><meta name="DC.source" content="ff_az_ds_post_stats.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -68,15 +68,9 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
   </style></head><body><div class="content"><h1>Generate Statistics from Prob Mass Function over States</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_AZ_DS_POST_STATS post ff_az_ds statistics generation</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse</a></li><li><a href="#5"><b>f(y), f(c), f(a)</b>: Generate Key Distributional Statistics for Each outcome</a></li><li><a href="#7"><b>f(y), f(c), f(a)</b>: Find p(outcome(states)), proability mass function for each outcome</a></li><li><a href="#8"><b>f(y), f(c), f(a)</b>: Compute Statistics for outcomes</a></li><li><a href="#9"><b>f(y), f(c), f(a)</b>: Store Statistics Specific to Each Outcome</a></li><li><a href="#11">Covariance and Correlation</a></li><li><a href="#12"><b>f(y), f(c), f(a)</b>: Store Statistics Shared Table All Outcomes</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [result_map] = ff_az_ds_post_stats(varargin)
 </pre><h2 id="2">FF_AZ_DS_POST_STATS post ff_az_ds statistics generation</h2><p>Having derived f(a,z) the probability mass function of the joint discrete random variables, we now obtain distributional statistics. Note that we know f(a,z), and we also know relevant policy functions a'(a,z), c(a,z), or other policy functions. We can simulate any choices that are a function of the random variables (a,z), using f(a,z)</p><p>parameter structure provides a list of</p><div><ol><li>from result_map('ar_st_pol_names'), get list of outcome matrix on state space</li><li>simulate each outcome using f(a,z) for probability draws</li><li>compute key statistics: (1) mean (expectation=sum) (2) sd (3) min and max (4) iqr (5) fraction = 0 (6) percentiles including: 99.9, 99, 95, every 5 in between 5, 1, 0.01.</li></ol></div><p>Uses fake binomial data when file is invoke with defaults.</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param result_map container contains policy function matrix, value function matrix, iteration results</p><p>@param mt_dist_az matrix N by M where N are asset states and M are shock states, the f(a,z) probability mass function derived earlier in ff_az_ds or ff_az_ds_vec</p><p>@return result_map container with statistics added to result_map</p><div><ul><li>the first element of each of these cell array is y(a,z), the outcome/choice at the state space points</li><li>the second element of the cell is another container, which contains statistics computed for f(y) based on y(a,z) and f(a,z), f(y) is the probability mass function for outcome y given the stationary distribution f(a,z). The second element container also includes f(y) itself as well as f(y,z).</li><li>additionally, result_map also stores some of the statistics for different variables jointly together. (a) <b>tb_outcomes_meansdperc</b>: where each row is a different outcome of the model, and each table column stores a different statistics of interest. (b) <b>tb_outcomes_fracheld</b>: which measures the fraction of asset held by different people.</li></ul></div><p>@example</p><pre>  bl_input_override = true;
-  result_map = ff_az_ds_post_stats(support_map, result_map, mt_dist_az, bl_input_override);</pre><p>@include</p><div><ul><li><a href="https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html">fft_disc_rand_var_stats</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html">fft_disc_rand_var_mass2outcomes</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2covcor.html">fft_disc_rand_var_mass2covcor</a></li></ul></div><h2 id="3">Default</h2><p>use binomial as test case, z maps to binomial win prob, remember binom approximates normal.</p><pre class="codeinput">params_len = length(varargin);
-bl_input_override = 0;
-<span class="keyword">if</span> (params_len == 4)
-    bl_input_override = varargin{4};
-<span class="keyword">end</span>
-
-<span class="keyword">if</span> (bl_input_override)
+  result_map = ff_az_ds_post_stats(support_map, result_map, mt_dist_az, bl_input_override);</pre><p>@include</p><div><ul><li><a href="https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html">fft_disc_rand_var_stats</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html">fft_disc_rand_var_mass2outcomes</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2covcor.html">fft_disc_rand_var_mass2covcor</a></li></ul></div><h2 id="3">Default</h2><p>use binomial as test case, z maps to binomial win prob, remember binom approximates normal.</p><pre class="codeinput"><span class="keyword">if</span> (~isempty(varargin))
     <span class="comment">% if invoked from outside overrid fully</span>
-    [support_map, result_map, mt_dist_az, ~] = varargin{:};
+    [support_map, result_map, mt_dist_az] = varargin{:};
     bl_display_final_dist_detail_local = false;
 <span class="keyword">else</span>
     clear <span class="string">all</span>;
@@ -649,15 +643,9 @@ function [result_map] = ff_az_ds_post_stats(varargin)
 % use binomial as test case, z maps to binomial win prob, remember binom
 % approximates normal.
 
-params_len = length(varargin);
-bl_input_override = 0;
-if (params_len == 4)
-    bl_input_override = varargin{4};
-end
-
-if (bl_input_override)
+if (~isempty(varargin))
     % if invoked from outside overrid fully
-    [support_map, result_map, mt_dist_az, ~] = varargin{:};
+    [support_map, result_map, mt_dist_az] = varargin{:};
     bl_display_final_dist_detail_local = false;
 else
     clear all;

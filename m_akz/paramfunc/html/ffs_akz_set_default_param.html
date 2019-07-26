@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Set Model Parameters (Risky + Safe Asset)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-04"><meta name="DC.source" content="ffs_akz_set_default_param.m"><style type="text/css">
+      --><title>Set Model Parameters (Risky + Safe Asset)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-26"><meta name="DC.source" content="ffs_akz_set_default_param.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -70,11 +70,18 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 </pre><h2 id="2">FFS_AKZ_SET_DEFAULT_PARAM setting model default parameters</h2><p>two groups of default parameters stored in container maps. Explicitly solving for both a and k grids exponentially increase problem size, and we can not have state and choice grids that are as tight as for the az problem. Note that the defaults set it_w_n to have a far more limited number of points. For each w, we allow for combinations of a and k choices. Before, each aggregate savings choice only had one a associated with it.</p><p>The biggest change from <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_set_default_param.html">ffs_az_set_default_param</a> is that now we have two asset choices. Previous we had the a grid for the cash-on-hand and z (az) model.</p><p>Now a is w. There was only one asset before, so a was total savings. Now w is total savings w = a' + k'. Define choice grid in terms of the total savings, rather than a and k grids separately. If we define a and k with min and max separately, we will have a choice combo max(a) + max(k), this corresponds to one very high level of aggregate savings, but we are implicitly only allowing for dividing a and k evenly when we choose this. Implicitly, the higher the aggregate savings, the more limited the a and k combinations becomes when we define a and k grids separately. Geometrically, With aprime as the x-axis and kprime as the y-axis of choices, we need to define choices in terms of diagnoals (triangles) rather than vertical and horizontal lines (rectangles). See this graphically at the end of this page: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html">ffs_akz_get_funcgrid</a> which shows the triangular choice grids.</p><p>With our triangular shape, with w_n total saving grid points, we will have : w_n*(w_n-1)/2 + w_n total grid of a and k jointly. Specifically, with the benchmark grid of w_n = 45 points, we have (45-1)*45/2 + 45 = 1035 total a and k joint grid points.</p><p>@param it_subset integer default parameter control subsetting. it_subset = 1 is basic invoke quick test. it_subset = 2 is main invoke. it_subset = 3 is profiling invoke. it_subset = 4 is matlab publish.</p><p>@param bl_display_defparam boolean local printing</p><p>@return param_map container parameters needed for solving the model</p><p>@return support_map container programming control parameters like to graph to print etc</p><p>@example</p><pre class="language-matlab">it_param_set = 1; [param_map, support_map] =
 ffs_akz_set_default_param(it_param_set);
 </pre><h2 id="3">Default</h2><pre class="codeinput">it_subset = 0;
-bl_display_defparam = true;
+<span class="keyword">if</span> (isempty(varargin))
+    bl_display_defparam = true;
+<span class="keyword">else</span>
+    bl_display_defparam = false;
+<span class="keyword">end</span>
 default_params = {it_subset bl_display_defparam};
 [default_params{1:length(varargin)}] = varargin{:};
 [it_subset, bl_display_defparam] = default_params{:};
 </pre><h2 id="4">Setting param_map container</h2><pre class="codeinput">param_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
+
+<span class="comment">% model name</span>
+param_map(<span class="string">'st_model'</span>) = <span class="string">'akz_wkz_iwkz'</span>;
 
 <span class="comment">% Preferences</span>
 param_map(<span class="string">'fl_crra'</span>) = 1.5;
@@ -155,6 +162,7 @@ support_map(<span class="string">'st_matimg_path_root'</span>) = st_matimg_path_
 support_map(<span class="string">'bl_time'</span>) = true;
 
 <span class="comment">% Print Controls</span>
+support_map(<span class="string">'bl_display_defparam'</span>) = false;
 support_map(<span class="string">'bl_display'</span>) = true;
 support_map(<span class="string">'bl_display_dist'</span>) = false;
 support_map(<span class="string">'it_display_every'</span>) = 5; <span class="comment">% how often to print results</span>
@@ -174,6 +182,10 @@ support_map(<span class="string">'bl_display_final_dist'</span>) = false; <span 
 support_map(<span class="string">'bl_display_final_dist_detail'</span>) = false;
 support_map(<span class="string">'it_display_final_rowmax'</span>) = 100; <span class="comment">% max row to print (states/iters)</span>
 support_map(<span class="string">'it_display_final_colmax'</span>) = 12; <span class="comment">% max col to print (shocks)</span>
+it_display_summmat_rowmax = 7;
+it_display_summmat_colmax = 7;
+support_map(<span class="string">'it_display_summmat_rowmax'</span>) = it_display_summmat_rowmax;
+support_map(<span class="string">'it_display_summmat_colmax'</span>) = it_display_summmat_colmax;
 
 <span class="comment">% Mat File Controls</span>
 support_map(<span class="string">'bl_mat'</span>) = false;
@@ -221,6 +233,7 @@ support_map(<span class="string">'bl_display_evf'</span>) = false;
         close <span class="string">all</span>;
         <span class="comment">% Main Run</span>
         support_map(<span class="string">'bl_time'</span>) = true;
+        support_map(<span class="string">'bl_display_defparam'</span>) = true;
         support_map(<span class="string">'bl_display'</span>) = true;
         support_map(<span class="string">'it_display_every'</span>) = 5;
 
@@ -263,6 +276,7 @@ support_map(<span class="string">'bl_display_evf'</span>) = false;
         close <span class="string">all</span>;
         <span class="comment">% Main Run</span>
         support_map(<span class="string">'bl_time'</span>) = true;
+        support_map(<span class="string">'bl_display_defparam'</span>) = true;
         support_map(<span class="string">'bl_display'</span>) = false;
         support_map(<span class="string">'bl_display_dist'</span>) = true;
         support_map(<span class="string">'it_display_every'</span>) = 20;
@@ -290,6 +304,7 @@ support_map(<span class="string">'bl_display_evf'</span>) = false;
             <span class="keyword">if</span> (ismember(it_subset, [9]))
                 <span class="comment">% quietly turn off all graphs, only tables</span>
                 support_map(<span class="string">'bl_display_final_dist_detail'</span>) = false;
+                support_map(<span class="string">'bl_display_defparam'</span>) = false;
                 support_map(<span class="string">'bl_graph_coh_t_coh'</span>) = false;
             <span class="keyword">end</span>
         <span class="keyword">end</span>
@@ -304,31 +319,26 @@ support_map(<span class="string">'bl_display_evf'</span>) = false;
     <span class="keyword">end</span>
 <span class="keyword">end</span>
 </pre><h2 id="8">Display</h2><pre class="codeinput"><span class="keyword">if</span> (bl_display_defparam)
-    disp(<span class="string">'param_map'</span>);
-    disp(param_map);
-    param_map_keys = keys(param_map);
-    param_map_vals = values(param_map);
-    <span class="keyword">for</span> i = 1:length(param_map)
-        st_display = strjoin([<span class="string">'pos ='</span> num2str(i) <span class="string">'; key ='</span> string(param_map_keys{i}) <span class="string">'; val ='</span> string(param_map_vals{i})]);
-        disp(st_display);
-    <span class="keyword">end</span>
-
-    disp(<span class="string">'support_map'</span>)
-    disp(support_map);
-    param_map_keys = keys(support_map);
-    param_map_vals = values(support_map);
-    <span class="keyword">for</span> i = 1:length(support_map)
-        st_display = strjoin([<span class="string">'pos ='</span> num2str(i) <span class="string">'; key ='</span> string(param_map_keys{i}) <span class="string">'; val ='</span> string(param_map_vals{i})]);
-        disp(st_display);
-    <span class="keyword">end</span>
+    fft_container_map_display(param_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+    fft_container_map_display(support_map, it_display_summmat_rowmax, it_display_summmat_colmax);
 <span class="keyword">end</span>
-</pre><pre class="codeoutput">param_map
+</pre><pre class="codeoutput">----------------------------------------
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Begin: Show all key and value pairs from container
+CONTAINER NAME: PARAM_MAP
+----------------------------------------
   Map with properties:
 
-        Count: 30
+        Count: 31
       KeyType: char
     ValueType: any
 
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+----------------------------------------
 pos = 1 ; key = bl_default ; val = 0
 pos = 2 ; key = fl_Amean ; val = 1
 pos = 3 ; key = fl_alpha ; val = 0.36
@@ -359,58 +369,176 @@ pos = 27 ; key = it_tol_pol_nochange ; val = 25
 pos = 28 ; key = it_w_n ; val = 50
 pos = 29 ; key = it_z_n ; val = 15
 pos = 30 ; key = st_analytical_stationary_type ; val = eigenvector
-support_map
+pos = 31 ; key = st_model ; val = akz_wkz_iwkz
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Scalars in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                              i     idx     value 
+                              __    ___    _______
+
+    bl_default                 1     1           0
+    fl_Amean                   2     2           1
+    fl_alpha                   3     3        0.36
+    fl_b_bd                    4     4           0
+    fl_beta                    5     5        0.94
+    fl_c_min                   6     6       0.001
+    fl_coh_interp_grid_gap     7     7         0.1
+    fl_crra                    8     8         1.5
+    fl_default_aprime          9     9           0
+    fl_delta                  10    10        0.08
+    fl_k_min                  11    11           0
+    fl_nan_replace            12    12       -9999
+    fl_r_borr                 13    13       0.025
+    fl_r_save                 14    14       0.025
+    fl_tol_dist               15    15       1e-05
+    fl_tol_pol                16    16       1e-05
+    fl_tol_val                17    17       1e-05
+    fl_w                      18    18     0.44365
+    fl_w_max                  19    19          50
+    fl_z_mu                   20    20           0
+    fl_z_rho                  21    21         0.8
+    fl_z_sig                  22    22         0.2
+    it_ak_n                   23    23          50
+    it_c_interp_grid_gap      24    24      0.0001
+    it_maxiter_dist           25    25        1000
+    it_maxiter_val            26    26         250
+    it_tol_pol_nochange       27    27          25
+    it_w_n                    28    28          50
+    it_z_n                    29    29          15
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Strings in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                                     i    idx
+                                     _    ___
+
+    st_analytical_stationary_type    1    30 
+    st_model                         2    31 
+
+----------------------------------------
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Begin: Show all key and value pairs from container
+CONTAINER NAME: SUPPORT_MAP
+----------------------------------------
   Map with properties:
 
-        Count: 38
+        Count: 41
       KeyType: char
     ValueType: any
 
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+----------------------------------------
 pos = 1 ; key = bl_display ; val = true
-pos = 2 ; key = bl_display_dist ; val = false
-pos = 3 ; key = bl_display_evf ; val = false
-pos = 4 ; key = bl_display_final ; val = false
-pos = 5 ; key = bl_display_final_dist ; val = false
-pos = 6 ; key = bl_display_final_dist_detail ; val = false
-pos = 7 ; key = bl_display_funcgrids ; val = false
-pos = 8 ; key = bl_graph ; val = false
-pos = 9 ; key = bl_graph_coh_t_coh ; val = true
-pos = 10 ; key = bl_graph_evf ; val = false
-pos = 11 ; key = bl_graph_funcgrids ; val = false
-pos = 12 ; key = bl_graph_onebyones ; val = true
-pos = 13 ; key = bl_graph_pol_lvl ; val = true
-pos = 14 ; key = bl_graph_pol_pct ; val = true
-pos = 15 ; key = bl_graph_val ; val = true
-pos = 16 ; key = bl_img_save ; val = false
-pos = 17 ; key = bl_mat ; val = false
-pos = 18 ; key = bl_post ; val = false
-pos = 19 ; key = bl_profile ; val = false
-pos = 20 ; key = bl_profile_dist ; val = false
-pos = 21 ; key = bl_time ; val = true
-pos = 22 ; key = it_display_every ; val = 5
-pos = 23 ; key = it_display_final_colmax ; val = 12
-pos = 24 ; key = it_display_final_rowmax ; val = 100
-pos = 25 ; key = st_img_name_main ; val = _default
-pos = 26 ; key = st_img_path ; val = C:/Users/fan/CodeDynaAsset//m_akz//solve/img/
-pos = 27 ; key = st_img_prefix ; val = 
-pos = 28 ; key = st_img_suffix ; val = _p0.png
-pos = 29 ; key = st_mat_name_main ; val = _default
-pos = 30 ; key = st_mat_path ; val = C:/Users/fan/CodeDynaAsset//m_akz//solve/mat/
-pos = 31 ; key = st_mat_prefix ; val = 
-pos = 32 ; key = st_mat_suffix ; val = _p0
-pos = 33 ; key = st_matimg_path_root ; val = C:/Users/fan/CodeDynaAsset//m_akz/
-pos = 34 ; key = st_profile_name_main ; val = _default
-pos = 35 ; key = st_profile_path ; val = C:/Users/fan/CodeDynaAsset//m_akz//solve/profile/
-pos = 36 ; key = st_profile_prefix ; val = 
-pos = 37 ; key = st_profile_suffix ; val = _p0
-pos = 38 ; key = st_title_prefix ; val = 
+pos = 2 ; key = bl_display_defparam ; val = false
+pos = 3 ; key = bl_display_dist ; val = false
+pos = 4 ; key = bl_display_evf ; val = false
+pos = 5 ; key = bl_display_final ; val = false
+pos = 6 ; key = bl_display_final_dist ; val = false
+pos = 7 ; key = bl_display_final_dist_detail ; val = false
+pos = 8 ; key = bl_display_funcgrids ; val = false
+pos = 9 ; key = bl_graph ; val = false
+pos = 10 ; key = bl_graph_coh_t_coh ; val = true
+pos = 11 ; key = bl_graph_evf ; val = false
+pos = 12 ; key = bl_graph_funcgrids ; val = false
+pos = 13 ; key = bl_graph_onebyones ; val = true
+pos = 14 ; key = bl_graph_pol_lvl ; val = true
+pos = 15 ; key = bl_graph_pol_pct ; val = true
+pos = 16 ; key = bl_graph_val ; val = true
+pos = 17 ; key = bl_img_save ; val = false
+pos = 18 ; key = bl_mat ; val = false
+pos = 19 ; key = bl_post ; val = false
+pos = 20 ; key = bl_profile ; val = false
+pos = 21 ; key = bl_profile_dist ; val = false
+pos = 22 ; key = bl_time ; val = true
+pos = 23 ; key = it_display_every ; val = 5
+pos = 24 ; key = it_display_final_colmax ; val = 12
+pos = 25 ; key = it_display_final_rowmax ; val = 100
+pos = 26 ; key = it_display_summmat_colmax ; val = 7
+pos = 27 ; key = it_display_summmat_rowmax ; val = 7
+pos = 28 ; key = st_img_name_main ; val = _default
+pos = 29 ; key = st_img_path ; val = C:/Users/fan/CodeDynaAsset//m_akz//solve/img/
+pos = 30 ; key = st_img_prefix ; val = 
+pos = 31 ; key = st_img_suffix ; val = _p0.png
+pos = 32 ; key = st_mat_name_main ; val = _default
+pos = 33 ; key = st_mat_path ; val = C:/Users/fan/CodeDynaAsset//m_akz//solve/mat/
+pos = 34 ; key = st_mat_prefix ; val = 
+pos = 35 ; key = st_mat_suffix ; val = _p0
+pos = 36 ; key = st_matimg_path_root ; val = C:/Users/fan/CodeDynaAsset//m_akz/
+pos = 37 ; key = st_profile_name_main ; val = _default
+pos = 38 ; key = st_profile_path ; val = C:/Users/fan/CodeDynaAsset//m_akz//solve/profile/
+pos = 39 ; key = st_profile_prefix ; val = 
+pos = 40 ; key = st_profile_suffix ; val = _p0
+pos = 41 ; key = st_title_prefix ; val = 
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Scalars in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                                    i     idx    value
+                                    __    ___    _____
+
+    bl_display                       1     1        1 
+    bl_display_defparam              2     2        0 
+    bl_display_dist                  3     3        0 
+    bl_display_evf                   4     4        0 
+    bl_display_final                 5     5        0 
+    bl_display_final_dist            6     6        0 
+    bl_display_final_dist_detail     7     7        0 
+    bl_display_funcgrids             8     8        0 
+    bl_graph                         9     9        0 
+    bl_graph_coh_t_coh              10    10        1 
+    bl_graph_evf                    11    11        0 
+    bl_graph_funcgrids              12    12        0 
+    bl_graph_onebyones              13    13        1 
+    bl_graph_pol_lvl                14    14        1 
+    bl_graph_pol_pct                15    15        1 
+    bl_graph_val                    16    16        1 
+    bl_img_save                     17    17        0 
+    bl_mat                          18    18        0 
+    bl_post                         19    19        0 
+    bl_profile                      20    20        0 
+    bl_profile_dist                 21    21        0 
+    bl_time                         22    22        1 
+    it_display_every                23    23        5 
+    it_display_final_colmax         24    24       12 
+    it_display_final_rowmax         25    25      100 
+    it_display_summmat_colmax       26    26        7 
+    it_display_summmat_rowmax       27    27        7 
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Strings in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                            i     idx
+                            __    ___
+
+    st_img_name_main         1    28 
+    st_img_path              2    29 
+    st_img_prefix            3    30 
+    st_img_suffix            4    31 
+    st_mat_name_main         5    32 
+    st_mat_path              6    33 
+    st_mat_prefix            7    34 
+    st_mat_suffix            8    35 
+    st_matimg_path_root      9    36 
+    st_profile_name_main    10    37 
+    st_profile_path         11    38 
+    st_profile_prefix       12    39 
+    st_profile_suffix       13    40 
+    st_title_prefix         14    41 
+
 </pre><pre class="codeinput"><span class="keyword">end</span>
 </pre><pre class="codeoutput">
 ans = 
 
   Map with properties:
 
-        Count: 30
+        Count: 31
       KeyType: char
     ValueType: any
 
@@ -477,7 +605,11 @@ function [param_map, support_map] = ffs_akz_set_default_param(varargin)
 %% Default
 
 it_subset = 0;
-bl_display_defparam = true;
+if (isempty(varargin))
+    bl_display_defparam = true;
+else
+    bl_display_defparam = false;
+end
 default_params = {it_subset bl_display_defparam};
 [default_params{1:length(varargin)}] = varargin{:};
 [it_subset, bl_display_defparam] = default_params{:};
@@ -485,6 +617,9 @@ default_params = {it_subset bl_display_defparam};
 %% Setting param_map container
 
 param_map = containers.Map('KeyType','char', 'ValueType','any');
+
+% model name
+param_map('st_model') = 'akz_wkz_iwkz';
 
 % Preferences
 param_map('fl_crra') = 1.5;
@@ -568,6 +703,7 @@ support_map('st_matimg_path_root') = st_matimg_path_root;
 support_map('bl_time') = true;
 
 % Print Controls
+support_map('bl_display_defparam') = false;
 support_map('bl_display') = true;
 support_map('bl_display_dist') = false;
 support_map('it_display_every') = 5; % how often to print results
@@ -587,6 +723,10 @@ support_map('bl_display_final_dist') = false; % print finalized results
 support_map('bl_display_final_dist_detail') = false;
 support_map('it_display_final_rowmax') = 100; % max row to print (states/iters)
 support_map('it_display_final_colmax') = 12; % max col to print (shocks)
+it_display_summmat_rowmax = 7;
+it_display_summmat_colmax = 7;
+support_map('it_display_summmat_rowmax') = it_display_summmat_rowmax;
+support_map('it_display_summmat_colmax') = it_display_summmat_colmax;
 
 % Mat File Controls
 support_map('bl_mat') = false;
@@ -643,6 +783,7 @@ if (ismember(it_subset, [1,2,3,4]))
         close all;
         % Main Run
         support_map('bl_time') = true;
+        support_map('bl_display_defparam') = true;
         support_map('bl_display') = true;
         support_map('it_display_every') = 5;
 
@@ -695,6 +836,7 @@ if (ismember(it_subset, [5,6,7,8,9]))
         close all;
         % Main Run
         support_map('bl_time') = true;
+        support_map('bl_display_defparam') = true;
         support_map('bl_display') = false;
         support_map('bl_display_dist') = true;
         support_map('it_display_every') = 20;
@@ -722,6 +864,7 @@ if (ismember(it_subset, [5,6,7,8,9]))
             if (ismember(it_subset, [9]))
                 % quietly turn off all graphs, only tables
                 support_map('bl_display_final_dist_detail') = false;
+                support_map('bl_display_defparam') = false;
                 support_map('bl_graph_coh_t_coh') = false;
             end
         end
@@ -737,25 +880,9 @@ if (ismember(it_subset, [5,6,7,8,9]))
 end
 
 %% Display
-
 if (bl_display_defparam)
-    disp('param_map');
-    disp(param_map);
-    param_map_keys = keys(param_map);
-    param_map_vals = values(param_map);
-    for i = 1:length(param_map)
-        st_display = strjoin(['pos =' num2str(i) '; key =' string(param_map_keys{i}) '; val =' string(param_map_vals{i})]);
-        disp(st_display);
-    end
-
-    disp('support_map')
-    disp(support_map);
-    param_map_keys = keys(support_map);
-    param_map_vals = values(support_map);
-    for i = 1:length(support_map)
-        st_display = strjoin(['pos =' num2str(i) '; key =' string(param_map_keys{i}) '; val =' string(param_map_vals{i})]);
-        disp(st_display);
-    end
+    fft_container_map_display(param_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+    fft_container_map_display(support_map, it_display_summmat_rowmax, it_display_summmat_colmax);
 end
 
 end
