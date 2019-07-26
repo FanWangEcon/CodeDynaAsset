@@ -3,29 +3,6 @@
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 %
-% Testing the
-% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html
-% ff_az_ds_vecsv> program for solving the savings only dynamic
-% programming problem.
-%
-% defaults in ffs_az_set_default_param.m are:
-%
-% * param_map('fl_z_rho') = 0.8;
-% * param_map('fl_z_sig') = 0.2;
-%
-% here test three levels of persistence:
-%
-% * iid shocks
-% * 0.50 persistence
-% * 0.99 persistence
-%
-% for each shock, thest at these standard deviations of the log normal
-% shock:
-%
-% * 0.05
-% * 0.10
-% * 0.30
-%
 % @seealso
 %
 % * _SPEED_ savings only overall benchmark speed testing: <https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_speed/html/fsi_az_ds_vecsv_speed.html fsi_az_ds_vecsv_speed>

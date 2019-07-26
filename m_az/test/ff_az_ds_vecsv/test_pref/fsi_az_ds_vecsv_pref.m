@@ -3,28 +3,6 @@
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 %
-% Testing the
-% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html
-% ff_az_ds_vecsv> program for solving the savings only dynamic
-% programming problem.
-%
-% defaults in ffs_az_set_default_param.m are:
-%
-% * param_map('fl_beta') = 0.94;
-% * param_map('fl_crra') = 1.5;
-%
-% here test three levels of discount:
-%
-% * 0.87
-% * 0.925
-% * 0.97
-%
-% for each shock, thest at these crra levels
-%
-% * log (1)
-% * 1.5
-% * 2.0
-%
 % @seealso
 %
 % * _SPEED_ savings only overall benchmark speed testing: <https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_speed/html/fsi_az_ds_vecsv_speed.html fsi_az_ds_vecsv_speed>

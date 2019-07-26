@@ -28,7 +28,7 @@
 % Randomly draw 100 sets of parameters based on the min and max grids
 
 % Set which to graph, simulate over which variables
-ar_it_plot_sets = [1,2,3,4,5,6,7];
+ar_it_plot_sets = [1,2,3,4,5,6,7,8,9];
 bl_simu_cross = 'r';
 it_size_type = 2;
 cl_st_param_keys = {'fl_crra','fl_beta','fl_r_save','fl_z_rho','fl_z_sig'};
