@@ -28,7 +28,7 @@ ff_iwkz_vf_vecsv(param_map, support_map);
 
 %% Operational Simulation
 % fast and accurate enough as main simulation parameters
-% see fsi_ikwz_vf_vecsv_coh_interp_grid_gap.m, fsi_ikwz_vf_vecsv_w_n.m, fsi_ikwz_vf_vecsv_z_n.m
+% see fsi_iwkz_vf_vecsv_coh_interp_grid_gap.m, fsi_iwkz_vf_vecsv_w_n.m, fsi_iwkz_vf_vecsv_z_n.m
 
 it_param_set = 4;
 [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
@@ -50,7 +50,7 @@ support_map('bl_profile') = false;
 ff_iwkz_vf_vecsv(param_map, support_map);
 
 %% High Precision Simulation
-% see fsi_ikwz_vf_vecsv_coh_interp_grid_gap.m, fsi_ikwz_vf_vecsv_w_n.m, fsi_ikwz_vf_vecsv_z_n.m
+% see fsi_iwkz_vf_vecsv_coh_interp_grid_gap.m, fsi_iwkz_vf_vecsv_w_n.m, fsi_iwkz_vf_vecsv_z_n.m
 
 it_param_set = 4;
 [param_map, support_map] = ffs_akz_set_default_param(it_param_set);

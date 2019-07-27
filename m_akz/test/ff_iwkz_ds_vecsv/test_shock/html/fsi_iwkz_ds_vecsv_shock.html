@@ -1,0 +1,561 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Test Shock Persistence and Variance (Risky + Safe Asets + Two-Step + Interpolated Distribution)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-26"><meta name="DC.source" content="fsi_iwkz_ds_vecsv_shock.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Test Shock Persistence and Variance (Risky + Safe Asets + Two-Step + Interpolated Distribution)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><p>@include</p><div><ul><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_test_analyze.html">ff_az_test_analyze</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_akz_set_default_param.html">ffs_akz_set_default_param</a></li></ul></div><p>@seealso</p><div><ul><li><i>SPEED</i> risky + safe (two-step interp) overall benchmark speed testing: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_ds_vecsv/test_speed/html/fsi_iwkz_ds_vecsv_speed.html">fsi_iwkz_ds_vecsv_speed</a></li><li><i>PREFERENCE</i> risky + safe (two-step interp) preference testing: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_ds_vecsv/test_pref/html/fsi_iwkz_ds_vecsv_pref.html">fsi_iwkz_ds_vecsv_pref</a></li><li><i>PREFERENCE</i> risky + safe (two-step interp) preference testing <b>cross</b>: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_ds_vecsv/test_pref/html/fsi_iwkz_ds_vecsv_pref_cross.html">fsi_iwkz_ds_vecsv_pref_cross</a></li><li><i>SHOCK</i> risky + safe (two-step interp) shock testing: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_ds_vecsv/test_shock/html/fsi_iwkz_ds_vecsv_shock.html">fsi_iwkz_ds_vecsv_shock</a></li><li><i>SHOCK</i> risky + safe (two-step interp) shock testing <b>cross</b>: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_ds_vecsv/test_shock/html/fsi_iwkz_ds_vecsv_shock_cross.html">fsi_iwkz_ds_vecsv_shock_cross</a></li><li><i>CAPITAL</i> risky + safe (two-step interp) capital return testing: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_ds_vecsv/test_prod/html/fsi_iwkz_ds_vecsv_prod.html">fsi_iwkz_ds_vecsv_prod</a></li><li><i>CAPITAL</i> risky + safe (two-step interp) capital return testing <b>cross</b>:  <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_ds_vecsv/test_prod/html/fsi_iwkz_ds_vecsv_prod_cross.html">fsi_iwkz_ds_vecsv_prod_cross</a></li><li><i>PRICE</i> risky + safe (two-step interp) wage and interest rate testing <b>cross</b>: adjust wage and savings rate <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_ds_vecsv/test_price/html/fsi_iwkz_ds_vecsv_price_cross.html">fsi_iwkz_ds_vecsv_price_cross</a></li><li><i>JOINT</i> all parameters random draws joint test <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_ds_vecsv/test_joint/html/fsi_iwkz_ds_vecsv_joint_rand.html">fsi_iwkz_ds_vecsv_joint_rand</a></li></ul></div><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Set Shared Parameters</a></li><li><a href="#2">Simulate Model with schok persistence = 0.0, IID</a></li><li><a href="#3">Simulate Model with schok persistence = 0.5</a></li><li><a href="#4">Simulate Model with schok persistence = 0.99 (very persistent)</a></li></ul></div><h2 id="1">Set Shared Parameters</h2><pre class="codeinput">close <span class="string">all</span>;
+clear <span class="string">all</span>;
+
+ar_fl_z_rho = [0.0, 0.50, 0.99];
+ar_fl_z_sig = [0.05, 0.10, 0.3];
+it_a_n = 750;
+it_z_n = 15;
+</pre><h2 id="2">Simulate Model with schok persistence = 0.0, IID</h2><pre class="codeinput"><span class="keyword">for</span> fl_z_sig = ar_fl_z_sig
+
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp([<span class="string">'fl_z_rho = '</span> num2str(ar_fl_z_rho(1))]);
+    disp([<span class="string">'fl_z_sig = '</span> num2str(fl_z_sig)]);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp(<span class="string">''</span>);
+    disp(<span class="string">''</span>);
+    disp(<span class="string">''</span>);
+    disp(<span class="string">''</span>);
+
+    <span class="comment">% Call Default Parameters &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_akz_set_default_param.html ffs_akz_set_default_param&gt;</span>
+    bl_input_override = true;
+    it_param_set = 9;
+    [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
+
+    <span class="comment">% Simulation Accuracy</span>
+    param_map(<span class="string">'it_a_n'</span>) = it_a_n;
+    param_map(<span class="string">'it_z_n'</span>) = it_z_n;
+    param_map(<span class="string">'fl_z_rho'</span>) = ar_fl_z_rho(1);
+    param_map(<span class="string">'fl_z_sig'</span>) = fl_z_sig;
+
+    <span class="comment">% Display Parameters</span>
+    support_map(<span class="string">'bl_display'</span>) = false;
+    support_map(<span class="string">'bl_display_final'</span>) = false;
+    support_map(<span class="string">'bl_time'</span>) = true;
+    support_map(<span class="string">'bl_profile'</span>) = false;
+    support_map(<span class="string">'bl_graph_coh_t_coh'</span>) = true;
+
+    <span class="comment">% Call Grid Generator &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_akz_get_funcgrid.html ffs_akz_get_funcgrid&gt;</span>
+    [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override);
+
+    <span class="comment">% Call Dynamic Programming Problem &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_iwkz_vf_vecsv.html ff_iwkz_vf_vecsv&gt;</span>
+    result_map = ff_iwkz_vf_vecsv(param_map, support_map, armt_map, func_map);
+
+    <span class="comment">% Call Distribution CProgram</span>
+    result_map = ff_iwkz_ds_vec(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+
+    <span class="comment">% Snap</span>
+    snapnow;
+
+<span class="keyword">end</span>
+
+<span class="comment">% close all</span>
+close <span class="string">all</span>;
+</pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+fl_z_rho = 0
+fl_z_sig = 0.05
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 0.773795 seconds.
+Elapsed time is 0.381073 seconds.
+                      mean           sd        coefofvar      min        max       pYis0      pYls0      pYgr0       pYisMINY    pYisMAXY     p0_1        p1         p5       p10       p15       p20       p25       p35       p50       p65       p75       p80       p85       p90       p95       p99      p99_9     fl_cov_cl_mt_coh    fl_cor_cl_mt_coh    fl_cov_cl_mt_pol_a    fl_cor_cl_mt_pol_a    fl_cov_cl_mt_pol_k    fl_cor_cl_mt_pol_k    fl_cov_cl_mt_pol_c    fl_cor_cl_mt_pol_c    fracByP0_1     fracByP1     fracByP5    fracByP10    fracByP15    fracByP20    fracByP25    fracByP35    fracByP50    fracByP65    fracByP75    fracByP80    fracByP85    fracByP90    fracByP95    fracByP99    fracByP99_9
+                   __________    __________    _________    ________    ______    ________    _____    __________    ________    ________    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ________________    ________________    __________________    __________________    __________________    __________________    __________________    __________________    __________    __________    ________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    ___________
+
+    cl_mt_coh           6.659       0.90191      0.13544     0.44365    53.307           0      0               1    0.011364       0        0.44365    0.44365     4.757    5.8604    6.7632    6.8635    6.8635    6.8635    6.9639    6.9639    6.9639    6.9639    6.9639    7.0642    7.0642    7.1645    7.2648          0.81343                   1           4.6141e-40            4.4808e-20               0.68666               0.99115               0.12677               0.80948        0.00075709    0.00075709    0.041469    0.074547      0.14103      0.45792      0.45792      0.45792      0.86667      0.86667      0.86667      0.86667      0.86667      0.97443      0.97443      0.99743          1     
+    cl_mt_pol_a    1.1118e-40    1.1418e-20    1.027e+20           0    40.816           1      0      1.0083e-40           1       0              0          0         0         0         0         0         0         0         0         0         0         0         0         0         0         0         0       4.6141e-40          4.4808e-20           1.3036e-40                     1            2.5421e-40            2.8985e-20            7.6839e-41            3.8757e-20                 0             0           0           0            0            0            0            0            0            0            0            0            0            0            0            0          0     
+    cl_mt_pol_k        4.8563       0.76814      0.15817           0    7.1429    0.011364      0         0.98864    0.011364       0              0          0    3.0612    4.0816     5.102     5.102     5.102     5.102     5.102     5.102     5.102     5.102     5.102     5.102     5.102     5.102     5.102          0.68666             0.99115           2.5421e-40            2.8985e-20               0.59004                     1              0.096621               0.72439                 0             0    0.048883     0.07276            1            1            1            1            1            1            1            1            1            1            1            1          1     
+    cl_mt_pol_c        1.8027       0.17364     0.096326    0.025105    5.6665           0      0               1           0       0        0.44365    0.44365    1.6612    1.6958    1.7615    1.7615    1.7615    1.7615    1.8618    1.8618    1.8618    1.8618    1.8618    1.9621    1.9621    2.0624    2.1627          0.12677             0.80948           7.6839e-41            3.8757e-20              0.096621               0.72439              0.030152                     1         0.0027967     0.0027967    0.075637      0.1167      0.41712      0.41712      0.41712      0.41712      0.85221      0.85221      0.85221      0.85221      0.85221      0.97187      0.97187      0.99708          1     
+
+</pre><img vspace="5" hspace="5" src="fsi_iwkz_ds_vecsv_shock_01.png" alt=""> <img vspace="5" hspace="5" src="fsi_iwkz_ds_vecsv_shock_02.png" alt=""> <pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+fl_z_rho = 0
+fl_z_sig = 0.1
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 1.035032 seconds.
+Elapsed time is 1.144152 seconds.
+                      mean            sd        coefofvar       min        max       pYis0      pYls0       pYgr0       pYisMINY    pYisMAXY     p0_1        p1         p5       p10       p15       p20       p25       p35       p50       p65       p75       p80       p85       p90       p95       p99      p99_9     fl_cov_cl_mt_coh    fl_cor_cl_mt_coh    fl_cov_cl_mt_pol_a    fl_cor_cl_mt_pol_a    fl_cov_cl_mt_pol_k    fl_cor_cl_mt_pol_k    fl_cov_cl_mt_pol_c    fl_cor_cl_mt_pol_c    fracByP0_1    fracByP1     fracByP5    fracByP10    fracByP15    fracByP20    fracByP25    fracByP35    fracByP50    fracByP65    fracByP75    fracByP80    fracByP85    fracByP90    fracByP95    fracByP99    fracByP99_9
+                   ___________    __________    __________    ________    ______    ________    _____    ___________    ________    ________    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ________________    ________________    __________________    __________________    __________________    __________________    __________________    __________________    __________    _________    ________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    ___________
+
+    cl_mt_coh           5.7999         0.599       0.10328     0.44365    53.722           0      0                1    0.011278       0        0.44365    0.44365    5.5608    5.6612    5.6612    5.7615    5.7615    5.7615    5.8618    5.9622    5.9622    5.9622    5.9622    6.0625    6.1628    6.2632    6.4639           0.3588                   1           1.691e-121            1.4415e-60               0.25054               0.96129               0.10826               0.83331        0.0008627     0.0008627    0.066758     0.13904      0.13904      0.40632      0.40632      0.40632      0.57523      0.85182      0.85182      0.85182      0.85182      0.92923        0.971      0.98981       0.99981  
+    cl_mt_pol_a    3.7584e-122    1.9584e-61    5.2105e+60           0    41.837           1      0      3.6833e-122           1       0              0          0         0         0         0         0         0         0         0         0         0         0         0         0         0         0         0       1.691e-121          1.4415e-60          3.8351e-122                     1           1.1692e-121            1.3721e-60           1.3832e-122            3.2565e-61                0             0           0           0            0            0            0            0            0            0            0            0            0            0            0            0             0  
+    cl_mt_pol_k         4.0321       0.43511       0.10791           0    7.1429    0.011278      0          0.98872    0.011278       0              0          0    4.0816    4.0816    4.0816    4.0816    4.0816    4.0816    4.0816    4.0816    4.0816    4.0816    4.0816    4.0816    4.0816    4.0816    4.0816          0.25054             0.96129          1.1692e-121            1.3721e-60               0.18932                     1              0.061219               0.64872                0             0      0.9998      0.9998       0.9998       0.9998       0.9998       0.9998       0.9998       0.9998       0.9998       0.9998       0.9998       0.9998       0.9998       0.9998        0.9998  
+    cl_mt_pol_c         1.7677       0.21688       0.12269    0.025261      5.68           0      0                1           0       0        0.44365    0.44365    1.4792    1.5795    1.5795    1.6799    1.6799    1.6799    1.7802    1.8805    1.8805    1.8805    1.8805    1.9809    2.0812    2.1815    2.3822          0.10826             0.83331          1.3832e-122            3.2565e-61              0.061219               0.64872              0.047039                     1        0.0028305     0.0028305    0.057474     0.12401      0.12401       0.3806       0.3806       0.3806      0.54952       0.8368       0.8368       0.8368       0.8368      0.92009      0.96663      0.98813       0.99999  
+
+</pre><img vspace="5" hspace="5" src="fsi_iwkz_ds_vecsv_shock_03.png" alt=""> <img vspace="5" hspace="5" src="fsi_iwkz_ds_vecsv_shock_04.png" alt=""> <pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+fl_z_rho = 0
+fl_z_sig = 0.3
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 0.738699 seconds.
+Elapsed time is 0.431346 seconds.
+                     mean        sd       coefofvar      min        max       pYis0      pYls0      pYgr0      pYisMINY     pYisMAXY       p0_1        p1         p5       p10       p15       p20       p25       p35       p50       p65       p75       p80       p85       p90       p95       p99      p99_9     fl_cov_cl_mt_coh    fl_cor_cl_mt_coh    fl_cov_cl_mt_pol_a    fl_cor_cl_mt_pol_a    fl_cov_cl_mt_pol_k    fl_cor_cl_mt_pol_k    fl_cov_cl_mt_pol_c    fl_cor_cl_mt_pol_c    fracByP0_1     fracByP1     fracByP5    fracByP10    fracByP15    fracByP20    fracByP25    fracByP35    fracByP50    fracByP65    fracByP75    fracByP80    fracByP85    fracByP90    fracByP95    fracByP99    fracByP99_9
+                   ________    _______    _________    ________    ______    ________    _____    _________    ________    ___________    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ________________    ________________    __________________    __________________    __________________    __________________    __________________    __________________    __________    __________    ________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    ___________
+
+    cl_mt_coh        6.4859     1.4638     0.22569      0.44365    56.558           0      0              1    0.010695              0    0.44365    0.44365    4.3516    4.6522    5.1533    5.4539    5.5541    5.9549    6.4559    7.0571    7.3578    7.6584     7.959    8.1594    8.7606    9.8629    11.266          2.1427                  1              0.046689               0.2572                 1.7235               0.9682                0.37255               0.6599          0.00073157    0.00073157    0.030151    0.063269      0.10938       0.1672      0.20772      0.30701      0.41846      0.61648      0.68702      0.77388      0.81159       0.8654      0.93474      0.98422       0.99835  
+    cl_mt_pol_a    0.010629    0.12401      11.667            0    42.857      0.9915      0      0.0084997      0.9915    1.4929e-191          0          0         0         0         0         0         0         0         0         0         0         0         0         0         0         0    2.0408        0.046689             0.2572              0.015378                    1               0.026088              0.17299              0.0052229               0.1092                   0             0           0           0            0            0            0            0            0            0            0            0            0            0            0            0       0.91839  
+    cl_mt_pol_k      4.6884     1.2161     0.25938            0    7.1429    0.010695      0         0.9893    0.010695     5.8589e-59          0          0    3.0612    3.0612    3.0612    4.0816    4.0816    4.0816     5.102     5.102     5.102    6.1224    6.1224    6.1224    6.1224    7.1429    7.1429          1.7235             0.9682              0.026088              0.17299                 1.4788                    1                0.21858              0.46604                   0             0     0.09753     0.09753      0.09753      0.36327      0.36327      0.36327      0.69874      0.69874      0.69874      0.93269      0.93269      0.93269      0.93269            1             1  
+    cl_mt_pol_c      1.7869    0.38568     0.21584     0.024467    6.5581           0      0              1           0              0    0.44365    0.44365    1.1902    1.3539    1.3722    1.4724    1.4908    1.5543    1.7547    1.9551    2.0737    2.1739    2.2557    2.2741    2.3559    2.6382    2.8202         0.37255             0.6599             0.0052229               0.1092                0.21858              0.46604                0.14875                    1           0.0026554     0.0026554    0.030947    0.079453      0.10715      0.16594      0.18446      0.27286      0.41572      0.60964      0.68589      0.78092      0.85577      0.88646      0.94222      0.99248       0.99951  
+
+</pre><img vspace="5" hspace="5" src="fsi_iwkz_ds_vecsv_shock_05.png" alt=""> <img vspace="5" hspace="5" src="fsi_iwkz_ds_vecsv_shock_06.png" alt=""> <h2 id="3">Simulate Model with schok persistence = 0.5</h2><pre class="codeinput">close <span class="string">all</span>
+
+<span class="keyword">for</span> fl_z_sig = ar_fl_z_sig
+
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp([<span class="string">'fl_z_rho = '</span> num2str(ar_fl_z_rho(2))]);
+    disp([<span class="string">'fl_z_sig = '</span> num2str(fl_z_sig)]);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp(<span class="string">''</span>);
+    disp(<span class="string">''</span>);
+    disp(<span class="string">''</span>);
+    disp(<span class="string">''</span>);
+
+    <span class="comment">% Call Default Parameters &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_akz_set_default_param.html ffs_akz_set_default_param&gt;</span>
+    bl_input_override = true;
+    it_param_set = 9;
+    [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
+
+    <span class="comment">% Simulation Accuracy</span>
+    param_map(<span class="string">'it_a_n'</span>) = it_a_n;
+    param_map(<span class="string">'it_z_n'</span>) = it_z_n;
+    param_map(<span class="string">'fl_z_rho'</span>) = ar_fl_z_rho(2);
+    param_map(<span class="string">'fl_z_sig'</span>) = fl_z_sig;
+
+    <span class="comment">% Display Parameters</span>
+    support_map(<span class="string">'bl_display'</span>) = false;
+    support_map(<span class="string">'bl_display_final'</span>) = false;
+    support_map(<span class="string">'bl_time'</span>) = true;
+    support_map(<span class="string">'bl_profile'</span>) = false;
+    support_map(<span class="string">'bl_graph_coh_t_coh'</span>) = true;
+
+    <span class="comment">% Call Grid Generator &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_akz_get_funcgrid.html ffs_akz_get_funcgrid&gt;</span>
+    [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override);
+
+    <span class="comment">% Call Dynamic Programming Problem &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_iwkz_vf_vecsv.html ff_iwkz_vf_vecsv&gt;</span>
+    result_map = ff_iwkz_vf_vecsv(param_map, support_map, armt_map, func_map);
+
+    <span class="comment">% Call Distribution CProgram</span>
+    result_map = ff_iwkz_ds_vec(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+
+    <span class="comment">% Snap</span>
+    snapnow;
+
+<span class="keyword">end</span>
+
+<span class="comment">% close all</span>
+close <span class="string">all</span>;
+</pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+fl_z_rho = 0.5
+fl_z_sig = 0.05
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 0.896022 seconds.
+Elapsed time is 0.376277 seconds.
+                      mean           sd        coefofvar       min        max       pYis0      pYls0      pYgr0       pYisMINY    pYisMAXY     p0_1        p1         p5       p10       p15       p20       p25       p35       p50       p65       p75       p80      p85      p90      p95       p99      p99_9     fl_cov_cl_mt_coh    fl_cor_cl_mt_coh    fl_cov_cl_mt_pol_a    fl_cor_cl_mt_pol_a    fl_cov_cl_mt_pol_k    fl_cor_cl_mt_pol_k    fl_cov_cl_mt_pol_c    fl_cor_cl_mt_pol_c    fracByP0_1     fracByP1     fracByP5    fracByP10    fracByP15    fracByP20    fracByP25    fracByP35    fracByP50    fracByP65    fracByP75    fracByP80    fracByP85    fracByP90    fracByP95    fracByP99    fracByP99_9
+                   __________    __________    __________    ________    ______    ________    _____    __________    ________    ________    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______    ______    _____    _____    _____    ______    ______    ______    ________________    ________________    __________________    __________________    __________________    __________________    __________________    __________________    __________    __________    ________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    ___________
+
+    cl_mt_coh          6.6628       0.90416        0.1357     0.44365    53.367           0      0               1    0.011342       0        0.44365    0.44365    4.7537    5.8562    6.7583    6.7583    6.8586    6.8586    6.9588    6.9588    6.9588    7.059    7.059    7.059    7.1593    7.1593    7.2595           0.8175                   1           5.2869e-19            1.5124e-09               0.68496              0.98797                0.13254               0.77742        0.00075523    0.00075523    0.041304    0.074378      0.20849      0.20849      0.45641      0.45641      0.75513      0.75513      0.75513      0.93601      0.93601      0.93601      0.99093      0.99093       0.99986  
+    cl_mt_pol_a    1.4649e-19    3.8663e-10    2.6393e+09           0    41.837           1      0      1.4356e-19           1       0              0          0         0         0         0         0         0         0         0         0         0        0        0        0         0         0         0       5.2869e-19          1.5124e-09           1.4948e-19                     1            3.2879e-19            1.109e-09             5.0428e-20            6.9174e-10                 0             0           0           0            0            0            0            0            0            0            0            0            0            0            0            0             0  
+    cl_mt_pol_k        4.8571        0.7668       0.15787           0    8.1633    0.011342      0         0.98866    0.011342       0              0          0    3.0612    4.0816     5.102     5.102     5.102     5.102     5.102     5.102     5.102    5.102    5.102    5.102     5.102     5.102     5.102          0.68496             0.98797           3.2879e-19             1.109e-09               0.58798                    1               0.096983               0.67078                 0             0    0.048836    0.072664      0.99987      0.99987      0.99987      0.99987      0.99987      0.99987      0.99987      0.99987      0.99987      0.99987      0.99987      0.99987       0.99987  
+    cl_mt_pol_c        1.8057       0.18855       0.10442    0.024639    5.6261           0      0               1           0       0        0.44365    0.44365    1.6563    1.6563    1.6563    1.6924    1.7565    1.7565    1.8568    1.8568    1.8568    1.957    1.957    1.957    2.0572    2.0572    2.1575          0.13254             0.77742           5.0428e-20            6.9174e-10              0.096983              0.67078               0.035552                     1         0.0027867     0.0027867      0.1371      0.1371       0.1371      0.17694      0.41123      0.41123      0.73358      0.73358      0.73358       0.9296       0.9296       0.9296      0.98987      0.98987       0.99997  
+
+</pre><img vspace="5" hspace="5" src="fsi_iwkz_ds_vecsv_shock_07.png" alt=""> <img vspace="5" hspace="5" src="fsi_iwkz_ds_vecsv_shock_08.png" alt=""> <pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+fl_z_rho = 0.5
+fl_z_sig = 0.1
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 1.022709 seconds.
+Elapsed time is 1.136250 seconds.
+                      mean           sd        coefofvar       min        max       pYis0      pYls0      pYgr0      pYisMINY     pYisMAXY      p0_1        p1         p5       p10       p15       p20       p25       p35       p50       p65       p75       p80       p85       p90       p95       p99      p99_9     fl_cov_cl_mt_coh    fl_cor_cl_mt_coh    fl_cov_cl_mt_pol_a    fl_cor_cl_mt_pol_a    fl_cov_cl_mt_pol_k    fl_cor_cl_mt_pol_k    fl_cov_cl_mt_pol_c    fl_cor_cl_mt_pol_c    fracByP0_1     fracByP1     fracByP5    fracByP10    fracByP15    fracByP20    fracByP25    fracByP35    fracByP50    fracByP65    fracByP75    fracByP80    fracByP85    fracByP90    fracByP95    fracByP99    fracByP99_9
+                   __________    __________    __________    ________    ______    ________    _____    _________    ________    __________    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ________________    ________________    __________________    __________________    __________________    __________________    __________________    __________________    __________    __________    ________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    ___________
+
+    cl_mt_coh           5.805       0.61427       0.10582     0.44365    53.869           0      0              1    0.011236             0    0.44365    0.44365    5.5557    5.6559    5.6559    5.6559    5.6559    5.7561    5.8564    5.9566    6.0568    6.0568    6.0568    6.1571    6.2573    6.3575     6.558          0.37732                   1           3.2729e-44            4.8252e-22               0.25122               0.93885               0.12611               0.80746        0.00085871    0.00085871    0.067693     0.25308      0.25308      0.25308      0.25308      0.40401      0.57203      0.72822      0.84947      0.84947      0.84947      0.92806      0.97059      0.98978          1     
+    cl_mt_pol_a    1.1949e-44    1.1042e-22    9.2409e+21           0    43.878           1      0      1.171e-44           1             0          0          0         0         0         0         0         0         0         0         0         0         0         0         0         0         0         0       3.2729e-44          4.8252e-22           1.2193e-44                     1            1.2802e-44            2.6614e-22            7.7342e-45            2.7548e-22                 0             0           0           0            0            0            0            0            0            0            0            0            0            0            0            0          0     
+    cl_mt_pol_k        4.0307       0.43561       0.10807           0    9.1837    0.011236      0        0.98876    0.011236    3.2657e-66          0          0    4.0816    4.0816    4.0816    4.0816    4.0816    4.0816    4.0816    4.0816    4.0816    4.0816    4.0816    4.0816    4.0816    4.0816    4.0816          0.25122             0.93885           1.2802e-44            2.6614e-22               0.18975                     1              0.061463               0.55496                 0             0           1           1            1            1            1            1            1            1            1            1            1            1            1            1          1     
+    cl_mt_pol_c        1.7743       0.25425        0.1433    0.024652    5.7095           0      0              1           0             0    0.44365    0.44365     1.474    1.5743    1.5743    1.5743    1.5743    1.6745    1.7747     1.875    1.9752    1.9752    1.9752    2.0754    2.1757    2.2759    2.4764          0.12611             0.80746           7.7342e-45            2.7548e-22              0.061463               0.55496              0.064644                     1         0.0028094     0.0028094    0.056353     0.22549      0.22549      0.22549      0.22549      0.37038      0.53778      0.70001      0.82976      0.82976      0.82976      0.91665      0.96512      0.98761          1     
+
+</pre><img vspace="5" hspace="5" src="fsi_iwkz_ds_vecsv_shock_09.png" alt=""> <img vspace="5" hspace="5" src="fsi_iwkz_ds_vecsv_shock_10.png" alt=""> <pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+fl_z_rho = 0.5
+fl_z_sig = 0.3
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 1.009475 seconds.
+Elapsed time is 0.571452 seconds.
+                    mean        sd       coefofvar      min        max       pYis0      pYls0     pYgr0      pYisMINY     pYisMAXY      p0_1        p1         p5       p10       p15       p20       p25       p35       p50       p65       p75       p80       p85       p90       p95       p99      p99_9     fl_cov_cl_mt_coh    fl_cor_cl_mt_coh    fl_cov_cl_mt_pol_a    fl_cor_cl_mt_pol_a    fl_cov_cl_mt_pol_k    fl_cor_cl_mt_pol_k    fl_cov_cl_mt_pol_c    fl_cor_cl_mt_pol_c    fracByP0_1    fracByP1     fracByP5    fracByP10    fracByP15    fracByP20    fracByP25    fracByP35    fracByP50    fracByP65    fracByP75    fracByP80    fracByP85    fracByP90    fracByP95    fracByP99    fracByP99_9
+                   _______    _______    _________    ________    ______    ________    _____    ________    ________    __________    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ________________    ________________    __________________    __________________    __________________    __________________    __________________    __________________    __________    _________    ________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    ___________
+
+    cl_mt_coh       6.3686     2.3088     0.36252      0.44365    57.597           0      0             1    0.010508             0    0.44365    0.44365    3.7525    4.1536    4.3542    4.4544     4.655    5.1563    5.8582    6.8609    7.6631    8.1644    8.6658    9.4679    10.571    13.378    17.389         5.3304                   1               0.80919              0.52563                3.6872               0.94053                  0.834              0.77422           0.000732      0.000732    0.025193    0.066093     0.098462      0.13627      0.17652      0.25805      0.36592      0.52029      0.62899      0.70679       0.7584      0.82809       0.9054      0.97698       0.99713  
+    cl_mt_pol_a    0.15967     0.6668      4.1761            0    46.939     0.91804      0      0.081964     0.91804             0          0          0         0         0         0         0         0         0         0         0         0         0         0         0    1.0204    3.0612    7.1429        0.80919             0.52563               0.44462                    1               0.27608               0.24384               0.088492              0.28444                  0             0           0           0            0            0            0            0            0            0            0            0            0            0      0.27563      0.70593       0.94915  
+    cl_mt_pol_k     4.4238      1.698     0.38384            0    15.306    0.010508      0       0.98949    0.010508    8.3369e-17          0          0    2.0408    3.0612    3.0612    3.0612    3.0612    3.0612    4.0816     5.102     5.102    6.1224    6.1224    7.1429    7.1429    9.1837    11.224         3.6872             0.94053               0.27608              0.24384                2.8833                     1                0.52781              0.66621                  0             0    0.025096     0.24541      0.24541      0.24541      0.24541      0.24541      0.45205      0.62491      0.62491      0.81586      0.81586      0.92191      0.92191      0.98434       0.99778  
+    cl_mt_pol_c     1.7851    0.46658     0.26137     0.024858    7.5974           0      0             1           0             0    0.44365    0.44365    1.0924    1.2752    1.2929    1.3932    1.4581    1.5938    1.7589    1.9771    2.0951    2.1777    2.2779    2.3605    2.5433     2.909    3.1861          0.834             0.77422              0.088492              0.28444               0.52781               0.66621                0.21769                    1          0.0026115     0.0026115    0.041754    0.067199     0.099656      0.16146      0.17803      0.29263      0.40121      0.57215      0.67138      0.75845       0.7887      0.87498      0.93495      0.98609       0.99815  
+
+</pre><img vspace="5" hspace="5" src="fsi_iwkz_ds_vecsv_shock_11.png" alt=""> <img vspace="5" hspace="5" src="fsi_iwkz_ds_vecsv_shock_12.png" alt=""> <h2 id="4">Simulate Model with schok persistence = 0.99 (very persistent)</h2><pre class="codeinput">close <span class="string">all</span>
+
+<span class="keyword">for</span> fl_z_sig = ar_fl_z_sig
+
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp([<span class="string">'fl_z_rho = '</span> num2str(ar_fl_z_rho(3))]);
+    disp([<span class="string">'fl_z_sig = '</span> num2str(fl_z_sig)]);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
+    disp(<span class="string">''</span>);
+    disp(<span class="string">''</span>);
+    disp(<span class="string">''</span>);
+    disp(<span class="string">''</span>);
+
+    <span class="comment">% Call Default Parameters &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_akz_set_default_param.html ffs_akz_set_default_param&gt;</span>
+    bl_input_override = true;
+    it_param_set = 9;
+    [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
+
+    <span class="comment">% Simulation Accuracy</span>
+    param_map(<span class="string">'it_a_n'</span>) = it_a_n;
+    param_map(<span class="string">'it_z_n'</span>) = it_z_n;
+    param_map(<span class="string">'fl_z_rho'</span>) = ar_fl_z_rho(3);
+    param_map(<span class="string">'fl_z_sig'</span>) = fl_z_sig;
+
+    <span class="comment">% Display Parameters</span>
+    support_map(<span class="string">'bl_display'</span>) = false;
+    support_map(<span class="string">'bl_display_final'</span>) = false;
+    support_map(<span class="string">'bl_time'</span>) = true;
+    support_map(<span class="string">'bl_profile'</span>) = false;
+    support_map(<span class="string">'bl_graph_coh_t_coh'</span>) = true;
+
+    <span class="comment">% Call Grid Generator &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_akz_get_funcgrid.html ffs_akz_get_funcgrid&gt;</span>
+    [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override);
+
+    <span class="comment">% Call Dynamic Programming Problem &lt;https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_iwkz_vf_vecsv.html ff_iwkz_vf_vecsv&gt;</span>
+    result_map = ff_iwkz_vf_vecsv(param_map, support_map, armt_map, func_map);
+
+    <span class="comment">% Call Distribution CProgram</span>
+    result_map = ff_iwkz_ds_vec(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+
+    <span class="comment">% Snap</span>
+    snapnow;
+
+<span class="keyword">end</span>
+
+<span class="comment">% close all</span>
+close <span class="string">all</span>;
+clear <span class="string">all</span>;
+</pre><pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+fl_z_rho = 0.99
+fl_z_sig = 0.05
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 0.886738 seconds.
+Elapsed time is 1.402931 seconds.
+                     mean        sd       coefofvar      min        max       pYis0      pYls0     pYgr0      pYisMINY    pYisMAXY     p0_1        p1         p5        p10       p15       p20       p25       p35       p50       p65       p75       p80       p85       p90       p95       p99      p99_9     fl_cov_cl_mt_coh    fl_cor_cl_mt_coh    fl_cov_cl_mt_pol_a    fl_cor_cl_mt_pol_a    fl_cov_cl_mt_pol_k    fl_cor_cl_mt_pol_k    fl_cov_cl_mt_pol_c    fl_cor_cl_mt_pol_c    fracByP0_1     fracByP1     fracByP5    fracByP10    fracByP15    fracByP20    fracByP25    fracByP35    fracByP50    fracByP65    fracByP75    fracByP80    fracByP85    fracByP90    fracByP95    fracByP99    fracByP99_9
+                   ________    _______    _________    ________    ______    ________    _____    ________    ________    ________    _______    _______    ______    _______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ________________    ________________    __________________    __________________    __________________    __________________    __________________    __________________    __________    __________    ________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    ___________
+
+    cl_mt_coh        6.1914      3.952      0.6383      0.44365    57.552           0      0             1    0.010625       0        0.44365    0.44365    1.8463     2.0467    2.8482    3.9503    4.1507    4.4512    5.1526    5.9541    8.1583    8.4588    9.2604    11.064    13.969    22.786     24.89          15.618                   1            -0.097134              -0.11816                12.022               0.99485                3.6933               0.95505         0.00076131    0.00076131    0.016718    0.030438     0.048845      0.07346      0.12662      0.20775      0.29226      0.43517      0.58242      0.62873      0.69928      0.76234      0.85155      0.96138             1  
+    cl_mt_pol_a    0.044224    0.20802      4.7037            0     48.98      0.9567      0      0.043302      0.9567       0              0          0         0          0         0         0         0         0         0         0         0         0         0         0         0    1.0204    1.0204       -0.097134            -0.11816             0.043271                     1              -0.10204              -0.16043             -0.038363              -0.18847                  0             0           0           0            0            0            0            0            0            0            0            0            0            0            0      0.90964       0.99692  
+    cl_mt_pol_k      4.3042     3.0578     0.71041            0    30.612    0.010625      0       0.98938    0.010625       0              0          0    1.0204     1.0204    1.0204    2.0408    3.0612    3.0612    3.0612    4.0816    6.1224    6.1224    6.1224    8.1633    10.204    17.347    18.367          12.022             0.99485             -0.10204              -0.16043                  9.35                     1                2.7741               0.92715                  0             0      0.0333      0.0333       0.0333     0.069946      0.26624      0.26624      0.26624      0.47032      0.68099      0.68099      0.68099      0.80248      0.84756      0.95959             1  
+    cl_mt_pol_c       1.843    0.97852     0.53094     0.024379    9.9118           0      0             1           0       0        0.44365    0.44365    0.8259    0.92609    1.0263    1.0894    1.1896    1.3715    1.5904    1.8725     2.173    2.3996    2.7371    3.1379    3.9024    5.4205    6.5226          3.6933             0.95505            -0.038363              -0.18847                2.7741               0.92715               0.95751                     1          0.0025576     0.0025576    0.029607     0.04858      0.07942      0.10984      0.16292      0.22575      0.32117      0.46751      0.57636      0.63942      0.72118      0.79936      0.88913      0.97739             1  
+
+</pre><img vspace="5" hspace="5" src="fsi_iwkz_ds_vecsv_shock_13.png" alt=""> <img vspace="5" hspace="5" src="fsi_iwkz_ds_vecsv_shock_14.png" alt=""> <pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+fl_z_rho = 0.99
+fl_z_sig = 0.1
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 0.871286 seconds.
+Elapsed time is 1.361217 seconds.
+                    mean        sd      coefofvar      min        max       pYis0     pYls0     pYgr0      pYisMINY     pYisMAXY     p0_1        p1         p5         p10        p15        p20        p25        p35       p50       p65       p75       p80       p85       p90       p95       p99      p99_9     fl_cov_cl_mt_coh    fl_cor_cl_mt_coh    fl_cov_cl_mt_pol_a    fl_cor_cl_mt_pol_a    fl_cov_cl_mt_pol_k    fl_cor_cl_mt_pol_k    fl_cov_cl_mt_pol_c    fl_cor_cl_mt_pol_c    fracByP0_1    fracByP1     fracByP5    fracByP10    fracByP15    fracByP20    fracByP25    fracByP35    fracByP50    fracByP65    fracByP75    fracByP80    fracByP85    fracByP90    fracByP95    fracByP99    fracByP99_9
+                   _______    ______    _________    ________    ______    _______    _____    ________    _________    ________    _______    _______    _______    _______    _______    _______    _______    _______    ______    ______    ______    ______    ______    ______    ______    ______    ______    ________________    ________________    __________________    __________________    __________________    __________________    __________________    __________________    __________    _________    ________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    ___________
+
+    cl_mt_coh       8.1299    12.094     1.4875       0.44365    70.503          0      0             1    0.0093333    0.005933    0.44365     1.4459     1.5462     1.5462     1.6464     1.7466     1.7466     2.0473      3.25    5.3548    8.5621    10.567    14.175     20.89    34.722    64.189    70.503         146.25                   1               5.3201                0.2985                108.39               0.99154                32.545               0.97573          0.00050932     0.002007    0.021144    0.021144     0.037083     0.054383     0.054383     0.084058      0.12653      0.20003      0.28972      0.35172      0.41289      0.54616       0.6843      0.94161             1  
+    cl_mt_pol_a    0.27696    1.4738     5.3212             0        50    0.91067      0      0.089327      0.91067           0          0          0          0          0          0          0          0          0         0         0         0         0         0         0    1.0204    8.1633    18.367         5.3201              0.2985                2.172                     1                2.4477               0.18374               0.70041               0.17231                   0            0           0           0            0            0            0            0            0            0            0            0            0            0      0.16284      0.55721       0.93586  
+    cl_mt_pol_k     5.6745     9.039     1.5929             0        50    0.01702      0       0.98298      0.01702    0.010837          0          0     1.0204     1.0204     1.0204     1.0204     1.0204     1.0204    2.0408    3.0612    6.1224    7.1429    10.204    15.306     25.51        50        50         108.39             0.99154               2.4477               0.18374                81.704                     1                24.238               0.97223                   0            0    0.073599    0.073599     0.073599     0.073599     0.073599     0.073599       0.1377      0.16263      0.27117      0.32911      0.40595      0.53306      0.69553            1             1  
+    cl_mt_pol_c     2.1784    2.7581     1.2661      0.024609    20.503          0      0             1            0           0    0.42552    0.44365    0.52575    0.52575    0.62598    0.72621    0.72621    0.92666    1.2092    1.7381    2.4397    2.8225    3.6701    5.0744    7.3082    14.189    20.503         32.545             0.97573              0.70041               0.17231                24.238               0.97223                7.6069                     1           0.0016449    0.0035458    0.027832    0.027832     0.050923     0.077872     0.077872      0.13088      0.18504       0.2914      0.37742      0.42124      0.50045      0.59129      0.72923       0.9315             1  
+
+</pre><img vspace="5" hspace="5" src="fsi_iwkz_ds_vecsv_shock_15.png" alt=""> <img vspace="5" hspace="5" src="fsi_iwkz_ds_vecsv_shock_16.png" alt=""> <pre class="codeoutput">xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+fl_z_rho = 0.99
+fl_z_sig = 0.3
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxx
+Elapsed time is 1.157192 seconds.
+Elapsed time is 8.704028 seconds.
+                    mean        sd      coefofvar      min        max       pYis0     pYls0     pYgr0     pYisMINY    pYisMAXY      p0_1        p1         p5         p10        p15        p20        p25        p35        p50        p65        p75        p80        p85        p90       p95       p99      p99_9     fl_cov_cl_mt_coh    fl_cor_cl_mt_coh    fl_cov_cl_mt_pol_a    fl_cor_cl_mt_pol_a    fl_cov_cl_mt_pol_k    fl_cor_cl_mt_pol_k    fl_cov_cl_mt_pol_c    fl_cor_cl_mt_pol_c    fracByP0_1    fracByP1    fracByP5    fracByP10    fracByP15    fracByP20    fracByP25    fracByP35    fracByP50    fracByP65    fracByP75    fracByP80    fracByP85    fracByP90    fracByP95    fracByP99    fracByP99_9
+                   _______    ______    _________    ________    ______    _______    _____    _______    ________    _________    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    _______    ______    ______    ______    ________________    ________________    __________________    __________________    __________________    __________________    __________________    __________________    __________    ________    ________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    _________    ___________
+
+    cl_mt_coh       3.5572    15.189     4.2701       0.44365    197.35          0      0            1    0.79571     0.0024634    0.44365    0.44365    0.44365    0.44365    0.44365    0.44365    0.44365    0.44365    0.44365    0.44365    0.44365     1.4442     1.5442     2.5448     12.05    70.781    197.35         230.72                   1               20.908                0.36144               93.663               0.90242                116.15                0.89663          0.099239     0.099239    0.099239    0.099239     0.099239     0.099239     0.099239     0.099239     0.099239     0.099239     0.099239      0.11693      0.12642      0.15696      0.22336      0.70756             1  
+    cl_mt_pol_a    0.81319    3.8084     4.6833             0        50    0.87004      0      0.12996    0.87004             0          0          0          0          0          0          0          0          0          0          0          0          0          0     1.0204    4.0816     25.51    37.755         20.908             0.36144               14.504                      1               4.9791               0.19134                1.4254               0.043886                 0            0           0           0            0            0            0            0            0            0            0            0            0     0.057256      0.15009      0.74532       0.95153  
+    cl_mt_pol_k     1.3128     6.833     5.2048             0        50    0.88401      0      0.11599    0.88401      0.015431          0          0          0          0          0          0          0          0          0          0          0          0          0     1.0204    2.0408        50        50         93.663             0.90242               4.9791                0.19134               46.691                     1                41.993                0.72061                 0            0           0           0            0            0            0            0            0            0            0            0            0     0.037828     0.063544            1             1  
+    cl_mt_pol_c     1.4312    8.5283     5.9589      0.023556    147.35          0      0            1          0     0.0024634    0.42377    0.42377    0.44365    0.44365    0.44365    0.44365    0.44365    0.44365    0.44365    0.44365    0.44365    0.44365    0.50394    0.56423    1.9855    20.781    147.35         116.15             0.89663               1.4254               0.043886               41.993               0.72061                72.732                      1          0.012784     0.012784     0.25944     0.25944      0.25944      0.25944      0.25944      0.25944      0.25944      0.25944      0.25944      0.25944      0.26832      0.28187      0.31965      0.53994             1  
+
+</pre><img vspace="5" hspace="5" src="fsi_iwkz_ds_vecsv_shock_17.png" alt=""> <img vspace="5" hspace="5" src="fsi_iwkz_ds_vecsv_shock_18.png" alt=""> <p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Test Shock Persistence and Variance (Risky + Safe Asets + Two-Step + Interpolated Distribution)
+% *back to <https://fanwangecon.github.io Fan>'s
+% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
+% Table of Content.*
+%
+% @include
+%
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_test_analyze.html ff_az_test_analyze>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_akz_set_default_param.html ffs_akz_set_default_param>
+%
+% @seealso
+%
+% * _SPEED_ risky + safe (two-step interp) overall benchmark speed testing: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_ds_vecsv/test_speed/html/fsi_iwkz_ds_vecsv_speed.html fsi_iwkz_ds_vecsv_speed>
+% * _PREFERENCE_ risky + safe (two-step interp) preference testing: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_ds_vecsv/test_pref/html/fsi_iwkz_ds_vecsv_pref.html fsi_iwkz_ds_vecsv_pref>
+% * _PREFERENCE_ risky + safe (two-step interp) preference testing *cross*:
+% <https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_ds_vecsv/test_pref/html/fsi_iwkz_ds_vecsv_pref_cross.html fsi_iwkz_ds_vecsv_pref_cross>
+% * _SHOCK_ risky + safe (two-step interp) shock testing: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_ds_vecsv/test_shock/html/fsi_iwkz_ds_vecsv_shock.html fsi_iwkz_ds_vecsv_shock>
+% * _SHOCK_ risky + safe (two-step interp) shock testing *cross*:
+% <https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_ds_vecsv/test_shock/html/fsi_iwkz_ds_vecsv_shock_cross.html fsi_iwkz_ds_vecsv_shock_cross>
+% * _CAPITAL_ risky + safe (two-step interp) capital return testing: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_ds_vecsv/test_prod/html/fsi_iwkz_ds_vecsv_prod.html fsi_iwkz_ds_vecsv_prod>
+% * _CAPITAL_ risky + safe (two-step interp) capital return testing *cross*:  <https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_ds_vecsv/test_prod/html/fsi_iwkz_ds_vecsv_prod_cross.html fsi_iwkz_ds_vecsv_prod_cross>
+% * _PRICE_ risky + safe (two-step interp) wage and interest rate testing *cross*: adjust wage and savings rate
+% <https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_ds_vecsv/test_price/html/fsi_iwkz_ds_vecsv_price_cross.html fsi_iwkz_ds_vecsv_price_cross>
+% * _JOINT_ all parameters random draws joint test
+% <https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_ds_vecsv/test_joint/html/fsi_iwkz_ds_vecsv_joint_rand.html fsi_iwkz_ds_vecsv_joint_rand>
+%
+
+%% Set Shared Parameters
+
+close all;
+clear all;
+
+ar_fl_z_rho = [0.0, 0.50, 0.99];
+ar_fl_z_sig = [0.05, 0.10, 0.3];
+it_a_n = 750;
+it_z_n = 15;
+
+%% Simulate Model with schok persistence = 0.0, IID
+
+for fl_z_sig = ar_fl_z_sig
+
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp(['fl_z_rho = ' num2str(ar_fl_z_rho(1))]);
+    disp(['fl_z_sig = ' num2str(fl_z_sig)]);
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('');
+    disp('');
+    disp('');
+    disp('');
+
+    % Call Default Parameters <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_akz_set_default_param.html ffs_akz_set_default_param>
+    bl_input_override = true;
+    it_param_set = 9;
+    [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
+
+    % Simulation Accuracy
+    param_map('it_a_n') = it_a_n;
+    param_map('it_z_n') = it_z_n;
+    param_map('fl_z_rho') = ar_fl_z_rho(1);
+    param_map('fl_z_sig') = fl_z_sig;
+
+    % Display Parameters
+    support_map('bl_display') = false;
+    support_map('bl_display_final') = false;
+    support_map('bl_time') = true;
+    support_map('bl_profile') = false;
+    support_map('bl_graph_coh_t_coh') = true;
+
+    % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_akz_get_funcgrid.html ffs_akz_get_funcgrid>
+    [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override);
+
+    % Call Dynamic Programming Problem <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_iwkz_vf_vecsv.html ff_iwkz_vf_vecsv>
+    result_map = ff_iwkz_vf_vecsv(param_map, support_map, armt_map, func_map);
+
+    % Call Distribution CProgram
+    result_map = ff_iwkz_ds_vec(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+
+    % Snap
+    snapnow;
+
+end
+
+% close all
+close all;
+
+%% Simulate Model with schok persistence = 0.5
+
+close all
+
+for fl_z_sig = ar_fl_z_sig
+
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp(['fl_z_rho = ' num2str(ar_fl_z_rho(2))]);
+    disp(['fl_z_sig = ' num2str(fl_z_sig)]);
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('');
+    disp('');
+    disp('');
+    disp('');
+
+    % Call Default Parameters <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_akz_set_default_param.html ffs_akz_set_default_param>
+    bl_input_override = true;
+    it_param_set = 9;
+    [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
+
+    % Simulation Accuracy
+    param_map('it_a_n') = it_a_n;
+    param_map('it_z_n') = it_z_n;
+    param_map('fl_z_rho') = ar_fl_z_rho(2);
+    param_map('fl_z_sig') = fl_z_sig;
+
+    % Display Parameters
+    support_map('bl_display') = false;
+    support_map('bl_display_final') = false;
+    support_map('bl_time') = true;
+    support_map('bl_profile') = false;
+    support_map('bl_graph_coh_t_coh') = true;
+
+    % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_akz_get_funcgrid.html ffs_akz_get_funcgrid>
+    [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override);
+
+    % Call Dynamic Programming Problem <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_iwkz_vf_vecsv.html ff_iwkz_vf_vecsv>
+    result_map = ff_iwkz_vf_vecsv(param_map, support_map, armt_map, func_map);
+
+    % Call Distribution CProgram
+    result_map = ff_iwkz_ds_vec(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+
+    % Snap
+    snapnow;
+
+end
+
+% close all
+close all;
+
+%% Simulate Model with schok persistence = 0.99 (very persistent)
+
+close all
+
+for fl_z_sig = ar_fl_z_sig
+
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp(['fl_z_rho = ' num2str(ar_fl_z_rho(3))]);
+    disp(['fl_z_sig = ' num2str(fl_z_sig)]);
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('xxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    disp('');
+    disp('');
+    disp('');
+    disp('');
+
+    % Call Default Parameters <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_akz_set_default_param.html ffs_akz_set_default_param>
+    bl_input_override = true;
+    it_param_set = 9;
+    [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
+
+    % Simulation Accuracy
+    param_map('it_a_n') = it_a_n;
+    param_map('it_z_n') = it_z_n;
+    param_map('fl_z_rho') = ar_fl_z_rho(3);
+    param_map('fl_z_sig') = fl_z_sig;
+
+    % Display Parameters
+    support_map('bl_display') = false;
+    support_map('bl_display_final') = false;
+    support_map('bl_time') = true;
+    support_map('bl_profile') = false;
+    support_map('bl_graph_coh_t_coh') = true;
+
+    % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_akz_get_funcgrid.html ffs_akz_get_funcgrid>
+    [armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override);
+
+    % Call Dynamic Programming Problem <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_iwkz_vf_vecsv.html ff_iwkz_vf_vecsv>
+    result_map = ff_iwkz_vf_vecsv(param_map, support_map, armt_map, func_map);
+
+    % Call Distribution CProgram
+    result_map = ff_iwkz_ds_vec(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+
+    % Snap
+    snapnow;
+
+end
+
+% close all
+close all;
+clear all;
+
+##### SOURCE END #####
+--></body></html>
