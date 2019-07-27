@@ -9,7 +9,7 @@
 % @include
 %
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_test_analyze.html ff_az_test_analyze>
-% * <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_akz_set_default_param.html ffs_akz_set_default_param>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html ffs_akz_set_default_param>
 %
 % @seealso
 %

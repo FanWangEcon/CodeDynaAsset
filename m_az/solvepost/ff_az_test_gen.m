@@ -163,7 +163,7 @@ param_desc_map(ls_st_param_key{15}) = {'Inc/Prod Shock Persistence'};
 param_desc_map(ls_st_param_key{16}) = {'Inc/Prod Shock SD'};
 
 param_desc_map(ls_st_param_key{17}) = {'Prod Func Elasticity'};
-param_desc_map(ls_st_param_key{18}) = {'Prod Func Discount'};
+param_desc_map(ls_st_param_key{18}) = {'Prod Func Depreciation'};
 
 %% Default
 

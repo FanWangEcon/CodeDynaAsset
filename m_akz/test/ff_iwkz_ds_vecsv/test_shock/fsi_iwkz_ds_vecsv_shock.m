@@ -6,7 +6,7 @@
 % @include
 %
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_test_analyze.html ff_az_test_analyze>
-% * <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_akz_set_default_param.html ffs_akz_set_default_param>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html ffs_akz_set_default_param>
 %
 % @seealso
 %
@@ -50,7 +50,7 @@ for fl_z_sig = ar_fl_z_sig
     disp('');
     disp('');
 
-    % Call Default Parameters <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_akz_set_default_param.html ffs_akz_set_default_param>
+    % Call Default Parameters <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html ffs_akz_set_default_param>
     bl_input_override = true;
     it_param_set = 9;
     [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
@@ -102,7 +102,7 @@ for fl_z_sig = ar_fl_z_sig
     disp('');
     disp('');
 
-    % Call Default Parameters <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_akz_set_default_param.html ffs_akz_set_default_param>
+    % Call Default Parameters <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html ffs_akz_set_default_param>
     bl_input_override = true;
     it_param_set = 9;
     [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
@@ -154,7 +154,7 @@ for fl_z_sig = ar_fl_z_sig
     disp('');
     disp('');
 
-    % Call Default Parameters <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_akz_set_default_param.html ffs_akz_set_default_param>
+    % Call Default Parameters <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html ffs_akz_set_default_param>
     bl_input_override = true;
     it_param_set = 9;
     [param_map, support_map] = ffs_akz_set_default_param(it_param_set);
