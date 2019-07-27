@@ -108,7 +108,7 @@ ff_ipwkz_evf(mt_val, param_map, support_map, armt_map, bl_input_override);
 % Not default parameters, but parameters that generate defaults
 it_param_set = 4;
 bl_input_override = true;
-[param_map, support_map] = ffs_akz_set_default_param(it_param_set);
+[param_map, support_map] = ffs_ipwkz_set_default_param(it_param_set);
 support_map('bl_graph_evf') = bl_graph_evf;
 support_map('bl_display_evf') = bl_display_evf;
 
@@ -130,7 +130,7 @@ param_map('fl_w') = fl_w;
 param_map('fl_z_rho') = fl_z_rho;
 param_map('fl_z_sig') = fl_z_sig;
 
-[armt_map, func_map] = ffs_akz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
+[armt_map, func_map] = ffs_ipwkz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
 
 % Generating Defaults
 params_group = values(armt_map, {'ar_a_meshk', 'ar_k_mesha', 'ar_z'});

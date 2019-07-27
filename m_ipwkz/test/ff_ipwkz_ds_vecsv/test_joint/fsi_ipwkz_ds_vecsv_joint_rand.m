@@ -7,23 +7,23 @@
 % @include
 %
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_test_analyze.html ff_az_test_analyze>
-% * <https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_set_default_param.html ffs_akz_set_default_param>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/paramfunc/html/ffs_ipwkz_set_default_param.html ffs_ipwkz_set_default_param>
 %
 % @seealso
 %
-% * _SPEED_ risky + safe (two-step interp) overall benchmark speed testing: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_ds_vecsv/test_speed/html/fsi_iwkz_ds_vecsv_speed.html fsi_iwkz_ds_vecsv_speed>
-% * _PREFERENCE_ risky + safe (two-step interp) preference testing: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_ds_vecsv/test_pref/html/fsi_iwkz_ds_vecsv_pref.html fsi_iwkz_ds_vecsv_pref>
+% * _SPEED_ risky + safe (two-step interp) overall benchmark speed testing: <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_speed/html/fsi_ipwkz_ds_vecsv_speed.html fsi_ipwkz_ds_vecsv_speed>
+% * _PREFERENCE_ risky + safe (two-step interp) preference testing: <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_pref/html/fsi_ipwkz_ds_vecsv_pref.html fsi_ipwkz_ds_vecsv_pref>
 % * _PREFERENCE_ risky + safe (two-step interp) preference testing *cross*:
-% <https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_ds_vecsv/test_pref/html/fsi_iwkz_ds_vecsv_pref_cross.html fsi_iwkz_ds_vecsv_pref_cross>
-% * _SHOCK_ risky + safe (two-step interp) shock testing: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_ds_vecsv/test_shock/html/fsi_iwkz_ds_vecsv_shock.html fsi_iwkz_ds_vecsv_shock>
+% <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_pref/html/fsi_ipwkz_ds_vecsv_pref_cross.html fsi_ipwkz_ds_vecsv_pref_cross>
+% * _SHOCK_ risky + safe (two-step interp) shock testing: <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_shock/html/fsi_ipwkz_ds_vecsv_shock.html fsi_ipwkz_ds_vecsv_shock>
 % * _SHOCK_ risky + safe (two-step interp) shock testing *cross*:
-% <https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_ds_vecsv/test_shock/html/fsi_iwkz_ds_vecsv_shock_cross.html fsi_iwkz_ds_vecsv_shock_cross>
-% * _CAPITAL_ risky + safe (two-step interp) capital return testing: <https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_ds_vecsv/test_prod/html/fsi_iwkz_ds_vecsv_prod.html fsi_iwkz_ds_vecsv_prod>
-% * _CAPITAL_ risky + safe (two-step interp) capital return testing *cross*:  <https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_ds_vecsv/test_prod/html/fsi_iwkz_ds_vecsv_prod_cross.html fsi_iwkz_ds_vecsv_prod_cross>
+% <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_shock/html/fsi_ipwkz_ds_vecsv_shock_cross.html fsi_ipwkz_ds_vecsv_shock_cross>
+% * _CAPITAL_ risky + safe (two-step interp) capital return testing: <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_prod/html/fsi_ipwkz_ds_vecsv_prod.html fsi_ipwkz_ds_vecsv_prod>
+% * _CAPITAL_ risky + safe (two-step interp) capital return testing *cross*:  <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_prod/html/fsi_ipwkz_ds_vecsv_prod_cross.html fsi_ipwkz_ds_vecsv_prod_cross>
 % * _PRICE_ risky + safe (two-step interp) wage and interest rate testing *cross*: adjust wage and savings rate
-% <https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_ds_vecsv/test_price/html/fsi_iwkz_ds_vecsv_price_cross.html fsi_iwkz_ds_vecsv_price_cross>
+% <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_price/html/fsi_ipwkz_ds_vecsv_price_cross.html fsi_ipwkz_ds_vecsv_price_cross>
 % * _JOINT_ all parameters random draws joint test
-% <https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_ds_vecsv/test_joint/html/fsi_iwkz_ds_vecsv_joint_rand.html fsi_iwkz_ds_vecsv_joint_rand>
+% <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_joint/html/fsi_ipwkz_ds_vecsv_joint_rand.html fsi_ipwkz_ds_vecsv_joint_rand>
 %
 
 %% Simulate and Graph
@@ -36,7 +36,7 @@ cl_st_param_keys = {'fl_crra','fl_beta','fl_r_save','fl_z_rho','fl_z_sig'};
 
 % Generate Benchmark Parameters
 it_param_set = 9;
-[param_map, support_map] = ffs_akz_set_default_param(it_param_set);
+[param_map, support_map] = ffs_ipwkz_set_default_param(it_param_set);
 
 param_map('it_st_simu_type_g_seed') = 123;
 param_map('it_st_simu_type_g_simun') = 200;

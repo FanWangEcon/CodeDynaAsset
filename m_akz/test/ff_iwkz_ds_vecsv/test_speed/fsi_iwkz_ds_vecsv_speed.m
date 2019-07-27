@@ -82,3 +82,5 @@ if (bl_profile)
     st_file_name = [st_profile_prefix st_profile_name_main st_profile_suffix];
     profsave(profile('info'), strcat(st_profile_path, st_file_name));
 end
+
+close all
