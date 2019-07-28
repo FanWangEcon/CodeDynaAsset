@@ -1,8 +1,12 @@
-%% Test Preference (Risky + Safe Asets + Two-Step + Interpolated Distribution), Test over Discount and Risk-Aversion Arrays (cross)
+%% Test Preference (Risky + Safe Asets + Two-Step + Interpolated + Percentage Distribution), Test over Discount and Risk-Aversion Arrays (cross)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.* *cross test*: given (x,y), vary x along X, y along Y,
 % one at a time
+%
+% Compare against
+% <https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_ds_vecsv/test_pref/html/fsi_iwkz_ds_vecsv_pref_cross.html
+% fsi_iwkz_ds_vecsv_pref_cross> from *iwkz*. Here, we use *ipwkz*.
 %
 % @include
 %
@@ -58,6 +62,8 @@ ff_az_test_analyze( ...
     ar_it_plot_sets, bl_simu_cross, it_size_type, cl_st_param_keys, ...
     param_map, support_map, param_tstar_map);
 
+close all
+
 %% Larger Grid Simulation
 it_size_type = 3;
 
@@ -65,5 +71,5 @@ it_size_type = 3;
 ff_az_test_analyze( ...
     ar_it_plot_sets, bl_simu_cross, it_size_type, cl_st_param_keys, ...
     param_map, support_map, param_tstar_map);
-    
+
 close all

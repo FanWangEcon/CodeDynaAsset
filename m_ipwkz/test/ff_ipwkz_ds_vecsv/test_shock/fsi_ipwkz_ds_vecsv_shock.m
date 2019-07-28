@@ -1,7 +1,11 @@
-%% Test Shock Persistence and Variance (Risky + Safe Asets + Two-Step + Interpolated Distribution)
+%% Test Shock Persistence and Variance (Risky + Safe Asets + Two-Step + Interpolated + Percentage Distribution)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
+%
+% Compare against
+% <https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_ds_vecsv/test_shock/html/fsi_iwkz_ds_vecsv_shock.html
+% fsi_iwkz_ds_vecsv_shock> from *iwkz*. Here, we use *ipwkz*.
 %
 % @include
 %
@@ -75,7 +79,7 @@ for fl_z_sig = ar_fl_z_sig
     result_map = ff_ipwkz_vf_vecsv(param_map, support_map, armt_map, func_map);
 
     % Call Distribution CProgram
-    result_map = ff_ipwkz_ds_vec(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    result_map = ff_iwkz_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
 
     % Snap
     snapnow;
@@ -127,7 +131,7 @@ for fl_z_sig = ar_fl_z_sig
     result_map = ff_ipwkz_vf_vecsv(param_map, support_map, armt_map, func_map);
 
     % Call Distribution CProgram
-    result_map = ff_ipwkz_ds_vec(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    result_map = ff_iwkz_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
 
     % Snap
     snapnow;
@@ -179,7 +183,7 @@ for fl_z_sig = ar_fl_z_sig
     result_map = ff_ipwkz_vf_vecsv(param_map, support_map, armt_map, func_map);
 
     % Call Distribution CProgram
-    result_map = ff_ipwkz_ds_vec(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    result_map = ff_iwkz_ds_vecsv(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
 
     % Snap
     snapnow;

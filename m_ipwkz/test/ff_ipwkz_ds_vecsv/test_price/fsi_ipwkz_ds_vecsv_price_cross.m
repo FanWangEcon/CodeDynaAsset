@@ -1,10 +1,14 @@
-%% Test Wage and Savings Rate (Risky + Safe Asets + Two-Step + Interpolated Distribution)
+%% Test Wage and Savings Rate (Risky + Safe Asets + Two-Step + Interpolated + Percentage Distribution)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
 %
 % wage refers to a multiple of minimum income. exogenous wage, unrelated to
 % production function.
+%
+% Compare against
+% <https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_ds_vecsv/test_price/html/fsi_iwkz_ds_vecsv_price_cross.html
+% fsi_iwkz_ds_vecsv_price_cross> from *iwkz*. Here, we use *ipwkz*.
 %
 % @include
 %
@@ -57,6 +61,8 @@ ff_az_test_analyze( ...
     ar_it_plot_sets, bl_simu_cross, it_size_type, cl_st_param_keys, ...
     param_map, support_map, param_tstar_map);
 
+close all;
+
 %% Larger Grid Simulation
 it_size_type = 3;
 
@@ -65,4 +71,4 @@ ff_az_test_analyze( ...
     ar_it_plot_sets, bl_simu_cross, it_size_type, cl_st_param_keys, ...
     param_map, support_map, param_tstar_map);
 
-close all
+close all;

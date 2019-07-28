@@ -15,8 +15,7 @@ function [result_map] = ff_ipwkz_ds_wrapper(varargin)
 % # it_subset = 8 is matlab publish
 % # it_subset = 9 is invoke operational (only final stats) and coh graph
 
-it_param_set = 7;
-bl_input_override = true;
+it_param_set = 8;
 [param_map, support_map] = ffs_ipwkz_set_default_param(it_param_set);
 
 % parameters can be set inside ffs_ipwkz_set_default_param or updated here
@@ -38,7 +37,7 @@ bl_input_override = true;
 param_map('st_analytical_stationary_type') = 'eigenvector';
 
 % get armt and func map
-[armt_map, func_map] = ffs_ipwkz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
+[armt_map, func_map] = ffs_ipwkz_get_funcgrid(param_map, support_map); % 1 for override
 default_params = {param_map support_map armt_map func_map};
 
 %% Parse Parameters 1
@@ -51,8 +50,7 @@ support_map = [support_map; default_params{2}];
 if params_len >= 1 && params_len <= 2
     % If override param_map, re-generate armt and func if they are not
     % provided
-    bl_input_override = true;
-    [armt_map, func_map] = ffs_ipwkz_get_funcgrid(param_map, support_map, bl_input_override);
+    [armt_map, func_map] = ffs_ipwkz_get_funcgrid(param_map, support_map);
 else
     % Override all
     armt_map = [armt_map; default_params{3}];

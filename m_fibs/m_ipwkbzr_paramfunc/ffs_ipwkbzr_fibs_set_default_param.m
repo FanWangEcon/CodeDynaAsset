@@ -6,6 +6,11 @@
 %%
 function [param_map, support_map] = ffs_ipwkbzr_fibs_set_default_param(varargin)
 %% FFS_IPWKBZ_FIBS_SET_DEFAULT_PARAM setting model default parameters
+%
+% @include
+%
+% *<https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/paramfunc/html/ffs_ipwkz_set_default_param.html ffs_ipwkz_set_default_param>
+%
 
 %% Default
 
@@ -29,10 +34,18 @@ param_map('st_model') = 'ipwkbzr_fibs';
 % v(coh, z) interpolation method
 param_map('st_v_coh_z_interp_method') = 'method_cell';
 
-%% 2a. Set Borrowing Control Parameters
+%% 2a. Borrowing Default Parameters
+
+param_map('fl_b_bd') = -20;
+param_map('fl_c_min') = 0.02;
+param_map('fl_default_wprime') = 0; % wprime not a prime
+param_map('bl_default') = true; % if borrowing is default allowed
+
+%% 2b. Set Borrowing Control Parameters
 % Borrowing Setting 1: Default Allowed, Bridge True, bl_rollover does not matter
 % Borrowing Setting 2: Default Allowed, Bridge False, bl_rollover matter
 param_map('bl_default') = true; % if borrowing is default allowed
+param_map('fl_default_wprime') = 0; % wprime not a prime
 param_map('bl_bridge') = true;
 param_map('bl_rollover') = true;
 param_map('bl_b_is_principle') = true;
@@ -100,24 +113,25 @@ support_map('st_matimg_path_root') = st_matimg_path_root;
 support_map('st_profile_path') = [st_matimg_path_root '/m_ipwkbzr_solve/profile/'];
 support_map('st_mat_path') = [st_matimg_path_root '/m_ipwkbzr_solve/mat/'];
 support_map('st_img_path') = [st_matimg_path_root '/m_ipwkbzr_solve/img/'];
+support_map('st_mat_test_path') = [st_matimg_path_root '/test/ff_ipwkbzr_ds_vecsv/mat/'];
 
 %% Display New Parameters
 
 if (bl_display_defparam)
-    
+
     disp('----------------------------------------');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('Display Parameters Specific to IPWKBZR_FIBS')
     disp('it_coh_bridge_perc_n ADDED ON NEXT')
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    
+
     fft_container_map_display(param_map);
     fft_container_map_display(support_map);
 end
 
 %% 3. Merge Parameters Import
 
-[param_map_ipwkbzr_fibs, support_map_ipwkbzr_fibs] = ffs_ipwkbz_set_default_param(it_subset);
+[param_map_ipwkbzr_fibs, support_map_ipwkbzr_fibs] = ffs_ipwkz_set_default_param(it_subset);
 
 % Remove Keys not Relevant for the Interest Rate Shock Model
 cl_st_ipwkbzr_keysdrop = {'fl_z_rho', 'fl_z_mu', 'fl_z_sig', ...
@@ -144,13 +158,13 @@ if (ismember(it_subset, [3]))
 elseif (ismember(it_subset, [1,2,4]))
     % Main Run
     if (ismember(it_subset, [1]))
-        
+
         param_map('it_z_wage_n') = 5;
         param_map('fl_z_r_infbr_n') = 3;
         param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_infbr_n');
-        
+
         param_map('it_coh_bridge_perc_n') = param_map('it_w_perc_n');
-        
+
         support_map('bl_graph') = true;
     end
     if (ismember(it_subset, [4]))
@@ -164,13 +178,13 @@ if (ismember(it_subset, [7]))
 elseif (ismember(it_subset, [5,6,8,9]))
     % Main Run
     if (it_subset == 5)
-        
+
         param_map('it_z_wage_n') = 5;
         param_map('fl_z_r_infbr_n') = 3;
         param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_infbr_n');
-        
+
         param_map('it_coh_bridge_perc_n') = param_map('it_w_perc_n');
-        
+
         support_map('bl_graph') = true;
     end
     if (ismember(it_subset, [8, 9]))
@@ -183,12 +197,12 @@ end
 %% Display All Parameters
 
 if (bl_display_defparam)
-    
+
     disp('----------------------------------------');
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     disp('Display All Parameters with IPWKBZR overriding IPWKBZR')
     disp('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-    
+
     fft_container_map_display(param_map);
     fft_container_map_display(support_map);
 end

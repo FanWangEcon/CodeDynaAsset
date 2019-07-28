@@ -5,7 +5,7 @@
 1. consumption when borrowing not calculated correctly when households default.
 -->
 
-This is a work-in-progress (*updated: 2019-07-20*) [website](https://fanwangecon.github.io/CodeDynaAsset/) for solving several infinite-horizon exogenously-incomplete dynamic assets models in discrete-time. Section **(1)** solves the [savings problem](https://fanwangecon.github.io/CodeDynaAsset/#1-the-savings-problem-az). Section **(2)** solves the [borrowing and savings problem](https://fanwangecon.github.io/CodeDynaAsset/#2-the-savings--borrowing-problem-abz). Section **(3)** solve the [risky and safe asset problem (risky entrepreneur)](https://fanwangecon.github.io/CodeDynaAsset/#3-the-risky--safe-asset-problem-part-1). Section **(4)** solves the same problem as (3) with [percentage choice grids and interpolation](https://fanwangecon.github.io/CodeDynaAsset/#4-the-risky--safe-asset-problem-part-2). Section **(5) and (6)** is an application/extension of the earlier models: models from (1) through (4) are augmented following [*A Choice Amongst Many: Household Borrowing in a Setting with Multiple Providers*](https://fanwangecon.github.io/CodeDynaAsset/#5-one-asset-formal--informal) ([**Robert M. Townsend**](http://www.robertmtownsend.net/) and [**Fan Wang**](https://fanwangecon.github.io/) 2019).
+This is a work-in-progress (*updated: 2019-07-27*) [website](https://fanwangecon.github.io/CodeDynaAsset/) for solving several infinite-horizon exogenously-incomplete dynamic assets models in discrete-time. Section **(1)** solves the [savings problem](https://fanwangecon.github.io/CodeDynaAsset/#1-the-savings-problem-az). Section **(2)** solves the [borrowing and savings problem](https://fanwangecon.github.io/CodeDynaAsset/#2-the-savings--borrowing-problem-abz). Section **(3)** solve the [risky and safe asset problem (risky entrepreneur)](https://fanwangecon.github.io/CodeDynaAsset/#3-the-risky--safe-asset-problem-part-1). Section **(4)** solves the same problem as (3) with [percentage choice grids and interpolation](https://fanwangecon.github.io/CodeDynaAsset/#4-the-risky--safe-asset-problem-part-2). Section **(5) and (6)** is an application/extension of the earlier models: models from (1) through (4) are augmented following [*A Choice Amongst Many: Household Borrowing in a Setting with Multiple Providers*](https://fanwangecon.github.io/CodeDynaAsset/#5-one-asset-formal--informal) ([**Robert M. Townsend**](http://www.robertmtownsend.net/) and [**Fan Wang**](https://fanwangecon.github.io/) 2019).
 
 Key elements for solution algorithms from (1) through (5) are described and developed in [**Wang (2019)**](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3316939). Generally, looped, vectorized, and optimized-vectorized implementations of the same solution algorithm with tabular, graphical and profiling results are shown. Separate subsections show files that solve policy functions and derive asset distributions. Looped codes are shown for clarity, vectorized codes are shown for speed. Codes are designed to not require special hardware or explicit parallelization. Codes are tested on Windows 10 with [Matlab 2019a](https://www.mathworks.com/company/newsroom/mathworks-announces-release-2019a-of-matlab-and-simulink.html) for replicability. The algorithms here are platform agnostic and could be implemented in alternative languages, but speed variations across languages is generally small for the algorithms described here. Please contact [FanWangEcon](https://fanwangecon.github.io/) for problems.
 
@@ -124,7 +124,7 @@ Test model outcomes as parameters given parameter adjustments.
 
 ## 1.5 Simulations (AZ)
 
-Simulate and graph effects of changing parameters on outcomes.
+Simulate and graph effects of changing parameters on outcomes. Compare against simulation in *2.5* for the effects of allowing for borrowing on distributional outcomes. And compare against simulations in *3.7* as well as *4.8* for the effects of including a risky capital investment on distributional outcomes.
 
 **Simulation Functions**:
 
@@ -223,7 +223,7 @@ We solved the exogenously incomplete borrowing and savings problem in *1.4*. Now
 
 ## 2.5 Simulations (ABZ)
 
-Simulate and graph effects of changing parameters on outcomes.
+Simulate and graph effects of changing parameters on outcomes. Compare against simulation in *1.5* for the effects of allowing for borrowing on distributional outcomes. And compare against simulations in *3.7* as well as *4.8* for the effects of including a risky capital investment on distributional outcomes.
 
 **Simulation Functions**:
 
@@ -396,7 +396,7 @@ We solve the joint asset choice problem using the *optimized-vectorized* method 
 
 ## 3.7 Simulations (iWKZ)
 
-Simulate and graph effects of changing parameters on outcomes.
+Simulate and graph effects of changing parameters on outcomes. The results here should be compared against results in section *4.8*. In *4.8*, by adopting percentage grid rather than level grid, there is a significant improvement in the precision of simulations for the same number of grid points. Results in *4.8* and *3.7* should be compared about simulations from *az* and *abz* models in *1.5* and *2.5*.
 
 **Simulation Functions**:
 
@@ -551,6 +551,34 @@ We solve the joint asset choice problem using the *optimized-vectorized* method 
     * [constant (financial investment) return to scale](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/test/ff_ipwkbz_vf_vecsv/test_prod/html/fsi_ipwkbz_vf_vecsv_crs_ymin.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/test/ff_ipwkbz_vf_vecsv/test_prod/fsi_ipwkbz_vf_vecsv_crs_ymin.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/test/ff_ipwkbz_vf_vecsv/test_prod/html/fsi_ipwkbz_vf_vecsv_crs_ymin.html)
 4. *ipwkbz* model shift shock persistence
     * [constant (financial investment) return to scale](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/test/ff_ipwkbz_vf_vecsv/test_prod/html/fsi_ipwkbz_vf_vecsv_crs.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbz/test/ff_ipwkbz_vf_vecsv/test_prod/fsi_ipwkbz_vf_vecsv_crs.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/test/ff_ipwkbz_vf_vecsv/test_prod/html/fsi_ipwkbz_vf_vecsv_crs.html)
+
+## 4.8 Simulations (ipWKZ + ipWKBZR)
+
+Simulate and graph effects of changing parameters on outcomes. The results here should be compared against results in section *3.7*. In *4.8*, by adopting percentage grid rather than level grid, there is a significant improvement in the precision of simulations for the same number of grid points. Results in *4.8* and *3.7* should be compared about simulations from *az* and *abz* models in *1.5* and *2.5*.
+
+**Simulation Functions**:
+
+Share functions with *az* from *1.5* above, model (1) [simulate model](https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_test_gen.html) (2) [graph simulation results](https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_test_analyze.html)
+
+**Savings Simulation Results (ipWKZ)**:
+
+1. *ipwkz* the effects *preference parameters* on distributional outcomes
+    * sample simulate, [adjust discount and risk aversion](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_pref/html/fsi_ipwkz_ds_vecsv_pref.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_pref/fsi_ipwkz_ds_vecsv_pref.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_pref/html/fsi_ipwkz_ds_vecsv_pref.html)
+    * cross test, [adjust discount and risk aversion](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_pref/html/fsi_ipwkz_ds_vecsv_pref_cross.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_pref/fsi_ipwkz_ds_vecsv_pref_cross.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_pref/html/fsi_ipwkz_ds_vecsv_pref_cross.html)
+2. *ipwkz* the effects production function *shock parameters* on distributional outcomes
+    * sample simulate, [adjust shock persistence and variance](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_shock/html/fsi_ipwkz_ds_vecsv_shock.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_shock/fsi_ipwkz_ds_vecsv_shock.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_shock/html/fsi_ipwkz_ds_vecsv_shock.html)
+    * cross test, [adjust shock persistence and variance](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_shock/html/fsi_ipwkz_ds_vecsv_shock_cross.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_shock/fsi_ipwkz_ds_vecsv_shock_cross.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_shock/html/fsi_ipwkz_ds_vecsv_shock_cross.html)    
+3. *ipwkz* the effects production function *elasticity and depreciation parameters* on distributional outcomes
+    * sample simulate, [adjust elasticity and depreciation](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_prod/html/fsi_ipwkz_ds_vecsv_prod.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_prod/fsi_ipwkz_ds_vecsv_prod.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_prod/html/fsi_ipwkz_ds_vecsv_prod.html)
+    * cross test, [adjust elasticity and depreciation](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_prod/html/fsi_ipwkz_ds_vecsv_prod_cross.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_prod/fsi_ipwkz_ds_vecsv_prod_cross.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_prod/html/fsi_ipwkz_ds_vecsv_prod_cross.html)
+4. *ipwkz* the effects *price parameters* on distributional outcomes
+    * cross test, [adjust min income and savings rate](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_price/html/fsi_ipwkz_ds_vecsv_price_cross.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_price/fsi_ipwkz_ds_vecsv_price_cross.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_price/html/fsi_ipwkz_ds_vecsv_price_cross.html)          
+5. *ipwkz* the effects *preference + shocks + prices* on distributional outcomes
+    * cross test, [adjust preference shocks prices](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_joint/html/fsi_ipwkz_ds_vecsv_joint_rand.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_joint/fsi_ipwkz_ds_vecsv_joint_rand.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_joint/html/fsi_ipwkz_ds_vecsv_joint_rand.html)
+
+**Savings + Borrowing Simulation Results (ipWKBZR)**:
+
+
 
 # 5. One Asset Formal + Informal
 

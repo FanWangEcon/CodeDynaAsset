@@ -56,16 +56,17 @@ function result_map = ff_ipwkz_vf_vecsv(varargin)
 % * it_param_set = 4: press publish button
 
 it_param_set = 4;
-bl_input_override = true;
 [param_map, support_map] = ffs_ipwkz_set_default_param(it_param_set);
 
 % parameters can be set inside ffs_ipwkz_set_default_param or updated here
+
 % param_map('it_w_perc_n') = 50;
 % param_map('it_ak_perc_n') = param_map('it_w_perc_n');
 % param_map('it_z_n') = 15;
 % param_map('fl_coh_interp_grid_gap') = 0.025;
 % param_map('it_c_interp_grid_gap') = 0.001;
 % param_map('fl_w_interp_grid_gap') = 0.25;
+
 % param_map('it_w_perc_n') = 100;
 % param_map('it_ak_perc_n') = param_map('it_w_perc_n');
 % param_map('it_z_n') = 11;
@@ -74,7 +75,7 @@ bl_input_override = true;
 % param_map('fl_w_interp_grid_gap') = 0.1;
 
 % get armt and func map
-[armt_map, func_map] = ffs_ipwkz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
+[armt_map, func_map] = ffs_ipwkz_get_funcgrid(param_map, support_map); % 1 for override
 default_params = {param_map support_map armt_map func_map};
 
 %% Parse Parameters 1
@@ -87,8 +88,7 @@ support_map = [support_map; default_params{2}];
 if params_len >= 1 && params_len <= 2
     % If override param_map, re-generate armt and func if they are not
     % provided
-    bl_input_override = true;
-    [armt_map, func_map] = ffs_ipwkz_get_funcgrid(param_map, support_map, bl_input_override);
+    [armt_map, func_map] = ffs_ipwkz_get_funcgrid(param_map, support_map);
 else
     % Override all
     armt_map = [armt_map; default_params{3}];
@@ -134,13 +134,8 @@ params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
 [bl_profile, st_profile_path, ...
     st_profile_prefix, st_profile_name_main, st_profile_suffix, ...
     bl_time, bl_display_defparam, bl_graph_evf, bl_display, it_display_every, bl_post] = params_group{:};
-
-%% Display Parameters
-
-if (bl_display_defparam)
-    fft_container_map_display(param_map);
-    fft_container_map_display(support_map);
-end
+params_group = values(support_map, {'it_display_summmat_rowmax', 'it_display_summmat_colmax'});
+[it_display_summmat_rowmax, it_display_summmat_colmax] = params_group{:};
 
 %% Initialize Output Matrixes
 
@@ -232,15 +227,14 @@ while bl_vfi_continue
     % ffs_akz_set_functions> which solves the two stages jointly
     % Interpolation first, because solution coh grid is not the same as all
     % points reachable by k and b choices given w.
-    
+
     support_map('bl_graph_evf') = false;
     if (it_iter == (it_maxiter_val + 1))
         support_map('bl_graph_evf') = bl_graph_evf;
     end
-    
-    bl_input_override = true;
+
     [mt_ev_condi_z_max, ~, mt_ev_condi_z_max_kp, ~] = ...
-        ff_ipwkz_evf(mt_val_wkb_interpolated, param_map, support_map, armt_map, bl_input_override);
+        ff_ipwkz_evf(mt_val_wkb_interpolated, param_map, support_map, armt_map);
 
     %% Solve First Stage Problem w*(z) given k*(w,z)
 
@@ -388,14 +382,13 @@ result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
 result_map('mt_pol_idx') = mt_pol_idx;
 
-result_map('cl_mt_pol_coh') = {mt_interp_coh_grid_mesh_z, zeros(1)};
+result_map('cl_mt_coh') = {mt_interp_coh_grid_mesh_z, zeros(1)};
 result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
 result_map('cl_mt_pol_k') = {mt_pol_k, zeros(1)};
 result_map('cl_mt_pol_c') = {f_cons(mt_interp_coh_grid_mesh_z, mt_pol_a, mt_pol_k), zeros(1)};
-result_map('ar_st_pol_names') = ["cl_mt_pol_coh", "cl_mt_pol_a", "cl_mt_pol_k", "cl_mt_pol_c"];
+result_map('ar_st_pol_names') = ["cl_mt_coh", "cl_mt_pol_a", "cl_mt_pol_k", "cl_mt_pol_c"];
 
 if (bl_post)
-    bl_input_override = true;
     result_map('ar_val_diff_norm') = ar_val_diff_norm(1:it_iter_last);
     result_map('ar_pol_diff_norm') = ar_pol_diff_norm(1:it_iter_last);
     result_map('mt_pol_perc_change') = mt_pol_perc_change(1:it_iter_last, :);
@@ -407,7 +400,28 @@ if (bl_post)
     armt_map('ar_a_meshk') = mt_interp_coh_grid_mesh_z(:,1);
     armt_map('ar_k_mesha') = zeros(size(mt_interp_coh_grid_mesh_z(:,1)) + 0);
 
-    result_map = ff_akz_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+    result_map = ff_akz_vf_post(param_map, support_map, armt_map, func_map, result_map);
+end
+
+%% Display Various Containers
+
+if (bl_display_defparam)
+
+    %% Display 1 support_map
+    fft_container_map_display(support_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+
+    %% Display 2 armt_map
+    fft_container_map_display(armt_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+
+    %% Display 3 param_map
+    fft_container_map_display(param_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+
+    %% Display 4 func_map
+    fft_container_map_display(func_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+
+    %% Display 5 result_map
+    fft_container_map_display(result_map, it_display_summmat_rowmax, it_display_summmat_colmax);
+
 end
 
 end

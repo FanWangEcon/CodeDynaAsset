@@ -1,4 +1,4 @@
-%% Test Full Run Speed (Risky + Safe Asets + Interpolated)
+%% Test Full Run Speed (Risky + Safe Asets + Interpolated + Percentage)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*
@@ -56,7 +56,7 @@ support_map('bl_display_final_dist') = false;
 result_map = ff_ipwkz_vf_vecsv(param_map, support_map, armt_map, func_map);
 
 % Call Distribution CProgram
-result_map = ff_ipwkz_ds_vec(param_map, support_map, armt_map, func_map, result_map);
+result_map = ff_iwkz_ds_vecsv(param_map, support_map, armt_map, func_map, result_map);
 
 % End Timer
 if (bl_time)

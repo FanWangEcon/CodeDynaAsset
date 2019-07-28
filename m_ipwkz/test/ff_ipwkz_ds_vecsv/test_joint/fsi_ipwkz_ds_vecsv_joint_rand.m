@@ -1,8 +1,12 @@
-%% Test Joint Randomly (Risky + Safe Asets + Two-Step + Interpolated Distribution), Test Preference, Price and Shocks
+%% Test Joint Randomly (Risky + Safe Asets + Two-Step + Interpolated + Percentage Distribution), Test Preference, Price and Shocks
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.* *cross test*: given (x,y), vary x along X, y along Y,
 % one at a time
+%
+% Compare against
+% <https://fanwangecon.github.io/CodeDynaAsset/m_akz/test/ff_iwkz_ds_vecsv/test_joint/html/fsi_iwkz_ds_vecsv_joint_rand.html
+% fsi_iwkz_ds_vecsv_joint_rand> from *iwkz*. Here, we use *ipwkz*.
 %
 % @include
 %

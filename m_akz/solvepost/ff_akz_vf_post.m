@@ -47,15 +47,9 @@ function [result_map] = ff_akz_vf_post(varargin)
 
 %% Default
 
-params_len = length(varargin);
-bl_input_override = 0;
-if (params_len == 6)
-    bl_input_override = varargin{6};
-end
-
-if (bl_input_override)
+if (~isempty(varargin))
     % if invoked from outside overrid fully
-    [param_map, support_map, armt_map, func_map, result_map, ~] = varargin{:};
+    [param_map, support_map, armt_map, func_map, result_map] = varargin{:};
 
     params_group = values(result_map, {'mt_val', 'cl_mt_pol_a', 'cl_mt_pol_k'});    
     [mt_val, cl_mt_pol_a, cl_mt_pol_k] = params_group{:};

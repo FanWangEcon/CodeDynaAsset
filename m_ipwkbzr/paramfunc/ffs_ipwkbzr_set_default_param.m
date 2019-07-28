@@ -27,6 +27,10 @@ function [param_map, support_map] = ffs_ipwkbzr_set_default_param(varargin)
 %   it_param_set = 1;
 %   [param_map, support_map] = ffs_ipwkbzr_set_default_param(it_param_set);
 %
+% @include
+%
+% *<https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/paramfunc/html/ffs_ipwkz_set_default_param.html ffs_ipwkz_set_default_param>
+%
 
 %% Default
 
@@ -50,7 +54,14 @@ param_map('st_model') = 'ipwkbzr';
 % v(coh, z) interpolation method
 param_map('st_v_coh_z_interp_method') = 'method_cell';
 
-%% 2a. Set Shock 1 Borrowing Interest Rate Parameters
+%% 2a. Borrowing Default Parameters
+
+param_map('fl_b_bd') = -20;
+param_map('fl_c_min') = 0.02;
+param_map('fl_default_wprime') = 0; % wprime not a prime
+param_map('bl_default') = true; % if borrowing is default allowed
+
+%% 2b. Set Shock 1 Borrowing Interest Rate Parameters
 % See
 % <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_gen_discrete_var.html
 % fft_gen_discrete_var> for how these parameters will be used to generate a
@@ -66,7 +77,7 @@ param_map('fl_z_r_borr_n') = 5;
 % param_map('fl_z_r_borr_min') = 0.095;
 % param_map('fl_z_r_borr_n') = 1;
 
-%% 2b. Set Shock 2 Productivity Shock Parameters
+%% 2c. Set Shock 2 Productivity Shock Parameters
 
 % Production Function
 % Productivity Shock Parameters
@@ -75,7 +86,7 @@ param_map('fl_z_wage_mu') = 0;
 param_map('fl_z_wage_rho') = 0.8;
 param_map('fl_z_wage_sig') = 0.2;
 
-%% 2c. Set Overall Shock Grid Count
+%% 2d. Set Overall Shock Grid Count
 
 param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
 
@@ -90,6 +101,7 @@ support_map('st_matimg_path_root') = st_matimg_path_root;
 support_map('st_profile_path') = [st_matimg_path_root '/solve/profile/'];
 support_map('st_mat_path') = [st_matimg_path_root '/solve/mat/'];
 support_map('st_img_path') = [st_matimg_path_root '/solve/img/'];
+support_map('st_mat_test_path') = [st_matimg_path_root '/test/ff_ipwkbzr_ds_vecsv/mat/'];
 
 %% Subset Options
 %
@@ -158,7 +170,7 @@ end
 
 %% 3. Merge Parameters Import
 
-[param_map_ipwkbz, support_map_ipwkbz] = ffs_ipwkbz_set_default_param(it_subset);
+[param_map_ipwkbz, support_map_ipwkbz] = ffs_ipwkz_set_default_param(it_subset);
 
 % Remove Keys not Relevant for the Interest Rate Shock Model
 cl_st_ipwkbz_keysdrop = {'fl_z_rho', 'fl_z_mu', 'fl_z_sig', ...

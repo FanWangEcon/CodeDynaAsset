@@ -6,6 +6,11 @@
 %%
 function [param_map, support_map] = ffs_ipwkbz_fibs_set_default_param(varargin)
 %% FFS_IPWKBZ_FIBS_SET_DEFAULT_PARAM setting model default parameters
+%
+% @include
+%
+% *<https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/paramfunc/html/ffs_ipwkz_set_default_param.html ffs_ipwkz_set_default_param>
+%
 
 %% Default
 
@@ -26,7 +31,14 @@ param_map = containers.Map('KeyType','char', 'ValueType','any');
 % model name
 param_map('st_model') = 'ipwkbz_fibs';
 
-%% 2. Set Borrowing Control Parameters
+%% 2a. Borrowing Default Parameters
+
+param_map('fl_b_bd') = -20;
+param_map('fl_c_min') = 0.02;
+param_map('fl_default_wprime') = 0; % wprime not a prime
+param_map('bl_default') = true; % if borrowing is default allowed
+
+%% 2b. Set Borrowing Control Parameters
 % Borrowing Setting 1: Default Allowed, Bridge True, bl_rollover does not matter
 % Borrowing Setting 2: Default Allowed, Bridge False, bl_rollover matter
 param_map('bl_default') = true; % if borrowing is default allowed
@@ -70,6 +82,7 @@ support_map('st_matimg_path_root') = st_matimg_path_root;
 support_map('st_profile_path') = [st_matimg_path_root '/m_ipwkbz_solve/profile/'];
 support_map('st_mat_path') = [st_matimg_path_root '/m_ipwkbz_solve/mat/'];
 support_map('st_img_path') = [st_matimg_path_root '/m_ipwkbz_solve/img/'];
+support_map('st_mat_test_path') = [st_matimg_path_root '/test/ff_ipwkbz_ds_vecsv/mat/'];
 
 %% Display New Parameters
 
@@ -87,7 +100,7 @@ end
 
 %% 3. Merge Parameters Import
 
-[param_map_ipwkbz_fibs, support_map_ipwkbz_fibs] = ffs_ipwkbz_set_default_param(it_subset);
+[param_map_ipwkbz_fibs, support_map_ipwkbz_fibs] = ffs_ipwkz_set_default_param(it_subset);
 
 % Remove Keys not Relevant for the Interest Rate Shock Model
 cl_st_ipwkbz_keysdrop = {'fl_r_borr', 'fl_r_save'};

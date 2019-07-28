@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Generate States/Choices/Shocks Grids, get Functions (Interpolated + Percentage + Risky + Safe Asset)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-04"><meta name="DC.source" content="ffs_ipwkz_get_funcgrid.m"><style type="text/css">
+      --><title>Generate States/Choices/Shocks Grids, get Functions (Interpolated + Percentage + Risky + Safe Asset)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-27"><meta name="DC.source" content="ffs_ipwkz_get_funcgrid.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,30 +66,29 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Generate States/Choices/Shocks Grids, get Functions (Interpolated + Percentage + Risky + Safe Asset)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FFS_IPWKZ_GET_FUNCGRID get funcs, params, states choices shocks grids</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Generate Asset and Choice Grid for 2nd stage Problem</a></li><li><a href="#6">Get Shock Grids</a></li><li><a href="#7">Get Equations</a></li><li><a href="#8">Generate Cash-on-Hand/State Matrix</a></li><li><a href="#9">Generate 1st Stage States: Interpolation Cash-on-hand Interpolation Grid</a></li><li><a href="#10">Generate 1st Stage Choices: Interpolation Cash-on-hand Interpolation Grid</a></li><li><a href="#11">Generate Interpolation Consumption Grid</a></li><li><a href="#12">Initialize armt_map to store, state, choice, shock matrixes</a></li><li><a href="#13">Store armt_map (1): 2nd Stage Problem Arrays and Matrixes</a></li><li><a href="#14">Store armt_map (2): First Stage Aggregate Savings</a></li><li><a href="#15">Store armt_map (3): First Stage Consumption and Cash-on-Hand Grids</a></li><li><a href="#16">Store armt_map (4): Shock Grids</a></li><li><a href="#17">Store Function Map</a></li><li><a href="#18">Graph</a></li><li><a href="#20">Graph 1: a and k choice grid graphs</a></li><li><a href="#21">Graph 2: coh by shock</a></li><li><a href="#22">Graph 3: 2nd stage coh reached by k' b' choices by index</a></li><li><a href="#23">Graph 4: 2nd stage coh reached by k' b' choices  by coh</a></li><li><a href="#24">Graph 5: 1st State Aggregate Savings Choices by COH interpolation grids</a></li><li><a href="#26">Display</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [armt_map, func_map] = ffs_ipwkz_get_funcgrid(varargin)
+  </style></head><body><div class="content"><h1>Generate States/Choices/Shocks Grids, get Functions (Interpolated + Percentage + Risky + Safe Asset)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FFS_IPWKZ_GET_FUNCGRID get funcs, params, states choices shocks grids</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1a</a></li><li><a href="#5">Parse Parameters 1b</a></li><li><a href="#6">Parse Parameters 2</a></li><li><a href="#7">Parse Parameters 3</a></li><li><a href="#8">Generate Asset and Choice Grid for 2nd stage Problem</a></li><li><a href="#9">Get Shock Grids</a></li><li><a href="#10">Get Equations</a></li><li><a href="#11">Generate Cash-on-Hand/State Matrix</a></li><li><a href="#12">Generate 1st Stage States: Interpolation Cash-on-hand Interpolation Grid</a></li><li><a href="#13">Generate 1st Stage Choices: Interpolation Cash-on-hand Interpolation Grid</a></li><li><a href="#14">Generate Interpolation Consumption Grid</a></li><li><a href="#15">Initialize armt_map to store, state, choice, shock matrixes</a></li><li><a href="#16">Store armt_map (1): 2nd Stage Problem Arrays and Matrixes</a></li><li><a href="#17">Store armt_map (2): First Stage Aggregate Savings</a></li><li><a href="#18">Store armt_map (3): First Stage Consumption and Cash-on-Hand Grids</a></li><li><a href="#19">Store armt_map (4): Shock Grids</a></li><li><a href="#20">Store Function Map</a></li><li><a href="#21">Graph</a></li><li><a href="#23">Graph 1: a and k choice grid graphs</a></li><li><a href="#24">Graph 2: coh by shock</a></li><li><a href="#25">Graph 3: 2nd stage coh reached by k' b' choices by index</a></li><li><a href="#26">Graph 4: 2nd stage coh reached by k' b' choices  by coh</a></li><li><a href="#27">Graph 5: 1st State Aggregate Savings Choices by COH interpolation grids</a></li><li><a href="#29">Display</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [armt_map, func_map] = ffs_ipwkz_get_funcgrid(varargin)
 </pre><h2 id="2">FFS_IPWKZ_GET_FUNCGRID get funcs, params, states choices shocks grids</h2><p>centralized gateway for retrieving parameters, and solution grids and functions. Similar to <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html">ffs_akz_get_funcgrid</a> function. This code only deals with savings problems.</p><p>The graphs below show the difference between percentage choice grid and level choice grid. See comments by graphs below for explanations of differences between the choice grids here and choice grids in the ffs_akz_get_funcgrid function.</p><p>Note that the first stage w grid is based on cash-on-hand level reached by the coh(k,w-k,z) possible choice and shock combinations. This coh(k,w-k,z) &gt; max(w), which also means that at max(coh) grid, the w_perc choices at higher points require extrapolation. Extrapolation is based on nearest extrapolation.</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param bl_input_override boolean if true varargin contained param_map and support_map fully overrides local default. Local default is not invoked. This could be important for speed if this function is getting invoked within certain loops. Default is 0.</p><p>@return armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@return func_map container container with function handles for consumption cash-on-hand etc.</p><p>@example</p><pre>  it_param_set = 2;
   bl_input_override = true;
   [param_map, support_map] = ffs_ipwkz_set_default_param(it_param_set);
-  [armt_map, func_map] = ffs_ipwkz_get_funcgrid(param_map, support_map, bl_input_override);</pre><p>@include</p><div><ul><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/paramfunc/ffs_ipwkz_set_functions.m">ffs_ipwkz_set_functions</a></li><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/ffto_gen_tauchen_jhl.m">ffto_gen_tauchen_jhl</a></li><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/fft_gen_grid_loglin.m">fft_gen_grid_loglin</a></li></ul></div><h2 id="3">Default</h2><pre class="codeinput">bl_input_override = 0;
-<span class="keyword">if</span> (length(varargin) == 3)
-    bl_input_override = varargin{3};
-<span class="keyword">end</span>
-<span class="keyword">if</span> (bl_input_override)
+  [armt_map, func_map] = ffs_ipwkz_get_funcgrid(param_map, support_map, bl_input_override);</pre><p>@include</p><div><ul><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/paramfunc/ffs_ipwkz_set_functions.m">ffs_ipwkz_set_functions</a></li><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/ffto_gen_tauchen_jhl.m">ffto_gen_tauchen_jhl</a></li><li><a href="https://github.com/FanWangEcon/CodeDynaAsset/blob/master/tools/fft_gen_grid_loglin.m">fft_gen_grid_loglin</a></li></ul></div><h2 id="3">Default</h2><pre class="codeinput"><span class="keyword">if</span> (~isempty(varargin))
     <span class="comment">% override when called from outside</span>
-    [param_map, support_map, ~] = varargin{:};
+    [param_map, support_map] = varargin{:};
 <span class="keyword">else</span>
     <span class="comment">% default internal run</span>
     [param_map, support_map] = ffs_ipwkz_set_default_param();
+
     support_map(<span class="string">'bl_graph_funcgrids'</span>) = true;
     support_map(<span class="string">'bl_display_funcgrids'</span>) = true;
 
     <span class="comment">% to be able to visually see choice grid points</span>
     param_map(<span class="string">'fl_b_bd'</span>) = 0;
+
     param_map(<span class="string">'fl_w_min'</span>) = param_map(<span class="string">'fl_b_bd'</span>);
     param_map(<span class="string">'it_w_perc_n'</span>) = 25;
     param_map(<span class="string">'it_ak_perc_n'</span>) = 45;
     param_map(<span class="string">'fl_w_interp_grid_gap'</span>) = 2;
     param_map(<span class="string">'fl_coh_interp_grid_gap'</span>) = 2;
+
     default_maps = {param_map, support_map};
 
     <span class="comment">% numvarargs is the number of varagin inputted</span>
@@ -97,29 +96,243 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
     param_map = [param_map; default_maps{1}];
     support_map = [support_map; default_maps{2}];
 <span class="keyword">end</span>
-</pre><h2 id="4">Parse Parameters</h2><pre class="codeinput">params_group = values(param_map, {<span class="string">'it_z_n'</span>, <span class="string">'fl_z_mu'</span>, <span class="string">'fl_z_rho'</span>, <span class="string">'fl_z_sig'</span>});
-[it_z_n, fl_z_mu, fl_z_rho, fl_z_sig] = params_group{:};
+</pre><pre class="codeoutput">----------------------------------------
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Begin: Show all key and value pairs from container
+CONTAINER NAME: PARAM_MAP
+----------------------------------------
+  Map with properties:
 
-params_group = values(param_map, {<span class="string">'fl_b_bd'</span>, <span class="string">'fl_w_min'</span>, <span class="string">'fl_w_max'</span>, <span class="keyword">...</span>
-    <span class="string">'it_w_perc_n'</span>, <span class="string">'fl_w_interp_grid_gap'</span>, <span class="string">'fl_coh_interp_grid_gap'</span>});
-[fl_b_bd, fl_w_min, fl_w_max, <span class="keyword">...</span>
-    it_w_perc_n, fl_w_interp_grid_gap, fl_coh_interp_grid_gap] = params_group{:};
+        Count: 32
+      KeyType: char
+    ValueType: any
 
-params_group = values(param_map, {<span class="string">'fl_k_min'</span>, <span class="string">'fl_k_max'</span>, <span class="string">'it_ak_perc_n'</span>});
-[fl_k_min, fl_k_max, it_ak_perc_n] = params_group{:};
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+----------------------------------------
+pos = 1 ; key = fl_Amean ; val = 1
+pos = 2 ; key = fl_alpha ; val = 0.36
+pos = 3 ; key = fl_b_bd ; val = 0
+pos = 4 ; key = fl_beta ; val = 0.94
+pos = 5 ; key = fl_c_min ; val = 0.02
+pos = 6 ; key = fl_coh_interp_grid_gap ; val = 0.1
+pos = 7 ; key = fl_crra ; val = 1.5
+pos = 8 ; key = fl_delta ; val = 0.08
+pos = 9 ; key = fl_k_max ; val = 50
+pos = 10 ; key = fl_k_min ; val = 0
+pos = 11 ; key = fl_nan_replace ; val = -9999
+pos = 12 ; key = fl_r_borr ; val = 0.095
+pos = 13 ; key = fl_r_save ; val = 0.025
+pos = 14 ; key = fl_tol_dist ; val = 1e-05
+pos = 15 ; key = fl_tol_pol ; val = 1e-05
+pos = 16 ; key = fl_tol_val ; val = 1e-05
+pos = 17 ; key = fl_w ; val = 0.44365
+pos = 18 ; key = fl_w_interp_grid_gap ; val = 0.1
+pos = 19 ; key = fl_w_max ; val = 50
+pos = 20 ; key = fl_w_min ; val = 0
+pos = 21 ; key = fl_z_mu ; val = 0
+pos = 22 ; key = fl_z_rho ; val = 0.8
+pos = 23 ; key = fl_z_sig ; val = 0.2
+pos = 24 ; key = it_ak_perc_n ; val = 50
+pos = 25 ; key = it_c_interp_grid_gap ; val = 0.0001
+pos = 26 ; key = it_maxiter_dist ; val = 1000
+pos = 27 ; key = it_maxiter_val ; val = 250
+pos = 28 ; key = it_tol_pol_nochange ; val = 25
+pos = 29 ; key = it_w_perc_n ; val = 50
+pos = 30 ; key = it_z_n ; val = 15
+pos = 31 ; key = st_analytical_stationary_type ; val = eigenvector
+pos = 32 ; key = st_model ; val = ipwkz
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Scalars in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                              i     idx     value 
+                              __    ___    _______
 
-params_group = values(param_map, {<span class="string">'fl_crra'</span>, <span class="string">'fl_c_min'</span>, <span class="string">'it_c_interp_grid_gap'</span>});
-[fl_crra, fl_c_min, it_c_interp_grid_gap] = params_group{:};
+    fl_Amean                   1     1           1
+    fl_alpha                   2     2        0.36
+    fl_b_bd                    3     3           0
+    fl_beta                    4     4        0.94
+    fl_c_min                   5     5        0.02
+    fl_coh_interp_grid_gap     6     6         0.1
+    fl_crra                    7     7         1.5
+    fl_delta                   8     8        0.08
+    fl_k_max                   9     9          50
+    fl_k_min                  10    10           0
+    fl_nan_replace            11    11       -9999
+    fl_r_borr                 12    12       0.095
+    fl_r_save                 13    13       0.025
+    fl_tol_dist               14    14       1e-05
+    fl_tol_pol                15    15       1e-05
+    fl_tol_val                16    16       1e-05
+    fl_w                      17    17     0.44365
+    fl_w_interp_grid_gap      18    18         0.1
+    fl_w_max                  19    19          50
+    fl_w_min                  20    20           0
+    fl_z_mu                   21    21           0
+    fl_z_rho                  22    22         0.8
+    fl_z_sig                  23    23         0.2
+    it_ak_perc_n              24    24          50
+    it_c_interp_grid_gap      25    25      0.0001
+    it_maxiter_dist           26    26        1000
+    it_maxiter_val            27    27         250
+    it_tol_pol_nochange       28    28          25
+    it_w_perc_n               29    29          50
+    it_z_n                    30    30          15
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Strings in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                                     i    idx
+                                     _    ___
+
+    st_analytical_stationary_type    1    31 
+    st_model                         2    32 
+
+----------------------------------------
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Begin: Show all key and value pairs from container
+CONTAINER NAME: SUPPORT_MAP
+----------------------------------------
+  Map with properties:
+
+        Count: 43
+      KeyType: char
+    ValueType: any
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+----------------------------------------
+pos = 1 ; key = bl_display ; val = false
+pos = 2 ; key = bl_display_defparam ; val = true
+pos = 3 ; key = bl_display_dist ; val = false
+pos = 4 ; key = bl_display_evf ; val = false
+pos = 5 ; key = bl_display_final ; val = true
+pos = 6 ; key = bl_display_final_dist ; val = false
+pos = 7 ; key = bl_display_final_dist_detail ; val = false
+pos = 8 ; key = bl_display_funcgrids ; val = false
+pos = 9 ; key = bl_graph ; val = true
+pos = 10 ; key = bl_graph_coh_t_coh ; val = true
+pos = 11 ; key = bl_graph_evf ; val = false
+pos = 12 ; key = bl_graph_funcgrids ; val = false
+pos = 13 ; key = bl_graph_funcgrids_detail ; val = false
+pos = 14 ; key = bl_graph_onebyones ; val = true
+pos = 15 ; key = bl_graph_pol_lvl ; val = true
+pos = 16 ; key = bl_graph_pol_pct ; val = true
+pos = 17 ; key = bl_graph_val ; val = true
+pos = 18 ; key = bl_img_save ; val = false
+pos = 19 ; key = bl_mat ; val = false
+pos = 20 ; key = bl_post ; val = true
+pos = 21 ; key = bl_profile ; val = false
+pos = 22 ; key = bl_profile_dist ; val = false
+pos = 23 ; key = bl_time ; val = false
+pos = 24 ; key = it_display_every ; val = 5
+pos = 25 ; key = it_display_final_colmax ; val = 12
+pos = 26 ; key = it_display_final_rowmax ; val = 100
+pos = 27 ; key = it_display_summmat_colmax ; val = 7
+pos = 28 ; key = it_display_summmat_rowmax ; val = 7
+pos = 29 ; key = st_img_name_main ; val = _default
+pos = 30 ; key = st_img_path ; val = C:/Users/fan/CodeDynaAsset//m_ipwkz//solve/img/
+pos = 31 ; key = st_img_prefix ; val = 
+pos = 32 ; key = st_img_suffix ; val = _p4.png
+pos = 33 ; key = st_mat_name_main ; val = _default
+pos = 34 ; key = st_mat_path ; val = C:/Users/fan/CodeDynaAsset//m_ipwkz//solve/mat/
+pos = 35 ; key = st_mat_prefix ; val = 
+pos = 36 ; key = st_mat_suffix ; val = _p4
+pos = 37 ; key = st_mat_test_path ; val = C:/Users/fan/CodeDynaAsset//m_ipwkz//test/ff_ipwkz_ds_vecsv/mat/
+pos = 38 ; key = st_matimg_path_root ; val = C:/Users/fan/CodeDynaAsset//m_ipwkz/
+pos = 39 ; key = st_profile_name_main ; val = _default
+pos = 40 ; key = st_profile_path ; val = C:/Users/fan/CodeDynaAsset//m_ipwkz//solve/profile/
+pos = 41 ; key = st_profile_prefix ; val = 
+pos = 42 ; key = st_profile_suffix ; val = _p4
+pos = 43 ; key = st_title_prefix ; val = 
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Scalars in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                                    i     idx    value
+                                    __    ___    _____
+
+    bl_display                       1     1        0 
+    bl_display_defparam              2     2        1 
+    bl_display_dist                  3     3        0 
+    bl_display_evf                   4     4        0 
+    bl_display_final                 5     5        1 
+    bl_display_final_dist            6     6        0 
+    bl_display_final_dist_detail     7     7        0 
+    bl_display_funcgrids             8     8        0 
+    bl_graph                         9     9        1 
+    bl_graph_coh_t_coh              10    10        1 
+    bl_graph_evf                    11    11        0 
+    bl_graph_funcgrids              12    12        0 
+    bl_graph_funcgrids_detail       13    13        0 
+    bl_graph_onebyones              14    14        1 
+    bl_graph_pol_lvl                15    15        1 
+    bl_graph_pol_pct                16    16        1 
+    bl_graph_val                    17    17        1 
+    bl_img_save                     18    18        0 
+    bl_mat                          19    19        0 
+    bl_post                         20    20        1 
+    bl_profile                      21    21        0 
+    bl_profile_dist                 22    22        0 
+    bl_time                         23    23        0 
+    it_display_every                24    24        5 
+    it_display_final_colmax         25    25       12 
+    it_display_final_rowmax         26    26      100 
+    it_display_summmat_colmax       27    27        7 
+    it_display_summmat_rowmax       28    28        7 
+
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Strings in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                            i     idx
+                            __    ___
+
+    st_img_name_main         1    29 
+    st_img_path              2    30 
+    st_img_prefix            3    31 
+    st_img_suffix            4    32 
+    st_mat_name_main         5    33 
+    st_mat_path              6    34 
+    st_mat_prefix            7    35 
+    st_mat_suffix            8    36 
+    st_mat_test_path         9    37 
+    st_matimg_path_root     10    38 
+    st_profile_name_main    11    39 
+    st_profile_path         12    40 
+    st_profile_prefix       13    41 
+    st_profile_suffix       14    42 
+    st_title_prefix         15    43 
+
+</pre><h2 id="4">Parse Parameters 1a</h2><pre class="codeinput">params_group = values(param_map, {<span class="string">'fl_b_bd'</span>, <span class="string">'fl_w_min'</span>, <span class="string">'fl_w_max'</span>});
+[fl_b_bd, fl_w_min, fl_w_max] = params_group{:};
+
+params_group = values(param_map, {<span class="string">'fl_crra'</span>, <span class="string">'fl_c_min'</span>});
+[fl_crra, fl_c_min] = params_group{:};
 
 params_group = values(param_map, {<span class="string">'fl_Amean'</span>, <span class="string">'fl_alpha'</span>, <span class="string">'fl_delta'</span>});
 [fl_Amean, fl_alpha, fl_delta] = params_group{:};
 
 params_group = values(param_map, {<span class="string">'fl_r_save'</span>, <span class="string">'fl_r_borr'</span>, <span class="string">'fl_w'</span>});
 [fl_r_save, fl_r_borr, fl_w] = params_group{:};
-
-params_group = values(support_map, {<span class="string">'bl_graph_funcgrids'</span>, <span class="string">'bl_display_funcgrids'</span>});
+</pre><h2 id="5">Parse Parameters 1b</h2><pre class="codeinput">params_group = values(param_map, {<span class="keyword">...</span>
+    <span class="string">'it_w_perc_n'</span>, <span class="string">'it_ak_perc_n'</span>,<span class="keyword">...</span>
+    <span class="string">'it_c_interp_grid_gap'</span>, <span class="string">'fl_w_interp_grid_gap'</span>, <span class="string">'fl_coh_interp_grid_gap'</span>});
+[it_w_perc_n, it_ak_perc_n,<span class="keyword">...</span>
+    it_c_interp_grid_gap, fl_w_interp_grid_gap, fl_coh_interp_grid_gap] = params_group{:};
+</pre><h2 id="6">Parse Parameters 2</h2><pre class="codeinput">params_group = values(param_map, {<span class="string">'it_z_n'</span>, <span class="string">'fl_z_mu'</span>, <span class="string">'fl_z_rho'</span>, <span class="string">'fl_z_sig'</span>});
+[it_z_n, fl_z_mu, fl_z_rho, fl_z_sig] = params_group{:};
+</pre><h2 id="7">Parse Parameters 3</h2><pre class="codeinput">params_group = values(support_map, {<span class="string">'bl_graph_funcgrids'</span>, <span class="string">'bl_display_funcgrids'</span>});
 [bl_graph_funcgrids, bl_display_funcgrids] = params_group{:};
-</pre><h2 id="5">Generate Asset and Choice Grid for 2nd stage Problem</h2><p>This generate triangular choice structure. Household choose total aggregate savings, and within that how much to put into risky capital and how much to put into safe assets, in percentages. See <a href="https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/paramfunc/html/ffs_ipwkz_set_default_param.html">ffs_ipwkz_set_default_param</a> for details.</p><pre class="codeinput"><span class="comment">% percentage grid for 1st stage choice problem, level grid for 2nd stage</span>
+</pre><h2 id="8">Generate Asset and Choice Grid for 2nd stage Problem</h2><p>This generate triangular choice structure. Household choose total aggregate savings, and within that how much to put into risky capital and how much to put into safe assets, in percentages. See <a href="https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/paramfunc/html/ffs_ipwkz_set_default_param.html">ffs_ipwkz_set_default_param</a> for details.</p><pre class="codeinput"><span class="comment">% percentage grid for 1st stage choice problem, level grid for 2nd stage</span>
 <span class="comment">% solving optimal k given w and z.</span>
 ar_w_perc = linspace(0.001, 0.999, it_w_perc_n);
 it_w_interp_n = (fl_w_max-fl_w_min)/(fl_w_interp_grid_gap);
@@ -149,10 +362,10 @@ mt_bl_constrained = (mt_a &lt; fl_b_bd);
 
 ar_a_meshk = mt_a(:);
 ar_k_mesha = mt_k(:);
-</pre><h2 id="6">Get Shock Grids</h2><pre class="codeinput">[~, mt_z_trans, ar_stationary, ar_z] = ffto_gen_tauchen_jhl(fl_z_mu,fl_z_rho,fl_z_sig,it_z_n);
-</pre><h2 id="7">Get Equations</h2><pre class="codeinput">[f_util_log, f_util_crra, f_util_standin, f_prod, f_inc, f_coh, f_cons] = <span class="keyword">...</span>
+</pre><h2 id="9">Get Shock Grids</h2><pre class="codeinput">[~, mt_z_trans, ar_stationary, ar_z] = ffto_gen_tauchen_jhl(fl_z_mu,fl_z_rho,fl_z_sig,it_z_n);
+</pre><h2 id="10">Get Equations</h2><pre class="codeinput">[f_util_log, f_util_crra, f_util_standin, f_prod, f_inc, f_coh, f_cons] = <span class="keyword">...</span>
     ffs_ipwkz_set_functions(fl_crra, fl_c_min, fl_Amean, fl_alpha, fl_delta, fl_r_save, fl_r_borr, fl_w);
-</pre><h2 id="8">Generate Cash-on-Hand/State Matrix</h2><p>The endogenous state variable is cash-on-hand, it has it_z_n*it_a_n number of points, covering all reachable points when ar_a is the choice vector and ar_z is the shock vector. requires inputs from get Asset and choice grids, get shock grids, and get equations above.</p><pre class="codeinput">mt_coh_wkb = f_coh(ar_z, ar_a_meshk, ar_k_mesha);
+</pre><h2 id="11">Generate Cash-on-Hand/State Matrix</h2><p>The endogenous state variable is cash-on-hand, it has it_z_n*it_a_n number of points, covering all reachable points when ar_a is the choice vector and ar_z is the shock vector. requires inputs from get Asset and choice grids, get shock grids, and get equations above.</p><pre class="codeinput">mt_coh_wkb = f_coh(ar_z, ar_a_meshk, ar_k_mesha);
 mt_z_mesh_coh_wkb = repmat(ar_z, [size(mt_coh_wkb,1),1]);
 
 <span class="keyword">if</span> (bl_display_funcgrids)
@@ -430,43 +643,43 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
       47.976         48.193         48.442          48.73         49.062         49.445         49.887         50.396         50.984          51.662          52.445          53.347          54.388          55.589          56.975   
       47.869         48.087         48.339         48.629         48.964          49.35         49.795         50.309         50.902          51.586          52.375          53.285          54.334          55.545          56.942   
 
-</pre><h2 id="9">Generate 1st Stage States: Interpolation Cash-on-hand Interpolation Grid</h2><p>For the iwkz problems, we solve the problem along a grid of cash-on-hand values, the interpolate to find v(k',b',z) at (k',b') choices. Crucially, we have to coh matrxies</p><pre class="codeinput">fl_max_mt_coh = max(max(mt_coh_wkb));
+</pre><h2 id="12">Generate 1st Stage States: Interpolation Cash-on-hand Interpolation Grid</h2><p>For the iwkz problems, we solve the problem along a grid of cash-on-hand values, the interpolate to find v(k',b',z) at (k',b') choices. Crucially, we have to coh matrxies</p><pre class="codeinput">fl_max_mt_coh = max(max(mt_coh_wkb));
 fl_min_mt_coh = min(min(mt_coh_wkb));
 it_coh_interp_n = (fl_max_mt_coh-fl_min_mt_coh)/(fl_coh_interp_grid_gap);
 ar_interp_coh_grid = linspace(fl_min_mt_coh, fl_max_mt_coh, it_coh_interp_n);
 [mt_interp_coh_grid_mesh_z, mt_z_mesh_coh_interp_grid] = ndgrid(ar_interp_coh_grid, ar_z);
 mt_interp_coh_grid_mesh_w_perc = repmat(ar_interp_coh_grid, [it_w_perc_n, 1]);
-</pre><h2 id="10">Generate 1st Stage Choices: Interpolation Cash-on-hand Interpolation Grid</h2><p>previously, our ar_w was the first stage choice grid, the grid was the same for all coh levels. Now, for each coh level, there is a different ar_w. ar_interp_coh_grid is (1 by ar_interp_coh_grid) and ar_w_perc is ( 1 by it_w_perc_n). Conditional on z, each choice matrix is (it_w_perc_n by ar_interp_coh_grid). Here we are pre-computing the choice matrix. This could be a large matrix if the choice grid is large. This is the matrix of aggregate savings choices</p><pre class="codeinput"><span class="keyword">if</span> (fl_min_mt_coh &lt; 0 )
+</pre><h2 id="13">Generate 1st Stage Choices: Interpolation Cash-on-hand Interpolation Grid</h2><p>previously, our ar_w was the first stage choice grid, the grid was the same for all coh levels. Now, for each coh level, there is a different ar_w. ar_interp_coh_grid is (1 by ar_interp_coh_grid) and ar_w_perc is ( 1 by it_w_perc_n). Conditional on z, each choice matrix is (it_w_perc_n by ar_interp_coh_grid). Here we are pre-computing the choice matrix. This could be a large matrix if the choice grid is large. This is the matrix of aggregate savings choices</p><pre class="codeinput"><span class="keyword">if</span> (fl_min_mt_coh &lt; 0 )
     <span class="comment">% borrowing bound is below zero</span>
     mt_w_by_interp_coh_interp_grid = ((ar_interp_coh_grid-fl_min_mt_coh)'*ar_w_perc)' + fl_min_mt_coh;
 <span class="keyword">else</span>
     <span class="comment">% savings only</span>
     mt_w_by_interp_coh_interp_grid = ((ar_interp_coh_grid)'*ar_w_perc)';
 <span class="keyword">end</span>
-</pre><h2 id="11">Generate Interpolation Consumption Grid</h2><p>We also interpolate over consumption to speed the program up. We only solve for u(c) at this grid for the iwkz problmes, and then interpolate other c values.</p><pre class="codeinput">fl_c_max = max(max(mt_coh_wkb)) - fl_b_bd;
+</pre><h2 id="14">Generate Interpolation Consumption Grid</h2><p>We also interpolate over consumption to speed the program up. We only solve for u(c) at this grid for the iwkz problmes, and then interpolate other c values.</p><pre class="codeinput">fl_c_max = max(max(mt_coh_wkb)) - fl_b_bd;
 it_interp_c_grid_n = (fl_c_max-fl_c_min)/(it_c_interp_grid_gap);
 ar_interp_c_grid = linspace(fl_c_min, fl_c_max, it_interp_c_grid_n);
-</pre><h2 id="12">Initialize armt_map to store, state, choice, shock matrixes</h2><pre class="codeinput">armt_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
+</pre><h2 id="15">Initialize armt_map to store, state, choice, shock matrixes</h2><pre class="codeinput">armt_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
 armtdesc_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
-</pre><h2 id="13">Store armt_map (1): 2nd Stage Problem Arrays and Matrixes</h2><pre class="codeinput">armt_map(<span class="string">'ar_ak_perc'</span>) = ar_ak_perc;
+</pre><h2 id="16">Store armt_map (1): 2nd Stage Problem Arrays and Matrixes</h2><pre class="codeinput">armt_map(<span class="string">'ar_ak_perc'</span>) = ar_ak_perc;
 armt_map(<span class="string">'mt_k'</span>) = mt_k;
 armt_map(<span class="string">'ar_a_meshk'</span>) = ar_a_meshk;
 armt_map(<span class="string">'ar_k_mesha'</span>) = ar_k_mesha;
 armt_map(<span class="string">'it_ameshk_n'</span>) = length(ar_a_meshk);
 armt_map(<span class="string">'mt_coh_wkb'</span>) = mt_coh_wkb;
 armt_map(<span class="string">'mt_z_mesh_coh_wkb'</span>) = mt_z_mesh_coh_wkb;
-</pre><h2 id="14">Store armt_map (2): First Stage Aggregate Savings</h2><p>w = k' + b', w is aggregate Savings%</p><div><ol><li><b>ar_w_perc</b> 1st stage, percentage w choice given coh, at each coh level the number of choice points is the same for this problem with percentage grid points.</li><li><b>ar_w_level</b> 2nd stage, level of w over which we solve the optimal percentage k' choices. Need to generate interpolant based on this so that we know optimal k* given ar_w_perc(coh) in the 1st stage</li><li><b>mt_w_by_interp_coh_interp_grid</b> 1st stage, generate w(coh, percent), meaning the level of w given coh and the percentage grid of ar_w_perc. Mesh this with the coh grid, Rows here correspond to percentage of w choices, columns correspond to cash-on-hand. The columns of cash-on-hand is determined by ar_interp_coh_grid, because we solve the 1st stage problem at that coh grid.</li></ol></div><pre class="codeinput">armt_map(<span class="string">'ar_w_perc'</span>) = ar_w_perc;
+</pre><h2 id="17">Store armt_map (2): First Stage Aggregate Savings</h2><p>w = k' + b', w is aggregate Savings%</p><div><ol><li><b>ar_w_perc</b> 1st stage, percentage w choice given coh, at each coh level the number of choice points is the same for this problem with percentage grid points.</li><li><b>ar_w_level</b> 2nd stage, level of w over which we solve the optimal percentage k' choices. Need to generate interpolant based on this so that we know optimal k* given ar_w_perc(coh) in the 1st stage</li><li><b>mt_w_by_interp_coh_interp_grid</b> 1st stage, generate w(coh, percent), meaning the level of w given coh and the percentage grid of ar_w_perc. Mesh this with the coh grid, Rows here correspond to percentage of w choices, columns correspond to cash-on-hand. The columns of cash-on-hand is determined by ar_interp_coh_grid, because we solve the 1st stage problem at that coh grid.</li></ol></div><pre class="codeinput">armt_map(<span class="string">'ar_w_perc'</span>) = ar_w_perc;
 armt_map(<span class="string">'ar_w_level'</span>) = ar_w_level;
 armt_map(<span class="string">'mt_w_by_interp_coh_interp_grid'</span>) = mt_w_by_interp_coh_interp_grid;
 armt_map(<span class="string">'mt_interp_coh_grid_mesh_w_perc'</span>) = mt_interp_coh_grid_mesh_w_perc;
-</pre><h2 id="15">Store armt_map (3): First Stage Consumption and Cash-on-Hand Grids</h2><pre class="codeinput">armt_map(<span class="string">'ar_interp_c_grid'</span>) = ar_interp_c_grid;
+</pre><h2 id="18">Store armt_map (3): First Stage Consumption and Cash-on-Hand Grids</h2><pre class="codeinput">armt_map(<span class="string">'ar_interp_c_grid'</span>) = ar_interp_c_grid;
 armt_map(<span class="string">'ar_interp_coh_grid'</span>) = ar_interp_coh_grid;
 armt_map(<span class="string">'mt_interp_coh_grid_mesh_z'</span>) = mt_interp_coh_grid_mesh_z;
 armt_map(<span class="string">'mt_z_mesh_coh_interp_grid'</span>) = mt_z_mesh_coh_interp_grid;
-</pre><h2 id="16">Store armt_map (4): Shock Grids</h2><pre class="codeinput">armt_map(<span class="string">'mt_z_trans'</span>) = mt_z_trans;
+</pre><h2 id="19">Store armt_map (4): Shock Grids</h2><pre class="codeinput">armt_map(<span class="string">'mt_z_trans'</span>) = mt_z_trans;
 armt_map(<span class="string">'ar_stationary'</span>) = ar_stationary;
 armt_map(<span class="string">'ar_z'</span>) = ar_z;
-</pre><h2 id="17">Store Function Map</h2><pre class="codeinput">func_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
+</pre><h2 id="20">Store Function Map</h2><pre class="codeinput">func_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
 func_map(<span class="string">'f_util_log'</span>) = f_util_log;
 func_map(<span class="string">'f_util_crra'</span>) = f_util_crra;
 func_map(<span class="string">'f_util_standin'</span>) = f_util_standin;
@@ -474,8 +687,8 @@ func_map(<span class="string">'f_prod'</span>) = f_prod;
 func_map(<span class="string">'f_inc'</span>) = f_inc;
 func_map(<span class="string">'f_coh'</span>) = f_coh;
 func_map(<span class="string">'f_cons'</span>) = f_cons;
-</pre><h2 id="18">Graph</h2><pre class="codeinput"><span class="keyword">if</span> (bl_graph_funcgrids)
-</pre><h2 id="20">Graph 1: a and k choice grid graphs</h2><p>compare the figure here to the same figure in <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html">ffs_akz_get_funcgrid</a>. there the grid points are on an even grid, half of the grid points have NA. for the grid here, the grid points get denser as we get closer to low w = k'+b' levels. This is what is different visually about percentage points based choice grid for the 2nd stage problem.</p><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
+</pre><h2 id="21">Graph</h2><pre class="codeinput"><span class="keyword">if</span> (bl_graph_funcgrids)
+</pre><h2 id="23">Graph 1: a and k choice grid graphs</h2><p>compare the figure here to the same figure in <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html">ffs_akz_get_funcgrid</a>. there the grid points are on an even grid, half of the grid points have NA. for the grid here, the grid points get denser as we get closer to low w = k'+b' levels. This is what is different visually about percentage points based choice grid for the 2nd stage problem.</p><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
     hold <span class="string">on</span>;
 
     chart = plot(mt_a, mt_k, <span class="string">'blue'</span>);
@@ -499,7 +712,7 @@ func_map(<span class="string">'f_cons'</span>) = f_cons;
     legend(chart(legend2plot), legendCell(legend2plot), <span class="string">'Location'</span>,<span class="string">'northeast'</span>);
 
     grid <span class="string">on</span>;
-</pre><img vspace="5" hspace="5" src="ffs_ipwkz_get_funcgrid_01.png" alt=""> <h2 id="21">Graph 2: coh by shock</h2><p>compare the figure here to the same figure in <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html">ffs_akz_get_funcgrid</a>. there the grid points are on an even grid. Visually, one could see that the blue/red line segments here are always the same length, but in the ffs_akz_get_funcgrid figure, they are increasingly longer as we move towards the right. They are even because the number of percentage points available is constant regardless of w = k' + b' levels. But previously, the number of grid points available is increasing as w increases since choice grid is based on levels.</p><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
+</pre><img vspace="5" hspace="5" src="ffs_ipwkz_get_funcgrid_01.png" alt=""> <h2 id="24">Graph 2: coh by shock</h2><p>compare the figure here to the same figure in <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/paramfunc/html/ffs_akz_get_funcgrid.html">ffs_akz_get_funcgrid</a>. there the grid points are on an even grid. Visually, one could see that the blue/red line segments here are always the same length, but in the ffs_akz_get_funcgrid figure, they are increasingly longer as we move towards the right. They are even because the number of percentage points available is constant regardless of w = k' + b' levels. But previously, the number of grid points available is increasing as w increases since choice grid is based on levels.</p><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
     chart = plot(mt_coh_wkb);
     clr = jet(numel(chart));
     <span class="keyword">for</span> m = 1:numel(chart)
@@ -519,7 +732,7 @@ func_map(<span class="string">'f_cons'</span>) = f_cons;
     legend(chart(legend2plot), legendCell(legend2plot), <span class="string">'Location'</span>,<span class="string">'southeast'</span>);
 
     grid <span class="string">on</span>;
-</pre><img vspace="5" hspace="5" src="ffs_ipwkz_get_funcgrid_02.png" alt=""> <h2 id="22">Graph 3: 2nd stage coh reached by k' b' choices by index</h2><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
+</pre><img vspace="5" hspace="5" src="ffs_ipwkz_get_funcgrid_02.png" alt=""> <h2 id="25">Graph 3: 2nd stage coh reached by k' b' choices by index</h2><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
     ar_coh_kpzgrid_unique = unique(sort(mt_coh_wkb(:)));
     scatter(1:length(ar_coh_kpzgrid_unique), ar_coh_kpzgrid_unique);
     xline(0);
@@ -528,7 +741,7 @@ func_map(<span class="string">'f_cons'</span>) = f_cons;
     ylabel(<span class="string">'Cash-on-Hand'</span>);
     xlabel({<span class="string">'Index of Cash-on-Hand Discrete Point'</span>});
     grid <span class="string">on</span>;
-</pre><img vspace="5" hspace="5" src="ffs_ipwkz_get_funcgrid_03.png" alt=""> <h2 id="23">Graph 4: 2nd stage coh reached by k' b' choices  by coh</h2><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
+</pre><img vspace="5" hspace="5" src="ffs_ipwkz_get_funcgrid_03.png" alt=""> <h2 id="26">Graph 4: 2nd stage coh reached by k' b' choices  by coh</h2><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
     ar_coh_kpzgrid_unique = unique(sort(mt_coh_wkb(:)));
     scatter(ar_coh_kpzgrid_unique, ar_coh_kpzgrid_unique, <span class="string">'.'</span>);
     xline(0);
@@ -537,7 +750,7 @@ func_map(<span class="string">'f_cons'</span>) = f_cons;
     ylabel(<span class="string">'Cash-on-Hand'</span>);
     xlabel({<span class="string">'Cash-on-Hand'</span>});
     grid <span class="string">on</span>;
-</pre><img vspace="5" hspace="5" src="ffs_ipwkz_get_funcgrid_04.png" alt=""> <h2 id="24">Graph 5: 1st State Aggregate Savings Choices by COH interpolation grids</h2><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
+</pre><img vspace="5" hspace="5" src="ffs_ipwkz_get_funcgrid_04.png" alt=""> <h2 id="27">Graph 5: 1st State Aggregate Savings Choices by COH interpolation grids</h2><pre class="codeinput">    figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
     hold <span class="string">on</span>;
 
     chart = plot(ar_interp_coh_grid, mt_w_by_interp_coh_interp_grid');
@@ -566,7 +779,7 @@ func_map(<span class="string">'f_cons'</span>) = f_cons;
 
     grid <span class="string">on</span>;
 </pre><img vspace="5" hspace="5" src="ffs_ipwkz_get_funcgrid_05.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
-</pre><h2 id="26">Display</h2><pre class="codeinput"><span class="keyword">if</span> (bl_display_funcgrids)
+</pre><h2 id="29">Display</h2><pre class="codeinput"><span class="keyword">if</span> (bl_display_funcgrids)
 
     disp(<span class="string">'----------------------------------------'</span>);
     disp(<span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span>);
@@ -784,12 +997,12 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 Variables:
 
-    Var1: 572761&times;1 double
+    Var1: 572571&times;1 double
 
         Values:
 
-            Min        0.001
-            Median    28.639
+            Min         0.02
+            Median    28.649
             Max       57.277
 
 ----------------------------------------
@@ -999,26 +1212,25 @@ function [armt_map, func_map] = ffs_ipwkz_get_funcgrid(varargin)
 
 %% Default
 
-bl_input_override = 0;
-if (length(varargin) == 3)
-    bl_input_override = varargin{3};
-end
-if (bl_input_override)
+if (~isempty(varargin))
     % override when called from outside
-    [param_map, support_map, ~] = varargin{:};
+    [param_map, support_map] = varargin{:};
 else
     % default internal run
     [param_map, support_map] = ffs_ipwkz_set_default_param();
+    
     support_map('bl_graph_funcgrids') = true;
     support_map('bl_display_funcgrids') = true;
 
     % to be able to visually see choice grid points
     param_map('fl_b_bd') = 0;
+    
     param_map('fl_w_min') = param_map('fl_b_bd');
     param_map('it_w_perc_n') = 25;
     param_map('it_ak_perc_n') = 45;
     param_map('fl_w_interp_grid_gap') = 2;
     param_map('fl_coh_interp_grid_gap') = 2;
+    
     default_maps = {param_map, support_map};
 
     % numvarargs is the number of varagin inputted
@@ -1027,21 +1239,13 @@ else
     support_map = [support_map; default_maps{2}];
 end
 
-%% Parse Parameters
+%% Parse Parameters 1a
 
-params_group = values(param_map, {'it_z_n', 'fl_z_mu', 'fl_z_rho', 'fl_z_sig'});
-[it_z_n, fl_z_mu, fl_z_rho, fl_z_sig] = params_group{:};
+params_group = values(param_map, {'fl_b_bd', 'fl_w_min', 'fl_w_max'});
+[fl_b_bd, fl_w_min, fl_w_max] = params_group{:};
 
-params_group = values(param_map, {'fl_b_bd', 'fl_w_min', 'fl_w_max', ...
-    'it_w_perc_n', 'fl_w_interp_grid_gap', 'fl_coh_interp_grid_gap'});
-[fl_b_bd, fl_w_min, fl_w_max, ...
-    it_w_perc_n, fl_w_interp_grid_gap, fl_coh_interp_grid_gap] = params_group{:};
-
-params_group = values(param_map, {'fl_k_min', 'fl_k_max', 'it_ak_perc_n'});
-[fl_k_min, fl_k_max, it_ak_perc_n] = params_group{:};
-
-params_group = values(param_map, {'fl_crra', 'fl_c_min', 'it_c_interp_grid_gap'});
-[fl_crra, fl_c_min, it_c_interp_grid_gap] = params_group{:};
+params_group = values(param_map, {'fl_crra', 'fl_c_min'});
+[fl_crra, fl_c_min] = params_group{:};
 
 params_group = values(param_map, {'fl_Amean', 'fl_alpha', 'fl_delta'});
 [fl_Amean, fl_alpha, fl_delta] = params_group{:};
@@ -1049,8 +1253,25 @@ params_group = values(param_map, {'fl_Amean', 'fl_alpha', 'fl_delta'});
 params_group = values(param_map, {'fl_r_save', 'fl_r_borr', 'fl_w'});
 [fl_r_save, fl_r_borr, fl_w] = params_group{:};
 
+%% Parse Parameters 1b
+
+params_group = values(param_map, {...
+    'it_w_perc_n', 'it_ak_perc_n',...    
+    'it_c_interp_grid_gap', 'fl_w_interp_grid_gap', 'fl_coh_interp_grid_gap'});
+[it_w_perc_n, it_ak_perc_n,...
+    it_c_interp_grid_gap, fl_w_interp_grid_gap, fl_coh_interp_grid_gap] = params_group{:};
+
+
+%% Parse Parameters 2
+
+params_group = values(param_map, {'it_z_n', 'fl_z_mu', 'fl_z_rho', 'fl_z_sig'});
+[it_z_n, fl_z_mu, fl_z_rho, fl_z_sig] = params_group{:};
+
+%% Parse Parameters 3
+
 params_group = values(support_map, {'bl_graph_funcgrids', 'bl_display_funcgrids'});
 [bl_graph_funcgrids, bl_display_funcgrids] = params_group{:};
+
 
 %% Generate Asset and Choice Grid for 2nd stage Problem
 % This generate triangular choice structure. Household choose total
