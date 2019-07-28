@@ -189,8 +189,12 @@ mt_coh_prime = f_coh(ar_z, mt_pol_a(:), mt_pol_k(:));
 
 % 2. *mt_coh_prime_on_grid_idx* is (coh_n x z_n) by (z_n):
 % index for coh'(a,k,z')
-[~, ar_coh_prime_on_grid_idx] = min(abs(mt_coh_prime(:)' - ar_interp_coh_grid'));
-mt_coh_prime_on_grid_idx = reshape(ar_coh_prime_on_grid_idx, size(mt_coh_prime));    
+mt_coh_prime_on_grid_idx = zeros(size(mt_coh_prime));
+for it_zprime_ctr=1:size(mt_coh_prime, 2)
+    ar_coh_prime = mt_coh_prime(:,it_zprime_ctr);
+    [~, ar_coh_prime_on_grid_idx] = min(abs(ar_coh_prime(:)' - ar_interp_coh_grid'));
+    mt_coh_prime_on_grid_idx(:,it_zprime_ctr) = ar_coh_prime_on_grid_idx;
+end
 
 %% E. Solve for Unique Index
 % For each z', there are (coh_n x z_n) possible coh'(z') reachable points,

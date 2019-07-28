@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Derive Distributions for Risky + Safe Asets + Interpolated Distribution (Analytical)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-26"><meta name="DC.source" content="ff_iwkz_ds_vecsv.m"><style type="text/css">
+      --><title>Derive Distributions for Risky + Safe Asets + Interpolated Distribution (Analytical)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-28"><meta name="DC.source" content="ff_iwkz_ds_vecsv.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -163,7 +163,7 @@ pos = 32 ; key = st_mat_name_main ; val = ff_iwkz_vf_vecsv_default
 pos = 33 ; key = st_mat_path ; val = C:/Users/fan/CodeDynaAsset//m_akz//solve/mat/
 pos = 34 ; key = st_mat_prefix ; val = 
 pos = 35 ; key = st_mat_suffix ; val = _p8
-pos = 36 ; key = st_mat_test_path ; val = C:/Users/fan/CodeDynaAsset//m_akz//test/ff_ikwz_ds_vecsv/mat/
+pos = 36 ; key = st_mat_test_path ; val = C:/Users/fan/CodeDynaAsset//m_akz//test/ff_iwkz_ds_vecsv/mat/
 pos = 37 ; key = st_matimg_path_root ; val = C:/Users/fan/CodeDynaAsset//m_akz/
 pos = 38 ; key = st_profile_name_main ; val = ff_iwkz_vf_vecsv_default
 pos = 39 ; key = st_profile_path ; val = C:/Users/fan/CodeDynaAsset//m_akz//solve/profile/
@@ -843,8 +843,13 @@ it_exostates_n = it_z_n;
 
 <span class="comment">% 2. *mt_coh_prime_on_grid_idx* is (coh_n x z_n) by (z_n):</span>
 <span class="comment">% index for coh'(a,k,z')</span>
-[~, ar_coh_prime_on_grid_idx] = min(abs(mt_coh_prime(:)' - ar_interp_coh_grid'));
-mt_coh_prime_on_grid_idx = reshape(ar_coh_prime_on_grid_idx, size(mt_coh_prime));
+<span class="comment">% to reduce potential size, loop over future states</span>
+mt_coh_prime_on_grid_idx = zeros(size(mt_coh_prime));
+<span class="keyword">for</span> it_zprime_ctr=1:size(mt_coh_prime, 2)
+    ar_coh_prime = mt_coh_prime(:,it_zprime_ctr);
+    [~, ar_coh_prime_on_grid_idx] = min(abs(ar_coh_prime(:)' - ar_interp_coh_grid'));
+    mt_coh_prime_on_grid_idx(:,it_zprime_ctr) = ar_coh_prime_on_grid_idx;
+<span class="keyword">end</span>
 </pre><h2 id="8">C. Expand Index so Matches Full States Index Dimension</h2><p>The index above matches the index in the cash-on-hand grid, but now, the state space is cash-on-hand jointly with shocks, that is the full states markov's states. So if there are two shocks and two cash-on-hand grid points, the cash-on-hand grid points would have been [1,2] and [1,2], but depending on which z' they match up to, they would now be [1,2] if matching to the first z', and [3,4] if matching to the second z'.</p><pre class="codeinput"><span class="comment">% mt_pol_idx_mesh_max is (NxM) by M, mt_pol_idx is N by M</span>
 mt_pol_idx_mesh_max = mt_coh_prime_on_grid_idx + (0:1:(it_exostates_n-1))*it_endostates_n;
 </pre><h2 id="9">D. Transition Probabilities from (M by M) to (NxM) by M</h2><p>Probability comes from the shock transition matrix, which is now duplicated for all cash-on-hand grid elements</p><pre class="codeinput">mt_trans_prob = reshape(repmat(mt_z_trans(:)', <span class="keyword">...</span>
@@ -1456,8 +1461,13 @@ end
 
 % 2. *mt_coh_prime_on_grid_idx* is (coh_n x z_n) by (z_n):
 % index for coh'(a,k,z')
-[~, ar_coh_prime_on_grid_idx] = min(abs(mt_coh_prime(:)' - ar_interp_coh_grid'));
-mt_coh_prime_on_grid_idx = reshape(ar_coh_prime_on_grid_idx, size(mt_coh_prime));
+% to reduce potential size, loop over future states
+mt_coh_prime_on_grid_idx = zeros(size(mt_coh_prime));
+for it_zprime_ctr=1:size(mt_coh_prime, 2)
+    ar_coh_prime = mt_coh_prime(:,it_zprime_ctr);
+    [~, ar_coh_prime_on_grid_idx] = min(abs(ar_coh_prime(:)' - ar_interp_coh_grid'));
+    mt_coh_prime_on_grid_idx(:,it_zprime_ctr) = ar_coh_prime_on_grid_idx;
+end
 
 %% C. Expand Index so Matches Full States Index Dimension
 % The index above matches the index in the cash-on-hand grid, but now, the

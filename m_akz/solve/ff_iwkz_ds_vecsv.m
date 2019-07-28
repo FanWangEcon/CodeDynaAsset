@@ -81,7 +81,7 @@ else
     % default invoke
     close all;
 
-    it_param_set = 6;
+    it_param_set = 8;
     st_akz_or_iwkz = 'iwkz';
 
     % 1. Generate Parameters
@@ -90,8 +90,6 @@ else
     % Note: param_map and support_map can be adjusted here or outside to override defaults
     % param_map('it_w_n') = 50;
     % param_map('it_z_n') = 15;
-    
-    param_map('fl_beta') = 0.90684;
 
     param_map('st_analytical_stationary_type') = 'eigenvector';
 
@@ -207,8 +205,13 @@ end
 
 % 2. *mt_coh_prime_on_grid_idx* is (coh_n x z_n) by (z_n):
 % index for coh'(a,k,z')
-[~, ar_coh_prime_on_grid_idx] = min(abs(mt_coh_prime(:)' - ar_interp_coh_grid'));
-mt_coh_prime_on_grid_idx = reshape(ar_coh_prime_on_grid_idx, size(mt_coh_prime));
+% to reduce potential size, loop over future states
+mt_coh_prime_on_grid_idx = zeros(size(mt_coh_prime));
+for it_zprime_ctr=1:size(mt_coh_prime, 2)
+    ar_coh_prime = mt_coh_prime(:,it_zprime_ctr);
+    [~, ar_coh_prime_on_grid_idx] = min(abs(ar_coh_prime(:)' - ar_interp_coh_grid'));
+    mt_coh_prime_on_grid_idx(:,it_zprime_ctr) = ar_coh_prime_on_grid_idx;
+end
 
 %% C. Expand Index so Matches Full States Index Dimension
 % The index above matches the index in the cash-on-hand grid, but now, the
