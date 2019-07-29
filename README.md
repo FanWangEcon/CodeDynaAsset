@@ -240,7 +240,10 @@ Share functions with *az* from *1.5* above, model (1) [simulate model](https://f
 3. *abz* the effects *shock parameters* on distributional outcomes
     * cross test, **no default**, [adjust shock persistence and variance](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_ds_vecsv_shk_nbc_cross.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/test/ff_az_ds_vecsv/test_shock/fsi_abz_ds_vecsv_shk_nbc_cross.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_ds_vecsv_shk_nbc_cross.html)
     * cross test, **default**, [adjust shock persistence and variance](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_ds_vecsv_shk_default_cross.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/test/ff_az_ds_vecsv/test_shock/fsi_abz_ds_vecsv_shk_default_cross.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_ds_vecsv_shk_default_cross.html)    
-4. *abz* the effects *preference + shocks + prices* on distributional outcomes
+4. *abz* the effects *min inc and save r* on outcomes
+    * cross test, **no default**, [min income and savings r](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_price/html/fsi_abz_ds_vecsv_price_nbc_cross.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/test/ff_az_ds_vecsv/test_price/fsi_abz_ds_vecsv_price_nbc_cross.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_price/html/fsi_abz_ds_vecsv_price_nbc_cross.html)
+    * cross test, **default**, [min income and savings r](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_price/html/fsi_abz_ds_vecsv_price_default_cross.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/test/ff_az_ds_vecsv/test_price/fsi_abz_ds_vecsv_price_default_cross.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_price/html/fsi_abz_ds_vecsv_price_default_cross.html)    
+5. *abz* the effects *preference + shocks + prices* on distributional outcomes
     * random test, **default**, [adjust preference shocks prices](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_joint/html/fsi_abz_ds_vecsv_joint_rand.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_abz/test/ff_az_ds_vecsv/test_joint/fsi_abz_ds_vecsv_joint_rand.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_joint/html/fsi_abz_ds_vecsv_joint_rand.html)
 
 
@@ -474,11 +477,11 @@ The code from *4.1* are modified to allow for default. Set up for default is the
 
 The code from *4.2* are modified to allow for interest rate shock for borrowing. Set up for default and interest rate shock is the same as in the *abz* model discussed in section *2*. Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/paramfunc/html/ffs_ipwkbzr_set_default_param.html), for the benchmark simulation, same parameters as *4.1*.
 
-- **75** grid points for shocks: **15** wage, **5** borrow interest
+- **55** grid points for shocks: **11** wage, **5** borrow interest
 
 1. Second Stage with borrowing *ipwkbzr* [2nd stage solution](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/solve/html/ff_ipwkbzr_evf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbzr/solve/ff_ipwkbzr_evf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/solve/html/ff_ipwkbzr_evf.html)
 2. *ipwkbzr* model [optimized vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/solve/html/ff_ipwkbzr_vf_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkbzr/solve/ff_ipwkbzr_vf_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/solve/html/ff_ipwkbzr_vf_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/solve/profile/ff_ipwkbzr_vf_vecsv_default_p3/file0.html)    
-    * speed: **30.0** seconds
+    * speed: **19.6** seconds
 
 ## 4.5 Asset Distributions
 
@@ -568,7 +571,7 @@ Share functions with *az* from *1.5* above, model (1) [simulate model](https://f
 2. *ipwkz* the effects production function *shock parameters* on distributional outcomes
     * sample simulate, [adjust shock persistence and variance](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_shock/html/fsi_ipwkz_ds_vecsv_shock.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_shock/fsi_ipwkz_ds_vecsv_shock.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_shock/html/fsi_ipwkz_ds_vecsv_shock.html)
     * cross test, [adjust shock persistence and variance](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_shock/html/fsi_ipwkz_ds_vecsv_shock_cross.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_shock/fsi_ipwkz_ds_vecsv_shock_cross.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_shock/html/fsi_ipwkz_ds_vecsv_shock_cross.html)    
-3. *ipwkz* the effects production function *elasticity and depreciation parameters* on distributional outcomes
+3. *ipwkz* the effects production function *elasticity and depreciation parameters*
     * sample simulate, [adjust elasticity and depreciation](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_prod/html/fsi_ipwkz_ds_vecsv_prod.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_prod/fsi_ipwkz_ds_vecsv_prod.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_prod/html/fsi_ipwkz_ds_vecsv_prod.html)
     * cross test, [adjust elasticity and depreciation](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_prod/html/fsi_ipwkz_ds_vecsv_prod_cross.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_prod/fsi_ipwkz_ds_vecsv_prod_cross.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_prod/html/fsi_ipwkz_ds_vecsv_prod_cross.html)
 4. *ipwkz* the effects *price parameters* on distributional outcomes
@@ -577,8 +580,6 @@ Share functions with *az* from *1.5* above, model (1) [simulate model](https://f
     * cross test, [adjust preference shocks prices](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_joint/html/fsi_ipwkz_ds_vecsv_joint_rand.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_joint/fsi_ipwkz_ds_vecsv_joint_rand.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_ipwkz/test/ff_ipwkz_ds_vecsv/test_joint/html/fsi_ipwkz_ds_vecsv_joint_rand.html)
 
 **Savings + Borrowing Simulation Results (ipWKBZR)**:
-
-
 
 # 5. One Asset Formal + Informal
 
@@ -636,7 +637,7 @@ Using three algorithm that provide identical solutions:
 
 Same as *5.2*, but now include interest rate shock. Parameters can be adjusted [here](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_abzr_paramfunc/html/ffs_abzr_fibs_set_default_param.html), for the benchmark simulation, similar to the *abz+fibs* model, except:
 
-- **75** grid points for shocks: **15** wage, **5** borrow interest
+- **55** grid points for shocks: **11** wage, **5** borrow interest
 
 Using three algorithm that provide identical solutions:
 
@@ -717,7 +718,7 @@ An application of the codes developed in sections (1) through (5) is the paper: 
 
 ## 6.2 Two Assets For+Inf+R Shock (ipWKBZR+FIBS)
 
-- **75** grid points for shocks: **15** wage, **5** borrow interest
+- **55** grid points for shocks: **11** wage, **5** borrow interest
 
 1. Use *ipwkbzr+fibs* [2nd stage solution with Formal Informal and Bridge](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbzr_solve/html/ff_ipwkbzr_fibs_evf.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_ipwkbzr_solve/ff_ipwkbzr_fibs_evf.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbzr_solve/html/ff_ipwkbzr_fibs_evf.html)    
 2. *ipwkbzr* model [optimized vectorized solution](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbzr_solve/html/ff_ipwkbzr_fibs_vf_vecsv.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_fibs/m_ipwkbzr_solve/ff_ipwkbzr_fibs_vf_vecsv.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbzr_solve/html/ff_ipwkbzr_fibs_vf_vecsv.html) \| [**profile**](https://fanwangecon.github.io/CodeDynaAsset/m_fibs/m_ipwkbzr_solve/profile/ff_ipwkbzr_fibs_vf_vecsv_default_p3/file0.html)    
