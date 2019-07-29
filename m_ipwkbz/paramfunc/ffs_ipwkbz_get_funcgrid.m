@@ -69,10 +69,10 @@ function [armt_map, func_map] = ffs_ipwkbz_get_funcgrid(varargin)
 
 %% Default
 if (~isempty(varargin))
-    
+
     % override when called from outside
     [param_map, support_map] = varargin{:};
-    
+
 else
     % default internal run
     [param_map, support_map] = ffs_ipwkbz_set_default_param();
@@ -104,9 +104,9 @@ end
 params_group = values(param_map, {'it_z_n', 'fl_z_mu', 'fl_z_rho', 'fl_z_sig'});
 [it_z_n, fl_z_mu, fl_z_rho, fl_z_sig] = params_group{:};
 
-params_group = values(param_map, {'fl_nan_replace', 'fl_b_bd', 'fl_w_min', 'fl_w_max', ...
+params_group = values(param_map, {'bl_default', 'fl_b_bd', 'fl_w_min', 'fl_w_max', ...
     'it_w_perc_n', 'fl_w_interp_grid_gap', 'fl_coh_interp_grid_gap'});
-[fl_nan_replace, fl_b_bd, fl_w_min, fl_w_max, ...
+[bl_default, fl_b_bd, fl_w_min, fl_w_max, ...
     it_w_perc_n, fl_w_interp_grid_gap, fl_coh_interp_grid_gap] = params_group{:};
 
 params_group = values(param_map, {'fl_k_min', 'fl_k_max', 'it_ak_perc_n'});
@@ -133,11 +133,18 @@ params_group = values(support_map, {'it_display_summmat_rowmax', 'it_display_sum
 % <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbz/paramfunc/html/ffs_ipwkbz_set_default_param.html
 % ffs_ipwkbz_set_default_param> for details.
 
+if (~bl_default)
+    fl_w_min_use = max(fl_w_min, -(fl_w)/fl_r_borr);
+    fl_b_bd = fl_w_min_use;
+else
+    fl_w_min_use = fl_w_min;
+end
+
 % percentage grid for 1st stage choice problem, level grid for 2nd stage
 % solving optimal k given w and z.
-ar_w_perc = linspace(0.001, 0.999, it_w_perc_n);
-it_w_interp_n = (fl_w_max-fl_w_min)/(fl_w_interp_grid_gap);
-ar_w_level_full = fft_array_add_zero(linspace(fl_w_min, fl_w_max, it_w_interp_n), true);
+ar_w_perc = linspace(0, 1, it_w_perc_n);
+it_w_interp_n = (fl_w_max-fl_w_min_use)/(fl_w_interp_grid_gap);
+ar_w_level_full = fft_array_add_zero(linspace(fl_w_min_use, fl_w_max, it_w_interp_n), true);
 ar_w_level = ar_w_level_full;
 it_w_interp_n = length(ar_w_level_full);
 
@@ -145,7 +152,7 @@ it_w_interp_n = length(ar_w_level_full);
 ar_k_max = ar_w_level_full - fl_b_bd;
 
 % k percentage choice grid
-ar_ak_perc = linspace(0.001, 0.999, it_ak_perc_n);
+ar_ak_perc = linspace(0, 1, it_ak_perc_n);
 
 % 2nd stage percentage choice matrixes
 % (ar_k_max') is it_w_interp_n by 1, and (ar_ak_perc) is 1 by it_ak_perc_n

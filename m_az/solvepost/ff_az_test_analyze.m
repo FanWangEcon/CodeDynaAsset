@@ -205,8 +205,8 @@ for it_plot = ar_it_plot_sets
         st_title = 'Correlation with Consumption';
         st_ytitle = 'Correlation Coefficient';
     elseif (it_plot == 10)
-        ar_st_variablenames_plot =  {'cl_mt_pol_a', 'cl_mt_pol_c'};
-        ar_st_legend_plot =  {'savings', 'consumption'};
+        ar_st_variablenames_plot =  {'cl_mt_pol_c'};
+        ar_st_legend_plot =  {'consumption'};
         ar_st_colnames_plot =  repmat({'pYisMINY'}, [1, length(ar_st_variablenames_plot)]);
         st_title = 'Default Fraction';
         st_ytitle = 'Default Fraction';        

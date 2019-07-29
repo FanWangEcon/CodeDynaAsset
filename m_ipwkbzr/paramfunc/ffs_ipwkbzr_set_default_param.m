@@ -57,6 +57,10 @@ param_map('st_v_coh_z_interp_method') = 'method_cell';
 %% 2a. Borrowing Default Parameters
 
 param_map('fl_b_bd') = -20;
+param_map('fl_w_min') = param_map('fl_b_bd');
+param_map('fl_w_max') = 50;
+param_map('fl_k_max') = (param_map('fl_w_max') - param_map('fl_b_bd'));
+
 param_map('fl_c_min') = 0.02;
 param_map('fl_default_wprime') = 0; % wprime not a prime
 param_map('bl_default') = true; % if borrowing is default allowed
@@ -81,7 +85,7 @@ param_map('fl_z_r_borr_n') = 5;
 
 % Production Function
 % Productivity Shock Parameters
-param_map('it_z_wage_n') = 15;
+param_map('it_z_wage_n') = 11;
 param_map('fl_z_wage_mu') = 0;
 param_map('fl_z_wage_rho') = 0.8;
 param_map('fl_z_wage_sig') = 0.2;

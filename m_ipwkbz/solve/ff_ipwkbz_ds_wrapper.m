@@ -17,6 +17,7 @@ function [result_map] = ff_ipwkbz_ds_wrapper(varargin)
 
 it_param_set = 8;
 [param_map, support_map] = ffs_ipwkbz_set_default_param(it_param_set);
+param_map('bl_default') = true;
 
 % parameters can be set inside ffs_ipwkz_set_default_param or updated here
 % param_map('it_w_perc_n') = 50;

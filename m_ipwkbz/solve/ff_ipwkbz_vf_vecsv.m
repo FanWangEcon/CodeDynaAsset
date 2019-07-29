@@ -425,9 +425,10 @@ result_map('mt_pol_idx') = mt_pol_idx;
 result_map('cl_mt_coh') = {mt_interp_coh_grid_mesh_z, zeros(1)};
 result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
 result_map('cl_mt_pol_k') = {mt_pol_k, zeros(1)};
-result_map('cl_mt_pol_c') = {f_cons(mt_interp_coh_grid_mesh_z, mt_pol_a, mt_pol_k), zeros(1)};
+mt_pol_c = f_cons(mt_interp_coh_grid_mesh_z, mt_pol_a, mt_pol_k);
+mt_pol_c(mt_pol_c <= fl_c_min) = fl_c_min;
+result_map('cl_mt_pol_c') = {mt_pol_c, zeros(1)};
 result_map('ar_st_pol_names') = ["cl_mt_coh", "cl_mt_pol_a", "cl_mt_pol_k", "cl_mt_pol_c"];
-
 
 if (bl_post)
     bl_input_override = true;
@@ -438,7 +439,7 @@ if (bl_post)
     armt_map('mt_coh_wkb_ori') = mt_coh_wkb;
     armt_map('ar_a_meshk_ori') = ar_a_meshk;
     armt_map('ar_k_mesha_ori') = ar_k_mesha;
-    
+
     % graphing based on coh_wkb, but that does not match optimal choice
     % matrixes for graphs.
     armt_map('mt_coh_wkb') = mt_interp_coh_grid_mesh_z;

@@ -56,6 +56,9 @@ param_map('st_v_coh_z_interp_method') = 'method_cell';
 
 %% 2. Borrowing Default Parameters
 param_map('fl_b_bd') = -20;
+param_map('fl_w_min') = param_map('fl_b_bd');
+param_map('fl_w_max') = 50;
+param_map('fl_k_max') = (param_map('fl_w_max') - param_map('fl_b_bd'));
 param_map('fl_c_min') = 0.02;
 param_map('fl_default_wprime') = 0; % wprime not a prime
 param_map('bl_default') = true; % if borrowing is default allowed
@@ -89,11 +92,6 @@ end
 %% 3. Merge Parameters Import
 
 [param_map_ipwkbz, support_map_ipwkbz] = ffs_ipwkz_set_default_param(it_subset);
-
-% Remove Keys not Relevant for the Interest Rate Shock Model
-cl_st_ipwkbz_keysdrop = {'fl_z_rho', 'fl_z_mu', 'fl_z_sig', ...
-                         'fl_r_borr'};
-remove(param_map_ipwkbz, cl_st_ipwkbz_keysdrop);
 
 % Merge
 param_map = [param_map_ipwkbz; param_map];

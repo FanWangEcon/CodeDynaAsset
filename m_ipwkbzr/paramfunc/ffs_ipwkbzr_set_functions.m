@@ -121,7 +121,7 @@ f_cons = @(coh, bprime, kprime) (coh - kprime - bprime);
 
 f_util_standin = @(fl_r_borr, z, b, k) f_util_log((f_coh(fl_r_borr,z,b,k)-fl_b_bd).*((f_coh(fl_r_borr,z,b,k) - fl_b_bd) > fl_c_min) + ...
                                        fl_c_min.*((f_coh(fl_r_borr,z,b,k) - fl_b_bd) <= fl_c_min));
-                                   
+
 % f_util_standin_coh = @(coh, fl_r_borr) f_util_log((coh-fl_b_bd).*( (coh > 0) & (((coh - fl_b_bd)./(1+fl_r_borr)) > fl_c_min) ) + ...
 %                                                   ((coh-fl_b_bd)./(1+fl_r_borr)).*( (coh <= 0) & (((coh - fl_b_bd)./(1+fl_r_borr)) > fl_c_min) ) + ...
 %                                                   fl_c_min.*( (((coh - fl_b_bd)./(1+fl_r_borr)) <= fl_c_min) ));
@@ -130,6 +130,6 @@ f_util_standin = @(fl_r_borr, z, b, k) f_util_log((f_coh(fl_r_borr,z,b,k)-fl_b_b
 f_util_standin_coh = @(coh, fl_r_borr) f_util_log((coh-fl_b_bd).*( (coh > 0) & (((coh - fl_b_bd)./(1)) > fl_c_min)) + ...
                                                   ((coh-fl_b_bd)./(1)).*( (coh <= 0) & (((coh - fl_b_bd)./(1)) > fl_c_min)) + ...
                                                   (fl_c_min./(1+fl_r_borr)).*( (((coh - fl_b_bd)./(1)) <= fl_c_min)));
-                                              
+
 
 end

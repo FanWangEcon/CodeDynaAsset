@@ -116,12 +116,12 @@ function [armt_map, func_map] = ffs_ipwkbzr_get_funcgrid(varargin)
 
 %% Default
 if (~isempty(varargin))
-    
+
     % override when called from outside
-    [param_map, support_map] = varargin{:};    
-    
+    [param_map, support_map] = varargin{:};
+
 else
-    
+
     close all;
     % default internal run
     [param_map, support_map] = ffs_ipwkbzr_set_default_param();
@@ -142,7 +142,7 @@ else
         % to be able to visually see choice grid points
         param_map('fl_b_bd') = -20; % borrow bound, = 0 if save only
         param_map('fl_default_aprime') = 0;
-        param_map('bl_default') = 0; % if borrowing is default allowed
+        param_map('bl_default') = false; % if borrowing is default allowed
 
         param_map('fl_w_min') = param_map('fl_b_bd');
         param_map('it_w_perc_n') = 25;
@@ -156,7 +156,7 @@ else
 %         param_map('fl_z_r_borr_n') = 3;
 
         param_map('fl_z_r_borr_min') = 0.025;
-        param_map('fl_z_r_borr_max') = 0.95;
+        param_map('fl_z_r_borr_max') = 0.095;
         param_map('fl_z_r_borr_n') = 3;
 
     elseif (strcmp(st_param_which, 'small'))
@@ -200,8 +200,8 @@ end
 
 %% Parse Parameters 1a
 
-params_group = values(param_map, {'fl_b_bd', 'fl_w_min', 'fl_w_max'});
-[fl_b_bd, fl_w_min, fl_w_max] = params_group{:};
+params_group = values(param_map, {'bl_default', 'fl_b_bd', 'fl_w_min', 'fl_w_max'});
+[bl_default, fl_b_bd, fl_w_min, fl_w_max] = params_group{:};
 
 params_group = values(param_map, {'fl_crra', 'fl_c_min'});
 [fl_crra, fl_c_min] = params_group{:};
@@ -246,6 +246,23 @@ params_group = values(support_map, {'bl_graph_funcgrids', 'bl_graph_funcgrids_de
 params_group = values(support_map, {'it_display_summmat_rowmax', 'it_display_summmat_colmax'});
 [it_display_summmat_rowmax, it_display_summmat_colmax] = params_group{:};
 
+
+%% F1: Get Shock: Income Shock (ar1)
+
+[~, mt_z_wage_trans, ar_z_wage_prob, ar_z_wage] = ffto_gen_tauchen_jhl(fl_z_wage_mu,fl_z_wage_rho,fl_z_wage_sig,it_z_wage_n);
+
+%% F2: Get Shock: Interest Rate Shock (iid)
+
+% get borrowing grid and probabilities
+param_dsv_map = containers.Map('KeyType','char', 'ValueType','any');
+param_dsv_map('st_drv_ele_type') = st_z_r_borr_drv_ele_type;
+param_dsv_map('st_drv_prb_type') = st_z_r_borr_drv_prb_type;
+param_dsv_map('fl_poiss_mean') = fl_z_r_borr_poiss_mean;
+param_dsv_map('fl_max') = fl_z_r_borr_max;
+param_dsv_map('fl_min') = fl_z_r_borr_min;
+param_dsv_map('fl_n') = fl_z_r_borr_n;
+[ar_z_r_borr, ar_z_r_borr_prob] = fft_gen_discrete_var(param_dsv_map, true);
+
 %% G: Generate Asset and Choice Grid for 2nd stage Problem
 % This generate triangular choice structure. Household choose total
 % aggregate savings, and within that how much to put into risky capital and
@@ -253,11 +270,19 @@ params_group = values(support_map, {'it_display_summmat_rowmax', 'it_display_sum
 % <https://fanwangecon.github.io/CodeDynaAsset/m_ipwkbzr/paramfunc/html/ffs_ipwkbzr_set_default_param.html
 % ffs_ipwkbzr_set_default_param> for details.
 
+if (~bl_default)
+    fl_r_borr_max = max(ar_z_r_borr);
+    fl_w_min_use = max(fl_w_min, -(fl_w)/fl_r_borr_max);
+    fl_b_bd = fl_w_min_use;
+else
+    fl_w_min_use = fl_w_min;
+end
+
 % percentage grid for 1st stage choice problem, level grid for 2nd stage
 % solving optimal k given w and z.
-ar_w_perc = linspace(0.001, 0.999, it_w_perc_n);
-it_w_interp_n = ((fl_w_max-fl_w_min)/(fl_w_interp_grid_gap));
-ar_w_level_full = fft_array_add_zero(linspace(fl_w_min, fl_w_max, it_w_interp_n), true);
+ar_w_perc = linspace(0, 1, it_w_perc_n);
+it_w_interp_n = ((fl_w_max-fl_w_min_use)/(fl_w_interp_grid_gap));
+ar_w_level_full = fft_array_add_zero(linspace(fl_w_min_use, fl_w_max, it_w_interp_n), true);
 ar_w_level = ar_w_level_full;
 it_w_interp_n = length(ar_w_level_full);
 
@@ -265,7 +290,7 @@ it_w_interp_n = length(ar_w_level_full);
 ar_k_max = ar_w_level_full - fl_b_bd;
 
 % k percentage choice grid
-ar_ak_perc = linspace(0.001, 0.999, it_ak_perc_n);
+ar_ak_perc = linspace(0, 1, it_ak_perc_n);
 
 % 2nd stage percentage choice matrixes
 % (ar_k_max') is it_w_interp_n by 1, and (ar_ak_perc) is 1 by it_ak_perc_n
@@ -289,21 +314,6 @@ ar_k_mesha_full = mt_k(:);
 ar_a_meshk = ar_a_meshk_full;
 ar_k_mesha = ar_k_mesha_full;
 
-%% F1: Get Shock: Income Shock (ar1)
-
-[~, mt_z_wage_trans, ar_z_wage_prob, ar_z_wage] = ffto_gen_tauchen_jhl(fl_z_wage_mu,fl_z_wage_rho,fl_z_wage_sig,it_z_wage_n);
-
-%% F2: Get Shock: Interest Rate Shock (iid)
-
-% get borrowing grid and probabilities
-param_dsv_map = containers.Map('KeyType','char', 'ValueType','any');
-param_dsv_map('st_drv_ele_type') = st_z_r_borr_drv_ele_type;
-param_dsv_map('st_drv_prb_type') = st_z_r_borr_drv_prb_type;
-param_dsv_map('fl_poiss_mean') = fl_z_r_borr_poiss_mean;
-param_dsv_map('fl_max') = fl_z_r_borr_max;
-param_dsv_map('fl_min') = fl_z_r_borr_min;
-param_dsv_map('fl_n') = fl_z_r_borr_n;
-[ar_z_r_borr, ar_z_r_borr_prob] = fft_gen_discrete_var(param_dsv_map, true);
 
 % iid transition matrix
 mt_z_r_borr_prob_trans = repmat(ar_z_r_borr_prob, [length(ar_z_r_borr_prob), 1]);
@@ -589,7 +599,7 @@ mt_z_mesh_coh_wkb = repmat((1:it_z_n), [size(mt_coh_wkb,1), 1]);
 mt_z_mesh_coh_wkb_seg = repmat((1:it_z_n), [it_wak_n, 1]);
 
 if (ismember(st_v_coh_z_interp_method, ["method_cell"]))
-    
+
     cl_mt_coh_wkb_mesh_z_r_borr = cell([fl_z_r_borr_n, 1]);
     for it_z_r_borr_ctr = 1:1:fl_z_r_borr_n
         it_mt_val_row_start = it_wak_n*(it_z_r_borr_ctr-1) + 1;
@@ -597,7 +607,7 @@ if (ismember(st_v_coh_z_interp_method, ["method_cell"]))
         cl_mt_coh_wkb_mesh_z_r_borr{it_z_r_borr_ctr} = ...
             mt_coh_wkb_mesh_z_r_borr(it_mt_val_row_start:it_mt_val_row_end, :);
     end
-    
+
 elseif (ismember(st_v_coh_z_interp_method, ["method_idx_a", "method_idx_b"]))
 
     % This is borrowing with default or not condition
@@ -614,7 +624,7 @@ elseif (ismember(st_v_coh_z_interp_method, ["method_idx_a", "method_idx_b"]))
         cl_mt_coh_wkb_mesh_z_r_borr{it_z_r_borr_ctr} = mt_coh_wkb_mesh_z_r_borr_seg;
 
     end
-    
+
 end
 
 %% Generate 1st Stage States: Interpolation Cash-on-hand Interpolation Grid

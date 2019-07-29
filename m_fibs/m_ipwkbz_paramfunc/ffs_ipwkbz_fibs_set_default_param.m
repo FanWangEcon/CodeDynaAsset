@@ -34,6 +34,10 @@ param_map('st_model') = 'ipwkbz_fibs';
 %% 2a. Borrowing Default Parameters
 
 param_map('fl_b_bd') = -20;
+param_map('fl_w_min') = param_map('fl_b_bd');
+param_map('fl_w_max') = 50;
+param_map('fl_k_max') = (param_map('fl_w_max') - param_map('fl_b_bd'));
+
 param_map('fl_c_min') = 0.02;
 param_map('fl_default_wprime') = 0; % wprime not a prime
 param_map('bl_default') = true; % if borrowing is default allowed

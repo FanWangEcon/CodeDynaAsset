@@ -1,3 +1,6 @@
+- 2019-07-27 20:49
+  + update parameter testing for models with zr, only has single interest rate for borrowing now. 
+
 ## 2019-07-25 08:16
 
 update abz:

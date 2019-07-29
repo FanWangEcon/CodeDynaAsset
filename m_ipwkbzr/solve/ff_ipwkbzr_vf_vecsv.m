@@ -284,21 +284,21 @@ end
 
 % Value Function Iteration
 while bl_vfi_continue
-    it_iter = it_iter + 1;    
-    
-    %% Interpolate V(coh, Z) 1: Splinterp2 
+    it_iter = it_iter + 1;
+
+    %% Interpolate V(coh, Z) 1: Splinterp2
     % Interpolate reacahble V(coh(k'(w),b'(w),zr,zw'),zw',zr')) given v(coh, z)
-    
+
     if (strcmp(st_v_coh_z_interp_method, 'method_idx_a'))
         for it_z_r_borr_ctr = 1:1:fl_z_r_borr_n
             clmt_val_wkb_interpolated{it_z_r_borr_ctr} = ...
                 splinterp2(mt_val_cur,mt_z_mesh_coh_wkb_seg,cl_mt_coh_wkb_mesh_z_r_borr{it_z_r_borr_ctr});
-        end        
+        end
     end
-    
-    %% Interpolate V(coh, Z) 2: griddedInterpolant(V) 
+
+    %% Interpolate V(coh, Z) 2: griddedInterpolant(V)
     % Interpolate reacahble V(coh(k'(w),b'(w),zr,zw'),zw',zr')) given v(coh, z)
-    
+
     if (strcmp(st_v_coh_z_interp_method, 'method_idx_b'))
         % Generate Interpolant for v(coh,z)
         % mt_z_wage_mesh_interp_coh_grid is: (I^{coh_interp}) by (M^z)
@@ -307,12 +307,12 @@ while bl_vfi_continue
             clmt_val_wkb_interpolated{it_z_r_borr_ctr} = ...
                 f_grid_interpolant_value(mt_z_mesh_coh_wkb_seg,...
                                          cl_mt_coh_wkb_mesh_z_r_borr{it_z_r_borr_ctr});
-        end    
+        end
     end
-    
+
     %% Interpolate V(coh, Z) 3: Store in Cell
     % Interpolate reacahble V(coh(k'(w),b'(w),zr,zw'),zw',zr')) given v(coh, z)
-    
+
     if (strcmp(st_v_coh_z_interp_method, 'method_cell'))
         f_grid_interpolant_value = griddedInterpolant(...
             mt_z_mesh_interp_coh_grid', mt_interp_coh_grid_mesh_z', ...
@@ -324,12 +324,12 @@ while bl_vfi_continue
                 f_grid_interpolant_value(mt_z_mesh_coh_wkb_seg,...
                                          cl_mt_coh_wkb_mesh_z_r_borr{it_z_r_borr_ctr});
         end
-    end        
-       
-    
+    end
+
+
     %% Interpolate V(coh, Z) 4: Single Call Full Matrix
     % Interpolate reacahble V(coh(k'(w),b'(w),zr,zw'),zw',zr')) given v(coh, z)
-    
+
     if (strcmp(st_v_coh_z_interp_method, 'method_matrix'))
         % Generate Interpolant for v(coh,z)
         % mt_z_wage_mesh_interp_coh_grid is: (I^{coh_interp}) by (M^z)
@@ -341,12 +341,12 @@ while bl_vfi_continue
         % mt_z_wage_mesh_coh_wkb and mt_coh_wkb are: (I^k x I^w x M^r) by (M^z)
         clmt_val_wkb_interpolated = f_grid_interpolant_value(mt_z_mesh_coh_wkb, mt_coh_wkb_mesh_z_r_borr);
     end
-    
+
     %% Interpolate V(coh, Z) 5: Matrix Store
     % Interpolate reacahble V(coh(k'(w),b'(w),zr,zw'),zw',zr')) given v(coh, z)
 
     if (strcmp(st_v_coh_z_interp_method, 'method_mat_seg'))
-    
+
         % 1. Number of W/B/K Choice Combinations
         it_ak_perc_n = length(ar_ak_perc);
         it_w_interp_n = length(ar_w_level);
@@ -592,7 +592,9 @@ result_map('mt_pol_idx') = mt_pol_idx;
 result_map('cl_mt_coh') = {mt_interp_coh_grid_mesh_z, zeros(1)};
 result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
 result_map('cl_mt_pol_k') = {mt_pol_k, zeros(1)};
-result_map('cl_mt_pol_c') = {f_cons(mt_interp_coh_grid_mesh_z, mt_pol_a, mt_pol_k), zeros(1)};
+mt_pol_c = f_cons(mt_interp_coh_grid_mesh_z, mt_pol_a, mt_pol_k);
+mt_pol_c(mt_pol_c <= fl_c_min) = fl_c_min;
+result_map('cl_mt_pol_c') = {mt_pol_c, zeros(1)};
 result_map('ar_st_pol_names') = ["cl_mt_coh", "cl_mt_pol_a", "cl_mt_pol_k", "cl_mt_pol_c"];
 
 if (bl_post)
@@ -604,7 +606,7 @@ if (bl_post)
     armt_map('mt_coh_wkb_ori') = mt_coh_wkb;
     armt_map('ar_a_meshk_ori') = ar_a_meshk;
     armt_map('ar_k_mesha_ori') = ar_k_mesha;
-    
+
     % graphing based on coh_wkb, but that does not match optimal choice
     % matrixes for graphs.
     armt_map('mt_coh_wkb') = mt_interp_coh_grid_mesh_z;
@@ -618,22 +620,22 @@ end
 %% Display Various Containers
 
 if (bl_display_defparam)
-    
-    %% Display 1 support_map    
+
+    %% Display 1 support_map
     fft_container_map_display(support_map, it_display_summmat_rowmax, it_display_summmat_colmax);
-        
+
     %% Display 2 armt_map
     fft_container_map_display(armt_map, it_display_summmat_rowmax, it_display_summmat_colmax);
 
     %% Display 3 param_map
     fft_container_map_display(param_map, it_display_summmat_rowmax, it_display_summmat_colmax);
-    
+
     %% Display 4 func_map
     fft_container_map_display(func_map, it_display_summmat_rowmax, it_display_summmat_colmax);
-    
+
     %% Display 5 result_map
     fft_container_map_display(result_map, it_display_summmat_rowmax, it_display_summmat_colmax);
-    
+
 end
 
 end

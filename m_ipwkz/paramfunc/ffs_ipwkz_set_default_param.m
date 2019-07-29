@@ -343,7 +343,6 @@ elseif (ismember(it_subset, [5,6,8,9]))
 
     if (ismember(it_subset, [8, 9]))
 
-        support_map('bl_time') = false;
         support_map('bl_display') = false;
         support_map('bl_display_dist') = false;
         support_map('bl_display_final_dist_detail') = true;

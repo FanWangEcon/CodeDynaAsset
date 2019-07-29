@@ -232,33 +232,49 @@ if (it_size_type == 1)
 
         param_map('it_a_n') = 100;
 
-    elseif (ismember(st_model, ["abz"]))
+    elseif (ismember(st_model, ["abz", "ipwkbzr"]))
 
-        param_map('fl_z_r_borr_n') = 5;
-        param_map('it_z_wage_n') = 11;
-        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+        if (ismember(st_model, ["abz"]))
 
-        param_map('it_a_n') = 100;
+            param_map('fl_z_r_borr_n') = 5;
+            param_map('it_z_wage_n') = 5;
+            param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+
+            param_map('it_a_n') = 100;
+
+        elseif (ismember(st_model, ["ipwkbzr"]))
+
+            param_map('fl_z_r_borr_n') = 5;
+            param_map('it_z_wage_n') = 5;
+            param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+
+            param_map('fl_coh_interp_grid_gap') = 0.3;
+            param_map('it_c_interp_grid_gap') = 10^-4;
+            param_map('it_w_perc_n') = 25;
+            param_map('it_ak_perc_n') = param_map('it_w_perc_n');
+            param_map('fl_w_interp_grid_gap') = 0.3;
+
+        end
 
     elseif (ismember(st_model, ["akz_wkz_iwkz", "ipwkz"]))
 
         param_map('it_z_n') = 11;
         param_map('fl_coh_interp_grid_gap') = 0.2;
         param_map('it_c_interp_grid_gap') = 10^-4;
-        
+
         if (ismember(st_model, ["akz_wkz_iwkz"]))
-            
+
             param_map('it_w_n') = 25;
             param_map('it_ak_n') = param_map('it_w_n');
-            
+
         elseif (ismember(st_model, ["ipwkz"]))
-            
+
             param_map('it_w_perc_n') = 25;
             param_map('it_ak_perc_n') = param_map('it_w_perc_n');
             param_map('fl_w_interp_grid_gap') = 0.2;
-            
+
         end
-                
+
     end
 
 elseif (it_size_type == 2)
@@ -274,34 +290,47 @@ elseif (it_size_type == 3)
 
         param_map('it_a_n') = 2250;
 
-    elseif (ismember(st_model, ["abz"]))
+    elseif (ismember(st_model, ["abz", "ipwkbzr"]))
 
+        % keep the interest rate structure the same as default
         param_map('fl_z_r_borr_n') = 11;
         param_map('it_z_wage_n') = 11;
         param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
 
-        param_map('it_a_n') = 1250;
+        if (ismember(st_model, ["abz"]))
+
+            param_map('it_a_n') = 1250;
+
+        elseif (ismember(st_model, ["ipwkbzr"]))
+
+            param_map('fl_coh_interp_grid_gap') = 0.05;
+            param_map('it_c_interp_grid_gap') = 10^-4;
+            param_map('it_w_perc_n') = 100;
+            param_map('it_ak_perc_n') = param_map('it_w_perc_n');
+            param_map('fl_w_interp_grid_gap') = 0.05;
+
+        end
 
     elseif (ismember(st_model, ["akz_wkz_iwkz", "ipwkz"]))
 
         param_map('it_z_n') = 21;
         param_map('fl_coh_interp_grid_gap') = 0.025;
         param_map('it_c_interp_grid_gap') = 10^-4;
-        
+
         if (ismember(st_model, ["akz_wkz_iwkz"]))
-            
+
             param_map('it_w_n') = 150;
             param_map('it_ak_n') = param_map('it_w_n');
-            
+
         elseif (ismember(st_model, ["ipwkz"]))
-            
+
             param_map('it_w_perc_n') = 150;
             param_map('it_ak_perc_n') = param_map('it_w_perc_n');
             param_map('fl_w_interp_grid_gap') = 0.025;
-            
+
         end
-                
-    end        
+
+    end
 end
 
 %% Parase Preference and Shock Parameters
@@ -510,13 +539,13 @@ elseif (ismember(st_model, ["akz_wkz_iwkz"]))
     disp(['xxxxx st_model = ' st_model ...
           ', it_w_n = ' num2str(it_w_n) ', it_ak_n = ' num2str(it_ak_n) ...
           ', it_z_n = ' num2str(it_z_n) ' xxxxx']);
-elseif (ismember(st_model, ["ipwkz"]))
+elseif (ismember(st_model, ["ipwkz", "ipwkbzr"]))
     it_w_perc_n = param_map('it_w_perc_n');
     it_ak_perc_n = param_map('it_ak_perc_n');
     it_z_n = param_map('it_z_n');
     disp(['xxxxx st_model = ' st_model ...
           ', it_w_perc_n = ' num2str(it_w_perc_n) ', it_ak_perc_n = ' num2str(it_ak_perc_n) ...
-          ', it_z_n = ' num2str(it_z_n) ' xxxxx']);    
+          ', it_z_n = ' num2str(it_z_n) ' xxxxx']);
 end
 
 
@@ -546,6 +575,12 @@ elseif (ismember(st_model, ["ipwkz"]))
     result_map = ff_ipwkz_vf_vecsv(param_map, support_map, armt_map, func_map);
     result_map = ff_iwkz_ds_vecsv(param_map, support_map, armt_map, func_map, result_map);
 
+elseif (ismember(st_model, ["ipwkbzr"]))
+
+    [armt_map, func_map] = ffs_ipwkbzr_get_funcgrid(param_map, support_map);
+    result_map = ff_ipwkbzr_vf_vecsv(param_map, support_map, armt_map, func_map);
+    result_map = ff_iwkz_ds_vecsv(param_map, support_map, armt_map, func_map, result_map);
+
 end
 
 %% Store Results to Table
@@ -564,8 +599,25 @@ end
 %% Map Corrections
 function param_map = map_correction(param_map)
 
+    params_group = values(param_map, {'st_model'});
+    [st_model] = params_group{:};
+
     if (isKey(param_map, 'fl_z_r_borr_n'))
         param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
     end
+
+    if (ismember(st_model, ["ipwkbz", "ipwkbzr"]))
+
+        if (isKey(param_map, 'fl_b_bd'))
+            param_map('fl_b_bd') = -20;
+            param_map('fl_w_min') = param_map('fl_b_bd');
+            param_map('fl_w_max') = 50;
+            param_map('fl_k_max') = (param_map('fl_w_max') - param_map('fl_b_bd'));
+        end
+        if (isKey(param_map, 'fl_w_max'))
+            param_map('fl_k_max') = (param_map('fl_w_max') - param_map('fl_b_bd'));
+        end
+    end
+
 
 end

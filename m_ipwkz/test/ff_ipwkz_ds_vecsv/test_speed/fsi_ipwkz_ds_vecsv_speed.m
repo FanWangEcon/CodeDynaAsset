@@ -1,4 +1,4 @@
-%% Test Full Run Speed (Risky + Safe Asets + Interpolated + Percentage)
+%% Test Full Run Speed (Risky + Safe Asets + Two-Step + Interpolated + Percentage Distribution)
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.*

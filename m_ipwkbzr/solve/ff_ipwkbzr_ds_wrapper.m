@@ -16,8 +16,8 @@ function [result_map] = ff_ipwkbzr_ds_wrapper(varargin)
 % # it_subset = 9 is invoke operational (only final stats) and coh graph
 
 it_param_set = 8;
-bl_input_override = true;
 [param_map, support_map] = ffs_ipwkbzr_set_default_param(it_param_set);
+param_map('bl_default') = true;
 
 %% Change Parameter to Main Options
 
@@ -67,7 +67,7 @@ param_map('st_analytical_stationary_type') = 'eigenvector';
 
 %% Generate Grids
 % get armt and func map 
-[armt_map, func_map] = ffs_ipwkbzr_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
+[armt_map, func_map] = ffs_ipwkbzr_get_funcgrid(param_map, support_map); % 1 for override
 default_params = {param_map support_map armt_map func_map};
 
 %% Parse Parameters 1
