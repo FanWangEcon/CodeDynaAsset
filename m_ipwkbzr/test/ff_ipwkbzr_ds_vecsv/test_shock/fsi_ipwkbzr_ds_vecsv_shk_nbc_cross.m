@@ -91,11 +91,11 @@ ff_az_test_analyze( ...
 close all;
 
 %% Larger Grid Simulation
-% it_size_type = 3;
-%
-% % % Simulate along parameters
-% % ff_az_test_analyze( ...
-% %     ar_it_plot_sets, bl_simu_cross, it_size_type, cl_st_param_keys, ...
-% %     param_map, support_map, param_tstar_map);
-% %
-% % close all;
+it_size_type = 3;
+
+% Simulate along parameters
+ff_az_test_analyze( ...
+    ar_it_plot_sets, bl_simu_cross, it_size_type, cl_st_param_keys, ...
+    param_map, support_map, param_tstar_map);
+
+close all;

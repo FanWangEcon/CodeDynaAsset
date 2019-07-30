@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Compute Distributional Statistics from a Discrete Random Variable</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-22"><meta name="DC.source" content="fft_disc_rand_var_stats.m"><style type="text/css">
+      --><title>Compute Distributional Statistics from a Discrete Random Variable</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-30"><meta name="DC.source" content="fft_disc_rand_var_stats.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -140,9 +140,15 @@ ar_choice_perc_fracheld = zeros(size(ar_fl_percentiles));
     <span class="comment">% percentile</span>
     it_first_higher_idx = (cumsum(ar_choice_prob_cumsum &gt;= fl_cur_percentile) == 1);
     <span class="comment">% assign percentile</span>
-    ar_choice_percentiles(it_percentile) = ar_choice_unique_sorted(it_first_higher_idx);
+    fl_percentile = ar_choice_unique_sorted(it_first_higher_idx);
+    fl_cumfrac = ar_choice_unique_cumufrac(it_first_higher_idx);
+    <span class="keyword">if</span> (length(fl_percentile) &gt; 1)
+        fl_percentile = fl_percentile(1);
+        fl_cumfrac = fl_cumfrac(1);
+    <span class="keyword">end</span>
+    ar_choice_percentiles(it_percentile) = fl_percentile;
     <span class="comment">% asset held by up to this percentile</span>
-    ar_choice_perc_fracheld(it_percentile) = ar_choice_unique_cumufrac(it_first_higher_idx);
+    ar_choice_perc_fracheld(it_percentile) = fl_cumfrac;
 <span class="keyword">end</span>
 </pre><h2 id="7">Collect Statistics</h2><pre class="codeinput">ds_stats_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
 
@@ -442,9 +448,15 @@ for it_percentile = 1:length(ar_fl_percentiles)
     % percentile
     it_first_higher_idx = (cumsum(ar_choice_prob_cumsum >= fl_cur_percentile) == 1);
     % assign percentile
-    ar_choice_percentiles(it_percentile) = ar_choice_unique_sorted(it_first_higher_idx);
+    fl_percentile = ar_choice_unique_sorted(it_first_higher_idx);
+    fl_cumfrac = ar_choice_unique_cumufrac(it_first_higher_idx);
+    if (length(fl_percentile) > 1)
+        fl_percentile = fl_percentile(1);
+        fl_cumfrac = fl_cumfrac(1);
+    end
+    ar_choice_percentiles(it_percentile) = fl_percentile;
     % asset held by up to this percentile
-    ar_choice_perc_fracheld(it_percentile) = ar_choice_unique_cumufrac(it_first_higher_idx);
+    ar_choice_perc_fracheld(it_percentile) = fl_cumfrac;
 end
 
 %% Collect Statistics

@@ -1,4 +1,4 @@
-%% Test Joint Randomly *Default* (Risky + Safe Asset + Save + Borr + R Shock + Interpolated-Percentage), Test Preference, Price and Shocks
+%% Test Borrow Joint Randomly *Default* (Risky + Safe Asset + Save + Borr + R Shock + Interpolated-Percentage), Test Preference, Price and Shocks
 % *back to <https://fanwangecon.github.io Fan>'s
 % <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
 % Table of Content.* *cross test*: given (x,y), vary x along X, y along Y,
@@ -43,9 +43,9 @@
 % Randomly draw 100 sets of parameters based on the min and max grids
 
 % Set which to graph, simulate over which variables
-ar_it_plot_sets = [1,2,101,3,4,102,5,6,103,104,105,106];
+ar_it_plot_sets = [1,2,101,3,4,102,5,6,103,104,106,10];
 bl_simu_cross = 'r';
-cl_st_param_keys = {'fl_crra','fl_beta','fl_r_save','fl_z_rho','fl_z_sig'};
+cl_st_param_keys = {'fl_z_r_borr_poiss_mean', 'fl_z_r_borr_max', 'fl_b_bd', 'fl_c_min', 'fl_z_r_borr_n'};
 
 % Generate Benchmark Parameters
 it_param_set = 9;
@@ -66,16 +66,6 @@ param_tstar_map('fl_z_r_borr_max') = linspace(0.095, 0.150, it_simu_vec_len);
 param_tstar_map('fl_b_bd') = linspace(-20, -5, it_simu_vec_len);
 param_tstar_map('fl_c_min') = linspace(0.03, 0.001, it_simu_vec_len);
 param_tstar_map('fl_z_r_borr_n') = 3:1:(3+15-1);
-
-%% Small Grid Simulation
-it_size_type = 1;
-
-% Simulate along parameters
-ff_az_test_analyze( ...
-    ar_it_plot_sets, bl_simu_cross, it_size_type, cl_st_param_keys, ...
-    param_map, support_map, param_tstar_map);
-
-close all
 
 %% Medium Grid Simulation
 it_size_type = 2;

@@ -44,8 +44,8 @@
 
 % Set which to graph, simulate over which variables
 ar_it_plot_sets = [1,2,101,3,4,102,5,6,103,104,105,106];
-bl_simu_cross = 'r';
-cl_st_param_keys = {'fl_crra','fl_beta','fl_r_save','fl_z_rho','fl_z_sig'};
+st_simu_type = 'r';
+cl_st_param_keys = {'fl_crra','fl_beta','fl_r_save','fl_z_wage_rho','fl_z_wage_sig', 'fl_alpha', 'fl_delta'};
 
 % Generate Benchmark Parameters
 it_param_set = 9;
@@ -64,25 +64,30 @@ param_tstar_map = containers.Map('KeyType','char', 'ValueType','any');
 param_tstar_map('fl_crra') = linspace(1, 5, it_simu_vec_len);
 param_tstar_map('fl_beta') = linspace(0.87, 0.97, it_simu_vec_len);
 param_tstar_map('fl_r_save') = linspace(0, 0.06, it_simu_vec_len);
-param_tstar_map('fl_z_rho') = linspace(0, 0.985, it_simu_vec_len);
-param_tstar_map('fl_z_sig') = linspace(0.05, 0.65, it_simu_vec_len);
+param_tstar_map('fl_z_wage_rho') = linspace(0, 0.985, it_simu_vec_len);
+param_tstar_map('fl_z_wage_sig') = linspace(0.05, 0.65, it_simu_vec_len);
+param_tstar_map('fl_alpha') = linspace(0.30, 0.50, it_simu_vec_len);
+param_tstar_map('fl_delta') = linspace(0.02, 0.14, it_simu_vec_len);
 
-%% Small Grid Simulation
-it_size_type = 1;
+%% Single Test
 
-% Simulate along parameters
-ff_az_test_analyze( ...
-    ar_it_plot_sets, bl_simu_cross, it_size_type, cl_st_param_keys, ...
-    param_map, support_map, param_tstar_map);
-
-close all
+% support_map('bl_replacefile') = true;
+% st_simu_type = 'g';
+% param_tstar_map = containers.Map('KeyType','char', 'ValueType','any');
+% param_tstar_map('fl_crra') = [3.5376];
+% param_tstar_map('fl_beta') = [0.91173];
+% param_tstar_map('fl_r_save') = [0.030564];
+% param_tstar_map('fl_z_wage_rho') = [0.9664];
+% param_tstar_map('fl_z_wage_sig') = [0.10001];
+% param_tstar_map('fl_alpha') = [0.42916];
+% param_tstar_map('fl_delta') = [0.123];
 
 %% Medium Grid Simulation
 it_size_type = 2;
 
 % Simulate along parameters
 ff_az_test_analyze( ...
-    ar_it_plot_sets, bl_simu_cross, it_size_type, cl_st_param_keys, ...
+    ar_it_plot_sets, st_simu_type, it_size_type, cl_st_param_keys, ...
     param_map, support_map, param_tstar_map);
 
 close all

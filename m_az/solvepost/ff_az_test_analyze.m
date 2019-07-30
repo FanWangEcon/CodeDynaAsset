@@ -134,6 +134,19 @@ params_group = values(support_map, {'bl_graph_onebyones', 'bl_display_graph_stat
     st_simu_type, it_size_type, cl_st_param_keys, ...
     param_map, support_map, param_tstar_map, param_desc_map);
 
+%% Show Stats Only
+% Display the effect of changing parameters on mean cl_mt_pol_k and mean
+% cl_st_param_keys = {'fl_z_r_borr_poiss_mean', 'fl_z_r_borr_max', 'fl_b_bd', 'fl_c_min', 'fl_z_r_borr_n'};
+cl_st_outcome = {'cl_mt_pol_c'};
+if (strcmp(st_simu_type, 'c'))
+    for st_param_keys = cl_st_param_keys
+        for st_outcome = cl_st_outcome
+            disp(tb_outcomes((strcmp(tb_outcomes.var_param_key, st_param_keys) & strcmp(tb_outcomes.variablenames, st_outcome)), ...
+                {'mean', st_param_keys{1}}));       
+        end
+    end
+end
+
 %% Specify Outcome Variables to Plot
 it_plot_n = length(ar_it_plot_sets);
 [it_plot_rows, it_plot_cols] = deal(round(it_plot_n/3), 3);
@@ -212,6 +225,27 @@ for it_plot = ar_it_plot_sets
         st_ytitle = 'Default Fraction';        
     end
     
+    %% list Means
+    if (it_plot == 51)
+        ar_st_colnames_plot =  {'mean'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_pol_c'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  ar_st_colnames_plot;
+        st_title = 'Consumption Mean';
+        st_ytitle = 'Average (Total)';
+    elseif (it_plot == 52)
+        ar_st_colnames_plot =  {'mean'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_pol_a'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  ar_st_colnames_plot;
+        st_title = 'Savings Mean';
+        st_ytitle = 'Average (Total)';        
+    elseif (it_plot == 53)
+        ar_st_colnames_plot =  {'mean'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_pol_k'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  ar_st_colnames_plot;
+        st_title = 'Savings Mean';
+        st_ytitle = 'Average (Total)';        
+    end
+    
     %% list graphing options only for akz models
     if (it_plot == 101)
         ar_st_colnames_plot =  {'p1', 'p25', 'p50', 'mean', 'p75', 'p99'};
@@ -249,8 +283,7 @@ for it_plot = ar_it_plot_sets
         ar_st_colnames_plot =  repmat({'fl_cor_cl_mt_pol_c'}, [1, length(ar_st_variablenames_plot)]);
         st_title = 'Correlation with Consumption';
         st_ytitle = 'Correlation Coefficient';
-    end
-    
+    end   
     
     %% Store to cells
     cl_ar_st_variablenames{it_plot_ctr} = ar_st_variablenames_plot;
@@ -385,6 +418,7 @@ for it_pcombi_ctr = 1:length(cl_st_param_keys)
         
         % 9. Titling etc
         grid on;
+        grid minor;
         title(strrep(st_title, '_', '\_'));
         ylabel(strrep(st_ytitle, '_', '\_'));        
         st_xlabel = strrep(st_x_label, '_', '\_');

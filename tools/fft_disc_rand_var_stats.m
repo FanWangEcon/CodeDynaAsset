@@ -146,9 +146,15 @@ for it_percentile = 1:length(ar_fl_percentiles)
     % percentile
     it_first_higher_idx = (cumsum(ar_choice_prob_cumsum >= fl_cur_percentile) == 1);
     % assign percentile
-    ar_choice_percentiles(it_percentile) = ar_choice_unique_sorted(it_first_higher_idx);
+    fl_percentile = ar_choice_unique_sorted(it_first_higher_idx);
+    fl_cumfrac = ar_choice_unique_cumufrac(it_first_higher_idx);
+    if (length(fl_percentile) > 1)
+        fl_percentile = fl_percentile(1);
+        fl_cumfrac = fl_cumfrac(1);
+    end
+    ar_choice_percentiles(it_percentile) = fl_percentile;
     % asset held by up to this percentile
-    ar_choice_perc_fracheld(it_percentile) = ar_choice_unique_cumufrac(it_first_higher_idx);
+    ar_choice_perc_fracheld(it_percentile) = fl_cumfrac;
 end
 
 %% Collect Statistics
