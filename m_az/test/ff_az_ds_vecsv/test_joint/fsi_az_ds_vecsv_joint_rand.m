@@ -28,9 +28,7 @@
 % Randomly draw 100 sets of parameters based on the min and max grids
 
 % Set which to graph, simulate over which variables
-ar_it_plot_sets = [1,2,3,4,5,6,7,8,9];
 bl_simu_cross = 'r';
-it_size_type = 2;
 cl_st_param_keys = {'fl_crra','fl_beta','fl_r_save','fl_z_rho','fl_z_sig'};
 
 % Generate Benchmark Parameters
@@ -53,15 +51,24 @@ param_tstar_map('fl_r_save') = linspace(0, 0.06, it_simu_vec_len);
 param_tstar_map('fl_z_rho') = linspace(0, 0.985, it_simu_vec_len);
 param_tstar_map('fl_z_sig') = linspace(0.05, 0.95, it_simu_vec_len);
 
+%% Medium Simulation (Limited Graphs)
+it_size_type = 2;
+ar_it_plot_sets = [1,2, 3,4, 201,202, 7,8];
+
 % Simulate along parameters
 [tb_outcomes, support_map] = ff_az_test_analyze( ...
     ar_it_plot_sets, bl_simu_cross, it_size_type, cl_st_param_keys, ...
     param_map, support_map, param_tstar_map);
 
-%% Denser Simulation
+close all;
+
+%% Denser Simulation (All Graphs)
 it_size_type = 3;
+ar_it_plot_sets = [1,2, 3,4, 5,6, 51,52, 201,205, 9,203, 7,8];
 
 % Simulate along parameters
 [tb_outcomes, support_map] = ff_az_test_analyze( ...
     ar_it_plot_sets, bl_simu_cross, it_size_type, cl_st_param_keys, ...
     param_map, support_map, param_tstar_map);
+
+close all;

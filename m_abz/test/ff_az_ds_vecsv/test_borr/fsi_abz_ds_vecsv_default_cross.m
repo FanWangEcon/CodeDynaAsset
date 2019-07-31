@@ -38,7 +38,7 @@ bl_default = true;
 % is needed.
 
 % Set which to graph, simulate over which variables
-ar_it_plot_sets = [1,2,3,4,5,6,51,52,53,7,8,9,10];
+ar_it_plot_sets = [1,2,3,4,5,6,51,52,7,8,9,10,201,203,202,204];
 bl_simu_cross = 'c';
 it_size_type = 2;
 cl_st_param_keys = {'fl_z_r_borr_poiss_mean', 'fl_z_r_borr_max', 'fl_b_bd', 'fl_c_min', 'fl_z_r_borr_n'};

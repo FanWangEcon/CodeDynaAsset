@@ -285,6 +285,60 @@ for it_plot = ar_it_plot_sets
         st_ytitle = 'Correlation Coefficient';
     end   
     
+    %% Inequality Measures, Consumption Shares
+    % Asset Shares could look strange due to negative levels
+    if (it_plot == 201)
+        ar_st_colnames_plot =  {'fracByP99', 'fracByP90', 'fracByP80'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_pol_c'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  {'share Excluding top 1%', 'share Excluding top 10%', 'share Excluding top 20%'};
+        st_title = 'Share of C for HHs Excluding Highest X Cons. Percentile HHs';
+        st_ytitle = 'Share of Aggregate Consumption';
+    elseif (it_plot == 202)
+        ar_st_colnames_plot =  {'fracByP1', 'fracByP10', 'fracByP20'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_pol_c'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  {'share of bottom 1%', 'share of bottom 10%', 'share of bottom 20%'};
+        st_title = 'Share of C for Lowest X Cons. Percentile HHs';
+        st_ytitle = 'Share of Aggregate Consumption';
+    elseif (it_plot == 203)
+        ar_st_colnames_plot =  {'fracByP99', 'fracByP90', 'fracByP80'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_pol_a'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  {'share Excluding top 1%', 'share Excluding top 10%', 'share Excluding top 20%'};
+        st_title = 'Share of Savings for HHs Excluding Highest X Savings Percentile HHs';
+        st_ytitle = 'Share of Aggregate Savings';
+    elseif (it_plot == 204)
+        ar_st_colnames_plot =  {'fracByP1', 'fracByP10', 'fracByP20'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_pol_a'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  {'share of bottom 1%', 'share of bottom 10%', 'share of bottom 20%'};
+        st_title = 'Share of Savings for Lowest X Savings Percentile HHs';
+        st_ytitle = 'Share of Aggregate Savings';
+    elseif (it_plot == 205)
+        ar_st_colnames_plot =  {'fracByP99', 'fracByP90', 'fracByP80'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_coh'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  {'share Excluding top 1%', 'share Excluding top 10%', 'share Excluding top 20%'};
+        st_title = 'Share of Wealth for HHs Excluding Highest X Wealth Percentile HHs';
+        st_ytitle = 'Share of Aggregate Wealth (cash-on-hand)';
+    elseif (it_plot == 206)
+        ar_st_colnames_plot =  {'fracByP1', 'fracByP10', 'fracByP20'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_coh'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  {'share of bottom 1%', 'share of bottom 10%', 'share of bottom 20%'};
+        st_title = 'Share of Wealth for Lowest X Wealth Percentile HHs';
+        st_ytitle = 'Share of Aggregate Wealth (cash-on-hand)';
+    elseif (it_plot == 207)
+        ar_st_colnames_plot =  {'fracByP99', 'fracByP90', 'fracByP80'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_pol_k'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  {'share Excluding top 1%', 'share Excluding top 10%', 'share Excluding top 20%'};
+        st_title = 'Share of K for HHs Excluding Highest X Capital Percentile HHs';
+        st_ytitle = 'Share of Aggregate Capital';
+    elseif (it_plot == 208)
+        ar_st_colnames_plot =  {'fracByP1', 'fracByP10', 'fracByP20'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_pol_k'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  {'share of bottom 1%', 'share of bottom 10%', 'share of bottom 20%'};
+        st_title = 'Share of K for Lowest X Capital Percentile HHs';
+        st_ytitle = 'Share of Aggregate Capital';                
+    end   
+    
+    
+    
     %% Store to cells
     cl_ar_st_variablenames{it_plot_ctr} = ar_st_variablenames_plot;
     cl_ar_st_legend{it_plot_ctr} = ar_st_legend_plot;

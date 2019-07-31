@@ -27,9 +27,7 @@
 %% Simulate and Graph
 
 % Set which to graph, simulate over which variables
-ar_it_plot_sets = [1,2,3,4,5,6,7,8,9];
 bl_simu_cross = 'c';
-it_size_type = 2;
 cl_st_param_keys = {'fl_z_rho', 'fl_z_sig'};
 
 % Generate Benchmark Parameters
@@ -38,6 +36,10 @@ it_param_set = 9;
 support_map('bl_replacefile') = false;
 support_map('bl_graph_onebyones') = true;
 support_map('bl_display_graph_stats') = false;
+
+%% Medium Simulation (Limited Graphs)
+it_size_type = 2;
+ar_it_plot_sets = [1,2, 3,4, 201,202, 7,8];
 
 % Generate Arrays of Parameter Values to Loop Over
 it_simu_vec_len = 10;
@@ -52,6 +54,7 @@ param_tstar_map('fl_z_sig') = linspace(0.05, 0.95, it_simu_vec_len);
 
 %% Denser Simulation
 it_size_type = 3;
+ar_it_plot_sets = [1,2, 3,4, 5,6, 51,52, 201,205, 9,203, 7,8];
 
 % Generate Arrays of Parameter Values to Loop Over
 it_simu_vec_len = 50;
@@ -63,3 +66,4 @@ param_tstar_map('fl_z_sig') = linspace(0.05, 0.95, it_simu_vec_len);
 [tb_outcomes, support_map] = ff_az_test_analyze( ...
     ar_it_plot_sets, bl_simu_cross, it_size_type, cl_st_param_keys, ...
     param_map, support_map, param_tstar_map);
+
