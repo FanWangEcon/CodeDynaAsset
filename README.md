@@ -136,13 +136,13 @@ Simulate and graph effects of changing parameters on outcomes. Compare against s
 
 **Simulation Results**:
 
-1. *az* the effects *preference parameters* on distributional outcomes
+1. *az* the effects **preference** parameters on distributional outcomes
     * cross test, [adjust discount and risk aversion](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_pref/html/fsi_az_ds_vecsv_pref_cross.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/test/ff_az_ds_vecsv/test_pref/fsi_az_ds_vecsv_pref_cross.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_pref/html/fsi_az_ds_vecsv_pref_cross.html)
-2. *az* the effects *shock parameters* on distributional outcomes
+2. *az* the effects **shock** parameters on distributional outcomes
     * cross test, [adjust shock persistence and variance](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_shock/html/fsi_az_ds_vecsv_shock_cross.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/test/ff_az_ds_vecsv/test_shock/fsi_az_ds_vecsv_shock_cross.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_shock/html/fsi_az_ds_vecsv_shock_cross.html)
-3. *az* the effects *prices* on distributional outcomes
+3. *az* the effects **prices** on distributional outcomes
     * cross test, [adjust wage and savings rate](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_price/html/fsi_az_ds_vecsv_price_cross.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/test/ff_az_ds_vecsv/test_price/fsi_az_ds_vecsv_price_cross.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_price/html/fsi_az_ds_vecsv_price_cross.html)
-4. *az* the effects *preference + shocks + prices* on distributional outcomes
+4. *az* the effects **preference + shocks + prices** on distributional outcomes
     * random test, [adjust preference shocks prices](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_joint/html/fsi_az_ds_vecsv_joint_rand.html): [**m**](https://github.com/FanWangEcon/CodeDynaAsset/blob/master/m_az/test/ff_az_ds_vecsv/test_joint/fsi_az_ds_vecsv_joint_rand.m) \| [**publish html**](https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_joint/html/fsi_az_ds_vecsv_joint_rand.html)
 
 # 2. The Savings + Borrowing Problem (ABZ)

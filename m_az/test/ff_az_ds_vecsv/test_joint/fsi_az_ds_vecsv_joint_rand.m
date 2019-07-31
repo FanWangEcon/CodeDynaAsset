@@ -53,7 +53,7 @@ param_tstar_map('fl_z_sig') = linspace(0.05, 0.95, it_simu_vec_len);
 
 %% Medium Simulation (Limited Graphs)
 it_size_type = 2;
-ar_it_plot_sets = [1,2, 3,4, 201,202, 7,8];
+ar_it_plot_sets = [1,2, 3,4, 201,205, 7,8];
 
 % Simulate along parameters
 [tb_outcomes, support_map] = ff_az_test_analyze( ...

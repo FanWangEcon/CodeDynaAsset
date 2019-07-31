@@ -39,7 +39,7 @@ support_map('bl_display_graph_stats') = false;
 
 %% Medium Simulation (Limited Graphs)
 it_size_type = 2;
-ar_it_plot_sets = [1,2, 3,4, 201,202, 7,8];
+ar_it_plot_sets = [1,2, 3,4, 201,205, 7,8];
 
 % Generate Arrays of Parameter Values to Loop Over
 it_simu_vec_len = 10;
@@ -66,4 +66,3 @@ param_tstar_map('fl_z_sig') = linspace(0.05, 0.95, it_simu_vec_len);
 [tb_outcomes, support_map] = ff_az_test_analyze( ...
     ar_it_plot_sets, bl_simu_cross, it_size_type, cl_st_param_keys, ...
     param_map, support_map, param_tstar_map);
-

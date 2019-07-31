@@ -40,7 +40,7 @@ support_map('bl_display_graph_stats') = false;
 
 %% Medium Simulation (Limited Graphs)
 it_size_type = 2;
-ar_it_plot_sets = [1,2, 3,4, 201,202, 7,8];
+ar_it_plot_sets = [1,2, 3,4, 201,205, 7,8];
 
 % Generate Arrays of Parameter Values to Loop Over
 it_simu_vec_len = 10;
