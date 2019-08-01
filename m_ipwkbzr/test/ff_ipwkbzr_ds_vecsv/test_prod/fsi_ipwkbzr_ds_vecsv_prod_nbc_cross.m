@@ -51,7 +51,6 @@ bl_default = false;
 % is needed.
 
 % Set which to graph, simulate over which variables
-ar_it_plot_sets = [1,2,101,3,4,102,5,6,103,104,106,10];
 bl_simu_cross = 'c';
 cl_st_param_keys = {'fl_alpha', 'fl_delta'};
 
@@ -74,8 +73,9 @@ param_tstar_map = containers.Map('KeyType','char', 'ValueType','any');
 param_tstar_map('fl_alpha') = linspace(0.30, 0.50, it_simu_vec_len);
 param_tstar_map('fl_delta') = linspace(0.02, 0.14, it_simu_vec_len);
 
-%% Small Grid Simulation
+%% Quick Grid Simulation (Limited Graphs)
 it_size_type = 1;
+ar_it_plot_sets = [3,4,102, 104,105,106];
 
 % Simulate along parameters
 ff_az_test_analyze( ...
@@ -84,8 +84,9 @@ ff_az_test_analyze( ...
 
 close all;
 
-%% Medium Grid Simulation
+%% Medium Grid Simulation (Limited Graphs)
 it_size_type = 2;
+ar_it_plot_sets = [3,4,102, 104,105,106];
 
 % Simulate along parameters
 ff_az_test_analyze( ...
@@ -96,6 +97,7 @@ close all;
 
 %% Larger Grid Simulation
 it_size_type = 3;
+ar_it_plot_sets = [1,2,101, 3,4,102, 5,6,103, 51,52,53, 201,205,207, 104,106,10];
 
 % Simulate along parameters
 [tb_outcomes, ~ ] = ff_az_test_analyze( ...

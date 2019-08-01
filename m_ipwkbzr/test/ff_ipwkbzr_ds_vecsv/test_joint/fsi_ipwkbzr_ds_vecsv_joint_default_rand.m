@@ -43,7 +43,6 @@
 % Randomly draw 100 sets of parameters based on the min and max grids
 
 % Set which to graph, simulate over which variables
-ar_it_plot_sets = [1,2,101,3,4,102,5,6,103,104,105,106];
 st_simu_type = 'r';
 cl_st_param_keys = {'fl_crra','fl_beta','fl_r_save','fl_z_wage_rho','fl_z_wage_sig', 'fl_alpha', 'fl_delta'};
 
@@ -84,6 +83,7 @@ param_tstar_map('fl_delta') = linspace(0.02, 0.14, it_simu_vec_len);
 
 %% Medium Grid Simulation
 it_size_type = 2;
+ar_it_plot_sets = [1,2,101, 3,4,102, 5,6,103, 51,52,53, 201,205,207, 104,106,10];
 
 % Simulate along parameters
 ff_az_test_analyze( ...

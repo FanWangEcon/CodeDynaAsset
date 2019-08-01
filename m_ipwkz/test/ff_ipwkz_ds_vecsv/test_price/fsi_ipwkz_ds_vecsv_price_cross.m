@@ -36,7 +36,6 @@
 % Note that a shift in wage just rescales the model
 
 % Set which to graph, simulate over which variables
-ar_it_plot_sets = [1,2,101,3,4,102,5,6,103,104,105,106];
 bl_simu_cross = 'c';
 cl_st_param_keys = {'fl_w', 'fl_r_save'};
 
@@ -53,8 +52,9 @@ param_tstar_map = containers.Map('KeyType','char', 'ValueType','any');
 param_tstar_map('fl_w') = linspace(0.25, 5, it_simu_vec_len);
 param_tstar_map('fl_r_save') = linspace(0, 0.06, it_simu_vec_len);
 
-%% Medium Grid Simulation
+%% Medium Grid Simulation (Limited Graphs)
 it_size_type = 2;
+ar_it_plot_sets = [3,4,102, 104,105,106];
 
 % Simulate along parameters
 ff_az_test_analyze( ...
@@ -65,6 +65,7 @@ close all;
 
 %% Larger Grid Simulation
 it_size_type = 3;
+ar_it_plot_sets = [1,2,101, 3,4,102, 5,6,103, 51,52,53, 201,205,207, 104,105,106];
 
 % Simulate along parameters
 ff_az_test_analyze( ...

@@ -47,7 +47,6 @@ bl_default = false;
 %% Simulate and Graph
 
 % Set which to graph, simulate over which variables
-ar_it_plot_sets = [1,2,101,3,4,102,5,6,103,104,106,10];
 bl_simu_cross = 'c';
 cl_st_param_keys = {'fl_z_wage_rho', 'fl_z_wage_sig'};
 
@@ -70,8 +69,9 @@ param_tstar_map = containers.Map('KeyType','char', 'ValueType','any');
 param_tstar_map('fl_z_wage_rho') = linspace(0, 0.985, it_simu_vec_len);
 param_tstar_map('fl_z_wage_sig') = linspace(0.05, 0.65, it_simu_vec_len);
 
-%% Medium Grid Simulation
+%% Quick Grid Simulation (Limited Graphs)
 it_size_type = 1;
+ar_it_plot_sets = [3,4,102, 104,105,106];
 
 % Simulate along parameters
 ff_az_test_analyze( ...
@@ -80,8 +80,9 @@ ff_az_test_analyze( ...
 
 close all;
 
-%% Medium Grid Simulation
+%% Medium Grid Simulation (Limited Graphs)
 it_size_type = 2;
+ar_it_plot_sets = [3,4,102, 104,105,106];
 
 % Simulate along parameters
 ff_az_test_analyze( ...
@@ -92,10 +93,21 @@ close all;
 
 %% Larger Grid Simulation
 it_size_type = 3;
+ar_it_plot_sets = [1,2,101, 3,4,102, 5,6,103, 51,52,53, 201,205,207, 104,106,10];
 
 % Simulate along parameters
-ff_az_test_analyze( ...
+[tb_outcomes, ~ ] = ff_az_test_analyze( ...
     ar_it_plot_sets, bl_simu_cross, it_size_type, cl_st_param_keys, ...
     param_map, support_map, param_tstar_map);
 
-close all;
+% Display the effect of changing parameters on mean cl_mt_pol_k and mean
+cl_st_outcome = {'cl_mt_pol_k'};
+for st_param_keys = cl_st_param_keys
+    for st_outcome = cl_st_outcome
+        disp(tb_outcomes((strcmp(tb_outcomes.var_param_key, st_param_keys) ...
+                     & strcmp(tb_outcomes.variablenames, st_outcome)), ...
+                     {'mean', st_param_keys{1}}));
+    end
+end
+
+close all

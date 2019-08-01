@@ -74,28 +74,31 @@ param_tstar_map = containers.Map('KeyType','char', 'ValueType','any');
 param_tstar_map('fl_crra') = linspace(1, 5, it_simu_vec_len);
 param_tstar_map('fl_beta') = linspace(0.87, 0.97, it_simu_vec_len);
 
-%% Small Grid Simulation
+%% Quick Grid Simulation (Limited Graphs)
 it_size_type = 1;
+ar_it_plot_sets = [3,4,102, 104,105,106];
 
 % Simulate along parameters
 ff_az_test_analyze( ...
     ar_it_plot_sets, bl_simu_cross, it_size_type, cl_st_param_keys, ...
     param_map, support_map, param_tstar_map);
 
-close all
+close all;
 
-%% Medium Grid Simulation
+%% Medium Grid Simulation (Limited Graphs)
 it_size_type = 2;
+ar_it_plot_sets = [3,4,102, 104,105,106];
 
 % Simulate along parameters
 ff_az_test_analyze( ...
     ar_it_plot_sets, bl_simu_cross, it_size_type, cl_st_param_keys, ...
     param_map, support_map, param_tstar_map);
 
-close all
+close all;
 
 %% Larger Grid Simulation
 it_size_type = 3;
+ar_it_plot_sets = [1,2,101, 3,4,102, 5,6,103, 51,52,53, 201,205,207, 104,106,10];
 
 % Simulate along parameters
 [tb_outcomes, ~ ] = ff_az_test_analyze( ...

@@ -50,8 +50,9 @@ param_tstar_map = containers.Map('KeyType','char', 'ValueType','any');
 param_tstar_map('fl_z_rho') = linspace(0, 0.985, it_simu_vec_len);
 param_tstar_map('fl_z_sig') = linspace(0.05, 0.65, it_simu_vec_len);
 
-%% Medium Grid Simulation
+%% Medium Grid Simulation (Limited Graphs)
 it_size_type = 2;
+ar_it_plot_sets = [3,4,102, 104,105,106];
 
 % Simulate along parameters
 ff_az_test_analyze( ...
@@ -62,6 +63,7 @@ close all;
 
 %% Larger Grid Simulation
 it_size_type = 3;
+ar_it_plot_sets = [1,2,101, 3,4,102, 5,6,103, 51,52,53, 201,205,207, 104,105,106];
 
 % Simulate along parameters
 ff_az_test_analyze( ...

@@ -609,9 +609,7 @@ function param_map = map_correction(param_map)
     if (ismember(st_model, ["ipwkbz", "ipwkbzr"]))
 
         if (isKey(param_map, 'fl_b_bd'))
-            param_map('fl_b_bd') = -20;
             param_map('fl_w_min') = param_map('fl_b_bd');
-            param_map('fl_w_max') = 50;
             param_map('fl_k_max') = (param_map('fl_w_max') - param_map('fl_b_bd'));
         end
         if (isKey(param_map, 'fl_w_max'))
