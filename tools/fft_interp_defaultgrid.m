@@ -1,6 +1,5 @@
 %% Default Grid based Interpolation
 
-clear all
 close all
 
 bl_run_matlab_exa = false;

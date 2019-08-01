@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Display Container Maps</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-13"><meta name="DC.source" content="fft_container_map_display.m"><style type="text/css">
+      --><title>Display Container Maps</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-08-01"><meta name="DC.source" content="fft_container_map_display.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -77,6 +77,7 @@ it_row_n_keep = 10;
     rng(123);
     param_map(<span class="string">'mat_1'</span>) = rand(3,4);
     param_map(<span class="string">'mat_2'</span>) = rand(50,53);
+    param_map(<span class="string">'mat_2boolean'</span>) = (rand(50,53) &gt; 0.5);
     param_map(<span class="string">'mat_3'</span>) = rand(2,2);
     param_map(<span class="string">'mat_4'</span>) = rand(1,1);
     param_map(<span class="string">'list_string_1'</span>) = [<span class="string">"col1"</span>, <span class="string">"col2"</span>, <span class="string">"col3"</span>, <span class="string">"col4"</span>];
@@ -84,6 +85,7 @@ it_row_n_keep = 10;
     param_map(<span class="string">'string_1'</span>) = <span class="string">"Table Name"</span>;
     param_map(<span class="string">'string_int_1'</span>) = 1021;
     param_map(<span class="string">'string_float_1'</span>) = 1021.13;
+    param_map(<span class="string">'boolean_1'</span>) = true;
 
 <span class="keyword">else</span>
 
@@ -116,7 +118,7 @@ Begin: Show all key and value pairs from container
 ----------------------------------------
   Map with properties:
 
-        Count: 9
+        Count: 11
       KeyType: char
     ValueType: any
 
@@ -137,7 +139,14 @@ it_function_ctr = 0;
     st_cur_key = param_map_keys{i};
     na_cur_val = param_map_vals{i};
 
-    <span class="keyword">if</span> (ismatrix(na_cur_val) &amp;&amp; isnumeric(na_cur_val))
+    <span class="keyword">if</span>(iscell(na_cur_val))
+        na_cur_val = na_cur_val{1};
+    <span class="keyword">end</span>
+    <span class="keyword">if</span>(istable(na_cur_val))
+        na_cur_val = table2array(na_cur_val);
+    <span class="keyword">end</span>
+
+    <span class="keyword">if</span> (ismatrix(na_cur_val) &amp;&amp; (isnumeric(na_cur_val) || islogical(na_cur_val)))
 
         [it_row_n, it_col_n] = size(na_cur_val);
 
@@ -145,7 +154,7 @@ it_function_ctr = 0;
 
             it_scalar_ctr = it_scalar_ctr + 1;
             row_scalar_names{it_scalar_ctr} = st_cur_key;
-            ar_scalar_val(it_scalar_ctr) = na_cur_val;
+            ar_scalar_val(it_scalar_ctr) = real(na_cur_val);
             ar_scalar_i(it_scalar_ctr) = i;
 
             st_display = strjoin([<span class="string">'pos ='</span> num2str(i) <span class="string">'; key ='</span> string(st_cur_key) <span class="string">'; val ='</span> string(na_cur_val)]);
@@ -181,7 +190,7 @@ it_function_ctr = 0;
             [ar_it_cols, ar_it_rows] = fft_row_col_subset(it_col_n, it_col_n_keep, it_row_n, it_row_n_keep);
             cl_st_full_rows = cellstr([num2str((1:it_row_n)', <span class="string">'r%d'</span>)]);
             cl_st_full_cols = cellstr([num2str((1:it_col_n)', <span class="string">'c%d'</span>)]);
-            tb_data_subset = array2table(round(na_cur_val(ar_it_rows, ar_it_cols), 6));
+            tb_data_subset = array2table(na_cur_val(ar_it_rows, ar_it_cols));
             cl_row_names = strcat(<span class="string">'zi='</span>, num2str(ar_it_rows'), <span class="string">':'</span>, cl_st_full_rows(ar_it_rows));
             cl_col_names = strcat(<span class="string">'zi='</span>, num2str(ar_it_cols'), <span class="string">':'</span>, cl_st_full_cols(ar_it_cols));
             tb_data_subset.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
@@ -265,55 +274,73 @@ it_function_ctr = 0;
     tb_rowcols_tab.Properties.RowNames = matlab.lang.makeValidName(row_function_names);
     disp(tb_rowcols_tab);
 <span class="keyword">end</span>
-</pre><pre class="codeoutput">pos = 1 ; key = list_string_1 ; val = col1 col2 col3 col4
-pos = 2 ; key = list_string_2 ; val = row1 row2 row3 row4
-pos = 3 ; key = mat_1 ;rown= 3 ,coln= 4
-mat_1 :mu= 0.54285 ,sd= 0.2232 ,min= 0.22685 ,max= 0.98076
-               zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4
-               _______    _______    _______    _______
+</pre><pre class="codeoutput">pos = 1 ; key = boolean_1 ; val = true
+pos = 2 ; key = list_string_1 ; val = col1 col2 col3 col4
+pos = 3 ; key = list_string_2 ; val = row1 row2 row3 row4
+pos = 4 ; key = mat_1 ;rown= 3 ,coln= 4
+mat_1 :mu= 0.39938 ,sd= 0.28448 ,min= 0.073935 ,max= 0.99415
+               zi_1_c1    zi_2_c2    zi_3_c3     zi_4_c4
+               _______    _______    ________    _______
 
-    zi_1_r1    0.69647    0.55131    0.98076    0.39212
-    zi_2_r2    0.28614    0.71947    0.68483    0.34318
-    zi_3_r3    0.22685    0.42311    0.48093    0.72905
+    zi_1_r1    0.42619    0.25675     0.19063    0.34718
+    zi_2_r2     0.3877    0.23689     0.87714    0.31011
+    zi_3_r3    0.56357    0.99415    0.073935    0.12831
 
-pos = 4 ; key = mat_2 ;rown= 50 ,coln= 53
-mat_2 :mu= 0.49559 ,sd= 0.29232 ,min= 6.7838e-05 ,max= 0.99964
-                 zi_1_C1     zi_2_C2     zi_3_C3    zi_4_C4     zi_50_c50    zi_51_c51    zi_52_c52    zi_53_c53
-                 ________    ________    _______    ________    _________    _________    _________    _________
+pos = 5 ; key = mat_2 ;rown= 50 ,coln= 53
+mat_2 :mu= 0.50681 ,sd= 0.28839 ,min= 0.00048047 ,max= 0.99999
+                 zi_1_C1    zi_2_C2     zi_3_C3     zi_27_c27    zi_51_c51    zi_52_c52    zi_53_c53
+                 _______    ________    ________    _________    _________    _________    _________
 
-    zi_1_R1       0.43857      0.6249    0.17108     0.56564    0.072152      0.67855      0.61667      0.54002 
-    zi_2_R2      0.059678     0.67469    0.82911    0.084904     0.63289      0.27236      0.32528      0.24957 
-    zi_3_R3       0.39804     0.84234    0.33867     0.58267    0.046367      0.44513     0.075047       0.7839 
-    zi_4_R4       0.73799    0.083195    0.55237     0.81484     0.50561      0.11117      0.59532      0.35603 
-    zi_5_R5       0.18249     0.76368    0.57855     0.33707     0.10653     0.028681       0.7435       0.9187 
-    zi_46_r46      0.6813     0.55326    0.88786     0.69983     0.83758      0.16382      0.74191     0.065638 
-    zi_47_r47     0.87546     0.85445    0.69631     0.66117     0.97069      0.79092      0.42466      0.78725 
-    zi_48_r48     0.51042     0.38484    0.44033    0.049097    0.017768      0.33302      0.24401      0.97956 
-    zi_49_r49     0.66931     0.31679    0.43821      0.7923     0.12979      0.75311      0.79466     0.079086 
-    zi_50_r50     0.58594     0.35426     0.7651     0.51872     0.86415      0.58281      0.84795       0.4579 
+    zi_1_R1      0.54234     0.46746     0.87455     0.20111       0.7216      0.45762      0.10877 
+    zi_2_R2      0.76329    0.077475     0.15123      0.7116      0.33428      0.41093      0.53602 
+    zi_3_R3       0.8539     0.13301    0.034603    0.090735      0.49088      0.54093      0.94476 
+    zi_4_R4      0.93428     0.67379    0.011937     0.24804      0.58722      0.86582      0.32544 
+    zi_5_R5      0.85116     0.45682     0.82464     0.16543      0.58907      0.19305      0.94458 
+    zi_46_r46    0.88286      0.7207     0.69422     0.26318      0.75706      0.25706      0.39478 
+    zi_47_r47    0.39043     0.58952     0.81409     0.79552      0.50856      0.97914      0.33167 
+    zi_48_r48    0.25277     0.33229     0.70638     0.47056      0.62685      0.53908      0.74505 
+    zi_49_r49    0.99157     0.12381     0.24702     0.62716       0.1189      0.72015      0.42747 
+    zi_50_r50    0.47293    0.093886     0.62479      0.9642      0.30684      0.37475      0.28446 
 
-pos = 5 ; key = mat_3 ;rown= 2 ,coln= 2
-mat_3 :mu= 0.47553 ,sd= 0.28505 ,min= 0.15008 ,max= 0.8129
+pos = 6 ; key = mat_2boolean ;rown= 50 ,coln= 53
+mat_2boolean :mu= 0.51509 ,sd= 0.49987 ,min= 0 ,max= 1
+                 zi_1_C1    zi_2_C2    zi_3_C3    zi_27_c27    zi_51_c51    zi_52_c52    zi_53_c53
+                 _______    _______    _______    _________    _________    _________    _________
+
+    zi_1_R1       false      true       false       true         false        true         false  
+    zi_2_R2       true       false      false       true         false        true         false  
+    zi_3_R3       true       false      true        false        true         false        true   
+    zi_4_R4       false      false      true        true         false        false        false  
+    zi_5_R5       false      true       false       false        true         false        true   
+    zi_46_r46     false      false      false       true         false        true         false  
+    zi_47_r47     true       true       true        true         true         false        false  
+    zi_48_r48     true       true       false       true         true         true         false  
+    zi_49_r49     false      true       false       false        false        false        true   
+    zi_50_r50     false      true       false       false        false        false        false  
+
+pos = 7 ; key = mat_3 ;rown= 2 ,coln= 2
+mat_3 :mu= 0.77218 ,sd= 0.1965 ,min= 0.49674 ,max= 0.9512
                zi_1_c1    zi_2_c2
                _______    _______
 
-    zi_1_r1    0.57902    0.15008
-    zi_2_r2     0.8129    0.36013
+    zi_1_r1    0.86086    0.77991
+    zi_2_r2     0.9512    0.49674
 
-pos = 6 ; key = mat_4 ; val = 0.83559
-pos = 7 ; key = string_1 ; val = Table Name
-pos = 8 ; key = string_float_1 ; val = 1021.13
-pos = 9 ; key = string_int_1 ; val = 1021
+pos = 8 ; key = mat_4 ; val = 0.83581
+pos = 9 ; key = string_1 ; val = Table Name
+pos = 10 ; key = string_float_1 ; val = 1021.13
+pos = 11 ; key = string_int_1 ; val = 1021
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Matrix in Container and Sizes and Basic Statistics
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-             i    idx    rowN    colN     mean        std         min          max  
-             _    ___    ____    ____    _______    _______    __________    _______
+                    i    idx    rowN    colN     mean        std         min          max  
+                    _    ___    ____    ____    _______    _______    __________    _______
 
-    mat_1    1     3       3       4     0.54285     0.2232       0.22685    0.98076
-    mat_2    2     4      50      53     0.49559    0.29232    6.7838e-05    0.99964
-    mat_3    3     5       2       2     0.47553    0.28505       0.15008     0.8129
+    mat_1           1     4       3       4     0.39938    0.28448      0.073935    0.99415
+    mat_2           2     5      50      53     0.50681    0.28839    0.00048047    0.99999
+    mat_2boolean    3     6      50      53     0.51509    0.49987             0          1
+    mat_3           4     7       2       2     0.77218     0.1965       0.49674     0.9512
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -322,9 +349,10 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
                       i    idx     value 
                       _    ___    _______
 
-    mat_4             1     6     0.83559
-    string_float_1    2     8      1021.1
-    string_int_1      3     9        1021
+    boolean_1         1     1           1
+    mat_4             2     8     0.83581
+    string_float_1    3    10      1021.1
+    string_int_1      4    11        1021
 
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -333,9 +361,9 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
                      i    idx
                      _    ___
 
-    list_string_1    1     1 
-    list_string_2    2     2 
-    string_1         3     7 
+    list_string_1    1     2 
+    list_string_2    2     3 
+    string_1         3     9 
 
 </pre><pre class="codeinput"><span class="keyword">end</span>
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
@@ -360,6 +388,7 @@ if (isempty(varargin))
     rng(123);
     param_map('mat_1') = rand(3,4);
     param_map('mat_2') = rand(50,53);
+    param_map('mat_2boolean') = (rand(50,53) > 0.5);
     param_map('mat_3') = rand(2,2);
     param_map('mat_4') = rand(1,1);
     param_map('list_string_1') = ["col1", "col2", "col3", "col4"];
@@ -367,7 +396,8 @@ if (isempty(varargin))
     param_map('string_1') = "Table Name";
     param_map('string_int_1') = 1021;
     param_map('string_float_1') = 1021.13;
-        
+    param_map('boolean_1') = true;
+    
 else
     
     if (length(varargin) == 1)
@@ -409,7 +439,14 @@ for i = 1:length(param_map)
     st_cur_key = param_map_keys{i};
     na_cur_val = param_map_vals{i};
     
-    if (ismatrix(na_cur_val) && isnumeric(na_cur_val))
+    if(iscell(na_cur_val))
+        na_cur_val = na_cur_val{1};
+    end
+    if(istable(na_cur_val))
+        na_cur_val = table2array(na_cur_val);
+    end
+        
+    if (ismatrix(na_cur_val) && (isnumeric(na_cur_val) || islogical(na_cur_val)))
         
         [it_row_n, it_col_n] = size(na_cur_val);
         
@@ -417,29 +454,29 @@ for i = 1:length(param_map)
             
             it_scalar_ctr = it_scalar_ctr + 1;
             row_scalar_names{it_scalar_ctr} = st_cur_key;
-            ar_scalar_val(it_scalar_ctr) = na_cur_val;
-            ar_scalar_i(it_scalar_ctr) = i;            
-                        
+            ar_scalar_val(it_scalar_ctr) = real(na_cur_val);
+            ar_scalar_i(it_scalar_ctr) = i;
+            
             st_display = strjoin(['pos =' num2str(i) '; key =' string(st_cur_key) '; val =' string(na_cur_val)]);
             disp(st_display);
             
         else
-
+            
             it_mat_ctr = it_mat_ctr + 1;
             row_mat_names{it_mat_ctr} = st_cur_key;
-
+            
             fl_mean = mean(na_cur_val, 'all');
             fl_std = std(na_cur_val, [], 'all');
             fl_min = min(na_cur_val, [], 'all');
             fl_max = max(na_cur_val, [], 'all');
-
+            
             ar_rows_n(it_mat_ctr) = it_row_n;
             ar_cols_n(it_mat_ctr) = it_col_n;
             ar_mean(it_mat_ctr) = fl_mean;
             ar_std(it_mat_ctr) = fl_std;
             ar_min(it_mat_ctr) = fl_min;
             ar_max(it_mat_ctr) = fl_max;
-            ar_mat_i(it_mat_ctr) = i;            
+            ar_mat_i(it_mat_ctr) = i;
             
             st_display = strjoin(['pos =' num2str(i) '; key =' string(st_cur_key) ...
                 ';rown=' num2str(it_row_n) ',coln=' num2str(it_col_n)]);
@@ -453,7 +490,7 @@ for i = 1:length(param_map)
             [ar_it_cols, ar_it_rows] = fft_row_col_subset(it_col_n, it_col_n_keep, it_row_n, it_row_n_keep);
             cl_st_full_rows = cellstr([num2str((1:it_row_n)', 'r%d')]);
             cl_st_full_cols = cellstr([num2str((1:it_col_n)', 'c%d')]);
-            tb_data_subset = array2table(round(na_cur_val(ar_it_rows, ar_it_cols), 6));
+            tb_data_subset = array2table(na_cur_val(ar_it_rows, ar_it_cols));
             cl_row_names = strcat('zi=', num2str(ar_it_rows'), ':', cl_st_full_rows(ar_it_rows));
             cl_col_names = strcat('zi=', num2str(ar_it_cols'), ':', cl_st_full_cols(ar_it_cols));
             tb_data_subset.Properties.VariableNames = matlab.lang.makeValidName(cl_col_names);
@@ -478,7 +515,7 @@ for i = 1:length(param_map)
         it_string_ctr = it_string_ctr + 1;
         row_string_names{it_string_ctr} = st_cur_key;
         ar_string_i(it_string_ctr) = i;
-        
+                
         st_display = strjoin(['pos =' num2str(i) '; key =' string(st_cur_key) '; val =' string(na_cur_val)]);
         disp(st_display);
         

@@ -59,7 +59,11 @@ support_map('st_mat_test_prefix') = ['dft_'];
 
 % Generate Arrays of Parameter Values to Loop Over
 it_simu_vec_len = 15;
-param_tstar_map = containers.Map('K% Quick Grid Simulation (Limited Graphs)
+param_tstar_map = containers.Map('KeyType','char', 'ValueType','any');
+param_tstar_map('fl_z_wage_rho') = linspace(0, 0.985, it_simu_vec_len);
+param_tstar_map('fl_z_wage_sig') = linspace(0.05, 0.50, it_simu_vec_len);
+
+%% Quick Grid Simulation (Limited Graphs)
 it_size_type = 1;
 ar_it_plot_sets = [3,4, 7,8, 9,10];
 
@@ -90,8 +94,4 @@ ff_az_test_analyze( ...
     ar_it_plot_sets, bl_simu_cross, it_size_type, cl_st_param_keys, ...
     param_map, support_map, param_tstar_map);
 
-close all;eyType','char', 'ValueType','any');
-param_tstar_map('fl_z_wage_rho') = linspace(0, 0.985, it_simu_vec_len);
-param_tstar_map('fl_z_wage_sig') = linspace(0.05, 0.50, it_simu_vec_len);
-
-%
+close all;

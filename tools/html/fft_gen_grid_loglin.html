@@ -1,0 +1,233 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>fft_gen_grid_loglin</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-08-01"><meta name="DC.source" content="fft_gen_grid_loglin.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="keyword">function</span> [ar_a] = ff_grid_loglin(it_a_vec_n, fl_amax, fl_amin, fl_loglin_threshold)
+    <span class="comment">% Returns asset vector given certain parameters</span>
+    <span class="comment">% Inputs</span>
+    <span class="comment">% 1. it_a_vec    :   length of returned vector</span>
+    <span class="comment">% 2. fl_amax       :   max value of the returned vector</span>
+    <span class="comment">% 3. fl_amin       :   min value of the returned vector</span>
+    <span class="comment">% 4. fl_loglin_threshold  :   threshold until which we need additional log space</span>
+    <span class="comment">% betweeen amin and threshold.</span>
+
+    <span class="keyword">if</span> (fl_amin &gt;= 0)
+        <span class="keyword">if</span> (fl_amin &gt;= fl_loglin_threshold)
+            ar_a = [0 logspace(log10(fl_amin), log10(fl_amax), (it_a_vec_n - 1))]';
+        <span class="keyword">else</span>
+
+            a_vec_n_log_cur = it_a_vec_n;
+            a_vec_n_actual = it_a_vec_n + 9999;
+
+            <span class="keyword">while</span> (a_vec_n_actual &gt;= it_a_vec_n)
+                avec_log = logspace(log10(fl_loglin_threshold), log10(fl_amax), a_vec_n_log_cur);
+                log_space_min_gap = avec_log(2) - avec_log(1);
+                avec_lin = fl_amin:log_space_min_gap:fl_loglin_threshold;
+                ar_a = unique([avec_lin';avec_log']);
+                a_vec_n_actual = length(ar_a);
+                a_vec_n_log_cur = a_vec_n_log_cur - 1;
+            <span class="keyword">end</span>
+
+            ar_a = [0; ar_a];
+
+            <span class="keyword">if</span> (length(ar_a) == (it_a_vec_n-1))
+                avec_log = logspace(log10(fl_loglin_threshold), log10(fl_amax), a_vec_n_log_cur+2);
+                ar_a = [0; unique([avec_lin';avec_log'])];
+            <span class="keyword">end</span>
+
+        <span class="keyword">end</span>
+
+        <span class="keyword">if</span> (length(ar_a) == it_a_vec_n)
+        <span class="keyword">else</span>
+            error(<span class="string">'a_vec length (=%d) not equal to specified (should be = %d)'</span>, (length(ar_a)), (it_a_vec_n))
+        <span class="keyword">end</span>
+    <span class="keyword">else</span>
+        <span class="keyword">if</span> (fl_amin &gt;= fl_loglin_threshold)
+            ar_a = [logspace(log10(fl_amin), log10(fl_amax), (it_a_vec_n))]';
+        <span class="keyword">else</span>
+
+            a_vec_n_log_cur = it_a_vec_n;
+            a_vec_n_actual = it_a_vec_n + 9999;
+
+            <span class="keyword">while</span> (a_vec_n_actual &gt;= it_a_vec_n)
+                avec_log = logspace(log10(fl_loglin_threshold), log10(fl_amax), a_vec_n_log_cur);
+                log_space_min_gap = avec_log(2) - avec_log(1);
+                avec_lin = fl_amin:log_space_min_gap:fl_loglin_threshold;
+                ar_a = unique([avec_lin';avec_log']);
+                a_vec_n_actual = length(ar_a);
+                a_vec_n_log_cur = a_vec_n_log_cur - 1;
+            <span class="keyword">end</span>
+
+            <span class="keyword">if</span> (length(ar_a) == (it_a_vec_n-1))
+                avec_log = logspace(log10(fl_loglin_threshold), log10(fl_amax), a_vec_n_log_cur+2);
+                ar_a = unique([avec_lin';avec_log']);
+            <span class="keyword">end</span>
+            <span class="keyword">if</span> (length(ar_a) == (it_a_vec_n-2))
+                avec_log = logspace(log10(fl_loglin_threshold), log10(fl_amax), a_vec_n_log_cur+3);
+                ar_a = unique([avec_lin';avec_log']);
+            <span class="keyword">end</span>
+            <span class="keyword">if</span> (length(ar_a) == (it_a_vec_n-3))
+                avec_log = logspace(log10(fl_loglin_threshold), log10(fl_amax), a_vec_n_log_cur+4);
+                ar_a = unique([avec_lin';avec_log']);
+            <span class="keyword">end</span>
+
+        <span class="keyword">end</span>
+
+        <span class="keyword">if</span> (length(ar_a) == it_a_vec_n)
+        <span class="keyword">else</span>
+            error(<span class="string">'a_vec length (=%d) not equal to specified (should be = %d)'</span>, (length(ar_a)), (it_a_vec_n))
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+<span class="keyword">end</span>
+</pre><pre class="codeoutput error">Not enough input arguments.
+
+Error in fft_gen_grid_loglin (line 10)
+    if (fl_amin &gt;= 0)
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function [ar_a] = ff_grid_loglin(it_a_vec_n, fl_amax, fl_amin, fl_loglin_threshold)
+    % Returns asset vector given certain parameters
+    % Inputs
+    % 1. it_a_vec    :   length of returned vector
+    % 2. fl_amax       :   max value of the returned vector
+    % 3. fl_amin       :   min value of the returned vector
+    % 4. fl_loglin_threshold  :   threshold until which we need additional log space
+    % betweeen amin and threshold.
+    
+    if (fl_amin >= 0)
+        if (fl_amin >= fl_loglin_threshold)
+            ar_a = [0 logspace(log10(fl_amin), log10(fl_amax), (it_a_vec_n - 1))]';
+        else
+
+            a_vec_n_log_cur = it_a_vec_n;
+            a_vec_n_actual = it_a_vec_n + 9999;
+
+            while (a_vec_n_actual >= it_a_vec_n)
+                avec_log = logspace(log10(fl_loglin_threshold), log10(fl_amax), a_vec_n_log_cur);
+                log_space_min_gap = avec_log(2) - avec_log(1);
+                avec_lin = fl_amin:log_space_min_gap:fl_loglin_threshold;
+                ar_a = unique([avec_lin';avec_log']);
+                a_vec_n_actual = length(ar_a);
+                a_vec_n_log_cur = a_vec_n_log_cur - 1;
+            end
+
+            ar_a = [0; ar_a];
+
+            if (length(ar_a) == (it_a_vec_n-1))
+                avec_log = logspace(log10(fl_loglin_threshold), log10(fl_amax), a_vec_n_log_cur+2);
+                ar_a = [0; unique([avec_lin';avec_log'])];
+            end
+
+        end
+
+        if (length(ar_a) == it_a_vec_n)
+        else
+            error('a_vec length (=%d) not equal to specified (should be = %d)', (length(ar_a)), (it_a_vec_n))
+        end
+    else
+        if (fl_amin >= fl_loglin_threshold)
+            ar_a = [logspace(log10(fl_amin), log10(fl_amax), (it_a_vec_n))]';
+        else
+
+            a_vec_n_log_cur = it_a_vec_n;
+            a_vec_n_actual = it_a_vec_n + 9999;
+
+            while (a_vec_n_actual >= it_a_vec_n)
+                avec_log = logspace(log10(fl_loglin_threshold), log10(fl_amax), a_vec_n_log_cur);
+                log_space_min_gap = avec_log(2) - avec_log(1);
+                avec_lin = fl_amin:log_space_min_gap:fl_loglin_threshold;
+                ar_a = unique([avec_lin';avec_log']);
+                a_vec_n_actual = length(ar_a);
+                a_vec_n_log_cur = a_vec_n_log_cur - 1;
+            end
+
+            if (length(ar_a) == (it_a_vec_n-1))
+                avec_log = logspace(log10(fl_loglin_threshold), log10(fl_amax), a_vec_n_log_cur+2);
+                ar_a = unique([avec_lin';avec_log']);
+            end
+            if (length(ar_a) == (it_a_vec_n-2))
+                avec_log = logspace(log10(fl_loglin_threshold), log10(fl_amax), a_vec_n_log_cur+3);
+                ar_a = unique([avec_lin';avec_log']);
+            end
+            if (length(ar_a) == (it_a_vec_n-3))
+                avec_log = logspace(log10(fl_loglin_threshold), log10(fl_amax), a_vec_n_log_cur+4);
+                ar_a = unique([avec_lin';avec_log']);
+            end
+
+        end
+
+        if (length(ar_a) == it_a_vec_n)
+        else
+            error('a_vec length (=%d) not equal to specified (should be = %d)', (length(ar_a)), (it_a_vec_n))
+        end        
+    end
+
+end
+
+##### SOURCE END #####
+--></body></html>
