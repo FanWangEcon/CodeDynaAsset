@@ -45,7 +45,7 @@ bl_default = false;
 
 % Set which to graph, simulate over which variables
 bl_simu_cross = 'c';
-cl_st_param_keys = {'fl_z_r_borr_poiss_mean', 'fl_z_r_borr_max', 'fl_z_r_borr_n'};
+cl_st_param_keys = {'fl_z_r_borr_poiss_mean', 'fl_z_r_borr_max', 'fl_b_bd', 'fl_c_min', 'fl_z_r_borr_n'};
 
 % Generate Benchmark Parameters
 it_param_set = 9;

@@ -27,4 +27,8 @@ Note that interest rate changes have price and substitution effects, but additio
 
 ## What is the effect of increasing savings interest rate
 
+As one would expect, people are "better off" when the savings interest rate increases, in terms of their consumption and savings.
+
 Without default, as savings interest rates increase, aggregate savings go up, consumption go up. Standard savings increases. Standard deviation of consumption could decrease than increase. With default, mean consumptions are slightly higher in generally at all savings interest rate levels.
+
+With default, seems to have slightly lower consumption variance, and also slightly higher consumption mean. Perhaps makes sense, default allows for wider range of borrowing, so better consumption smoothing?

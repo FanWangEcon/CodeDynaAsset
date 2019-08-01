@@ -44,7 +44,6 @@ bl_default = false;
 % is needed.
 
 % Set which to graph, simulate over which variables
-ar_it_plot_sets = [1,2,101,3,4,102,51,52,53,5,6,103,104,106,10];
 bl_simu_cross = 'c';
 cl_st_param_keys = {'fl_z_r_borr_poiss_mean', 'fl_z_r_borr_max', 'fl_b_bd', 'fl_c_min', 'fl_z_r_borr_n'};
 
@@ -69,16 +68,6 @@ param_tstar_map('fl_z_r_borr_max') = linspace(0.095, 0.150, it_simu_vec_len);
 param_tstar_map('fl_b_bd') = linspace(-20, -5, it_simu_vec_len);
 param_tstar_map('fl_c_min') = linspace(0.03, 0.001, it_simu_vec_len);
 param_tstar_map('fl_z_r_borr_n') = 3:1:(3+it_simu_vec_len-1);
-
-%% Quick Grid Simulation
-it_size_type = 1;
-
-% Simulate along parameters
-ff_az_test_analyze( ...
-    ar_it_plot_sets, bl_simu_cross, it_size_type, cl_st_param_keys, ...
-    param_map, support_map, param_tstar_map);
-
-close all;
 
 %% Quick Grid Simulation (Limited Graphs)
 it_size_type = 1;
@@ -110,15 +99,5 @@ ar_it_plot_sets = [1,2,101, 3,4,102, 5,6,103, 51,52,53, 201,205,207, 104,106,10]
 [tb_outcomes, ~ ] = ff_az_test_analyze( ...
     ar_it_plot_sets, bl_simu_cross, it_size_type, cl_st_param_keys, ...
     param_map, support_map, param_tstar_map);
-
-% Display the effect of changing parameters on mean cl_mt_pol_k and mean
-cl_st_outcome = {'cl_mt_pol_k'};
-for st_param_keys = cl_st_param_keys
-    for st_outcome = cl_st_outcome
-        disp(tb_outcomes((strcmp(tb_outcomes.var_param_key, st_param_keys) ...
-                     & strcmp(tb_outcomes.variablenames, st_outcome)), ...
-                     {'mean', st_param_keys{1}}));
-    end
-end
 
 close all

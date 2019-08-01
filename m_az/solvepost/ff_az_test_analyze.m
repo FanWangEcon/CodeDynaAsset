@@ -137,13 +137,15 @@ params_group = values(support_map, {'bl_graph_onebyones', 'bl_display_graph_stat
 %% Show Stats Only
 % Display the effect of changing parameters on mean cl_mt_pol_k and mean
 % cl_st_param_keys = {'fl_z_r_borr_poiss_mean', 'fl_z_r_borr_max', 'fl_b_bd', 'fl_c_min', 'fl_z_r_borr_n'};
-cl_st_outcome = {'cl_mt_pol_c'};
+cl_st_outcome = {'cl_mt_pol_c', 'cl_mt_pol_k', 'cl_mt_coh'};
 if (strcmp(st_simu_type, 'c'))
     for st_param_keys = cl_st_param_keys
         for st_outcome = cl_st_outcome
-            tb_outcomes_show = tb_outcomes((strcmp(tb_outcomes.var_param_key, st_param_keys) & strcmp(tb_outcomes.variablenames, st_outcome)), :);
-            tb_outcomes_show = movevars(tb_outcomes_show, {st_param_keys{1}, 'mean', 'sd'}, 'Before', 'variablenames');
-            disp(tb_outcomes_show);
+            if (sum(strcmp(tb_outcomes.variablenames, st_outcome) > 0))
+                tb_outcomes_show = tb_outcomes((strcmp(tb_outcomes.var_param_key, st_param_keys) & strcmp(tb_outcomes.variablenames, st_outcome)), :);
+                tb_outcomes_show = movevars(tb_outcomes_show, {st_param_keys{1}, 'mean', 'sd'}, 'Before', 'variablenames');
+                disp(tb_outcomes_show);
+            end
         end        
     end
 end

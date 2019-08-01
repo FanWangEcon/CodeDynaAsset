@@ -105,14 +105,4 @@ ar_it_plot_sets = [1,2,101, 3,4,102, 5,6,103, 51,52,53, 201,205,207, 104,106,10]
     ar_it_plot_sets, bl_simu_cross, it_size_type, cl_st_param_keys, ...
     param_map, support_map, param_tstar_map);
 
-% Display the effect of changing parameters on mean cl_mt_pol_k and mean
-cl_st_outcome = {'cl_mt_pol_k'};
-for st_param_keys = cl_st_param_keys
-    for st_outcome = cl_st_outcome
-        disp(tb_outcomes((strcmp(tb_outcomes.var_param_key, st_param_keys) ...
-                     & strcmp(tb_outcomes.variablenames, st_outcome)), ...
-                     {'mean', st_param_keys{1}}));
-    end
-end
-
 close all
