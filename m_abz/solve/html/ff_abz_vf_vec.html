@@ -1,0 +1,1167 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Solve Save + Borr Dynamic Programming Problem (Vectorized)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-08-06"><meta name="DC.source" content="ff_abz_vf_vec.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Solve Save + Borr Dynamic Programming Problem (Vectorized)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_ABZ_VF_VEC solve infinite horizon exo shock + endo asset problem</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters 1</a></li><li><a href="#5">Parse Parameters 2</a></li><li><a href="#6">Display Parameters</a></li><li><a href="#7">Initialize Output Matrixes</a></li><li><a href="#8">Initialize Convergence Conditions</a></li><li><a href="#9">Iterate Value Function</a></li><li><a href="#11">Solve Optimization Problem Current Iteration</a></li><li><a href="#12">Check Tolerance and Continuation</a></li><li><a href="#14">Process Optimal Choices</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> result_map = ff_abz_vf_vec(varargin)
+</pre><h2 id="2">FF_ABZ_VF_VEC solve infinite horizon exo shock + endo asset problem</h2><p>This program solves the infinite horizon dynamic single asset and single shock problem with vectorized codes. <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf.html">ff_abz_vf</a> shows looped codes. The solution is the same.</p><p>The borrowing problem is similar to the savings problem. The main addition here in comparison to the savings only code <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vec.html">ff_az_vf_vec</a> is the ability to deal with default, as well as an additional shock to the borrowing interest rate.</p><p>The vectorization takes advantage of implicit parallization that modern computers have when <a href="https://en.wikipedia.org/wiki/SIMD">same instructions are given for different blocks of data</a> With vectorization, we face a tradeoff between memory and speed. Suppose we have many shock points and many states points, if we build all states and choices into one single matrix and compute consumption, utility, etc over that entire matrix, that might be more efficient than computing consumption, utility, etc by subset of that matrix over a loop, but there is time required for generating that large input matrix, and if there are too many states, a computer could run out of memory.</p><p>The design philosophy here is that we vectorize the endogenous states and choices into matrixes, but do not include the exogeous states (shocks). The exogenous shocks remain looped. This means we can potentially have multiple shock variables discretized over a large number of shock states, and the computer would not run into memory problems. The speed gain from vectoring the rest of the problem conditional on shocks is very large compared to the pure looped version of the problem. Even if more memory is available, including the exogenous states in the vectorization process might not be speed improving.</p><p>Note one key issue is whether a programming language is <a href="https://en.wikipedia.org/wiki/Row-_and_column-major_order">row or column major</a> depending on which, states should be rows or columns.</p><p>Another programming issue is the idea of <b>broadcasting</b> vs matrix algebra, both are used here. Since Matlab R2016b, <a href="https://blogs.mathworks.com/loren/2016/10/24/matlab-arithmetic-expands-in-r2016b/">matrix broadcasting</a> has been allowed, which means the sum of a N by 1 and 1 by M is N by M. This is unrelated to matrix algebra. Matrix array broadcasting is very useful because it reduces the dimensionality of our model input state and choice and shock vectors, offering greater code clarity.</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@param func_map container container with function handles for consumption cash-on-hand etc.</p><p>@return result_map container contains policy function matrix, value function matrix, iteration results, and policy function, value function and iteration results tables.</p><p>keys included in result_map:</p><div><ul><li>mt_val matrix states_n by shock_n matrix of converged value function grid</li><li>mt_pol_a matrix states_n by shock_n matrix of converged policy function grid</li><li>ar_val_diff_norm array if bl_post = true it_iter_last by 1 val function difference between iteration</li><li>ar_pol_diff_norm array if bl_post = true it_iter_last by 1 policy function difference between iterations</li><li>mt_pol_perc_change matrix if bl_post = true it_iter_last by shock_n the proportion of grid points at which policy function changed between current and last iteration for each element of shock</li></ul></div><p>@example</p><pre>  % Get Default Parameters
+  it_param_set = 2;
+  [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
+  % Chnage param_map keys for borrowing
+  param_map('fl_b_bd') = -20; % borrow bound
+  param_map('bl_default') = false; % true if allow for default
+  param_map('fl_c_min') = 0.0001; % u(c_min) when default
+  % Change Keys in param_map
+  param_map('it_a_n') = 500;
+  param_map('fl_z_r_borr_n') = 5;
+  param_map('it_z_wage_n') = 15;
+  param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+  param_map('fl_a_max') = 100;
+  param_map('fl_w') = 1.3;
+  % Change Keys support_map
+  support_map('bl_display') = false;
+  support_map('bl_post') = true;
+  support_map('bl_display_final') = false;
+  % Call Program with external parameters that override defaults.
+  ff_abz_vf_vec(param_map, support_map);</pre><p>@include</p><div><ul><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_default_param.html">ffs_abz_set_default_param</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_get_funcgrid.html">ffs_abz_get_funcgrid</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_vf_post.html">ff_az_vf_post</a></li></ul></div><p>@seealso</p><div><ul><li>save loop: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf.html">ff_az_vf</a></li><li>save vectorized: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vec.html">ff_az_vf_vec</a></li><li>save optimized-vectorized: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a></li><li>save + borr loop: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf.html">ff_abz_vf</a></li><li>save + borr vectorized: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vec.html">ff_abz_vf_vec</a></li><li>save + borr optimized-vectorized: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vecsv.html">ff_abz_vf_vecsv</a></li></ul></div><h2 id="3">Default</h2><div><ul><li>it_param_set = 1: quick test</li><li>it_param_set = 2: benchmark run</li><li>it_param_set = 3: benchmark profile</li><li>it_param_set = 4: press publish button</li></ul></div><pre class="codeinput">it_param_set = 4;
+bl_input_override = true;
+[param_map, support_map] = ffs_abz_set_default_param(it_param_set);
+
+<span class="comment">% Note: param_map and support_map can be adjusted here or outside to override defaults</span>
+<span class="comment">% param_map('it_a_n') = 750;</span>
+<span class="comment">% param_map('fl_z_r_borr_n') = 5;</span>
+<span class="comment">% param_map('it_z_wage_n') = 15;</span>
+<span class="comment">% param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');</span>
+<span class="comment">% param_map('fl_r_save') = 0.025;</span>
+<span class="comment">% param_map('fl_z_r_borr_poiss_mean') = 1.75;</span>
+
+[armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override); <span class="comment">% 1 for override</span>
+default_params = {param_map support_map armt_map func_map};
+</pre><h2 id="4">Parse Parameters 1</h2><pre class="codeinput"><span class="comment">% if varargin only has param_map and support_map,</span>
+params_len = length(varargin);
+[default_params{1:params_len}] = varargin{:};
+param_map = [param_map; default_params{1}];
+support_map = [support_map; default_params{2}];
+<span class="keyword">if</span> params_len &gt;= 1 &amp;&amp; params_len &lt;= 2
+    <span class="comment">% If override param_map, re-generate armt and func if they are not</span>
+    <span class="comment">% provided</span>
+    bl_input_override = true;
+    [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+<span class="keyword">else</span>
+    <span class="comment">% Override all</span>
+    armt_map = [armt_map; default_params{3}];
+    func_map = [func_map; default_params{4}];
+<span class="keyword">end</span>
+
+<span class="comment">% append function name</span>
+st_func_name = <span class="string">'ff_abz_vf_vec'</span>;
+support_map(<span class="string">'st_profile_name_main'</span>) = [st_func_name support_map(<span class="string">'st_profile_name_main'</span>)];
+support_map(<span class="string">'st_mat_name_main'</span>) = [st_func_name support_map(<span class="string">'st_mat_name_main'</span>)];
+support_map(<span class="string">'st_img_name_main'</span>) = [st_func_name support_map(<span class="string">'st_img_name_main'</span>)];
+</pre><h2 id="5">Parse Parameters 2</h2><pre class="codeinput"><span class="comment">% armt_map</span>
+params_group = values(armt_map, {<span class="string">'ar_a'</span>, <span class="string">'mt_z_trans'</span>, <span class="string">'ar_z_r_borr_mesh_wage'</span>, <span class="string">'ar_z_wage_mesh_r_borr'</span>});
+[ar_a, mt_z_trans, ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
+
+<span class="comment">% func_map</span>
+params_group = values(func_map, {<span class="string">'f_util_log'</span>, <span class="string">'f_util_crra'</span>, <span class="string">'f_cons_checkcmin'</span>, <span class="string">'f_coh'</span>, <span class="string">'f_cons_coh'</span>});
+[f_util_log, f_util_crra, f_cons_checkcmin, f_coh, f_cons_coh] = params_group{:};
+
+<span class="comment">% param_map</span>
+params_group = values(param_map, {<span class="string">'it_a_n'</span>, <span class="string">'it_z_n'</span>, <span class="string">'fl_crra'</span>, <span class="string">'fl_beta'</span>, <span class="string">'fl_c_min'</span>,<span class="keyword">...</span>
+    <span class="string">'fl_nan_replace'</span>, <span class="string">'bl_default'</span>, <span class="string">'fl_default_aprime'</span>});
+[it_a_n, it_z_n, fl_crra, fl_beta, fl_c_min, <span class="keyword">...</span>
+    fl_nan_replace, bl_default, fl_default_aprime] = params_group{:};
+params_group = values(param_map, {<span class="string">'it_maxiter_val'</span>, <span class="string">'fl_tol_val'</span>, <span class="string">'fl_tol_pol'</span>, <span class="string">'it_tol_pol_nochange'</span>});
+[it_maxiter_val, fl_tol_val, fl_tol_pol, it_tol_pol_nochange] = params_group{:};
+
+<span class="comment">% support_map</span>
+params_group = values(support_map, {<span class="string">'bl_profile'</span>, <span class="string">'st_profile_path'</span>, <span class="keyword">...</span>
+    <span class="string">'st_profile_prefix'</span>, <span class="string">'st_profile_name_main'</span>, <span class="string">'st_profile_suffix'</span>,<span class="keyword">...</span>
+    <span class="string">'bl_time'</span>, <span class="string">'bl_display_defparam'</span>, <span class="string">'bl_display'</span>, <span class="string">'it_display_every'</span>, <span class="string">'bl_post'</span>});
+[bl_profile, st_profile_path, <span class="keyword">...</span>
+    st_profile_prefix, st_profile_name_main, st_profile_suffix, <span class="keyword">...</span>
+    bl_time, bl_display_defparam, bl_display, it_display_every, bl_post] = params_group{:};
+</pre><h2 id="6">Display Parameters</h2><pre class="codeinput"><span class="keyword">if</span>(bl_display_defparam)
+    fft_container_map_display(param_map);
+    fft_container_map_display(support_map);
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">----------------------------------------
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Begin: Show all key and value pairs from container
+CONTAINER NAME: PARAM_MAP
+----------------------------------------
+  Map with properties:
+
+        Count: 35
+      KeyType: char
+    ValueType: any
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+----------------------------------------
+pos = 32 ; key = st_analytical_stationary_type ; val = eigenvector
+pos = 33 ; key = st_model ; val = abz
+pos = 34 ; key = st_z_r_borr_drv_ele_type ; val = unif
+pos = 35 ; key = st_z_r_borr_drv_prb_type ; val = poiss
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Scalars in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                              i     idx    value 
+                              __    ___    ______
+
+    bl_b_is_principle          1     1          1
+    bl_default                 2     2          1
+    bl_loglin                  3     3          0
+    fl_a_max                   4     4         50
+    fl_a_min                   5     5          0
+    fl_b_bd                    6     6        -20
+    fl_beta                    7     7       0.94
+    fl_c_min                   8     8       0.01
+    fl_crra                    9     9        1.5
+    fl_default_aprime         10    10          0
+    fl_loglin_threshold       11    11          1
+    fl_nan_replace            12    12     -99999
+    fl_r_save                 13    13      0.025
+    fl_tol_dist               14    14      1e-05
+    fl_tol_pol                15    15      1e-05
+    fl_tol_val                16    16      1e-05
+    fl_w                      17    17       1.28
+    fl_z_r_borr_max           18    18      0.095
+    fl_z_r_borr_min           19    19      0.025
+    fl_z_r_borr_n             20    20          5
+    fl_z_r_borr_poiss_mean    21    21         10
+    fl_z_wage_mu              22    22          0
+    fl_z_wage_rho             23    23        0.8
+    fl_z_wage_sig             24    24        0.2
+    it_a_n                    25    25        750
+    it_maxiter_dist           26    26       1000
+    it_maxiter_val            27    27       1000
+    it_tol_pol_nochange       28    28         25
+    it_trans_power_dist       29    29       1000
+    it_z_n                    30    30         55
+    it_z_wage_n               31    31         11
+
+----------------------------------------
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Begin: Show all key and value pairs from container
+CONTAINER NAME: SUPPORT_MAP
+----------------------------------------
+  Map with properties:
+
+        Count: 40
+      KeyType: char
+    ValueType: any
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+----------------------------------------
+pos = 26 ; key = st_img_name_main ; val = ff_abz_vf_vec_default
+pos = 27 ; key = st_img_path ; val = C:/Users/fan/CodeDynaAsset//m_abz//solve/img/
+pos = 28 ; key = st_img_prefix ; val = 
+pos = 29 ; key = st_img_suffix ; val = _p4.png
+pos = 30 ; key = st_mat_name_main ; val = ff_abz_vf_vec_default
+pos = 31 ; key = st_mat_path ; val = C:/Users/fan/CodeDynaAsset//m_abz//solve/mat/
+pos = 32 ; key = st_mat_prefix ; val = 
+pos = 33 ; key = st_mat_suffix ; val = _p4
+pos = 34 ; key = st_mat_test_path ; val = C:/Users/fan/CodeDynaAsset//m_abz//test/ff_az_ds_vecsv/mat/
+pos = 35 ; key = st_matimg_path_root ; val = C:/Users/fan/CodeDynaAsset//m_abz/
+pos = 36 ; key = st_profile_name_main ; val = ff_abz_vf_vec_default
+pos = 37 ; key = st_profile_path ; val = C:/Users/fan/CodeDynaAsset//m_abz//solve/profile/
+pos = 38 ; key = st_profile_prefix ; val = 
+pos = 39 ; key = st_profile_suffix ; val = _p4
+pos = 40 ; key = st_title_prefix ; val = 
+----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Scalars in Container and Sizes and Basic Statistics
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                                    i     idx    value
+                                    __    ___    _____
+
+    bl_display                       1     1        0 
+    bl_display_defparam              2     2        1 
+    bl_display_dist                  3     3        0 
+    bl_display_final                 4     4        1 
+    bl_display_final_dist            5     5        0 
+    bl_display_final_dist_detail     6     6        0 
+    bl_display_funcgrids             7     7        0 
+    bl_graph                         8     8        1 
+    bl_graph_coh_t_coh               9     9        1 
+    bl_graph_funcgrids              10    10        0 
+    bl_graph_onebyones              11    11        1 
+    bl_graph_pol_lvl                12    12        1 
+    bl_graph_pol_pct                13    13        1 
+    bl_graph_val                    14    14        1 
+    bl_img_save                     15    15        0 
+    bl_mat                          16    16        0 
+    bl_post                         17    17        1 
+    bl_profile                      18    18        0 
+    bl_profile_dist                 19    19        0 
+    bl_time                         20    20        1 
+    it_display_every                21    21        5 
+    it_display_final_colmax         22    22       15 
+    it_display_final_rowmax         23    23      100 
+    it_display_summmat_colmax       24    24        5 
+    it_display_summmat_rowmax       25    25        5 
+
+</pre><h2 id="7">Initialize Output Matrixes</h2><p>include mt_pol_idx which we did not have in looped code</p><pre class="codeinput">mt_val_cur = zeros(length(ar_a),it_z_n);
+mt_val = mt_val_cur - 1;
+mt_pol_a = zeros(length(ar_a),it_z_n);
+mt_pol_a_cur = mt_pol_a - 1;
+mt_pol_idx = zeros(length(ar_a),it_z_n);
+</pre><h2 id="8">Initialize Convergence Conditions</h2><pre class="codeinput">bl_vfi_continue = true;
+it_iter = 0;
+ar_val_diff_norm = zeros([it_maxiter_val, 1]);
+ar_pol_diff_norm = zeros([it_maxiter_val, 1]);
+mt_pol_perc_change = zeros([it_maxiter_val, it_z_n]);
+</pre><h2 id="9">Iterate Value Function</h2><p>Loop solution with 4 nested loops</p><div><ol><li>loop 1: over exogenous states</li><li>loop 2: over endogenous states</li><li>loop 3: over choices</li><li>loop 4: add future utility, integration--loop over future shocks</li></ol></div><pre class="codeinput"><span class="comment">% Start Profile</span>
+<span class="keyword">if</span> (bl_profile)
+    close <span class="string">all</span>;
+    profile <span class="string">off</span>;
+    profile <span class="string">on</span>;
+<span class="keyword">end</span>
+
+<span class="comment">% Start Timer</span>
+<span class="keyword">if</span> (bl_time)
+    tic;
+<span class="keyword">end</span>
+
+<span class="comment">% Value Function Iteration</span>
+<span class="keyword">while</span> bl_vfi_continue
+</pre><pre class="codeinput">    it_iter = it_iter + 1;
+</pre><h2 id="11">Solve Optimization Problem Current Iteration</h2><p>Only this segment of code differs between ff_abz_vf and ff_abz_vf_vec</p><pre class="codeinput">    <span class="comment">% loop 1: over exogenous states</span>
+    <span class="comment">% incorporating these shocks into vectorization has high memory burden</span>
+    <span class="comment">% but insignificant speed gains. Keeping this loop allows for large</span>
+    <span class="comment">% number of shocks without overwhelming memory</span>
+    <span class="keyword">for</span> it_z_i = 1:it_z_n
+
+        <span class="comment">% Current Shock</span>
+        fl_z_r_borr = ar_z_r_borr_mesh_wage(it_z_i);
+        fl_z_wage = ar_z_wage_mesh_r_borr(it_z_i);
+
+        <span class="comment">% cash-on-hand</span>
+        ar_coh = f_coh(fl_z_r_borr, fl_z_wage, ar_a);
+
+        <span class="comment">% Consumption: fl_z = 1 by 1, ar_a = 1 by N, ar_a' = N by 1</span>
+        <span class="comment">% mt_c is N by N: matrix broadcasting, expand to matrix from arrays</span>
+        mt_c = f_cons_coh(ar_coh, ar_a');
+
+        <span class="comment">% EVAL current utility: N by N, f_util defined earlier</span>
+        <span class="keyword">if</span> (fl_crra == 1)
+            mt_utility = f_util_log(mt_c);
+            fl_u_cmin = f_util_log(fl_c_min);
+        <span class="keyword">else</span>
+            mt_utility = f_util_crra(mt_c);
+            fl_u_cmin = f_util_crra(fl_c_min);
+        <span class="keyword">end</span>
+
+        <span class="comment">% f(z'|z)</span>
+        ar_z_trans_condi = mt_z_trans(it_z_i,:);
+
+        <span class="comment">% EVAL EV((A',K'),Z'|Z) = V((A',K'),Z') x p(z'|z)', (N by Z) x (Z by 1) = N by 1</span>
+        <span class="comment">% Note: transpose ar_z_trans_condi from 1 by Z to Z by 1</span>
+        <span class="comment">% Note: matrix multiply not dot multiply</span>
+        mt_evzp_condi_z = mt_val_cur * ar_z_trans_condi';
+
+        <span class="comment">% EVAL add on future utility, N by N + N by 1, broadcast again</span>
+        mt_utility = mt_utility + fl_beta*mt_evzp_condi_z;
+
+        <span class="keyword">if</span> (bl_default)
+            <span class="comment">% if default: only today u(cmin), transition out next period, debt wiped out</span>
+            mt_utility(mt_c &lt;= fl_c_min) = fl_u_cmin + fl_beta*mt_evzp_condi_z(ar_a == fl_default_aprime);
+        <span class="keyword">else</span>
+            <span class="comment">% if default is not allowed: v = u(cmin)</span>
+            mt_utility(mt_c &lt;= fl_c_min) = fl_nan_replace;
+        <span class="keyword">end</span>
+
+        <span class="comment">% Optimization: remember matlab is column major, rows must be</span>
+        <span class="comment">% choices, columns must be states</span>
+        <span class="comment">% &lt;https://en.wikipedia.org/wiki/Row-_and_column-major_order COLUMN-MAJOR&gt;</span>
+        <span class="comment">% mt_utility is N by N, rows are choices, cols are states.</span>
+        [ar_opti_val_z, ar_opti_idx_z] = max(mt_utility);
+        ar_opti_aprime_z = ar_a(ar_opti_idx_z);
+        ar_opti_c_z = f_cons_coh(ar_coh, ar_opti_aprime_z);
+
+        <span class="comment">% Handle Default is optimal or not</span>
+        <span class="keyword">if</span> (bl_default)
+            <span class="comment">% if defaulting is optimal choice, at these states, not required</span>
+            <span class="comment">% to default, non-default possible, but default could be optimal</span>
+            ar_opti_aprime_z(ar_opti_c_z &lt;= fl_c_min) = fl_default_aprime;
+            ar_opti_idx_z(ar_opti_c_z &lt;= fl_c_min) = find(ar_a == fl_default_aprime);
+        <span class="keyword">else</span>
+            <span class="comment">% if default is not allowed, then next period same state as now</span>
+            <span class="comment">% this is absorbing state, this is the limiting case, single</span>
+            <span class="comment">% state space point, lowest a and lowest shock has this.</span>
+            ar_opti_aprime_z(ar_opti_c_z &lt;= fl_c_min) = ar_a(ar_opti_c_z &lt;= fl_c_min);
+        <span class="keyword">end</span>
+
+        <span class="comment">% store optimal values</span>
+        mt_val(:,it_z_i) = ar_opti_val_z;
+        mt_pol_a(:,it_z_i) = ar_opti_aprime_z;
+
+        <span class="keyword">if</span> (it_iter == (it_maxiter_val + 1))
+            mt_pol_idx(:,it_z_i) = ar_opti_idx_z;
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+</pre><h2 id="12">Check Tolerance and Continuation</h2><pre class="codeinput">    <span class="comment">% Difference across iterations</span>
+    ar_val_diff_norm(it_iter) = norm(mt_val - mt_val_cur);
+    ar_pol_diff_norm(it_iter) = norm(mt_pol_a - mt_pol_a_cur);
+    mt_pol_perc_change(it_iter, :) = sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n);
+
+    <span class="comment">% Update</span>
+    mt_val_cur = mt_val;
+    mt_pol_a_cur = mt_pol_a;
+
+    <span class="comment">% Print Iteration Results</span>
+    <span class="keyword">if</span> (bl_display &amp;&amp; (rem(it_iter, it_display_every)==0))
+        fprintf(<span class="string">'VAL it_iter:%d, fl_diff:%d, fl_diff_pol:%d\n'</span>, <span class="keyword">...</span>
+            it_iter, ar_val_diff_norm(it_iter), ar_pol_diff_norm(it_iter));
+        tb_valpol_iter = array2table([mean(mt_val_cur,1); mean(mt_pol_a_cur,1); <span class="keyword">...</span>
+            mt_val_cur(it_a_n,:); mt_pol_a_cur(it_a_n,:)]);
+        tb_valpol_iter.Properties.VariableNames = strcat(<span class="string">'z'</span>, string((1:size(mt_val_cur,2))));
+        tb_valpol_iter.Properties.RowNames = {<span class="string">'mval'</span>, <span class="string">'map'</span>, <span class="string">'Hval'</span>, <span class="string">'Hap'</span>};
+        disp(<span class="string">'mval = mean(mt_val_cur,1), average value over a'</span>)
+        disp(<span class="string">'map  = mean(mt_pol_a_cur,1), average choice over a'</span>)
+        disp(<span class="string">'Hval = mt_val_cur(it_a_n,:), highest a state val'</span>)
+        disp(<span class="string">'Hap = mt_pol_a_cur(it_a_n,:), highest a state choice'</span>)
+        disp(tb_valpol_iter);
+    <span class="keyword">end</span>
+
+    <span class="comment">% Continuation Conditions:</span>
+    <span class="comment">% 1. if value function convergence criteria reached</span>
+    <span class="comment">% 2. if policy function variation over iterations is less than</span>
+    <span class="comment">% threshold</span>
+    <span class="keyword">if</span> (it_iter == (it_maxiter_val + 1))
+        bl_vfi_continue = false;
+    <span class="keyword">elseif</span> ((it_iter == it_maxiter_val) || <span class="keyword">...</span>
+            (ar_val_diff_norm(it_iter) &lt; fl_tol_val) || <span class="keyword">...</span>
+            (sum(ar_pol_diff_norm(max(1, it_iter-it_tol_pol_nochange):it_iter)) &lt; fl_tol_pol))
+        <span class="comment">% Fix to max, run again to save results if needed</span>
+        it_iter_last = it_iter;
+        it_iter = it_maxiter_val;
+    <span class="keyword">end</span>
+</pre><pre class="codeinput"><span class="keyword">end</span>
+
+<span class="comment">% End Timer</span>
+<span class="keyword">if</span> (bl_time)
+    toc;
+<span class="keyword">end</span>
+
+<span class="comment">% End Profile</span>
+<span class="keyword">if</span> (bl_profile)
+    profile <span class="string">off</span>
+    profile <span class="string">viewer</span>
+    st_file_name = [st_profile_prefix st_profile_name_main st_profile_suffix];
+    profsave(profile(<span class="string">'info'</span>), strcat(st_profile_path, st_file_name));
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">Elapsed time is 385.567776 seconds.
+</pre><h2 id="14">Process Optimal Choices</h2><pre class="codeinput">result_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
+result_map(<span class="string">'mt_val'</span>) = mt_val;
+result_map(<span class="string">'mt_pol_idx'</span>) = mt_pol_idx;
+
+result_map(<span class="string">'cl_mt_val'</span>) = {mt_val, zeros(1)};
+result_map(<span class="string">'cl_mt_coh'</span>) = {f_coh(ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr, ar_a'), zeros(1)};
+result_map(<span class="string">'cl_mt_pol_a'</span>) = {mt_pol_a, zeros(1)};
+result_map(<span class="string">'cl_mt_pol_c'</span>) = {f_cons_checkcmin(ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr, ar_a', mt_pol_a), zeros(1)};
+result_map(<span class="string">'ar_st_pol_names'</span>) = [<span class="string">"cl_mt_val"</span>, <span class="string">"cl_mt_pol_a"</span>, <span class="string">"cl_mt_coh"</span>, <span class="string">"cl_mt_pol_c"</span>];
+
+<span class="keyword">if</span> (bl_post)
+    bl_input_override = true;
+    result_map(<span class="string">'ar_val_diff_norm'</span>) = ar_val_diff_norm(1:it_iter_last);
+    result_map(<span class="string">'ar_pol_diff_norm'</span>) = ar_pol_diff_norm(1:it_iter_last);
+    result_map(<span class="string">'mt_pol_perc_change'</span>) = mt_pol_perc_change(1:it_iter_last, :);
+    result_map = ff_az_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">valgap = norm(mt_val - mt_val_cur): value function difference across iterations
+polgap = norm(mt_pol_a - mt_pol_a_cur): policy function difference across iterations
+z1 = z1 perc change: sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n): percentage of state space points conditional on shock where the policy function is changing across iterations
+                 valgap     polgap     zi1_zr_0_025_zw_0_34664    zi2_zr_0_025_zw_0_42338    zi3_zr_0_025_zw_0_51712    zi4_zr_0_025_zw_0_63162    zi5_zr_0_025_zw_0_77146    zi6_zr_0_025_zw_0_94226    zi7_zr_0_025_zw_1_1509    zi8_zr_0_025_zw_1_4057    zi48_zr_0_095_zw_0_63162    zi49_zr_0_095_zw_0_77146    zi50_zr_0_095_zw_0_94226    zi51_zr_0_095_zw_1_1509    zi52_zr_0_095_zw_1_4057    zi53_zr_0_095_zw_1_7169    zi54_zr_0_095_zw_2_097    zi55_zr_0_095_zw_2_5613
+                ________    _______    _______________________    _______________________    _______________________    _______________________    _______________________    _______________________    ______________________    ______________________    ________________________    ________________________    ________________________    _______________________    _______________________    _______________________    ______________________    _______________________
+
+    iter=1        359.37     3844.7                  1                          1                           1                          1                         1                          1                          1                         1                          1                           1                           1                           1                          1                         1                          1                         1        
+    iter=2        311.94     4136.7            0.99867                          1                           1                          1                         1                          1                          1                         1                    0.98533                     0.98667                     0.99067                     0.99333                    0.99467                         1                          1                         1        
+    iter=3        255.07     1393.5              0.984                    0.98533                     0.98933                    0.99333                     0.996                    0.99733                      0.996                         1                    0.97467                     0.97867                       0.984                       0.988                      0.992                   0.99733                    0.99867                         1        
+    iter=4         211.4     697.88            0.96933                    0.97333                     0.97733                       0.98                   0.98667                      0.992                    0.99867                   0.99467                      0.964                     0.96933                     0.97333                       0.984                    0.98667                   0.99467                    0.99867                         1        
+    iter=5        179.32     412.25            0.95333                    0.95333                        0.96                    0.96667                   0.97733                    0.98533                    0.99067                   0.99333                    0.95333                       0.956                     0.97067                       0.976                    0.98533                   0.99333                      0.992                         1        
+    iter=6        153.93     276.47            0.94267                      0.944                       0.948                    0.95733                     0.964                      0.976                    0.97867                   0.98533                    0.93733                     0.94667                     0.95333                     0.96133                    0.98267                   0.98667                    0.98933                     0.992        
+    iter=7        132.98     198.73            0.92533                    0.93067                     0.94267                    0.95467                   0.95067                       0.96                    0.97733                   0.98933                    0.93733                     0.94133                     0.94667                     0.95733                    0.97333                   0.97867                    0.98267                   0.98267        
+    iter=8         115.8     146.74            0.90933                      0.916                     0.92667                    0.93733                     0.952                    0.95733                      0.968                   0.98667                    0.92533                     0.93067                       0.948                       0.956                    0.95467                   0.97867                    0.97333                   0.97067        
+    iter=9        101.22     113.08              0.908                    0.91733                        0.92                    0.92133                   0.94267                    0.95467                      0.956                   0.96933                    0.91067                     0.92933                     0.93467                     0.94133                    0.96267                     0.972                      0.984                   0.98133        
+    iter=10       88.796      90.52            0.89467                      0.908                     0.91867                    0.92267                   0.93333                    0.94933                      0.952                      0.96                    0.91333                     0.91067                     0.93067                       0.948                      0.944                   0.95733                    0.97067                   0.97067        
+    iter=11       78.078     74.172              0.888                      0.896                     0.90933                    0.91333                   0.92933                    0.92933                    0.94533                     0.956                    0.89333                     0.90667                     0.91733                     0.92933                      0.936                   0.95333                    0.95467                   0.96133        
+    iter=12       68.794     60.438            0.88267                    0.88933                     0.89867                    0.90267                     0.908                      0.916                      0.936                   0.94933                    0.89333                     0.90267                     0.90933                     0.91333                    0.93733                     0.948                    0.96533                   0.97067        
+    iter=13       60.745     50.555            0.86133                    0.86267                     0.87067                    0.89867                     0.888                    0.90133                    0.93067                   0.93333                    0.87733                     0.88133                     0.89867                        0.92                      0.916                   0.92133                      0.936                   0.94933        
+    iter=14        53.71     43.448            0.83867                      0.856                       0.864                      0.868                      0.88                      0.888                    0.90133                   0.92533                    0.84933                     0.87067                     0.87333                     0.88133                    0.90133                   0.92133                    0.92533                   0.92933        
+    iter=15        47.56     37.122              0.824                    0.81733                     0.83467                    0.83467                   0.85867                    0.87067                    0.86933                   0.88667                      0.844                       0.852                     0.84133                       0.852                    0.87733                   0.89467                    0.90667                   0.92667        
+    iter=16       42.185     33.068            0.79067                      0.804                       0.812                       0.82                   0.83467                      0.836                      0.832                   0.84933                       0.82                     0.81867                     0.83867                     0.85333                    0.84133                   0.84667                    0.86267                   0.87867        
+    iter=17       37.495     28.738            0.76533                    0.77867                       0.796                      0.796                       0.8                    0.80667                      0.816                   0.81467                    0.77733                       0.788                     0.79467                     0.80267                    0.81733                     0.832                      0.836                   0.83867        
+    iter=18       33.399     24.546            0.74267                      0.744                       0.756                      0.744                   0.77067                    0.76667                    0.77067                     0.792                      0.764                     0.75467                       0.756                        0.76                      0.796                     0.792                       0.82                   0.84267        
+    iter=19       29.816     22.018                0.7                    0.71067                     0.71733                    0.72133                   0.73067                    0.74133                      0.752                   0.73867                      0.716                       0.728                       0.744                       0.748                    0.72933                   0.75333                      0.764                     0.784        
+    iter=20       26.694     21.246            0.65867                       0.68                       0.676                    0.69333                       0.7                    0.70133                    0.69333                   0.71067                    0.67333                     0.66667                     0.70667                       0.696                    0.69467                   0.70933                    0.71467                     0.736        
+    iter=21       23.981     20.346            0.62667                    0.62933                     0.63733                    0.63867                     0.644                      0.652                    0.66533                   0.67067                    0.61467                        0.66                     0.62533                     0.65467                    0.67867                   0.70533                      0.724                     0.728        
+    iter=22       21.622     20.236              0.584                    0.61067                     0.59333                      0.608                   0.59467                      0.612                    0.61867                     0.632                    0.63333                     0.60133                       0.584                     0.58533                    0.63867                   0.63333                    0.66267                   0.68933        
+    iter=23       19.567     13.458            0.54133                    0.52933                     0.54533                    0.55467                     0.556                      0.572                      0.576                     0.588                      0.544                     0.54267                     0.61067                       0.624                    0.56267                   0.57867                      0.588                   0.62267        
+    iter=24       17.782     12.084            0.50533                    0.48133                       0.492                      0.504                     0.504                    0.51467                       0.54                   0.54933                    0.48267                     0.49067                     0.49467                       0.516                    0.52133                   0.57733                      0.556                   0.57333        
+    iter=25       16.231     10.974            0.42933                    0.44267                     0.44267                      0.456                     0.456                      0.464                    0.47867                   0.49333                       0.44                         0.5                     0.45067                     0.46533                    0.53867                     0.516                    0.56267                   0.57733        
+    iter=26       14.879     20.081              0.392                    0.39067                         0.4                    0.40933                   0.41467                      0.424                    0.44267                   0.44933                    0.43467                       0.408                     0.41333                     0.41733                      0.436                   0.44533                      0.484                   0.50133        
+    iter=27         13.7     20.066              0.352                    0.35467                     0.35733                    0.36267                   0.36533                      0.372                    0.38533                     0.396                      0.356                     0.35867                       0.408                     0.41467                    0.38667                   0.40133                       0.42                   0.43733        
+    iter=28       12.667     20.061            0.31867                      0.308                     0.32267                      0.324                     0.332                    0.34267                    0.35467                      0.36                    0.31467                       0.324                     0.34133                     0.35333                    0.35733                     0.372                    0.37467                   0.40933        
+    iter=29        11.76     7.5766            0.27733                      0.288                     0.28667                    0.29467                   0.29733                      0.312                       0.32                   0.33067                      0.292                     0.29333                     0.30933                     0.31067                       0.32                   0.33733                    0.34267                   0.36933        
+    iter=30       10.962     20.044            0.25067                       0.26                       0.268                      0.272                   0.27333                    0.27467                    0.27333                     0.292                    0.26133                     0.27333                       0.268                       0.272                    0.30267                      0.32                    0.32533                     0.324        
+    iter=31       10.256     6.4133            0.22133                    0.23067                     0.22533                    0.24133                     0.248                    0.24667                      0.264                   0.27467                    0.23333                     0.26133                       0.244                       0.256                    0.28267                   0.28533                    0.30267                   0.31467        
+    iter=32       9.6244     5.9353            0.20667                    0.20533                     0.21867                    0.22133                   0.21867                    0.22133                    0.24267                      0.24                    0.21333                     0.22533                        0.22                     0.23733                    0.23867                   0.24933                      0.264                   0.28133        
+    iter=33       9.0572     5.6063            0.19067                    0.18933                       0.188                    0.19733                   0.20533                    0.21467                    0.20933                   0.22667                    0.20933                       0.204                     0.21067                       0.204                    0.22933                   0.22667                      0.248                   0.25467        
+    iter=34       8.5425     5.2611            0.16533                    0.17867                     0.17467                    0.18133                      0.18                    0.18533                      0.196                     0.192                    0.17733                     0.17733                     0.18533                       0.192                    0.18933                   0.20667                       0.22                     0.228        
+    iter=35       8.0718     4.9765            0.15333                      0.148                     0.16267                    0.16667                   0.16533                    0.17067                    0.17867                   0.18533                    0.16667                     0.16267                       0.172                     0.17467                      0.184                     0.184                    0.19733                   0.20533        
+    iter=36       7.6396     4.7018              0.136                    0.14533                     0.14133                       0.14                   0.14933                    0.15333                    0.15867                   0.16667                    0.14267                     0.14933                     0.16267                     0.16133                    0.16533                   0.16933                       0.18                     0.192        
+    iter=37       7.2411     4.5196            0.12667                    0.12267                     0.13067                    0.14267                   0.13867                    0.14133                      0.152                   0.14933                    0.13867                     0.13733                       0.148                     0.15867                      0.148                   0.16133                      0.168                   0.17733        
+    iter=38       6.8719     4.0863            0.11333                      0.112                     0.11733                       0.12                     0.116                    0.12533                      0.124                     0.144                      0.124                     0.11733                     0.12533                       0.128                       0.14                   0.14133                    0.14267                   0.15867        
+    iter=39       6.5282      20.02            0.10267                      0.108                       0.108                      0.104                   0.11867                      0.116                      0.128                     0.124                    0.10667                     0.11867                       0.116                       0.128                      0.124                     0.128                    0.14133                   0.15733        
+    iter=40       6.2067     3.6808           0.094667                   0.098667                    0.097333                    0.10133                     0.104                    0.10933                    0.10667                     0.112                      0.104                     0.10267                       0.112                       0.108                      0.112                   0.12267                    0.12933                   0.13467        
+    iter=41       5.9048     3.3622           0.078667                   0.081333                       0.092                   0.093333                  0.089333                    0.10133                    0.10133                     0.104                      0.092                       0.088                         0.1                     0.10267                      0.104                     0.104                    0.11067                   0.11867        
+    iter=42       5.6202     3.1066           0.085333                      0.084                    0.082667                   0.078667                     0.088                   0.085333                   0.090667                   0.10267                   0.078667                       0.088                       0.084                    0.090667                    0.10133                  0.098667                      0.104                   0.10933        
+    iter=43       5.3512     2.8714           0.069333                   0.074667                    0.070667                   0.073333                  0.077333                   0.078667                       0.08                  0.077333                      0.072                       0.076                        0.08                    0.081333                   0.078667                     0.096                      0.096                   0.10533        
+    iter=44       5.0962      2.641              0.064                   0.057333                    0.065333                   0.069333                     0.076                      0.076                       0.08                     0.084                   0.069333                    0.078667                       0.076                    0.078667                   0.081333                     0.084                   0.094667                  0.093333        
+    iter=45        4.854     20.012           0.057333                      0.072                       0.064                   0.061333                      0.06                   0.065333                   0.073333                  0.070667                   0.061333                    0.061333                    0.065333                       0.072                   0.070667                      0.08                      0.072                     0.084        
+    iter=46       4.6236     2.2443           0.050667                   0.053333                    0.058667                   0.058667                  0.058667                   0.066667                      0.064                  0.066667                   0.058667                    0.058667                    0.066667                    0.062667                      0.068                     0.068                      0.076                  0.081333        
+    iter=47        4.404     1.9447           0.049333                   0.042667                       0.044                   0.053333                     0.052                      0.052                   0.054667                     0.068                      0.052                       0.052                    0.053333                       0.056                      0.068                  0.057333                   0.066667                     0.072        
+    iter=48       4.1946     1.8422           0.042667                      0.044                       0.048                   0.042667                  0.045333                   0.045333                   0.049333                  0.050667                   0.042667                       0.044                    0.045333                    0.050667                      0.052                  0.061333                      0.064                  0.066667        
+    iter=49       3.9946      1.778               0.04                   0.037333                        0.04                   0.041333                     0.048                   0.046667                   0.053333                     0.048                   0.042667                       0.048                    0.046667                    0.053333                      0.048                     0.056                      0.056                  0.057333        
+    iter=50       3.8034     1.5816               0.04                      0.036                       0.036                   0.037333                  0.042667                      0.044                   0.041333                  0.046667                   0.037333                    0.042667                    0.045333                    0.041333                   0.046667                     0.048                   0.054667                  0.050667        
+    iter=95      0.30374    0.20898                  0                          0                           0                  0.0013333                         0                          0                          0                         0                  0.0013333                           0                           0                           0                          0                         0                          0                         0        
+    iter=96      0.28568          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=97      0.26867    0.20898                  0                          0                           0                          0                         0                          0                  0.0013333                         0                          0                           0                           0                   0.0013333                          0                         0                          0                         0        
+    iter=98      0.25266    0.20898                  0                          0                   0.0013333                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=99       0.2376    0.20898                  0                          0                           0                          0                         0                          0                          0                 0.0013333                          0                           0                           0                           0                  0.0013333                         0                          0                         0        
+    iter=100     0.22342          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=101     0.21008    0.20898                  0                          0                           0                          0                         0                          0                  0.0013333                         0                          0                           0                           0                   0.0013333                          0                         0                          0                         0        
+    iter=102     0.19753          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=103     0.18572          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=104     0.17461          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=105     0.16417    0.20898                  0                          0                   0.0013333                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=106     0.15434          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=107      0.1451          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=108     0.13642          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=109     0.12825          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=110     0.12056          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=111     0.11334          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=112     0.10655          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=113     0.10017          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=114    0.094163          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=115    0.088519          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=116    0.083213          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=117    0.078224          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=118    0.073535    0.20898                  0                          0                   0.0013333                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=119    0.069126          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=120    0.064981          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=121    0.061084          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=122    0.057421          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=123    0.053978          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=124    0.050741          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=125    0.047698          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=126    0.044837          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=127    0.042148          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=128     0.03962          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=129    0.037243          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=130    0.035009          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=131    0.032909          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=132    0.030935          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=133     0.02908          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=134    0.027335          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=135    0.025695          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=136    0.024154          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=137    0.022705          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=138    0.021343          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=139    0.020062          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=140    0.018859          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=141    0.017727          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=142    0.016664          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=143    0.015664          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+    iter=144    0.014724          0                  0                          0                           0                          0                         0                          0                          0                         0                          0                           0                           0                           0                          0                         0                          0                         0        
+
+tb_val: V(a,z) value at each state space point
+                    zi1_zr_0_025_zw_0_34664    zi2_zr_0_025_zw_0_42338    zi3_zr_0_025_zw_0_51712    zi4_zr_0_025_zw_0_63162    zi5_zr_0_025_zw_0_77146    zi6_zr_0_025_zw_0_94226    zi7_zr_0_025_zw_1_1509    zi8_zr_0_025_zw_1_4057    zi48_zr_0_095_zw_0_63162    zi49_zr_0_095_zw_0_77146    zi50_zr_0_095_zw_0_94226    zi51_zr_0_095_zw_1_1509    zi52_zr_0_095_zw_1_4057    zi53_zr_0_095_zw_1_7169    zi54_zr_0_095_zw_2_097    zi55_zr_0_095_zw_2_5613
+                    _______________________    _______________________    _______________________    _______________________    _______________________    _______________________    ______________________    ______________________    ________________________    ________________________    ________________________    _______________________    _______________________    _______________________    ______________________    _______________________
+
+    a1=-20                  -17.822                    -17.373                    -16.871                    -16.344                     -15.62                    -14.729                   -13.964                   -13.258                    -16.344                     -15.807                     -15.267                      -14.73                    -14.196                    -13.667                   -12.679                    -11.411        
+    a2=-19.9065             -17.822                    -17.373                    -16.871                    -16.304                    -15.374                    -14.582                   -13.871                   -13.197                    -16.344                     -15.807                     -15.267                      -14.73                    -14.196                    -13.667                   -12.545                    -11.317        
+    a3=-19.8131             -17.822                    -17.373                    -16.871                    -15.986                    -15.182                    -14.459                   -13.789                   -13.142                    -16.344                     -15.807                     -15.267                      -14.73                    -14.196                    -13.667                   -12.432                    -11.224        
+    a4=-19.7196             -17.822                    -17.373                    -16.538                    -15.749                    -15.027                    -14.355                   -13.718                   -13.092                    -16.344                     -15.807                     -15.267                      -14.73                    -14.196                    -13.586                   -12.335                    -11.134        
+    a5=-19.6262             -17.777                    -17.003                    -16.263                    -15.563                    -14.899                    -14.265                   -13.653                   -13.046                    -16.344                     -15.807                     -15.267                      -14.73                    -14.196                    -13.393                   -12.251                    -11.041        
+    a6=-19.5327             -17.355                    -16.707                    -16.053                    -15.412                     -14.79                    -14.186                   -13.596                   -13.004                    -16.344                     -15.807                     -15.267                      -14.73                    -14.196                    -13.237                   -12.178                    -10.951        
+    a7=-19.4393             -17.057                    -16.483                    -15.885                    -15.286                    -14.696                    -14.116                   -13.544                   -12.965                    -16.344                     -15.807                     -15.267                      -14.73                    -14.196                    -13.109                    -12.11                    -10.863        
+    a8=-19.3458             -16.831                    -16.305                    -15.747                    -15.179                    -14.614                    -14.053                   -13.496                   -12.919                    -16.344                     -15.807                     -15.267                      -14.73                    -14.053                        -13                   -12.024                    -10.775        
+    a9=-19.2523             -16.653                     -16.16                     -15.63                    -15.087                    -14.541                    -13.997                   -13.453                   -12.818                    -16.344                     -15.807                     -15.267                      -14.73                    -13.864                    -12.907                   -11.933                     -10.69        
+    a10=-19.1589            -16.507                    -16.039                    -15.531                    -15.007                    -14.477                    -13.946                   -13.412                   -12.721                    -16.344                     -15.807                     -15.267                      -14.73                    -13.712                    -12.826                    -11.84                    -10.606        
+    a11=-19.0654            -16.385                    -15.936                    -15.444                    -14.935                    -14.419                    -13.899                   -13.375                   -12.629                    -16.344                     -15.807                     -15.267                     -14.526                    -13.586                    -12.754                   -11.739                    -10.525        
+    a12=-18.972             -16.282                    -15.847                    -15.368                    -14.872                    -14.366                    -13.856                   -13.341                   -12.543                    -16.344                     -15.807                     -15.267                     -14.329                    -13.479                     -12.69                   -11.648                     -10.44        
+    a13=-18.8785            -16.192                    -15.768                    -15.301                    -14.814                    -14.318                    -13.817                   -13.309                   -12.459                    -16.344                     -15.807                     -15.085                     -14.171                    -13.387                    -12.633                   -11.556                    -10.355        
+    a14=-18.785             -16.113                    -15.699                     -15.24                    -14.763                    -14.275                     -13.78                   -13.225                   -12.379                    -16.344                     -15.807                     -14.856                      -14.04                    -13.307                    -12.581                   -11.469                     -10.27        
+    a15=-18.6916            -16.044                    -15.636                    -15.186                    -14.715                    -14.234                    -13.746                   -13.122                   -12.305                    -16.344                     -15.528                     -14.675                      -13.93                    -13.237                    -12.515                   -11.385                    -10.186        
+    a16=-18.5981            -15.981                     -15.58                    -15.136                    -14.672                    -14.197                    -13.715                   -13.026                   -12.233                    -16.161                      -15.29                     -14.529                     -13.836                    -13.174                    -12.418                   -11.302                    -10.102        
+    a17=-18.5047            -15.925                     -15.53                    -15.091                    -14.632                    -14.162                    -13.685                   -12.938                   -12.167                    -15.865                     -15.104                     -14.408                     -13.754                    -13.117                    -12.318                   -11.223                     -10.02        
+    a18=-18.4112            -15.874                    -15.483                    -15.049                    -14.595                     -14.13                    -13.618                   -12.854                     -12.1                    -15.642                     -14.954                     -14.304                     -13.682                    -13.066                    -12.221                   -11.141                    -9.9367        
+    a19=-18.3178            -15.828                    -15.441                    -15.011                    -14.561                      -14.1                     -13.51                   -12.777                   -12.035                    -15.467                      -14.83                     -14.215                     -13.617                    -13.019                    -12.127                   -11.058                    -9.8537        
+    a20=-18.2243            -15.785                    -15.402                    -14.975                    -14.529                    -14.072                    -13.412                   -12.703                   -11.973                    -15.324                     -14.724                     -14.137                      -13.56                    -12.977                    -12.037                   -10.976                    -9.7706        
+    a21=-18.1308            -15.746                    -15.365                    -14.942                    -14.499                    -14.034                    -13.319                   -12.634                   -11.909                    -15.205                     -14.633                     -14.068                     -13.508                    -12.937                    -11.954                   -10.894                     -9.688        
+    a22=-18.0374            -15.709                    -15.331                    -14.911                    -14.471                    -13.915                    -13.234                   -12.566                   -11.841                    -15.103                     -14.554                     -14.007                      -13.46                    -12.837                    -11.874                   -10.814                     -9.606        
+    a23=-17.9439            -15.676                      -15.3                    -14.882                    -14.445                    -13.812                    -13.153                   -12.504                    -11.77                    -15.015                     -14.484                     -13.951                     -13.417                    -12.732                    -11.792                   -10.736                    -9.5241        
+    a24=-17.8505            -15.644                    -15.271                    -14.855                    -14.365                    -13.711                    -13.078                   -12.443                   -11.703                    -14.938                     -14.421                     -13.901                     -13.377                    -12.633                    -11.714                   -10.653                     -9.443        
+    a25=-17.757             -15.615                    -15.243                    -14.829                    -14.248                    -13.623                    -13.008                   -12.384                   -11.633                     -14.87                     -14.365                     -13.855                      -13.34                    -12.541                    -11.636                   -10.569                    -9.3604        
+    a26=-17.6636            -15.587                    -15.217                    -14.756                    -14.141                    -13.537                    -12.942                   -12.324                   -11.556                    -14.809                     -14.314                     -13.813                     -13.306                    -12.452                    -11.562                   -10.486                    -9.2779        
+    a27=-17.5701            -15.561                    -15.193                    -14.629                    -14.041                     -13.46                    -12.878                   -12.265                   -11.481                    -14.755                     -14.268                     -13.775                     -13.207                    -12.367                    -11.487                   -10.405                    -9.1959        
+    a28=-17.4766            -15.536                    -15.081                    -14.518                     -13.95                    -13.385                    -12.818                   -12.205                    -11.41                    -14.705                     -14.225                     -13.739                     -13.101                    -12.289                    -11.414                   -10.324                    -9.1142        
+    a29=-17.3832            -15.452                    -14.949                    -14.411                    -13.864                    -13.316                    -12.759                   -12.146                   -11.334                     -14.66                     -14.186                     -13.706                     -12.999                    -12.213                    -11.337                   -10.243                    -9.0322        
+    a30=-17.2897            -15.319                    -14.837                    -14.317                    -13.785                    -13.249                    -12.704                   -12.076                    -11.26                    -14.618                      -14.15                     -13.675                     -12.908                    -12.142                    -11.255                   -10.162                    -8.9499        
+    a31=-17.1963            -15.191                    -14.726                    -14.225                     -13.71                    -13.188                    -12.649                   -12.005                   -11.189                     -14.58                     -14.117                     -13.573                     -12.819                    -12.071                    -11.173                   -10.082                     -8.868        
+    a32=-17.1028            -15.079                    -14.631                    -14.144                    -13.641                    -13.129                    -12.596                   -11.936                   -11.116                    -14.545                     -14.086                     -13.459                      -12.74                    -12.004                    -11.095                   -10.001                    -8.7864        
+    a33=-17.0093            -14.972                    -14.537                    -14.063                    -13.574                    -13.074                    -12.543                   -11.859                   -11.044                    -14.512                     -14.056                     -13.359                     -12.663                    -11.939                    -11.015                   -9.9206                    -8.7045        
+    a34=-16.9159            -14.876                    -14.454                    -13.992                    -13.512                    -13.019                    -12.488                   -11.785                   -10.974                    -14.481                     -13.956                     -13.263                      -12.59                    -11.866                    -10.934                   -9.8413                    -8.6227        
+    a35=-16.8224            -14.785                    -14.373                    -13.922                    -13.452                    -12.967                    -12.427                   -11.711                   -10.904                    -14.452                     -13.841                     -13.177                     -12.522                     -11.79                    -10.853                    -9.761                      -8.54        
+    a36=-16.729             -14.702                      -14.3                    -13.858                    -13.396                    -12.917                    -12.357                   -11.637                   -10.834                    -14.394                     -13.733                     -13.094                     -12.456                    -11.718                    -10.775                   -9.6802                    -8.4573        
+    a37=-16.6355            -14.623                    -14.229                    -13.795                    -13.342                    -12.869                    -12.285                   -11.564                   -10.764                    -14.265                     -13.636                     -13.019                     -12.394                    -11.645                    -10.694                   -9.6004                    -8.3751        
+    a38=-16.5421             -14.55                    -14.164                    -13.738                    -13.291                    -12.819                    -12.207                   -11.493                   -10.695                     -14.15                     -13.544                     -12.947                     -12.329                    -11.563                    -10.617                   -9.5208                    -8.2921        
+    a39=-16.4486             -14.48                    -14.101                    -13.682                    -13.242                    -12.769                     -12.13                   -11.425                   -10.624                    -14.043                     -13.461                     -12.879                     -12.266                    -11.483                     -10.54                   -9.4402                    -8.2093        
+    a40=-16.3551            -14.415                    -14.043                    -13.631                    -13.195                    -12.707                    -12.054                   -11.356                   -10.552                    -13.946                     -13.381                     -12.815                     -12.202                    -11.406                    -10.462                   -9.3602                    -8.1264        
+    a41=-16.2617            -14.354                    -13.987                     -13.58                    -13.148                    -12.628                    -11.981                   -11.288                   -10.481                    -13.855                     -13.309                     -12.752                     -12.139                    -11.325                    -10.383                    -9.279                    -8.0435        
+    a42=-16.1682            -14.296                    -13.934                    -13.532                    -13.103                    -12.549                    -11.909                   -11.222                   -10.409                    -13.771                     -13.238                     -12.693                     -12.063                    -11.246                    -10.306                   -9.1979                    -7.9608        
+    a43=-16.0748             -14.24                    -13.883                    -13.485                    -13.058                    -12.467                    -11.838                   -11.156                   -10.336                    -13.692                     -13.174                     -12.635                     -11.988                     -11.17                    -10.229                   -9.1177                     -7.878        
+    a44=-15.9813            -14.188                    -13.835                    -13.441                    -12.985                    -12.389                     -11.77                   -11.087                   -10.264                    -13.618                     -13.111                     -12.579                     -11.911                    -11.093                    -10.151                   -9.0366                    -7.7942        
+    a45=-15.8879            -14.138                    -13.789                    -13.398                    -12.901                    -12.313                    -11.703                    -11.02                   -10.192                    -13.549                     -13.052                     -12.524                     -11.829                    -11.016                    -10.073                   -8.9556                    -7.7101        
+    a46=-15.7944             -14.09                    -13.745                    -13.355                    -12.815                     -12.24                    -11.638                   -10.952                   -10.119                    -13.484                     -12.996                      -12.46                     -11.751                    -10.941                    -9.9941                   -8.8748                    -7.6257        
+    a47=-15.7009            -14.044                    -13.702                    -13.283                    -12.733                    -12.168                    -11.573                   -10.883                   -10.046                    -13.423                      -12.94                     -12.394                     -11.671                    -10.868                    -9.9145                    -8.794                    -7.5412        
+    a48=-15.6075            -14.001                     -13.66                    -13.191                    -12.652                      -12.1                    -11.509                   -10.814                   -9.9736                    -13.363                     -12.889                     -12.314                     -11.593                    -10.792                    -9.8362                   -8.7134                    -7.4567        
+    a49=-15.514             -13.958                    -13.611                    -13.103                    -12.576                    -12.034                    -11.446                   -10.742                   -9.9008                    -13.309                     -12.837                     -12.234                     -11.517                    -10.717                     -9.757                   -8.6326                    -7.3721        
+    a50=-15.4206            -13.918                    -13.512                    -13.016                    -12.503                    -11.969                    -11.382                    -10.67                   -9.8283                    -13.255                     -12.783                      -12.15                     -11.444                    -10.643                    -9.6776                   -8.5512                    -7.2874        
+    a701=45.4206             13.307                     13.383                     13.472                     13.571                     13.679                     13.798                    13.929                    14.073                     13.571                      13.679                      13.798                      13.929                     14.073                      14.23                    14.401                     14.578        
+    a702=45.514              13.319                     13.395                     13.483                     13.582                      13.69                     13.809                    13.939                    14.083                     13.582                       13.69                      13.809                      13.939                     14.083                      14.24                    14.411                     14.587        
+    a703=45.6075              13.33                     13.406                     13.495                     13.593                     13.701                     13.819                     13.95                    14.093                     13.593                      13.701                      13.819                       13.95                     14.093                      14.25                     14.42                     14.596        
+    a704=45.7009             13.342                     13.418                     13.506                     13.604                     13.711                      13.83                     13.96                    14.103                     13.604                      13.711                       13.83                       13.96                     14.103                      14.26                     14.43                     14.606        
+    a705=45.7944             13.353                     13.429                     13.517                     13.615                     13.722                      13.84                     13.97                    14.113                     13.615                      13.722                       13.84                       13.97                     14.113                      14.27                     14.44                     14.615        
+    a706=45.8879             13.364                      13.44                     13.528                     13.626                     13.733                     13.851                    13.981                    14.123                     13.626                      13.733                      13.851                      13.981                     14.123                      14.28                    14.449                     14.624        
+    a707=45.9813             13.376                     13.451                     13.539                     13.637                     13.744                     13.861                    13.991                    14.133                     13.637                      13.744                      13.861                      13.991                     14.133                      14.29                    14.459                     14.634        
+    a708=46.0748             13.387                     13.463                      13.55                     13.648                     13.754                     13.872                    14.001                    14.143                     13.648                      13.754                      13.872                      14.001                     14.143                     14.299                    14.468                     14.643        
+    a709=46.1682             13.399                     13.474                     13.561                     13.658                     13.765                     13.883                    14.012                    14.153                     13.658                      13.765                      13.883                      14.012                     14.153                     14.309                    14.478                     14.652        
+    a710=46.2617              13.41                     13.485                     13.572                     13.669                     13.776                     13.893                    14.022                    14.164                     13.669                      13.776                      13.893                      14.022                     14.164                     14.319                    14.487                     14.661        
+    a711=46.3551             13.421                     13.496                     13.584                      13.68                     13.787                     13.904                    14.032                    14.174                      13.68                      13.787                      13.904                      14.032                     14.174                     14.329                    14.497                      14.67        
+    a712=46.4486             13.433                     13.508                     13.595                     13.691                     13.797                     13.914                    14.042                    14.184                     13.691                      13.797                      13.914                      14.042                     14.184                     14.339                    14.506                      14.68        
+    a713=46.5421             13.444                     13.519                     13.606                     13.702                     13.808                     13.924                    14.053                    14.194                     13.702                      13.808                      13.924                      14.053                     14.194                     14.348                    14.516                     14.689        
+    a714=46.6355             13.455                      13.53                     13.617                     13.713                     13.819                     13.935                    14.063                    14.204                     13.713                      13.819                      13.935                      14.063                     14.204                     14.358                    14.525                     14.698        
+    a715=46.729              13.467                     13.541                     13.628                     13.724                     13.829                     13.945                    14.073                    14.213                     13.724                      13.829                      13.945                      14.073                     14.213                     14.368                    14.535                     14.707        
+    a716=46.8224             13.478                     13.552                     13.638                     13.734                      13.84                     13.956                    14.083                    14.223                     13.734                       13.84                      13.956                      14.083                     14.223                     14.377                    14.544                     14.716        
+    a717=46.9159             13.489                     13.563                     13.649                     13.745                      13.85                     13.966                    14.093                    14.233                     13.745                       13.85                      13.966                      14.093                     14.233                     14.387                    14.554                     14.725        
+    a718=47.0093               13.5                     13.574                      13.66                     13.756                     13.861                     13.976                    14.103                    14.243                     13.756                      13.861                      13.976                      14.103                     14.243                     14.397                    14.563                     14.735        
+    a719=47.1028             13.511                     13.585                     13.671                     13.767                     13.871                     13.987                    14.114                    14.253                     13.767                      13.871                      13.987                      14.114                     14.253                     14.406                    14.572                     14.744        
+    a720=47.1963             13.523                     13.596                     13.682                     13.777                     13.882                     13.997                    14.124                    14.263                     13.777                      13.882                      13.997                      14.124                     14.263                     14.416                    14.582                     14.753        
+    a721=47.2897             13.534                     13.607                     13.693                     13.788                     13.892                     14.007                    14.134                    14.273                     13.788                      13.892                      14.007                      14.134                     14.273                     14.426                    14.591                     14.762        
+    a722=47.3832             13.545                     13.618                     13.704                     13.799                     13.903                     14.018                    14.144                    14.283                     13.799                      13.903                      14.018                      14.144                     14.283                     14.435                      14.6                     14.771        
+    a723=47.4766             13.556                     13.629                     13.715                     13.809                     13.913                     14.028                    14.154                    14.293                     13.809                      13.913                      14.028                      14.154                     14.293                     14.445                     14.61                      14.78        
+    a724=47.5701             13.567                      13.64                     13.725                      13.82                     13.924                     14.038                    14.164                    14.302                      13.82                      13.924                      14.038                      14.164                     14.302                     14.454                    14.619                     14.789        
+    a725=47.6636             13.578                     13.651                     13.736                      13.83                     13.934                     14.048                    14.174                    14.312                      13.83                      13.934                      14.048                      14.174                     14.312                     14.464                    14.628                     14.798        
+    a726=47.757              13.589                     13.662                     13.747                     13.841                     13.945                     14.059                    14.184                    14.322                     13.841                      13.945                      14.059                      14.184                     14.322                     14.473                    14.637                     14.807        
+    a727=47.8505               13.6                     13.673                     13.758                     13.852                     13.955                     14.069                    14.194                    14.332                     13.852                      13.955                      14.069                      14.194                     14.332                     14.483                    14.647                     14.816        
+    a728=47.9439             13.611                     13.684                     13.768                     13.862                     13.965                     14.079                    14.204                    14.341                     13.862                      13.965                      14.079                      14.204                     14.341                     14.492                    14.656                     14.825        
+    a729=48.0374             13.622                     13.695                     13.779                     13.873                     13.976                     14.089                    14.214                    14.351                     13.873                      13.976                      14.089                      14.214                     14.351                     14.502                    14.665                     14.834        
+    a730=48.1308             13.633                     13.705                      13.79                     13.883                     13.986                     14.099                    14.224                    14.361                     13.883                      13.986                      14.099                      14.224                     14.361                     14.511                    14.674                     14.843        
+    a731=48.2243             13.644                     13.716                       13.8                     13.894                     13.996                     14.109                    14.234                    14.371                     13.894                      13.996                      14.109                      14.234                     14.371                     14.521                    14.683                     14.852        
+    a732=48.3178             13.655                     13.727                     13.811                     13.904                     14.007                      14.12                    14.244                     14.38                     13.904                      14.007                       14.12                      14.244                      14.38                      14.53                    14.693                     14.861        
+    a733=48.4112             13.666                     13.738                     13.822                     13.915                     14.017                      14.13                    14.254                     14.39                     13.915                      14.017                       14.13                      14.254                      14.39                      14.54                    14.702                      14.87        
+    a734=48.5047             13.677                     13.749                     13.832                     13.925                     14.027                      14.14                    14.263                      14.4                     13.925                      14.027                       14.14                      14.263                       14.4                     14.549                    14.711                     14.878        
+    a735=48.5981             13.687                     13.759                     13.843                     13.935                     14.038                      14.15                    14.273                    14.409                     13.935                      14.038                       14.15                      14.273                     14.409                     14.558                     14.72                     14.887        
+    a736=48.6916             13.698                      13.77                     13.853                     13.946                     14.048                      14.16                    14.283                    14.419                     13.946                      14.048                       14.16                      14.283                     14.419                     14.568                    14.729                     14.896        
+    a737=48.785              13.709                     13.781                     13.864                     13.956                     14.058                      14.17                    14.293                    14.428                     13.956                      14.058                       14.17                      14.293                     14.428                     14.577                    14.738                     14.905        
+    a738=48.8785              13.72                     13.791                     13.874                     13.967                     14.068                      14.18                    14.303                    14.438                     13.967                      14.068                       14.18                      14.303                     14.438                     14.586                    14.747                     14.914        
+    a739=48.972              13.731                     13.802                     13.885                     13.977                     14.078                      14.19                    14.312                    14.447                     13.977                      14.078                       14.19                      14.312                     14.447                     14.596                    14.757                     14.923        
+    a740=49.0654             13.741                     13.813                     13.895                     13.987                     14.089                       14.2                    14.322                    14.457                     13.987                      14.089                        14.2                      14.322                     14.457                     14.605                    14.766                     14.932        
+    a741=49.1589             13.752                     13.823                     13.906                     13.998                     14.099                      14.21                    14.332                    14.467                     13.998                      14.099                       14.21                      14.332                     14.467                     14.614                    14.775                      14.94        
+    a742=49.2523             13.763                     13.834                     13.916                     14.008                     14.109                      14.22                    14.342                    14.476                     14.008                      14.109                       14.22                      14.342                     14.476                     14.624                    14.784                     14.949        
+    a743=49.3458             13.774                     13.844                     13.927                     14.018                     14.119                      14.23                    14.351                    14.486                     14.018                      14.119                       14.23                      14.351                     14.486                     14.633                    14.793                     14.958        
+    a744=49.4393             13.784                     13.855                     13.937                     14.028                     14.129                     14.239                    14.361                    14.495                     14.028                      14.129                      14.239                      14.361                     14.495                     14.642                    14.802                     14.967        
+    a745=49.5327             13.795                     13.866                     13.948                     14.039                     14.139                     14.249                    14.371                    14.505                     14.039                      14.139                      14.249                      14.371                     14.505                     14.651                    14.811                     14.975        
+    a746=49.6262             13.806                     13.876                     13.958                     14.049                     14.149                     14.259                    14.381                    14.514                     14.049                      14.149                      14.259                      14.381                     14.514                     14.661                     14.82                     14.984        
+    a747=49.7196             13.816                     13.887                     13.968                     14.059                     14.159                     14.269                     14.39                    14.523                     14.059                      14.159                      14.269                       14.39                     14.523                      14.67                    14.829                     14.993        
+    a748=49.8131             13.827                     13.897                     13.979                     14.069                     14.169                     14.279                      14.4                    14.533                     14.069                      14.169                      14.279                        14.4                     14.533                     14.679                    14.838                     15.001        
+    a749=49.9065             13.837                     13.908                     13.989                      14.08                     14.179                     14.289                    14.409                    14.542                      14.08                      14.179                      14.289                      14.409                     14.542                     14.688                    14.847                      15.01        
+    a750=50                  13.848                     13.918                     13.999                      14.09                     14.189                     14.299                    14.419                    14.552                      14.09                      14.189                      14.299                      14.419                     14.552                     14.697                    14.855                     15.019        
+
+tb_pol_a: optimal asset choice for each state space point
+                    zi1_zr_0_025_zw_0_34664    zi2_zr_0_025_zw_0_42338    zi3_zr_0_025_zw_0_51712    zi4_zr_0_025_zw_0_63162    zi5_zr_0_025_zw_0_77146    zi6_zr_0_025_zw_0_94226    zi7_zr_0_025_zw_1_1509    zi8_zr_0_025_zw_1_4057    zi48_zr_0_095_zw_0_63162    zi49_zr_0_095_zw_0_77146    zi50_zr_0_095_zw_0_94226    zi51_zr_0_095_zw_1_1509    zi52_zr_0_095_zw_1_4057    zi53_zr_0_095_zw_1_7169    zi54_zr_0_095_zw_2_097    zi55_zr_0_095_zw_2_5613
+                    _______________________    _______________________    _______________________    _______________________    _______________________    _______________________    ______________________    ______________________    ________________________    ________________________    ________________________    _______________________    _______________________    _______________________    ______________________    _______________________
+
+    a1=-20                        0                          0                          0                          0                        -20                        -20                       -20                       -20                          0                           0                           0                           0                          0                          0                       -20                    -19.626        
+    a2=-19.9065                   0                          0                          0                        -20                        -20                        -20                       -20                       -20                          0                           0                           0                           0                          0                          0                       -20                    -19.533        
+    a3=-19.8131                   0                          0                          0                        -20                        -20                        -20                       -20                       -20                          0                           0                           0                           0                          0                          0                       -20                    -19.533        
+    a4=-19.7196                   0                          0                        -20                        -20                        -20                        -20                       -20                       -20                          0                           0                           0                           0                          0                        -20                       -20                    -19.346        
+    a5=-19.6262                 -20                        -20                        -20                        -20                        -20                        -20                       -20                       -20                          0                           0                           0                           0                          0                        -20                       -20                    -19.252        
+    a6=-19.5327                 -20                        -20                        -20                        -20                        -20                        -20                       -20                       -20                          0                           0                           0                           0                          0                        -20                       -20                    -19.252        
+    a7=-19.4393                 -20                        -20                        -20                        -20                        -20                        -20                       -20                       -20                          0                           0                           0                           0                          0                        -20                   -19.907                    -19.159        
+    a8=-19.3458                 -20                        -20                        -20                        -20                        -20                        -20                       -20                   -18.972                          0                           0                           0                           0                        -20                        -20                   -19.533                    -19.065        
+    a9=-19.2523                 -20                        -20                        -20                        -20                        -20                        -20                       -20                   -18.879                          0                           0                           0                           0                        -20                        -20                   -19.533                    -18.972        
+    a10=-19.1589                -20                        -20                        -20                        -20                        -20                        -20                       -20                   -18.879                          0                           0                           0                           0                        -20                        -20                   -19.346                    -18.879        
+    a11=-19.0654                -20                        -20                        -20                        -20                        -20                        -20                       -20                   -18.785                          0                           0                           0                         -20                        -20                        -20                   -19.252                    -18.785        
+    a12=-18.972                 -20                        -20                        -20                        -20                        -20                        -20                       -20                   -18.692                          0                           0                           0                         -20                        -20                        -20                   -19.159                    -18.598        
+    a13=-18.8785                -20                        -20                        -20                        -20                        -20                        -20                       -20                   -18.692                          0                           0                         -20                         -20                        -20                        -20                   -19.065                    -18.505        
+    a14=-18.785                 -20                        -20                        -20                        -20                        -20                        -20                   -18.692                   -18.598                          0                           0                         -20                         -20                        -20                        -20                   -18.972                    -18.411        
+    a15=-18.6916                -20                        -20                        -20                        -20                        -20                        -20                   -18.692                   -18.598                          0                         -20                         -20                         -20                        -20                    -19.252                   -18.972                    -18.318        
+    a16=-18.5981                -20                        -20                        -20                        -20                        -20                        -20                   -18.598                   -18.505                        -20                         -20                         -20                         -20                        -20                    -19.252                   -18.879                    -18.224        
+    a17=-18.5047                -20                        -20                        -20                        -20                        -20                        -20                   -18.598                   -18.411                        -20                         -20                         -20                         -20                        -20                    -19.065                   -18.785                    -18.131        
+    a18=-18.4112                -20                        -20                        -20                        -20                        -20                    -18.598                   -18.505                   -18.318                        -20                         -20                         -20                         -20                        -20                    -18.972                   -18.598                    -18.037        
+    a19=-18.3178                -20                        -20                        -20                        -20                        -20                    -18.505                   -18.505                   -18.318                        -20                         -20                         -20                         -20                        -20                    -18.972                   -18.505                    -17.944        
+    a20=-18.2243                -20                        -20                        -20                        -20                        -20                    -18.505                   -18.411                   -18.224                        -20                         -20                         -20                         -20                        -20                    -18.879                   -18.411                     -17.85        
+    a21=-18.1308                -20                        -20                        -20                        -20                    -18.411                    -18.411                   -18.318                   -18.037                        -20                         -20                         -20                         -20                        -20                    -18.785                   -18.318                    -17.757        
+    a22=-18.0374                -20                        -20                        -20                        -20                    -18.411                    -18.411                   -18.318                   -17.944                        -20                         -20                         -20                         -20                    -18.879                    -18.692                   -18.224                    -17.664        
+    a23=-17.9439                -20                        -20                        -20                        -20                    -18.411                    -18.318                   -18.224                    -17.85                        -20                         -20                         -20                         -20                    -18.879                    -18.598                   -18.131                     -17.57        
+    a24=-17.8505                -20                        -20                        -20                    -18.318                    -18.318                    -18.318                   -18.224                   -17.757                        -20                         -20                         -20                         -20                    -18.785                    -18.505                   -18.037                    -17.383        
+    a25=-17.757                 -20                        -20                        -20                    -18.318                    -18.318                    -18.224                   -18.037                    -17.57                        -20                         -20                         -20                         -20                    -18.692                    -18.505                   -17.944                     -17.29        
+    a26=-17.6636                -20                        -20                    -18.224                    -18.224                    -18.224                    -18.224                   -18.037                   -17.477                        -20                         -20                         -20                         -20                    -18.692                    -18.318                    -17.85                    -17.196        
+    a27=-17.5701                -20                        -20                    -18.224                    -18.224                    -18.224                    -18.131                    -17.85                   -17.383                        -20                         -20                         -20                     -18.692                    -18.598                    -18.318                   -17.757                    -17.103        
+    a28=-17.4766                -20                    -18.131                    -18.131                    -18.131                    -18.131                    -18.037                    -17.85                   -17.383                        -20                         -20                         -20                     -18.692                    -18.505                    -18.224                    -17.57                    -17.009        
+    a29=-17.3832            -18.131                    -18.131                    -18.131                    -18.131                    -18.131                    -18.037                   -17.757                   -17.196                        -20                         -20                         -20                     -18.598                    -18.505                    -18.037                    -17.57                    -16.916        
+    a30=-17.2897            -18.131                    -18.131                    -18.037                    -18.037                    -18.037                    -17.944                   -17.477                   -17.103                        -20                         -20                         -20                     -18.598                    -18.411                     -17.85                   -17.383                    -16.822        
+    a31=-17.1963            -18.037                    -18.037                    -18.037                    -18.037                    -18.037                     -17.85                   -17.383                   -17.009                        -20                         -20                     -18.505                     -18.505                    -18.318                     -17.85                    -17.29                    -16.729        
+    a32=-17.1028            -18.037                    -18.037                    -18.037                    -17.944                    -17.944                     -17.85                   -17.196                   -16.916                        -20                         -20                     -18.505                     -18.411                    -18.224                    -17.757                   -17.196                    -16.636        
+    a33=-17.0093            -17.944                    -17.944                    -17.944                    -17.944                     -17.85                    -17.757                   -17.103                   -16.822                        -20                         -20                     -18.411                     -18.411                    -18.224                     -17.57                   -17.103                    -16.542        
+    a34=-16.9159            -17.944                    -17.944                    -17.944                     -17.85                     -17.85                    -17.477                   -17.103                   -16.729                        -20                     -18.411                     -18.411                     -18.318                    -17.944                    -17.477                   -17.009                    -16.449        
+    a35=-16.8224             -17.85                     -17.85                     -17.85                     -17.85                    -17.757                    -17.383                   -16.916                   -16.729                        -20                     -18.411                     -18.318                     -18.318                     -17.85                    -17.383                   -16.916                    -16.262        
+    a36=-16.729              -17.85                     -17.85                     -17.85                    -17.757                    -17.757                    -17.103                   -16.916                   -16.542                    -18.318                     -18.318                     -18.318                     -18.224                    -17.757                     -17.29                   -16.822                    -16.168        
+    a37=-16.6355            -17.757                    -17.757                    -17.757                    -17.757                    -17.664                    -17.103                   -16.822                   -16.449                    -18.318                     -18.318                     -18.224                     -18.131                     -17.57                    -17.196                   -16.729                    -16.075        
+    a38=-16.5421            -17.757                    -17.757                    -17.757                    -17.664                    -17.477                    -16.916                   -16.729                   -16.355                    -18.224                     -18.224                     -18.224                     -18.037                    -17.477                    -17.103                   -16.636                    -15.981        
+    a39=-16.4486            -17.664                    -17.664                    -17.664                    -17.664                    -17.383                    -16.822                   -16.636                   -16.262                    -18.224                     -18.224                     -18.131                      -17.85                    -17.383                    -17.009                   -16.542                    -15.888        
+    a40=-16.3551            -17.664                    -17.664                    -17.664                     -17.57                    -16.916                    -16.729                   -16.542                   -16.168                    -18.131                     -18.131                     -18.037                      -17.85                     -17.29                    -16.916                   -16.449                    -15.794        
+    a41=-16.2617             -17.57                     -17.57                     -17.57                    -17.477                    -16.822                    -16.636                   -16.449                   -16.075                    -18.131                     -18.131                     -18.037                     -17.757                    -17.196                    -16.822                   -16.262                    -15.701        
+    a42=-16.1682             -17.57                     -17.57                    -17.477                    -17.383                    -16.729                    -16.542                   -16.355                   -15.981                    -18.037                     -18.037                     -17.944                     -17.477                    -17.103                    -16.729                   -16.168                    -15.607        
+    a43=-16.0748            -17.477                    -17.477                    -17.477                    -17.196                    -16.636                    -16.542                   -16.262                   -15.888                    -18.037                     -17.944                      -17.85                     -17.383                    -17.009                    -16.636                   -16.075                    -15.514        
+    a44=-15.9813            -17.477                    -17.477                    -17.383                    -16.636                    -16.542                    -16.449                   -16.168                   -15.794                    -17.944                     -17.944                     -17.757                     -17.196                    -16.916                    -16.542                   -15.981                    -15.327        
+    a45=-15.8879            -17.383                    -17.383                    -17.383                    -16.542                    -16.449                    -16.355                   -16.075                   -15.701                    -17.944                      -17.85                     -17.757                     -17.103                    -16.822                    -16.449                   -15.888                    -15.234        
+    a46=-15.7944            -17.383                    -17.383                    -17.196                    -16.449                    -16.449                    -16.262                   -15.981                   -15.607                     -17.85                      -17.85                     -17.477                     -17.009                    -16.729                    -16.262                   -15.794                     -15.14        
+    a47=-15.7009             -17.29                     -17.29                    -16.449                    -16.449                    -16.355                    -16.168                   -15.888                   -15.514                     -17.85                     -17.757                     -17.196                     -16.916                    -16.636                    -16.168                   -15.701                    -15.047        
+    a48=-15.6075             -17.29                    -17.196                    -16.355                    -16.355                    -16.262                    -16.075                   -15.794                   -15.421                    -17.757                     -17.664                     -17.103                     -16.822                    -16.542                    -16.075                   -15.607                    -14.953        
+    a49=-15.514             -17.196                    -16.355                    -16.262                    -16.262                    -16.168                    -15.981                   -15.607                   -15.327                    -17.664                     -17.477                     -16.916                     -16.729                    -16.449                    -15.981                   -15.514                     -14.86        
+    a50=-15.4206            -17.196                    -16.262                    -16.262                    -16.168                    -16.168                    -15.888                   -15.514                   -15.234                    -17.664                     -17.477                     -16.822                     -16.636                    -16.355                    -15.888                   -15.327                    -14.766        
+    a701=45.4206             42.897                     42.991                     43.084                     43.178                     43.271                     43.458                    43.645                    43.925                     43.178                      43.271                      43.458                      43.645                     43.925                     44.206                    44.579                      45.14        
+    a702=45.514              42.991                     43.084                     43.178                     43.271                     43.364                     43.551                    43.738                    44.019                     43.271                      43.364                      43.551                      43.738                     44.019                     44.299                    44.673                     45.234        
+    a703=45.6075             43.084                     43.178                     43.271                     43.364                     43.458                     43.645                    43.832                    44.112                     43.364                      43.458                      43.645                      43.832                     44.112                     44.393                    44.766                     45.327        
+    a704=45.7009             43.178                     43.271                     43.364                     43.458                     43.551                     43.738                    43.925                    44.206                     43.458                      43.551                      43.738                      43.925                     44.206                     44.486                     44.86                     45.421        
+    a705=45.7944             43.271                     43.364                     43.364                     43.551                     43.645                     43.832                    44.019                    44.299                     43.551                      43.645                      43.832                      44.019                     44.299                     44.579                    44.953                     45.514        
+    a706=45.8879             43.364                     43.458                     43.458                     43.645                     43.738                     43.925                    44.112                    44.393                     43.645                      43.738                      43.925                      44.112                     44.393                     44.673                    45.047                     45.607        
+    a707=45.9813             43.458                     43.551                     43.551                     43.645                     43.832                     44.019                    44.206                    44.486                     43.645                      43.832                      44.019                      44.206                     44.486                     44.766                     45.14                     45.701        
+    a708=46.0748             43.551                     43.645                     43.645                     43.738                     43.925                     44.112                    44.299                    44.579                     43.738                      43.925                      44.112                      44.299                     44.579                      44.86                    45.234                     45.794        
+    a709=46.1682             43.645                     43.645                     43.738                     43.832                     44.019                     44.206                    44.393                    44.579                     43.832                      44.019                      44.206                      44.393                     44.579                     44.953                    45.327                     45.888        
+    a710=46.2617             43.738                     43.738                     43.832                     43.925                     44.112                     44.299                    44.486                    44.673                     43.925                      44.112                      44.299                      44.486                     44.673                     45.047                    45.421                     45.981        
+    a711=46.3551             43.832                     43.832                     43.925                     44.019                     44.206                     44.393                    44.579                    44.766                     44.019                      44.206                      44.393                      44.579                     44.766                      45.14                    45.514                     45.981        
+    a712=46.4486             43.925                     43.925                     44.019                     44.112                     44.299                     44.393                    44.673                     44.86                     44.112                      44.299                      44.393                      44.673                      44.86                     45.234                    45.607                     46.075        
+    a713=46.5421             44.019                     44.019                     44.112                     44.206                     44.393                     44.486                    44.766                    44.953                     44.206                      44.393                      44.486                      44.766                     44.953                     45.327                    45.701                     46.168        
+    a714=46.6355             44.112                     44.112                     44.206                     44.299                     44.486                     44.579                     44.86                    45.047                     44.299                      44.486                      44.579                       44.86                     45.047                     45.421                    45.794                     46.262        
+    a715=46.729              44.206                     44.206                     44.299                     44.393                     44.579                     44.673                    44.953                     45.14                     44.393                      44.579                      44.673                      44.953                      45.14                     45.514                    45.888                     46.355        
+    a716=46.8224             44.299                     44.299                     44.393                     44.486                     44.673                     44.766                    45.047                    45.234                     44.486                      44.673                      44.766                      45.047                     45.234                     45.607                    45.981                     46.449        
+    a717=46.9159             44.393                     44.393                     44.486                     44.579                     44.766                      44.86                     45.14                    45.327                     44.579                      44.766                       44.86                       45.14                     45.327                     45.701                    46.075                     46.542        
+    a718=47.0093             44.486                     44.486                     44.579                     44.673                      44.86                     44.953                     45.14                    45.421                     44.673                       44.86                      44.953                       45.14                     45.421                     45.794                    46.168                     46.636        
+    a719=47.1028             44.579                     44.579                     44.673                     44.766                     44.953                     45.047                    45.234                    45.514                     44.766                      44.953                      45.047                      45.234                     45.514                     45.888                    46.262                     46.729        
+    a720=47.1963             44.579                     44.673                     44.766                      44.86                     44.953                      45.14                    45.327                    45.607                      44.86                      44.953                       45.14                      45.327                     45.607                     45.981                    46.355                     46.822        
+    a721=47.2897             44.673                     44.766                      44.86                     44.953                     45.047                     45.234                    45.421                    45.701                     44.953                      45.047                      45.234                      45.421                     45.701                     46.075                    46.449                     46.916        
+    a722=47.3832             44.766                      44.86                     44.953                     45.047                      45.14                     45.327                    45.514                    45.794                     45.047                       45.14                      45.327                      45.514                     45.794                     46.168                    46.542                     47.009        
+    a723=47.4766              44.86                     44.953                     45.047                      45.14                     45.234                     45.421                    45.607                    45.888                      45.14                      45.234                      45.421                      45.607                     45.888                     46.262                    46.636                     47.103        
+    a724=47.5701             44.953                     45.047                      45.14                     45.234                     45.327                     45.514                    45.701                    45.981                     45.234                      45.327                      45.514                      45.701                     45.981                     46.262                    46.729                     47.196        
+    a725=47.6636             45.047                      45.14                     45.234                     45.327                     45.421                     45.607                    45.794                    46.075                     45.327                      45.421                      45.607                      45.794                     46.075                     46.355                    46.822                      47.29        
+    a726=47.757               45.14                     45.234                     45.327                     45.421                     45.514                     45.701                    45.888                    46.168                     45.421                      45.514                      45.701                      45.888                     46.168                     46.449                    46.916                     47.383        
+    a727=47.8505             45.234                     45.327                     45.421                     45.514                     45.607                     45.794                    45.981                    46.262                     45.514                      45.607                      45.794                      45.981                     46.262                     46.542                    47.009                     47.477        
+    a728=47.9439             45.327                     45.421                     45.514                     45.607                     45.701                     45.888                    46.075                    46.355                     45.607                      45.701                      45.888                      46.075                     46.355                     46.636                    47.103                      47.57        
+    a729=48.0374             45.421                     45.514                     45.607                     45.701                     45.794                     45.981                    46.168                    46.449                     45.701                      45.794                      45.981                      46.168                     46.449                     46.729                    47.196                     47.664        
+    a730=48.1308             45.514                     45.607                     45.701                     45.794                     45.888                     46.075                    46.262                    46.542                     45.794                      45.888                      46.075                      46.262                     46.542                     46.822                     47.29                     47.757        
+    a731=48.2243             45.607                     45.701                     45.794                     45.888                     45.981                     46.168                    46.355                    46.636                     45.888                      45.981                      46.168                      46.355                     46.636                     46.916                    47.383                      47.85        
+    a732=48.3178             45.701                     45.794                     45.888                     45.981                     46.075                     46.262                    46.449                    46.729                     45.981                      46.075                      46.262                      46.449                     46.729                     47.009                    47.477                     47.944        
+    a733=48.4112             45.794                     45.888                     45.981                     46.075                     46.168                     46.355                    46.542                    46.822                     46.075                      46.168                      46.355                      46.542                     46.822                     47.103                    47.477                     48.037        
+    a734=48.5047             45.888                     45.981                     46.075                     46.168                     46.262                     46.449                    46.636                    46.916                     46.168                      46.262                      46.449                      46.636                     46.916                     47.196                     47.57                     48.131        
+    a735=48.5981             45.981                     46.075                     46.168                     46.262                     46.355                     46.542                    46.729                    47.009                     46.262                      46.355                      46.542                      46.729                     47.009                      47.29                    47.664                     48.224        
+    a736=48.6916             46.075                     46.168                     46.262                     46.355                     46.449                     46.636                    46.822                    47.103                     46.355                      46.449                      46.636                      46.822                     47.103                     47.383                    47.757                     48.318        
+    a737=48.785              46.168                     46.262                     46.355                     46.449                     46.542                     46.729                    46.916                    47.196                     46.449                      46.542                      46.729                      46.916                     47.196                     47.477                     47.85                     48.411        
+    a738=48.8785             46.262                     46.355                     46.449                     46.542                     46.636                     46.822                    47.009                     47.29                     46.542                      46.636                      46.822                      47.009                      47.29                      47.57                    47.944                     48.505        
+    a739=48.972              46.355                     46.449                     46.449                     46.636                     46.729                     46.916                    47.103                    47.383                     46.636                      46.729                      46.916                      47.103                     47.383                     47.664                    48.037                     48.598        
+    a740=49.0654             46.449                     46.542                     46.542                     46.729                     46.822                     47.009                    47.196                    47.477                     46.729                      46.822                      47.009                      47.196                     47.477                     47.757                    48.131                     48.692        
+    a741=49.1589             46.542                     46.636                     46.636                     46.729                     46.916                     47.103                     47.29                     47.57                     46.729                      46.916                      47.103                       47.29                      47.57                      47.85                    48.224                     48.785        
+    a742=49.2523             46.636                     46.729                     46.729                     46.822                     47.009                     47.196                    47.383                    47.664                     46.822                      47.009                      47.196                      47.383                     47.664                     47.944                    48.318                     48.879        
+    a743=49.3458             46.729                     46.729                     46.822                     46.916                     47.103                      47.29                    47.477                    47.757                     46.916                      47.103                       47.29                      47.477                     47.757                     48.037                    48.411                     48.972        
+    a744=49.4393             46.822                     46.822                     46.916                     47.009                     47.196                     47.383                     47.57                    47.757                     47.009                      47.196                      47.383                       47.57                     47.757                     48.131                    48.505                     49.065        
+    a745=49.5327             46.916                     46.916                     47.009                     47.103                      47.29                     47.477                    47.664                     47.85                     47.103                       47.29                      47.477                      47.664                      47.85                     48.224                    48.598                     49.159        
+    a746=49.6262             47.009                     47.009                     47.103                     47.196                     47.383                     47.477                    47.757                    47.944                     47.196                      47.383                      47.477                      47.757                     47.944                     48.318                    48.692                     49.159        
+    a747=49.7196             47.103                     47.103                     47.196                      47.29                     47.477                      47.57                     47.85                    48.037                      47.29                      47.477                       47.57                       47.85                     48.037                     48.411                    48.785                     49.252        
+    a748=49.8131             47.196                     47.196                      47.29                     47.383                      47.57                     47.664                    47.944                    48.131                     47.383                       47.57                      47.664                      47.944                     48.131                     48.505                    48.879                     49.346        
+    a749=49.9065              47.29                      47.29                     47.383                     47.477                     47.664                     47.757                    48.037                    48.224                     47.477                      47.664                      47.757                      48.037                     48.224                     48.598                    48.972                     49.439        
+    a750=50                  47.383                     47.383                     47.477                      47.57                     47.757                      47.85                    48.131                    48.318                      47.57                      47.757                       47.85                      48.131                     48.318                     48.692                    49.065                     49.533        
+
+</pre><img vspace="5" hspace="5" src="ff_abz_vf_vec_01.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_vf_vec_02.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_vf_vec_03.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_vf_vec_04.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_vf_vec_05.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_vf_vec_06.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_vf_vec_07.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_vf_vec_08.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_vf_vec_09.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_vf_vec_10.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_vf_vec_11.png" alt=""> <img vspace="5" hspace="5" src="ff_abz_vf_vec_12.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
+</pre><pre class="codeoutput">
+ans = 
+
+  Map with properties:
+
+        Count: 13
+      KeyType: char
+    ValueType: any
+
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Solve Save + Borr Dynamic Programming Problem (Vectorized)
+% *back to <https://fanwangecon.github.io Fan>'s
+% <https://fanwangecon.github.io/CodeDynaAsset/ Dynamic Assets Repository>
+% Table of Content.*
+
+%%
+function result_map = ff_abz_vf_vec(varargin)
+%% FF_ABZ_VF_VEC solve infinite horizon exo shock + endo asset problem
+% This program solves the infinite horizon dynamic single asset and single
+% shock problem with vectorized codes.
+% <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf.html
+% ff_abz_vf> shows looped codes. The solution is the same.
+%
+% The borrowing problem is similar to the savings problem. The main
+% addition here in comparison to the savings only code
+% <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vec.html
+% ff_az_vf_vec> is the ability to deal with default, as well as an
+% additional shock to the borrowing interest rate.
+%
+% The vectorization takes advantage of implicit parallization that modern
+% computers have when <https://en.wikipedia.org/wiki/SIMD same instructions
+% are given for different blocks of data> With vectorization, we face a
+% tradeoff between memory and speed. Suppose we have many shock points and
+% many states points, if we build all states and choices into one single
+% matrix and compute consumption, utility, etc over that entire matrix,
+% that might be more efficient than computing consumption, utility, etc by
+% subset of that matrix over a loop, but there is time required for
+% generating that large input matrix, and if there are too many states, a
+% computer could run out of memory.
+%
+% The design philosophy here is that we vectorize the endogenous states and
+% choices into matrixes, but do not include the exogeous states (shocks).
+% The exogenous shocks remain looped. This means we can potentially have
+% multiple shock variables discretized over a large number of shock states,
+% and the computer would not run into memory problems. The speed gain from
+% vectoring the rest of the problem conditional on shocks is very large
+% compared to the pure looped version of the problem. Even if more memory
+% is available, including the exogenous states in the vectorization process
+% might not be speed improving.
+%
+% Note one key issue is whether a programming language is
+% <https://en.wikipedia.org/wiki/Row-_and_column-major_order row or column
+% major> depending on which, states should be rows or columns.
+%
+% Another programming issue is the idea of *broadcasting* vs matrix
+% algebra, both are used here. Since Matlab R2016b,
+% <https://blogs.mathworks.com/loren/2016/10/24/matlab-arithmetic-expands-in-r2016b/
+% matrix broadcasting> has been allowed, which means the sum of a N by 1
+% and 1 by M is N by M. This is unrelated to matrix algebra. Matrix array
+% broadcasting is very useful because it reduces the dimensionality of our
+% model input state and choice and shock vectors, offering greater code
+% clarity.
+%
+% @param param_map container parameter container
+%
+% @param support_map container support container
+%
+% @param armt_map container container with states, choices and shocks
+% grids that are inputs for grid based solution algorithm
+%
+% @param func_map container container with function handles for
+% consumption cash-on-hand etc.
+%
+% @return result_map container contains policy function matrix, value
+% function matrix, iteration results, and policy function, value function
+% and iteration results tables.
+%
+% keys included in result_map:
+%
+% * mt_val matrix states_n by shock_n matrix of converged value function grid
+% * mt_pol_a matrix states_n by shock_n matrix of converged policy function grid
+% * ar_val_diff_norm array if bl_post = true it_iter_last by 1 val function
+% difference between iteration
+% * ar_pol_diff_norm array if bl_post = true it_iter_last by 1 policy
+% function difference between iterations
+% * mt_pol_perc_change matrix if bl_post = true it_iter_last by shock_n the
+% proportion of grid points at which policy function changed between
+% current and last iteration for each element of shock
+%
+% @example
+%
+%    % Get Default Parameters
+%    it_param_set = 2;
+%    [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
+%    % Chnage param_map keys for borrowing
+%    param_map('fl_b_bd') = -20; % borrow bound
+%    param_map('bl_default') = false; % true if allow for default
+%    param_map('fl_c_min') = 0.0001; % u(c_min) when default
+%    % Change Keys in param_map
+%    param_map('it_a_n') = 500;
+%    param_map('fl_z_r_borr_n') = 5;
+%    param_map('it_z_wage_n') = 15;
+%    param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+%    param_map('fl_a_max') = 100;
+%    param_map('fl_w') = 1.3;
+%    % Change Keys support_map
+%    support_map('bl_display') = false;
+%    support_map('bl_post') = true;
+%    support_map('bl_display_final') = false;
+%    % Call Program with external parameters that override defaults.
+%    ff_abz_vf_vec(param_map, support_map);
+%
+% @include
+%
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_get_funcgrid.html ffs_abz_get_funcgrid>
+% * <https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_vf_post.html ff_az_vf_post>
+%
+% @seealso
+%
+% * save loop: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf.html ff_az_vf>
+% * save vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vec.html ff_az_vf_vec>
+% * save optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html ff_az_vf_vecsv>
+% * save + borr loop: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf.html ff_abz_vf>
+% * save + borr vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vec.html ff_abz_vf_vec>
+% * save + borr optimized-vectorized: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/solve/html/ff_abz_vf_vecsv.html ff_abz_vf_vecsv>
+%
+
+%% Default
+% * it_param_set = 1: quick test
+% * it_param_set = 2: benchmark run
+% * it_param_set = 3: benchmark profile
+% * it_param_set = 4: press publish button
+
+it_param_set = 4;
+bl_input_override = true;
+[param_map, support_map] = ffs_abz_set_default_param(it_param_set);
+
+% Note: param_map and support_map can be adjusted here or outside to override defaults
+% param_map('it_a_n') = 750;
+% param_map('fl_z_r_borr_n') = 5;
+% param_map('it_z_wage_n') = 15;
+% param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+% param_map('fl_r_save') = 0.025;
+% param_map('fl_z_r_borr_poiss_mean') = 1.75;
+
+[armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override); % 1 for override
+default_params = {param_map support_map armt_map func_map};
+
+%% Parse Parameters 1
+
+% if varargin only has param_map and support_map,
+params_len = length(varargin);
+[default_params{1:params_len}] = varargin{:};
+param_map = [param_map; default_params{1}];
+support_map = [support_map; default_params{2}];
+if params_len >= 1 && params_len <= 2
+    % If override param_map, re-generate armt and func if they are not
+    % provided
+    bl_input_override = true;
+    [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map, bl_input_override);
+else
+    % Override all
+    armt_map = [armt_map; default_params{3}];
+    func_map = [func_map; default_params{4}];
+end
+
+% append function name
+st_func_name = 'ff_abz_vf_vec';
+support_map('st_profile_name_main') = [st_func_name support_map('st_profile_name_main')];
+support_map('st_mat_name_main') = [st_func_name support_map('st_mat_name_main')];
+support_map('st_img_name_main') = [st_func_name support_map('st_img_name_main')];
+
+%% Parse Parameters 2
+
+% armt_map
+params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z_r_borr_mesh_wage', 'ar_z_wage_mesh_r_borr'});
+[ar_a, mt_z_trans, ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
+
+% func_map
+params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons_checkcmin', 'f_coh', 'f_cons_coh'});
+[f_util_log, f_util_crra, f_cons_checkcmin, f_coh, f_cons_coh] = params_group{:};
+
+% param_map
+params_group = values(param_map, {'it_a_n', 'it_z_n', 'fl_crra', 'fl_beta', 'fl_c_min',...
+    'fl_nan_replace', 'bl_default', 'fl_default_aprime'});
+[it_a_n, it_z_n, fl_crra, fl_beta, fl_c_min, ...
+    fl_nan_replace, bl_default, fl_default_aprime] = params_group{:};
+params_group = values(param_map, {'it_maxiter_val', 'fl_tol_val', 'fl_tol_pol', 'it_tol_pol_nochange'});
+[it_maxiter_val, fl_tol_val, fl_tol_pol, it_tol_pol_nochange] = params_group{:};
+
+% support_map
+params_group = values(support_map, {'bl_profile', 'st_profile_path', ...
+    'st_profile_prefix', 'st_profile_name_main', 'st_profile_suffix',...
+    'bl_time', 'bl_display_defparam', 'bl_display', 'it_display_every', 'bl_post'});
+[bl_profile, st_profile_path, ...
+    st_profile_prefix, st_profile_name_main, st_profile_suffix, ...
+    bl_time, bl_display_defparam, bl_display, it_display_every, bl_post] = params_group{:};
+
+%% Display Parameters
+
+if(bl_display_defparam)
+    fft_container_map_display(param_map);
+    fft_container_map_display(support_map);
+end
+
+%% Initialize Output Matrixes
+% include mt_pol_idx which we did not have in looped code
+
+mt_val_cur = zeros(length(ar_a),it_z_n);
+mt_val = mt_val_cur - 1;
+mt_pol_a = zeros(length(ar_a),it_z_n);
+mt_pol_a_cur = mt_pol_a - 1;
+mt_pol_idx = zeros(length(ar_a),it_z_n);
+
+%% Initialize Convergence Conditions
+
+bl_vfi_continue = true;
+it_iter = 0;
+ar_val_diff_norm = zeros([it_maxiter_val, 1]);
+ar_pol_diff_norm = zeros([it_maxiter_val, 1]);
+mt_pol_perc_change = zeros([it_maxiter_val, it_z_n]);
+
+%% Iterate Value Function
+% Loop solution with 4 nested loops
+%
+% # loop 1: over exogenous states
+% # loop 2: over endogenous states
+% # loop 3: over choices
+% # loop 4: add future utility, integrationREPLACE_WITH_DASH_DASHloop over future shocks
+%
+
+% Start Profile
+if (bl_profile)
+    close all;
+    profile off;
+    profile on;
+end
+
+% Start Timer
+if (bl_time)
+    tic;
+end
+
+% Value Function Iteration
+while bl_vfi_continue
+    it_iter = it_iter + 1;
+
+    %% Solve Optimization Problem Current Iteration
+    % Only this segment of code differs between ff_abz_vf and ff_abz_vf_vec
+
+    % loop 1: over exogenous states
+    % incorporating these shocks into vectorization has high memory burden
+    % but insignificant speed gains. Keeping this loop allows for large
+    % number of shocks without overwhelming memory
+    for it_z_i = 1:it_z_n
+
+        % Current Shock
+        fl_z_r_borr = ar_z_r_borr_mesh_wage(it_z_i);
+        fl_z_wage = ar_z_wage_mesh_r_borr(it_z_i);
+
+        % cash-on-hand
+        ar_coh = f_coh(fl_z_r_borr, fl_z_wage, ar_a);
+
+        % Consumption: fl_z = 1 by 1, ar_a = 1 by N, ar_a' = N by 1
+        % mt_c is N by N: matrix broadcasting, expand to matrix from arrays
+        mt_c = f_cons_coh(ar_coh, ar_a');
+
+        % EVAL current utility: N by N, f_util defined earlier
+        if (fl_crra == 1)
+            mt_utility = f_util_log(mt_c);
+            fl_u_cmin = f_util_log(fl_c_min);
+        else
+            mt_utility = f_util_crra(mt_c);
+            fl_u_cmin = f_util_crra(fl_c_min);
+        end
+
+        % f(z'|z)
+        ar_z_trans_condi = mt_z_trans(it_z_i,:);
+
+        % EVAL EV((A',K'),Z'|Z) = V((A',K'),Z') x p(z'|z)', (N by Z) x (Z by 1) = N by 1
+        % Note: transpose ar_z_trans_condi from 1 by Z to Z by 1
+        % Note: matrix multiply not dot multiply
+        mt_evzp_condi_z = mt_val_cur * ar_z_trans_condi';
+
+        % EVAL add on future utility, N by N + N by 1, broadcast again
+        mt_utility = mt_utility + fl_beta*mt_evzp_condi_z;
+
+        if (bl_default)
+            % if default: only today u(cmin), transition out next period, debt wiped out
+            mt_utility(mt_c <= fl_c_min) = fl_u_cmin + fl_beta*mt_evzp_condi_z(ar_a == fl_default_aprime);
+        else
+            % if default is not allowed: v = u(cmin)
+            mt_utility(mt_c <= fl_c_min) = fl_nan_replace;
+        end
+
+        % Optimization: remember matlab is column major, rows must be
+        % choices, columns must be states
+        % <https://en.wikipedia.org/wiki/Row-_and_column-major_order COLUMN-MAJOR>
+        % mt_utility is N by N, rows are choices, cols are states.         
+        [ar_opti_val_z, ar_opti_idx_z] = max(mt_utility);
+        ar_opti_aprime_z = ar_a(ar_opti_idx_z);
+        ar_opti_c_z = f_cons_coh(ar_coh, ar_opti_aprime_z);
+
+        % Handle Default is optimal or not
+        if (bl_default)
+            % if defaulting is optimal choice, at these states, not required
+            % to default, non-default possible, but default could be optimal
+            ar_opti_aprime_z(ar_opti_c_z <= fl_c_min) = fl_default_aprime;
+            ar_opti_idx_z(ar_opti_c_z <= fl_c_min) = find(ar_a == fl_default_aprime);
+        else
+            % if default is not allowed, then next period same state as now
+            % this is absorbing state, this is the limiting case, single
+            % state space point, lowest a and lowest shock has this.
+            ar_opti_aprime_z(ar_opti_c_z <= fl_c_min) = ar_a(ar_opti_c_z <= fl_c_min);
+        end
+
+        % store optimal values
+        mt_val(:,it_z_i) = ar_opti_val_z;
+        mt_pol_a(:,it_z_i) = ar_opti_aprime_z;
+
+        if (it_iter == (it_maxiter_val + 1))
+            mt_pol_idx(:,it_z_i) = ar_opti_idx_z;
+        end
+    end
+
+    %% Check Tolerance and Continuation
+
+    % Difference across iterations
+    ar_val_diff_norm(it_iter) = norm(mt_val - mt_val_cur);
+    ar_pol_diff_norm(it_iter) = norm(mt_pol_a - mt_pol_a_cur);
+    mt_pol_perc_change(it_iter, :) = sum((mt_pol_a ~= mt_pol_a_cur))/(it_a_n);
+
+    % Update
+    mt_val_cur = mt_val;
+    mt_pol_a_cur = mt_pol_a;
+
+    % Print Iteration Results
+    if (bl_display && (rem(it_iter, it_display_every)==0))
+        fprintf('VAL it_iter:%d, fl_diff:%d, fl_diff_pol:%d\n', ...
+            it_iter, ar_val_diff_norm(it_iter), ar_pol_diff_norm(it_iter));
+        tb_valpol_iter = array2table([mean(mt_val_cur,1); mean(mt_pol_a_cur,1); ...
+            mt_val_cur(it_a_n,:); mt_pol_a_cur(it_a_n,:)]);
+        tb_valpol_iter.Properties.VariableNames = strcat('z', string((1:size(mt_val_cur,2))));
+        tb_valpol_iter.Properties.RowNames = {'mval', 'map', 'Hval', 'Hap'};
+        disp('mval = mean(mt_val_cur,1), average value over a')
+        disp('map  = mean(mt_pol_a_cur,1), average choice over a')
+        disp('Hval = mt_val_cur(it_a_n,:), highest a state val')
+        disp('Hap = mt_pol_a_cur(it_a_n,:), highest a state choice')
+        disp(tb_valpol_iter);
+    end
+
+    % Continuation Conditions:
+    % 1. if value function convergence criteria reached
+    % 2. if policy function variation over iterations is less than
+    % threshold
+    if (it_iter == (it_maxiter_val + 1))
+        bl_vfi_continue = false;
+    elseif ((it_iter == it_maxiter_val) || ...
+            (ar_val_diff_norm(it_iter) < fl_tol_val) || ...
+            (sum(ar_pol_diff_norm(max(1, it_iter-it_tol_pol_nochange):it_iter)) < fl_tol_pol))
+        % Fix to max, run again to save results if needed
+        it_iter_last = it_iter;
+        it_iter = it_maxiter_val;
+    end
+
+end
+
+% End Timer
+if (bl_time)
+    toc;
+end
+
+% End Profile
+if (bl_profile)
+    profile off
+    profile viewer
+    st_file_name = [st_profile_prefix st_profile_name_main st_profile_suffix];
+    profsave(profile('info'), strcat(st_profile_path, st_file_name));
+end
+
+%% Process Optimal Choices
+
+result_map = containers.Map('KeyType','char', 'ValueType','any');
+result_map('mt_val') = mt_val;
+result_map('mt_pol_idx') = mt_pol_idx;
+
+result_map('cl_mt_val') = {mt_val, zeros(1)};
+result_map('cl_mt_coh') = {f_coh(ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr, ar_a'), zeros(1)};
+result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
+result_map('cl_mt_pol_c') = {f_cons_checkcmin(ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr, ar_a', mt_pol_a), zeros(1)};
+result_map('ar_st_pol_names') = ["cl_mt_val", "cl_mt_pol_a", "cl_mt_coh", "cl_mt_pol_c"];
+
+if (bl_post)
+    bl_input_override = true;
+    result_map('ar_val_diff_norm') = ar_val_diff_norm(1:it_iter_last);
+    result_map('ar_pol_diff_norm') = ar_pol_diff_norm(1:it_iter_last);
+    result_map('mt_pol_perc_change') = mt_pol_perc_change(1:it_iter_last, :);
+    result_map = ff_az_vf_post(param_map, support_map, armt_map, func_map, result_map, bl_input_override);
+end
+
+end
+
+##### SOURCE END #####
+--></body></html>
