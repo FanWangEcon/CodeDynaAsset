@@ -75,8 +75,13 @@ function [tb_outcomes, support_map] = ff_az_test_analyze(varargin)
 % <https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_price/html/fsi_az_ds_vecsv_price_cross.html fsi_az_ds_vecsv_price_cross>
 %
 
+%% If Funcion Default Invoke
+
+if (isempty(varargin))
+    close all;
+end
+
 %% Default Parameter
-ar_it_plot_sets = [1,2,4,5,6,7];
 it_param_set = 9;
 [param_map, support_map] = ffs_az_set_default_param(it_param_set);
 support_map('bl_replacefile') = false;
@@ -86,23 +91,37 @@ support_map('bl_display_graph_stats') = true;
 %% Array Parameters
 % initiate empty map
 
-st_simu_type = 'c'; % if false, simu full grid
+st_simu_type = 'g';
+
 it_size_type = 2;
 cl_st_param_keys = {'fl_crra', 'fl_beta'};
 
-param_tstar_map = containers.Map('KeyType','char', 'ValueType','any');
-it_simu_vec_len = 5;
-param_tstar_map('fl_crra') = linspace(1, 5, it_simu_vec_len);
-param_tstar_map('fl_beta') = linspace(0.87, 0.97, it_simu_vec_len);
+if (strcmp(st_simu_type, 'c'))
+    ar_it_plot_sets = [1,2,4,5,6,7];
+    it_simu_vec_len = 10;
+    param_tstar_map = containers.Map('KeyType','char', 'ValueType','any');
+    param_tstar_map('fl_crra') = linspace(1, 5, it_simu_vec_len);
+    param_tstar_map('fl_beta') = linspace(0.87, 0.97, it_simu_vec_len);    
+end
+
+if (strcmp(st_simu_type, 'g'))
+    ar_it_plot_sets = [3,5,51];
+    % assume always plot the first parameter listed under cl_st_param_keys as x-axis variable
+    param_tstar_map = containers.Map('KeyType','char', 'ValueType','any');
+    param_tstar_map('fl_crra') = linspace(1, 5, 15);
+    param_tstar_map('fl_beta') = linspace(0.87, 0.97, 15);
+end
 
 param_desc_map = containers.Map('KeyType','char', 'ValueType','any');
 param_desc_map('fl_crra') = {'CRRA'};
 param_desc_map('fl_beta') = {'Discount'};
 
+it_grid_var_color_n = 2;
+
 %% Default
 default_params = {ar_it_plot_sets ...
                     st_simu_type it_size_type cl_st_param_keys ...
-                    param_map support_map param_tstar_map param_desc_map};
+                    param_map support_map param_tstar_map param_desc_map it_grid_var_color_n};
 
 %% Parse Parameters 1
 % override default set above if any parameters are updated
@@ -119,6 +138,9 @@ param_map = [param_map; default_params{5}];
 support_map = [support_map; default_params{6}];
 param_tstar_map = [param_tstar_map; default_params{7}];
 param_desc_map = [param_desc_map; default_params{8}];
+
+% if grid simulation, how many colors groups to include?
+it_grid_var_color_n = default_params{9};
 
 %% Parse Parameters 2
 
@@ -137,7 +159,7 @@ params_group = values(support_map, {'bl_graph_onebyones', 'bl_display_graph_stat
 %% Show Stats Only
 % Display the effect of changing parameters on mean cl_mt_pol_k and mean
 % cl_st_param_keys = {'fl_z_r_borr_poiss_mean', 'fl_z_r_borr_max', 'fl_b_bd', 'fl_c_min', 'fl_z_r_borr_n'};
-cl_st_outcome = {'cl_mt_pol_c', 'cl_mt_pol_k', 'cl_mt_coh'};
+cl_st_outcome = {'cl_mt_val', 'cl_mt_pol_c', 'cl_mt_pol_k', 'cl_mt_coh'};
 if (strcmp(st_simu_type, 'c'))
     for st_param_keys = cl_st_param_keys
         for st_outcome = cl_st_outcome
@@ -203,20 +225,20 @@ for it_plot = ar_it_plot_sets
         st_title = 'Savings Standard Deviation';
         st_ytitle = 'Standard Deviation';
     elseif (it_plot == 7)
-        ar_st_variablenames_plot =  {'cl_mt_coh', 'cl_mt_pol_a', 'cl_mt_pol_c'};
-        ar_st_legend_plot =  {'coh=wealth', 'savings', 'consumption'};
+        ar_st_variablenames_plot =  {'cl_mt_coh', 'cl_mt_pol_a', 'cl_mt_pol_c', 'cl_mt_val'};
+        ar_st_legend_plot =  {'coh=wealth', 'savings', 'consumption', 'Value'};
         ar_st_colnames_plot =  repmat({'mean'}, [1, length(ar_st_variablenames_plot)]);
         st_title = 'Aggregate Outcomes (wealth, savings, consumption)';
         st_ytitle = 'Aggregate Levels';
     elseif (it_plot == 8)
-        ar_st_variablenames_plot =  {'cl_mt_coh', 'cl_mt_pol_a', 'cl_mt_pol_c'};
-        ar_st_legend_plot =  {'coh=wealth', 'savings', 'consumption'};
+        ar_st_variablenames_plot =  {'cl_mt_coh', 'cl_mt_pol_a', 'cl_mt_pol_c', 'cl_mt_val'};
+        ar_st_legend_plot =  {'coh=wealth', 'savings', 'consumption', 'Value'};
         ar_st_colnames_plot =  repmat({'coefofvar'}, [1, length(ar_st_variablenames_plot)]);
-        st_title = 'Coef of Variation (wealth, savings, consumption)';
+        st_title = 'Coef of Variation (wealth, savings, consumption, Value)';
         st_ytitle = 'Coefficient of Variation (SD/Mean)';        
     elseif (it_plot == 9)
-        ar_st_variablenames_plot =  {'cl_mt_coh', 'cl_mt_pol_a', 'cl_mt_pol_c'};
-        ar_st_legend_plot =  {'coh=wealth', 'savings', 'consumption'};
+        ar_st_variablenames_plot =  {'cl_mt_coh', 'cl_mt_pol_a', 'cl_mt_pol_c', 'cl_mt_val'};
+        ar_st_legend_plot =  {'coh=wealth', 'savings', 'consumption', 'Value'};
         ar_st_colnames_plot =  repmat({'fl_cor_cl_mt_pol_c'}, [1, length(ar_st_variablenames_plot)]);
         st_title = 'Correlation with Consumption';
         st_ytitle = 'Correlation Coefficient';
@@ -225,7 +247,7 @@ for it_plot = ar_it_plot_sets
         ar_st_legend_plot =  {'consumption'};
         ar_st_colnames_plot =  repmat({'pYisMINY'}, [1, length(ar_st_variablenames_plot)]);
         st_title = 'Default Fraction';
-        st_ytitle = 'Default Fraction';        
+        st_ytitle = 'Frac C = Min C';
     end
     
     %% list Means
@@ -245,9 +267,43 @@ for it_plot = ar_it_plot_sets
         ar_st_colnames_plot =  {'mean'};
         ar_st_variablenames_plot =  repmat({'cl_mt_pol_k'}, [1, length(ar_st_colnames_plot)]);
         ar_st_legend_plot =  ar_st_colnames_plot;
-        st_title = 'Savings Mean';
-        st_ytitle = 'Average (Total)';        
+        st_title = 'Risky Capial Mean';
+        st_ytitle = 'Average (Total)';
+    elseif (it_plot == 54)
+        ar_st_colnames_plot =  {'mean'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_val'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  ar_st_colnames_plot;
+        st_title = 'Value';
+        st_ytitle = 'Average (Value)';
     end
+
+    %% list Correlations
+    if (it_plot == 61)
+        ar_st_variablenames_plot =  {'cl_mt_coh'};
+        ar_st_legend_plot =  {'coh=wealth'};
+        ar_st_colnames_plot =  repmat({'fl_cor_cl_mt_pol_c'}, [1, length(ar_st_variablenames_plot)]);
+        st_title = 'Wealth Correlation with Consumption';
+        st_ytitle = 'Correlation Coefficient';    
+    elseif (it_plot == 62)
+        ar_st_variablenames_plot =  {'cl_mt_pol_a'};
+        ar_st_legend_plot =  {'savings'};
+        ar_st_colnames_plot =  repmat({'fl_cor_cl_mt_pol_c'}, [1, length(ar_st_variablenames_plot)]);
+        st_title = 'Savings Correlation with Consumption';
+        st_ytitle = 'Correlation Coefficient';
+    elseif (it_plot == 63)
+        ar_st_variablenames_plot =  {'cl_mt_pol_k'};
+        ar_st_legend_plot =  {'Risky Capial'};
+        ar_st_colnames_plot =  repmat({'fl_cor_cl_mt_pol_c'}, [1, length(ar_st_variablenames_plot)]);
+        st_title = 'Risky K Correlation with Consumption';
+        st_ytitle = 'Correlation Coefficient';
+    elseif (it_plot == 64)
+        ar_st_variablenames_plot =  {'cl_mt_val'};
+        ar_st_legend_plot =  {'Value'};
+        ar_st_colnames_plot =  repmat({'fl_cor_cl_mt_pol_c'}, [1, length(ar_st_variablenames_plot)]);
+        st_title = 'Value Correlation with Consumption';
+        st_ytitle = 'Correlation Coefficient';
+    end
+    
     
     %% list graphing options only for akz models
     if (it_plot == 101)
@@ -269,24 +325,45 @@ for it_plot = ar_it_plot_sets
         st_title = 'Risky Capital Standard Deviation';
         st_ytitle = 'Standard Deviation';
     elseif (it_plot == 104)
-        ar_st_variablenames_plot =  {'cl_mt_coh', 'cl_mt_pol_a', 'cl_mt_pol_c', 'cl_mt_pol_k'};
-        ar_st_legend_plot =  {'coh=wealth', 'savings', 'consumption', 'risky k'};
+        ar_st_variablenames_plot =  {'cl_mt_coh', 'cl_mt_pol_a', 'cl_mt_pol_c', 'cl_mt_val', 'cl_mt_pol_k'};
+        ar_st_legend_plot =  {'coh=wealth', 'savings', 'consumption', 'Value', 'risky k'};
         ar_st_colnames_plot =  repmat({'mean'}, [1, length(ar_st_variablenames_plot)]);
-        st_title = 'Aggregate Outcomes (wealth, a, consumption, k)';
+        st_title = 'Aggregate Outcomes (wealth, a, consumption, V, k)';
         st_ytitle = 'Aggregate Levels';
     elseif (it_plot == 105)
-        ar_st_variablenames_plot =  {'cl_mt_coh', 'cl_mt_pol_a', 'cl_mt_pol_c', 'cl_mt_pol_k'};
-        ar_st_legend_plot =  {'coh=wealth', 'savings', 'consumption', 'risky k'};
+        ar_st_variablenames_plot =  {'cl_mt_coh', 'cl_mt_pol_a', 'cl_mt_pol_c', 'cl_mt_val', 'cl_mt_pol_k'};
+        ar_st_legend_plot =  {'coh=wealth', 'savings', 'consumption', 'Value', 'risky k'};
         ar_st_colnames_plot =  repmat({'coefofvar'}, [1, length(ar_st_variablenames_plot)]);
-        st_title = 'Coef of Variation (wealth, a, consumption, k)';
+        st_title = 'Coef of Variation (wealth, a, consumption, V, k)';
         st_ytitle = 'Coefficient of Variation (SD/Mean)';        
     elseif (it_plot == 106)
-        ar_st_variablenames_plot =  {'cl_mt_coh', 'cl_mt_pol_a', 'cl_mt_pol_c', 'cl_mt_pol_k'};
-        ar_st_legend_plot =  {'coh=wealth', 'savings', 'consumption', 'risky k'};
+        ar_st_variablenames_plot =  {'cl_mt_coh', 'cl_mt_pol_a', 'cl_mt_pol_c', 'cl_mt_val', 'cl_mt_pol_k'};
+        ar_st_legend_plot =  {'coh=wealth', 'savings', 'consumption', 'Value', 'risky k'};
         ar_st_colnames_plot =  repmat({'fl_cor_cl_mt_pol_c'}, [1, length(ar_st_variablenames_plot)]);
         st_title = 'Correlation with Consumption';
         st_ytitle = 'Correlation Coefficient';
     end   
+    
+    %% Value Graphs
+    if (it_plot == 151)
+        ar_st_colnames_plot =  {'p1', 'p25', 'p50', 'mean', 'p75', 'p99'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_val'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  ar_st_colnames_plot;
+        st_title = 'Value Percentiles';
+        st_ytitle = 'Value Distribution';
+    elseif (it_plot == 152)
+        ar_st_colnames_plot =  {'mean', 'sd'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_val'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  ar_st_colnames_plot;
+        st_title = 'Value Mean and SD';
+        st_ytitle = 'Value Mean and SD';
+    elseif (it_plot == 153)
+        ar_st_colnames_plot =  {'sd'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_val'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  ar_st_colnames_plot;
+        st_title = 'Value Standard Deviation';
+        st_ytitle = 'Value Standard Deviation';
+    end
     
     %% Inequality Measures, Consumption Shares
     % Asset Shares could look strange due to negative levels
@@ -337,10 +414,20 @@ for it_plot = ar_it_plot_sets
         ar_st_variablenames_plot =  repmat({'cl_mt_pol_k'}, [1, length(ar_st_colnames_plot)]);
         ar_st_legend_plot =  {'share of bottom 1%', 'share of bottom 10%', 'share of bottom 20%'};
         st_title = 'Share of K for Lowest X Capital Percentile HHs';
-        st_ytitle = 'Share of Aggregate Capital';                
-    end   
-    
-    
+        st_ytitle = 'Share of Aggregate Capital';
+    elseif (it_plot == 209)
+        ar_st_colnames_plot =  {'fracByP99', 'fracByP90', 'fracByP80'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_val'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  {'share Excluding top 1%', 'share Excluding top 10%', 'share Excluding top 20%'};
+        st_title = 'Share of V for HHs Excluding Highest X Value Percentile HHs';
+        st_ytitle = 'Share of Aggregate Value';
+    elseif (it_plot == 210)
+        ar_st_colnames_plot =  {'fracByP1', 'fracByP10', 'fracByP20'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_val'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  {'share of bottom 1%', 'share of bottom 10%', 'share of bottom 20%'};
+        st_title = 'Share of V for Lowest X Value Percentile HHs';
+        st_ytitle = 'Share of Aggregate Value';                        
+    end
     
     %% Store to cells
     cl_ar_st_variablenames{it_plot_ctr} = ar_st_variablenames_plot;
@@ -360,7 +447,7 @@ cl_st_param_desc = cellfun(@(m) m{1}, cl_st_param_desc, 'UniformOutput', false);
 close all;
 
 for it_pcombi_ctr = 1:length(cl_st_param_keys)
-    
+        
     st_param_key = cl_st_param_keys{it_pcombi_ctr};
     st_param_desc = cl_st_param_desc(it_pcombi_ctr);
     
@@ -401,17 +488,7 @@ for it_pcombi_ctr = 1:length(cl_st_param_keys)
             end
         end
         
-        %% Generate Graphs
-        if (bl_graph_onebyones)
-            figure('PaperPosition', [0 0 7 4]);
-        else
-            subplot(it_plot_rows,it_plot_cols,it_plot);
-        end
-        
-        hold on;
-        
-        st_legend_loc = 'southeast';
-        
+        %% Color Options
         blue = [57 106 177]./255;
         red = [204 37 41]./255;
         black = [83 81 84]./255;
@@ -422,72 +499,233 @@ for it_pcombi_ctr = 1:length(cl_st_param_keys)
             green, brown, purple};
         cl_scatter_shapes = {'s','x','o','d','p','*'};
         cl_linestyle = {'-','-','-','-','-','-'};
-        it_sca_bs = 3;
-        cl_scatter_csizes = {10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs};
         it_line_bs = 2;
         cl_line_csizes = {1*it_line_bs, 1*it_line_bs, 1*it_line_bs, 1*it_line_bs, 1*it_line_bs, 1*it_line_bs};
         
-        it_graph_counter = 0;
-        ls_chart = [];
-        for it_fig = 1:length(cl_ar_st_variablenames{it_plot})
+        %% Graph 
+        
+        % Generate Graphs for Cross and Random Graphs
+        if (ismember(st_simu_type, ["r", "c"]) || length(cl_st_param_keys) == 1)
+                        
+            %% Graph By Cross of Full
+            % each parameter as x one at a time
             
-            % Counter
-            it_graph_counter = it_graph_counter + 1;
+            it_sca_bs = 6;
+            cl_scatter_csizes = {10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs};
             
-            % Color and Size etc
-            it_csize = cl_scatter_csizes{it_fig};
-            ar_color = cl_colors{it_fig};
-            st_shape = cl_scatter_shapes{it_fig};
-            st_lnsty = cl_linestyle{it_fig};
-            st_lnwth = cl_line_csizes{it_fig};
+            if (bl_graph_onebyones)
+                figure('PaperPosition', [0 0 7 4]);
+            else
+                subplot(it_plot_rows,it_plot_cols,it_plot);
+            end
             
-            % Access Y Outcomes
-            ar_cur_rows = strcmp(tb_cur_data.variablenames, ar_st_variablenames_plot(it_fig));
-            st_cur_stat_col = ar_st_colnames_plot{it_fig};
+            hold on;
+
+            st_legend_loc = 'southeast';
+
+            it_graph_counter = 0;
+            ls_chart = [];
+            for it_outcome = 1:length(cl_ar_st_variablenames{it_plot})
+
+                % Counter
+                it_graph_counter = it_graph_counter + 1;
+
+                % Color and Size etc
+                it_csize = cl_scatter_csizes{it_outcome};
+                ar_color = cl_colors{it_outcome};
+                st_shape = cl_scatter_shapes{it_outcome};
+                st_lnsty = cl_linestyle{it_outcome};
+                st_lnwth = cl_line_csizes{it_outcome};
+
+                % Access Y Outcomes
+                ar_it_rows_outcome = strcmp(tb_cur_data.variablenames, ar_st_variablenames_plot(it_outcome));
+                st_cur_stat_col = ar_st_colnames_plot{it_outcome};
+
+                % Access X and Y Values
+                mt_graph_data = tb_cur_data(ar_it_rows_outcome, {st_param_key, st_cur_stat_col});
+                ar_y = real(mt_graph_data{:, st_cur_stat_col});
+                ar_x = real(mt_graph_data{:, st_param_key});                
+                ar_it_real = (imag(ar_y) == 0) & (imag(ar_x) == 0);
+                ar_y = ar_y(ar_it_real);
+                ar_x = ar_x(ar_it_real);
+                
+                % Plot Scatter
+                ls_chart(it_graph_counter) = scatter(ar_x', ar_y', it_csize, ar_color, st_shape);
+
+                if (strcmp(st_simu_type, 'c'))
+                    % plot line do not include in legend
+                    line = plot(ar_x, ar_y);
+                    line.HandleVisibility = 'off';
+                    line.Color = ar_color;
+                    line.LineStyle = st_lnsty;
+                    line.HandleVisibility = 'off';
+                    line.LineWidth = st_lnwth;
+                elseif (ismember(st_simu_type, ["r"]))
+
+                end
+
+                cl_legend{it_graph_counter} = cl_legend{it_outcome};            
+
+            end
+
+            legend(ls_chart, cl_legend, 'Location', st_legend_loc, 'color', 'none');
+
+            % 9. Titling etc
+            grid on;
+            grid minor;
+            title(strrep(st_title, '_', '\_'));
+            ylabel(strrep(st_ytitle, '_', '\_'));        
+            st_xlabel = strrep(st_x_label, '_', '\_');
+            if (strcmp(st_simu_type, 'c'))        
+                xlabel(st_xlabel);
+            elseif (ismember(st_simu_type, ["g"]))
+                st_xlabel_randvars = string(['full grid of: ' strrep(strjoin(cl_st_param_desc, ' and '), '_', '\_')]);
+                xlabel({st_xlabel{1} st_xlabel_randvars});
+            elseif (ismember(st_simu_type, ["r"]))
+                st_xlabel_randvars = string(['random vary by: ' strrep(strjoin(cl_st_param_desc, ' and '), '_', '\_')]);
+                xlabel({st_xlabel{1} st_xlabel_randvars});
+            end
             
-            % Access X and Y Values
-            mt_graph_data = tb_cur_data(ar_cur_rows, {st_param_key, st_cur_stat_col});
-            % Access Y Values
-            ar_y = real(mt_graph_data{:, st_cur_stat_col});
-            % Access X Values
-            ar_x = real(mt_graph_data{:, st_param_key});
+        elseif (ismember(st_simu_type, ["g"]))
+                        
+            %% Graph By N Parameters, Full Grid
+            % first element of cl_st_param_keys is x, second element of
+            % cl_st_param_keys is color, and various outcomes are y. If
+            % there are additional parameters, those are given the same
+            % color. This works best with N=2, but also works when N>2
+            %
+            % Several key concepts here:
+            % # for x-axis parameter, plot out all values
+            % # for y-axis parameters, plot only a subset (in case there
+            % are too many and it is confusing)
+            % # There are possibly multple outcomes of interests, and these
+            % are plotted out using different scattered markers on lines.
+            % That is, if we are plotting out both mean and sd for low and
+            % high wage, low and high wage would have different colors, and
+            % mean and sd would have different symbols. 
             
-            % Plot Scatter            
-            ls_chart(it_graph_counter) = scatter(ar_x', ar_y', it_csize, ar_color, st_shape);
+            it_sca_bs = 15;
+            cl_scatter_csizes = {10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs};
             
-            if (strcmp(st_simu_type, 'c'))
-                % plot line do not include in legend
-                line = plot(ar_x, ar_y);
-                line.HandleVisibility = 'off';
-                line.Color = ar_color;
-                line.LineStyle = st_lnsty;
-                line.HandleVisibility = 'off';
-                line.LineWidth = st_lnwth;
-            elseif (ismember(st_simu_type, ["g", "r"]))
+            if (bl_graph_onebyones)
+                figure('PaperPosition', [0 0 7 4]);
+            else
+                subplot(it_plot_rows,it_plot_cols,it_plot);
+            end
+            
+            hold on;
+            
+            st_legend_loc = 'southeast';
+            
+            % Count the number of outcomes that need to be graphed
+            it_outcomes_n = length(ar_st_colnames_plot);
+            
+            % What is the color variable, first element excluding current
+            cl_st_param_keys_full = cl_st_param_keys;
+            cl_st_param_keys_full(it_pcombi_ctr) = [];
+            st_var_color = cl_st_param_keys_full{1};
+                
+            % How many unique values of the color variable exists. 
+            ar_var_color_ndgrid = table2array(unique(tb_outcomes(:, {st_var_color})));
+            it_var_color_ndgrid = length(ar_var_color_ndgrid);
+            ar_fl_clr = jet(it_var_color_ndgrid);
+                        
+            % Loop Over Different Outcomes
+            it_graph_counter = 0;
+            ls_chart = [];
+            cl_legend_mesh = [];
+            for it_outcome = 1:length(cl_ar_st_variablenames{it_plot})
+                
+                % Color and Size etc
+                it_csize = cl_scatter_csizes{it_outcome};
+                st_shape = cl_scatter_shapes{it_outcome};
+                st_lnsty = cl_linestyle{it_outcome};
+                st_lnwth = cl_line_csizes{it_outcome};
+                
+                % Select Rows including values for this outcome
+                ar_it_rows_outcome = strcmp(tb_cur_data.variablenames, ar_st_variablenames_plot(it_outcome));
+                st_cur_stat_col = ar_st_colnames_plot{it_outcome};                
+                mt_graph_data_outcome = tb_cur_data(ar_it_rows_outcome, [st_cur_stat_col, cl_st_param_keys]);
+                
+                % Loop over values of the second variable
+                for it_color = 1:length(ar_var_color_ndgrid)             
+                    
+                    % Counter
+                    it_graph_counter = it_graph_counter + 1;
+                    
+                    % Get Data for for this outcome and only conditional
+                    % on one value of the color variable
+                    fl_cur_color_var_val = ar_var_color_ndgrid(it_color);
+                    ar_it_rows_color_var_val = (mt_graph_data_outcome{:, st_var_color} == fl_cur_color_var_val);
+                    
+                    % Select Rows including values for this outcome
+                    mt_graph_data_outcome_color_var_val = mt_graph_data_outcome(ar_it_rows_color_var_val, {st_param_key, st_cur_stat_col});
+                    
+                    % Access Y Values
+                    ar_y = (mt_graph_data_outcome_color_var_val{:, st_cur_stat_col});
+                    % Access X Values
+                    ar_x = (mt_graph_data_outcome_color_var_val{:, st_param_key});
+                    
+                    % plot only elements that are real
+                    ar_it_real = (imag(ar_y) == 0) & (imag(ar_x) == 0);
+                    ar_y = ar_y(ar_it_real);
+                    ar_x = ar_x(ar_it_real);
+                    
+                    % Choose color
+                    ar_color = ar_fl_clr(it_color,:);
+
+                    % Plot Scatter
+                    ls_chart(it_graph_counter) = scatter(ar_x', ar_y', it_csize, ar_color, st_shape, ...
+                                                         'MarkerFaceAlpha', 0.6, ...
+                                                         'MarkerEdgeAlpha', 0.6);
+                    
+                    % If has exactly two keys only
+                    if (length(cl_st_param_keys) == 2)
+                        % plot line do not include in legend
+                        line = plot(ar_x, ar_y);
+                        line.HandleVisibility = 'off';
+                        line.Color = ar_color;
+                        line.LineStyle = st_lnsty;
+                        line.HandleVisibility = 'off';
+                        line.LineWidth = st_lnwth;
+                    else
+
+                    end
+                    
+                    % Add to Legend                                        
+                    cl_legend_mesh{it_graph_counter} = strrep([cl_legend{it_outcome} ';' st_var_color num2str(fl_cur_color_var_val, '=%3.2f') ], '_', '\_');
+                                        
+                end
                 
             end
             
-            cl_legend{it_graph_counter} = cl_legend{it_fig};            
+            % Legends
+            f_subset = @(it_subset_n, it_ar_n) unique(round(((0:1:(it_subset_n-1))/(it_subset_n-1))*(it_ar_n-1)+1));
+            it_grid_var_color_n_use = length(cl_ar_st_variablenames{it_plot})*it_grid_var_color_n;
+            it_var_graph_subset = f_subset(it_grid_var_color_n_use, length(cl_legend_mesh));
+                       
+%             legend(ls_chart(it_var_graph_subset), cl_legend_mesh(it_var_graph_subset), ...
+%                     'Location', 'northoutside', 'NumColumns', length(it_var_graph_subset));
+            legend(ls_chart(it_var_graph_subset), cl_legend_mesh(it_var_graph_subset), 'Location', st_legend_loc, 'color', 'none');
+
+            % 9. Titling etc
+            grid on;
+            grid minor;
+            title(strrep(st_title, '_', '\_'));
+            ylabel(strrep(st_ytitle, '_', '\_'));        
+            st_xlabel = strrep(st_x_label, '_', '\_');
+            if (strcmp(st_simu_type, 'c'))        
+                xlabel(st_xlabel);
+            elseif (ismember(st_simu_type, ["g"]))
+                st_xlabel_randvars = string(['full grid of: ' strrep(strjoin(cl_st_param_desc, ' and '), '_', '\_')]);
+                xlabel({st_xlabel{1} st_xlabel_randvars});
+            elseif (ismember(st_simu_type, ["r"]))
+                st_xlabel_randvars = string(['random vary by: ' strrep(strjoin(cl_st_param_desc, ' and '), '_', '\_')]);
+                xlabel({st_xlabel{1} st_xlabel_randvars});
+            end
             
         end
         
-        legend(ls_chart, cl_legend, 'Location', st_legend_loc, 'color', 'none');
-        
-        % 9. Titling etc
-        grid on;
-        grid minor;
-        title(strrep(st_title, '_', '\_'));
-        ylabel(strrep(st_ytitle, '_', '\_'));        
-        st_xlabel = strrep(st_x_label, '_', '\_');
-        if (strcmp(st_simu_type, 'c'))        
-            xlabel(st_xlabel);
-        elseif (ismember(st_simu_type, ["g"]))
-            st_xlabel_randvars = string(['full grid of: ' strrep(strjoin(cl_st_param_desc, ' and '), '_', '\_')]);
-            xlabel({st_xlabel{1} st_xlabel_randvars});
-        elseif (ismember(st_simu_type, ["r"]))
-            st_xlabel_randvars = string(['random vary by: ' strrep(strjoin(cl_st_param_desc, ' and '), '_', '\_')]);
-            xlabel({st_xlabel{1} st_xlabel_randvars});
-        end
     end
     
     % snap figure in place

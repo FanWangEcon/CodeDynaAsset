@@ -50,8 +50,6 @@ bl_default = false;
 % Note that a shift in wage just rescales the model
 
 % Set which to graph, simulate over which variables
-ar_it_plot_sets = [1,2,101,3,4,102,5,6,103,104,106,10];
-bl_simu_cross = 'c';
 cl_st_param_keys = {'fl_w', 'fl_r_save'};
 
 % Generate Benchmark Parameters
@@ -70,38 +68,57 @@ support_map('st_mat_test_prefix') = ['nbc_'];
 % Generate Arrays of Parameter Values to Loop Over
 it_simu_vec_len = 15;
 param_tstar_map = containers.Map('KeyType','char', 'ValueType','any');
-param_tstar_map('fl_w') = linspace(0.25, 5, it_simu_vec_len);
+param_tstar_map('fl_w') = linspace(0, 1, it_simu_vec_len);
 param_tstar_map('fl_r_save') = linspace(0, 0.06, it_simu_vec_len);
 
-%% Quick Grid Simulation (Limited Graphs)
+%% Medium Grid Simulation (CROSS Limited Graphs)
 it_size_type = 1;
-ar_it_plot_sets = [3,4,102, 104,105,106];
+ar_it_plot_sets = [3,4,102, 152,104,106];
+bl_simu_cross = 'c';
 
 % Simulate along parameters
 ff_az_test_analyze( ...
-    ar_it_plot_sets, bl_simu_cross, it_size_type, cl_st_param_keys, ...
-    param_map, support_map, param_tstar_map);
-
-close all;
-
-%% Medium Grid Simulation (Limited Graphs)
-it_size_type = 2;
-ar_it_plot_sets = [3,4,102, 104,105,106];
-
-% Simulate along parameters
-ff_az_test_analyze( ...
-    ar_it_plot_sets, bl_simu_cross, it_size_type, cl_st_param_keys, ...
-    param_map, support_map, param_tstar_map);
-
-close all;
-
-%% Larger Grid Simulation
-it_size_type = 3;
-ar_it_plot_sets = [1,2,101, 3,4,102, 5,6,103, 51,52,53, 201,205,207, 104,106,10];
-
-% Simulate along parameters
-[tb_outcomes, ~ ] = ff_az_test_analyze( ...
     ar_it_plot_sets, bl_simu_cross, it_size_type, cl_st_param_keys, ...
     param_map, support_map, param_tstar_map);
 
 close all
+
+%% Medium Grid Simulation (CROSS Limited Graphs)
+it_size_type = 2;
+ar_it_plot_sets = [3,4,102, 152,104,106];
+bl_simu_cross = 'c';
+
+% Simulate along parameters
+ff_az_test_analyze( ...
+    ar_it_plot_sets, bl_simu_cross, it_size_type, cl_st_param_keys, ...
+    param_map, support_map, param_tstar_map);
+
+close all
+
+%% Larger Grid Simulation (CROSS)
+it_size_type = 3;
+ar_it_plot_sets = [1,2,101,151, 3,4,102,152, 5,6,103,153, 51,52,53,54, 201,205,207,209, 104,105,106,10];
+bl_simu_cross = 'c';
+
+% Simulate along parameters
+ff_az_test_analyze( ...
+    ar_it_plot_sets, bl_simu_cross, it_size_type, cl_st_param_keys, ...
+    param_map, support_map, param_tstar_map);
+
+close all
+
+%% Denser Simulation (GRID)
+it_size_type = 2;
+ar_it_plot_sets = [51,52,53,54, 5,6,103,153, 61,62,63,64];
+bl_simu_cross = 'g';
+it_simu_vec_len = 10;
+param_tstar_map = containers.Map('KeyType','char', 'ValueType','any');
+param_tstar_map('fl_w') = linspace(0, 1, it_simu_vec_len);
+param_tstar_map('fl_r_save') = linspace(0, 0.06, it_simu_vec_len);
+
+% Simulate along parameters
+[tb_outcomes, support_map] = ff_az_test_analyze( ...
+    ar_it_plot_sets, bl_simu_cross, it_size_type, cl_st_param_keys, ...
+    param_map, support_map, param_tstar_map);
+
+close all;

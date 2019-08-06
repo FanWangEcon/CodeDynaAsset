@@ -315,7 +315,7 @@ end
 % <https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html
 % fft_disc_rand_var_mass2outcomes> to compute various statistics of
 % interest.
-
+result_map('mt_dist') = mt_dist_akz;
 result_map = ff_az_ds_post_stats(support_map, result_map, mt_dist_akz);
 
 end

@@ -7,12 +7,16 @@
 %
 % * _SPEED_ savings only overall benchmark speed testing: <https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_speed/html/fsi_az_ds_vecsv_speed.html fsi_az_ds_vecsv_speed>
 % * _PREFERENCE_ savings only preference testing: <https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_pref/html/fsi_az_ds_vecsv_pref.html fsi_az_ds_vecsv_pref>
-% * _PREFERENCE_ savings only preference testing cross:
+% * _PREFERENCE_ savings only preference testing *CROSS*:
 % <https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_pref/html/fsi_az_ds_vecsv_pref_cross.html fsi_az_ds_vecsv_pref_cross>
+% * _PREFERENCE_ savings only preference testing *GRID*:
+% <https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_pref/html/fsi_az_ds_vecsv_pref_grid.html fsi_az_ds_vecsv_pref_grid>
 % * _SHOCK_ savings only shock testing: <https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_shock/html/fsi_az_ds_vecsv_shock.html fsi_az_ds_vecsv_shock>
-% * _SHOCK_ savings only shock testing cross:
+% * _SHOCK_ savings only shock testing *CROSS*:
 % <https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_shock/html/fsi_az_ds_vecsv_shock_cross.html fsi_az_ds_vecsv_shock_cross>
-% * _PRICE_ savings only wage and interest rate testing cross: adjust wage and savings rate
+% * _SHOCK_ savings only shock testing *GRID*:
+% <https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_shock/html/fsi_az_ds_vecsv_shock_grid.html fsi_az_ds_vecsv_shock_grid>
+% * _PRICE_ savings only wage and interest rate testing *CROSS*: adjust wage and savings rate
 % <https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_price/html/fsi_az_ds_vecsv_price_cross.html fsi_az_ds_vecsv_price_cross>
 % * _JOINT_ all parameters random draws joint test
 % <https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_joint/html/fsi_az_ds_vecsv_joint_rand.html fsi_az_ds_vecsv_joint_rand>
@@ -112,7 +116,7 @@ for fl_crra = ar_fl_crra
     support_map('bl_time') = true;
     support_map('bl_profile') = false;
     support_map('bl_graph_coh_t_coh') = true;
-    
+
     % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_get_funcgrid.html ffs_az_get_funcgrid>
     [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override);
 
@@ -164,7 +168,7 @@ for fl_crra = ar_fl_crra
     support_map('bl_time') = true;
     support_map('bl_profile') = false;
     support_map('bl_graph_coh_t_coh') = true;
-    
+
     % Call Grid Generator <https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_get_funcgrid.html ffs_az_get_funcgrid>
     [armt_map, func_map] = ffs_az_get_funcgrid(param_map, support_map, bl_input_override);
 

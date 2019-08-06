@@ -327,7 +327,7 @@ result_map('mt_pol_idx') = mt_pol_idx;
 result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
 result_map('cl_mt_coh') = {f_coh(ar_z, ar_a'), zeros(1)};
 result_map('cl_mt_pol_c') = {f_coh(ar_z, ar_a') - mt_pol_a, zeros(1)};
-result_map('ar_st_pol_names') = ["cl_mt_pol_a", "cl_mt_coh", "cl_mt_pol_c"];
+result_map('ar_st_pol_names') = ["mt_val", "cl_mt_pol_a", "cl_mt_coh", "cl_mt_pol_c"];
 
 if (bl_post)
     bl_input_override = true;

@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Analyze Distributional Results</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-30"><meta name="DC.source" content="ff_az_test_analyze.m"><style type="text/css">
+      --><title>Analyze Distributional Results</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-08-03"><meta name="DC.source" content="ff_az_test_analyze.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,29 +66,45 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Analyze Distributional Results</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_AZ_TEST_ANALYZE post solution simulation</a></li><li><a href="#3">Default Parameter</a></li><li><a href="#4">Array Parameters</a></li><li><a href="#5">Default</a></li><li><a href="#6">Parse Parameters 1</a></li><li><a href="#7">Parse Parameters 2</a></li><li><a href="#8">Cross-Simulate Model Along Parameters</a></li><li><a href="#9">Show Stats Only</a></li><li><a href="#10">Specify Outcome Variables to Plot</a></li><li><a href="#12">List graphing options for az and abz models, some also for akz models</a></li><li><a href="#13">list Means</a></li><li><a href="#14">list graphing options only for akz models</a></li><li><a href="#15">Store to cells</a></li><li><a href="#17">Get Var Descs</a></li><li><a href="#18">Graph Outcomes</a></li><li><a href="#20">Loop over Subplots (different sets of Outcomes)</a></li><li><a href="#22">Generate Graphs</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [tb_outcomes, support_map] = ff_az_test_analyze(varargin)
-</pre><h2 id="2">FF_AZ_TEST_ANALYZE post solution simulation</h2><p>Simulate the model along various dimensions, and produce graphical outputs to show aggregate/distributional statistics.</p><p>@ar_it_plot_sets array integer array of which statistics graphs to generate, see line 128. Could add additional statistics to that conditional list.</p><p>@param st_simu_type string cross vs gridd simulation. cross: with (x,y), vary X fixing y, vary Y fixing x. grid: all (x,y) \in (X,Y)</p><div><ol><li><i>st_simu_type</i> = 'c' for cross simulate, if 'c', then each array value of param_tstar_map container is simulated over one by one. So if there are two arrays associated with two keys in param_tstar_map with length N1 and N2, the total number of simulations equals to N1 + N2.</li><li><i>st_simu_type</i> = 'g' for grid simulate, if 'g', then all possible combinations of the arrays in param_tstar_map are used to create combinations of parameter values. So if there are two arrays with lengths N1 and N2, there will be N1*N2 number of simulations</li><li><i>st_simu_type</i> = 'r' for random simulate, if 'r', then should specify param_map('it_st_simu_type_g_seed') value. Only the minimum and the maximum values for each array in param_tstar_map matters. Based on these minimum and maximum, and also what is in param_map('it_st_simu_type_g_simun'). Random parameter values will be drawn.</li></ol></div><p>@param it_size_type integer:</p><div><ol><li>it_size_type = 1 is quick grid</li><li>it_size_type = 2 is standard grid</li><li>it_size_type = 3 is denser grid</li></ol></div><p>@param cl_st_param_keys cell string cell array container parameters that we are simulating over</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param param_tstar_map container map of arrays with keys that are parameter keys. This could be specified outside with array values to override defaults here.</p><p>@param param_desc_map container map of strings for each parameter key.</p><p>@param tb_outcomes table table of simulation outcomes for various statistics for each set of parameters. Columns are statistics, rows are outcome variables, groups of rows are different simulations.</p><p>@include</p><div><ul><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_test_gen.html">ff_az_test_gen</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html">ff_az_ds_vecsv</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_set_default_param.html">ffs_az_set_default_param</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_get_funcgrid.html">ffs_az_get_funcgrid</a></li></ul></div><p>@seealso</p><div><ul><li><i>SPEED</i> savings only overall benchmark speed testing: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_speed/html/fsi_az_ds_vecsv_speed.html">fsi_az_ds_vecsv_speed</a></li><li><i>PREFERENCE</i> savings only preference testing: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_pref/html/fsi_az_ds_vecsv_pref.html">fsi_az_ds_vecsv_pref</a></li><li><i>PREFERENCE</i> savings only preference testing cross: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_pref/html/fsi_az_ds_vecsv_pref_cross.html">fsi_az_ds_vecsv_pref_cross</a></li><li><i>SHOCK</i> savings only shock testing: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_shock/html/fsi_az_ds_vecsv_shock.html">fsi_az_ds_vecsv_shock</a></li><li><i>SHOCK</i> savings only shock testing cross: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_shock/html/fsi_az_ds_vecsv_shock_cross.html">fsi_az_ds_vecsv_shock_cross</a></li><li><i>PRICE</i> savings only wage and interest rate testing cross: adjust wage and savings rate <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_price/html/fsi_az_ds_vecsv_price_cross.html">fsi_az_ds_vecsv_price_cross</a></li></ul></div><h2 id="3">Default Parameter</h2><pre class="codeinput">ar_it_plot_sets = [1,2,4,5,6,7];
-it_param_set = 9;
+  </style></head><body><div class="content"><h1>Analyze Distributional Results</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_AZ_TEST_ANALYZE post solution simulation</a></li><li><a href="#3">If Funcion Default Invoke</a></li><li><a href="#4">Default Parameter</a></li><li><a href="#5">Array Parameters</a></li><li><a href="#6">Default</a></li><li><a href="#7">Parse Parameters 1</a></li><li><a href="#8">Parse Parameters 2</a></li><li><a href="#9">Cross-Simulate Model Along Parameters</a></li><li><a href="#10">Show Stats Only</a></li><li><a href="#11">Specify Outcome Variables to Plot</a></li><li><a href="#13">List graphing options for az and abz models, some also for akz models</a></li><li><a href="#14">list Means</a></li><li><a href="#15">list graphing options only for akz models</a></li><li><a href="#16">Inequality Measures, Consumption Shares</a></li><li><a href="#17">Store to cells</a></li><li><a href="#19">Get Var Descs</a></li><li><a href="#20">Graph Outcomes</a></li><li><a href="#22">Loop over Subplots (different sets of Outcomes)</a></li><li><a href="#24">Color Options</a></li><li><a href="#25">Graph</a></li><li><a href="#27">Graph By Cross of Full</a></li><li><a href="#30">Graph By N Parameters, Full Grid</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [tb_outcomes, support_map] = ff_az_test_analyze(varargin)
+</pre><h2 id="2">FF_AZ_TEST_ANALYZE post solution simulation</h2><p>Simulate the model along various dimensions, and produce graphical outputs to show aggregate/distributional statistics.</p><p>@ar_it_plot_sets array integer array of which statistics graphs to generate, see line 128. Could add additional statistics to that conditional list.</p><p>@param st_simu_type string cross vs gridd simulation. cross: with (x,y), vary X fixing y, vary Y fixing x. grid: all (x,y) \in (X,Y)</p><div><ol><li><i>st_simu_type</i> = 'c' for cross simulate, if 'c', then each array value of param_tstar_map container is simulated over one by one. So if there are two arrays associated with two keys in param_tstar_map with length N1 and N2, the total number of simulations equals to N1 + N2.</li><li><i>st_simu_type</i> = 'g' for grid simulate, if 'g', then all possible combinations of the arrays in param_tstar_map are used to create combinations of parameter values. So if there are two arrays with lengths N1 and N2, there will be N1*N2 number of simulations</li><li><i>st_simu_type</i> = 'r' for random simulate, if 'r', then should specify param_map('it_st_simu_type_g_seed') value. Only the minimum and the maximum values for each array in param_tstar_map matters. Based on these minimum and maximum, and also what is in param_map('it_st_simu_type_g_simun'). Random parameter values will be drawn.</li></ol></div><p>@param it_size_type integer:</p><div><ol><li>it_size_type = 1 is quick grid</li><li>it_size_type = 2 is standard grid</li><li>it_size_type = 3 is denser grid</li></ol></div><p>@param cl_st_param_keys cell string cell array container parameters that we are simulating over</p><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param param_tstar_map container map of arrays with keys that are parameter keys. This could be specified outside with array values to override defaults here.</p><p>@param param_desc_map container map of strings for each parameter key.</p><p>@param tb_outcomes table table of simulation outcomes for various statistics for each set of parameters. Columns are statistics, rows are outcome variables, groups of rows are different simulations.</p><p>@include</p><div><ul><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_test_gen.html">ff_az_test_gen</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_ds_vecsv.html">ff_az_ds_vecsv</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_set_default_param.html">ffs_az_set_default_param</a></li><li><a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/paramfunc/html/ffs_az_get_funcgrid.html">ffs_az_get_funcgrid</a></li></ul></div><p>@seealso</p><div><ul><li><i>SPEED</i> savings only overall benchmark speed testing: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_speed/html/fsi_az_ds_vecsv_speed.html">fsi_az_ds_vecsv_speed</a></li><li><i>PREFERENCE</i> savings only preference testing: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_pref/html/fsi_az_ds_vecsv_pref.html">fsi_az_ds_vecsv_pref</a></li><li><i>PREFERENCE</i> savings only preference testing cross: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_pref/html/fsi_az_ds_vecsv_pref_cross.html">fsi_az_ds_vecsv_pref_cross</a></li><li><i>SHOCK</i> savings only shock testing: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_shock/html/fsi_az_ds_vecsv_shock.html">fsi_az_ds_vecsv_shock</a></li><li><i>SHOCK</i> savings only shock testing cross: <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_shock/html/fsi_az_ds_vecsv_shock_cross.html">fsi_az_ds_vecsv_shock_cross</a></li><li><i>PRICE</i> savings only wage and interest rate testing cross: adjust wage and savings rate <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_price/html/fsi_az_ds_vecsv_price_cross.html">fsi_az_ds_vecsv_price_cross</a></li></ul></div><h2 id="3">If Funcion Default Invoke</h2><pre class="codeinput"><span class="keyword">if</span> (isempty(varargin))
+    close <span class="string">all</span>;
+<span class="keyword">end</span>
+</pre><h2 id="4">Default Parameter</h2><pre class="codeinput">it_param_set = 9;
 [param_map, support_map] = ffs_az_set_default_param(it_param_set);
 support_map(<span class="string">'bl_replacefile'</span>) = false;
 support_map(<span class="string">'bl_graph_onebyones'</span>) = true;
 support_map(<span class="string">'bl_display_graph_stats'</span>) = true;
-</pre><h2 id="4">Array Parameters</h2><p>initiate empty map</p><pre class="codeinput">st_simu_type = <span class="string">'c'</span>; <span class="comment">% if false, simu full grid</span>
+</pre><h2 id="5">Array Parameters</h2><p>initiate empty map</p><pre class="codeinput">st_simu_type = <span class="string">'g'</span>;
+
 it_size_type = 2;
 cl_st_param_keys = {<span class="string">'fl_crra'</span>, <span class="string">'fl_beta'</span>};
 
-param_tstar_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
-it_simu_vec_len = 5;
-param_tstar_map(<span class="string">'fl_crra'</span>) = linspace(1, 5, it_simu_vec_len);
-param_tstar_map(<span class="string">'fl_beta'</span>) = linspace(0.87, 0.97, it_simu_vec_len);
+<span class="keyword">if</span> (strcmp(st_simu_type, <span class="string">'c'</span>))
+    ar_it_plot_sets = [1,2,4,5,6,7];
+    it_simu_vec_len = 10;
+    param_tstar_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
+    param_tstar_map(<span class="string">'fl_crra'</span>) = linspace(1, 5, it_simu_vec_len);
+    param_tstar_map(<span class="string">'fl_beta'</span>) = linspace(0.87, 0.97, it_simu_vec_len);
+<span class="keyword">end</span>
+
+<span class="keyword">if</span> (strcmp(st_simu_type, <span class="string">'g'</span>))
+    ar_it_plot_sets = [3,5,51];
+    <span class="comment">% assume always plot the first parameter listed under cl_st_param_keys as x-axis variable</span>
+    param_tstar_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
+    param_tstar_map(<span class="string">'fl_crra'</span>) = linspace(1, 5, 15);
+    param_tstar_map(<span class="string">'fl_beta'</span>) = linspace(0.87, 0.97, 15);
+<span class="keyword">end</span>
 
 param_desc_map = containers.Map(<span class="string">'KeyType'</span>,<span class="string">'char'</span>, <span class="string">'ValueType'</span>,<span class="string">'any'</span>);
 param_desc_map(<span class="string">'fl_crra'</span>) = {<span class="string">'CRRA'</span>};
 param_desc_map(<span class="string">'fl_beta'</span>) = {<span class="string">'Discount'</span>};
-</pre><h2 id="5">Default</h2><pre class="codeinput">default_params = {ar_it_plot_sets <span class="keyword">...</span>
+
+it_grid_var_color_n = 3;
+</pre><h2 id="6">Default</h2><pre class="codeinput">default_params = {ar_it_plot_sets <span class="keyword">...</span>
                     st_simu_type it_size_type cl_st_param_keys <span class="keyword">...</span>
-                    param_map support_map param_tstar_map param_desc_map};
-</pre><h2 id="6">Parse Parameters 1</h2><p>override default set above if any parameters are updated</p><pre class="codeinput">params_len = length(varargin);
+                    param_map support_map param_tstar_map param_desc_map it_grid_var_color_n};
+</pre><h2 id="7">Parse Parameters 1</h2><p>override default set above if any parameters are updated</p><pre class="codeinput">params_len = length(varargin);
 [default_params{1:params_len}] = varargin{:};
 
 ar_it_plot_sets = default_params{1};
@@ -100,12 +116,15 @@ param_map = [param_map; default_params{5}];
 support_map = [support_map; default_params{6}];
 param_tstar_map = [param_tstar_map; default_params{7}];
 param_desc_map = [param_desc_map; default_params{8}];
-</pre><h2 id="7">Parse Parameters 2</h2><pre class="codeinput">params_group = values(param_map, {<span class="string">'st_model'</span>});
+
+<span class="comment">% if grid simulation, how many colors groups to include?</span>
+it_grid_var_color_n = default_params{9};
+</pre><h2 id="8">Parse Parameters 2</h2><pre class="codeinput">params_group = values(param_map, {<span class="string">'st_model'</span>});
 [st_model] = params_group{:};
 
 params_group = values(support_map, {<span class="string">'bl_graph_onebyones'</span>, <span class="string">'bl_display_graph_stats'</span>});
 [bl_graph_onebyones, bl_display_graph_stats] = params_group{:};
-</pre><h2 id="8">Cross-Simulate Model Along Parameters</h2><pre class="codeinput">[tb_outcomes, support_map, param_desc_map] = ff_az_test_gen( <span class="keyword">...</span>
+</pre><h2 id="9">Cross-Simulate Model Along Parameters</h2><pre class="codeinput">[tb_outcomes, support_map, param_desc_map] = ff_az_test_gen( <span class="keyword">...</span>
     st_simu_type, it_size_type, cl_st_param_keys, <span class="keyword">...</span>
     param_map, support_map, param_tstar_map, param_desc_map);
 </pre><pre class="codeoutput">----------------------------------------
@@ -166,7 +185,7 @@ pos = 38 ; key = st_mat_suffix ; val = _p9
 pos = 39 ; key = st_mat_test_name_main ; val = r
 pos = 40 ; key = st_mat_test_path ; val = C:/Users/fan/CodeDynaAsset//m_az//test/ff_az_ds_vecsv/mat/
 pos = 41 ; key = st_mat_test_prefix ; val = 
-pos = 42 ; key = st_mat_test_suffix ; val = _g12_cc_t2l10
+pos = 42 ; key = st_mat_test_suffix ; val = _g12_cg_t2l30
 pos = 43 ; key = st_matimg_path_root ; val = C:/Users/fan/CodeDynaAsset//m_az/
 pos = 44 ; key = st_profile_name_main ; val = _default
 pos = 45 ; key = st_profile_path ; val = C:/Users/fan/CodeDynaAsset//m_az//solve/profile/
@@ -380,12 +399,12 @@ fl_b_bd :mu= -12.5 ,sd= 5.9293 ,min= -20 ,max= -5
 
     zi_1_r1      -20      -16.25      -12.5      -8.75       -5   
 
-pos = 4 ; key = fl_beta ;rown= 1 ,coln= 5
-fl_beta :mu= 0.92 ,sd= 0.039528 ,min= 0.87 ,max= 0.97
-               zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5
-               _______    _______    _______    _______    _______
+pos = 4 ; key = fl_beta ;rown= 1 ,coln= 15
+fl_beta :mu= 0.92 ,sd= 0.031944 ,min= 0.87 ,max= 0.97
+               zi_1_C1    zi_2_C2    zi_3_C3    zi_8_C8    zi_13_c13    zi_14_c14    zi_15_c15
+               _______    _______    _______    _______    _________    _________    _________
 
-    zi_1_r1     0.87       0.895      0.92       0.945      0.97  
+    zi_1_r1     0.87      0.87714    0.88429     0.92       0.95571      0.96286       0.97   
 
 pos = 5 ; key = fl_c_min ;rown= 1 ,coln= 5
 fl_c_min :mu= 0.0155 ,sd= 0.011463 ,min= 0.001 ,max= 0.03
@@ -394,12 +413,12 @@ fl_c_min :mu= 0.0155 ,sd= 0.011463 ,min= 0.001 ,max= 0.03
 
     zi_1_r1     0.03      0.02275    0.0155     0.00825     0.001 
 
-pos = 6 ; key = fl_crra ;rown= 1 ,coln= 5
-fl_crra :mu= 3 ,sd= 1.5811 ,min= 1 ,max= 5
-               zi_1_c1    zi_2_c2    zi_3_c3    zi_4_c4    zi_5_c5
-               _______    _______    _______    _______    _______
+pos = 6 ; key = fl_crra ;rown= 1 ,coln= 15
+fl_crra :mu= 3 ,sd= 1.2778 ,min= 1 ,max= 5
+               zi_1_C1    zi_2_C2    zi_3_C3    zi_8_C8    zi_13_c13    zi_14_c14    zi_15_c15
+               _______    _______    _______    _______    _________    _________    _________
 
-    zi_1_r1       1          2          3          4          5   
+    zi_1_r1       1       1.2857     1.5714        3        4.4286       4.7143          5    
 
 pos = 7 ; key = fl_delta ;rown= 1 ,coln= 5
 fl_delta :mu= 0.08 ,sd= 0.047434 ,min= 0.02 ,max= 0.14
@@ -492,53 +511,38 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
                               i     idx    rowN    colN     mean       std        min     max 
                               __    ___    ____    ____    ______    ________    _____    ____
 
-    fl_a_max                   1     1      1       5          65      11.859       50      80
-    fl_alpha                   2     2      1       5         0.4    0.079057      0.3     0.5
-    fl_b_bd                    3     3      1       5       -12.5      5.9293      -20      -5
-    fl_beta                    4     4      1       5        0.92    0.039528     0.87    0.97
-    fl_c_min                   5     5      1       5      0.0155    0.011463    0.001    0.03
-    fl_crra                    6     6      1       5           3      1.5811        1       5
-    fl_delta                   7     7      1       5        0.08    0.047434     0.02    0.14
-    fl_r_save                  8     8      1       5       0.025    0.011859     0.01    0.04
-    fl_w                       9     9      1       5        1.25     0.11859      1.1     1.4
-    fl_z_r_borr_max           10    10      1       5      0.1225    0.021741    0.095    0.15
-    fl_z_r_borr_n             11    11      1       6          15      7.4833        5      25
-    fl_z_r_borr_poiss_mean    12    12      1       5        12.5      5.9293        5      20
-    fl_z_rho                  13    13      1       5       0.495     0.39133        0    0.99
-    fl_z_sig                  14    14      1       5       0.255     0.19369     0.01     0.5
-    fl_z_wage_rho             15    15      1       5       0.495     0.39133        0    0.99
-    fl_z_wage_sig             16    16      1       5       0.255     0.19369     0.01     0.5
-    it_a_n                    17    17      1       5        1300      948.68      100    2500
-    it_z_n                    18    18      1       5          15      7.9057        5      25
+    fl_a_max                   1     1      1        5         65      11.859       50      80
+    fl_alpha                   2     2      1        5        0.4    0.079057      0.3     0.5
+    fl_b_bd                    3     3      1        5      -12.5      5.9293      -20      -5
+    fl_beta                    4     4      1       15       0.92    0.031944     0.87    0.97
+    fl_c_min                   5     5      1        5     0.0155    0.011463    0.001    0.03
+    fl_crra                    6     6      1       15          3      1.2778        1       5
+    fl_delta                   7     7      1        5       0.08    0.047434     0.02    0.14
+    fl_r_save                  8     8      1        5      0.025    0.011859     0.01    0.04
+    fl_w                       9     9      1        5       1.25     0.11859      1.1     1.4
+    fl_z_r_borr_max           10    10      1        5     0.1225    0.021741    0.095    0.15
+    fl_z_r_borr_n             11    11      1        6         15      7.4833        5      25
+    fl_z_r_borr_poiss_mean    12    12      1        5       12.5      5.9293        5      20
+    fl_z_rho                  13    13      1        5      0.495     0.39133        0    0.99
+    fl_z_sig                  14    14      1        5      0.255     0.19369     0.01     0.5
+    fl_z_wage_rho             15    15      1        5      0.495     0.39133        0    0.99
+    fl_z_wage_sig             16    16      1        5      0.255     0.19369     0.01     0.5
+    it_a_n                    17    17      1        5       1300      948.68      100    2500
+    it_z_n                    18    18      1        5         15      7.9057        5      25
 
-</pre><h2 id="9">Show Stats Only</h2><p>Display the effect of changing parameters on mean cl_mt_pol_k and mean cl_st_param_keys = {'fl_z_r_borr_poiss_mean', 'fl_z_r_borr_max', 'fl_b_bd', 'fl_c_min', 'fl_z_r_borr_n'};</p><pre class="codeinput">cl_st_outcome = {<span class="string">'cl_mt_pol_c'</span>};
+</pre><h2 id="10">Show Stats Only</h2><p>Display the effect of changing parameters on mean cl_mt_pol_k and mean cl_st_param_keys = {'fl_z_r_borr_poiss_mean', 'fl_z_r_borr_max', 'fl_b_bd', 'fl_c_min', 'fl_z_r_borr_n'};</p><pre class="codeinput">cl_st_outcome = {<span class="string">'cl_mt_pol_c'</span>, <span class="string">'cl_mt_pol_k'</span>, <span class="string">'cl_mt_coh'</span>};
 <span class="keyword">if</span> (strcmp(st_simu_type, <span class="string">'c'</span>))
     <span class="keyword">for</span> st_param_keys = cl_st_param_keys
         <span class="keyword">for</span> st_outcome = cl_st_outcome
-            disp(tb_outcomes((strcmp(tb_outcomes.var_param_key, st_param_keys) &amp; strcmp(tb_outcomes.variablenames, st_outcome)), <span class="keyword">...</span>
-                {<span class="string">'mean'</span>, st_param_keys{1}}));
+            <span class="keyword">if</span> (sum(strcmp(tb_outcomes.variablenames, st_outcome) &gt; 0))
+                tb_outcomes_show = tb_outcomes((strcmp(tb_outcomes.var_param_key, st_param_keys) &amp; strcmp(tb_outcomes.variablenames, st_outcome)), :);
+                tb_outcomes_show = movevars(tb_outcomes_show, {st_param_keys{1}, <span class="string">'mean'</span>, <span class="string">'sd'</span>}, <span class="string">'Before'</span>, <span class="string">'variablenames'</span>);
+                disp(tb_outcomes_show);
+            <span class="keyword">end</span>
         <span class="keyword">end</span>
     <span class="keyword">end</span>
 <span class="keyword">end</span>
-</pre><pre class="codeoutput">                         mean     fl_crra
-                        ______    _______
-
-    cl_mt_pol_c_p1v1    1.2898       1   
-    cl_mt_pol_c_p1v2    1.3135       2   
-    cl_mt_pol_c_p1v3    1.3409       3   
-    cl_mt_pol_c_p1v4    1.3711       4   
-    cl_mt_pol_c_p1v5    1.4036       5   
-
-                         mean     fl_beta
-                        ______    _______
-
-    cl_mt_pol_c_p2v1    1.2821      0.87 
-    cl_mt_pol_c_p2v2    1.2846     0.895 
-    cl_mt_pol_c_p2v3    1.2902      0.92 
-    cl_mt_pol_c_p2v4    1.3058     0.945 
-    cl_mt_pol_c_p2v5    1.4152      0.97 
-
-</pre><h2 id="10">Specify Outcome Variables to Plot</h2><pre class="codeinput">it_plot_n = length(ar_it_plot_sets);
+</pre><h2 id="11">Specify Outcome Variables to Plot</h2><pre class="codeinput">it_plot_n = length(ar_it_plot_sets);
 [it_plot_rows, it_plot_cols] = deal(round(it_plot_n/3), 3);
 
 cl_ar_st_variablenames = cell([it_plot_n,1]);
@@ -550,7 +554,7 @@ cl_st_ytitle = cell([it_plot_n,1]);
 it_plot_ctr = 0;
 <span class="keyword">for</span> it_plot = ar_it_plot_sets
 </pre><pre class="codeinput">    it_plot_ctr = it_plot_ctr + 1;
-</pre><h2 id="12">List graphing options for az and abz models, some also for akz models</h2><pre class="codeinput">    <span class="keyword">if</span> (it_plot == 1)
+</pre><h2 id="13">List graphing options for az and abz models, some also for akz models</h2><pre class="codeinput">    <span class="keyword">if</span> (it_plot == 1)
         ar_st_colnames_plot =  {<span class="string">'p1'</span>, <span class="string">'p25'</span>, <span class="string">'p50'</span>, <span class="string">'mean'</span>, <span class="string">'p75'</span>, <span class="string">'p99'</span>};
         ar_st_variablenames_plot =  repmat({<span class="string">'cl_mt_pol_c'</span>}, [1, length(ar_st_colnames_plot)]);
         ar_st_legend_plot =  ar_st_colnames_plot;
@@ -611,7 +615,7 @@ it_plot_ctr = 0;
         st_title = <span class="string">'Default Fraction'</span>;
         st_ytitle = <span class="string">'Default Fraction'</span>;
     <span class="keyword">end</span>
-</pre><h2 id="13">list Means</h2><pre class="codeinput">    <span class="keyword">if</span> (it_plot == 51)
+</pre><h2 id="14">list Means</h2><pre class="codeinput">    <span class="keyword">if</span> (it_plot == 51)
         ar_st_colnames_plot =  {<span class="string">'mean'</span>};
         ar_st_variablenames_plot =  repmat({<span class="string">'cl_mt_pol_c'</span>}, [1, length(ar_st_colnames_plot)]);
         ar_st_legend_plot =  ar_st_colnames_plot;
@@ -627,10 +631,10 @@ it_plot_ctr = 0;
         ar_st_colnames_plot =  {<span class="string">'mean'</span>};
         ar_st_variablenames_plot =  repmat({<span class="string">'cl_mt_pol_k'</span>}, [1, length(ar_st_colnames_plot)]);
         ar_st_legend_plot =  ar_st_colnames_plot;
-        st_title = <span class="string">'Savings Mean'</span>;
+        st_title = <span class="string">'Risky Capial Mean'</span>;
         st_ytitle = <span class="string">'Average (Total)'</span>;
     <span class="keyword">end</span>
-</pre><h2 id="14">list graphing options only for akz models</h2><pre class="codeinput">    <span class="keyword">if</span> (it_plot == 101)
+</pre><h2 id="15">list graphing options only for akz models</h2><pre class="codeinput">    <span class="keyword">if</span> (it_plot == 101)
         ar_st_colnames_plot =  {<span class="string">'p1'</span>, <span class="string">'p25'</span>, <span class="string">'p50'</span>, <span class="string">'mean'</span>, <span class="string">'p75'</span>, <span class="string">'p99'</span>};
         ar_st_variablenames_plot =  repmat({<span class="string">'cl_mt_pol_k'</span>}, [1, length(ar_st_colnames_plot)]);
         ar_st_legend_plot =  ar_st_colnames_plot;
@@ -667,15 +671,64 @@ it_plot_ctr = 0;
         st_title = <span class="string">'Correlation with Consumption'</span>;
         st_ytitle = <span class="string">'Correlation Coefficient'</span>;
     <span class="keyword">end</span>
-</pre><h2 id="15">Store to cells</h2><pre class="codeinput">    cl_ar_st_variablenames{it_plot_ctr} = ar_st_variablenames_plot;
+</pre><h2 id="16">Inequality Measures, Consumption Shares</h2><p>Asset Shares could look strange due to negative levels</p><pre class="codeinput">    <span class="keyword">if</span> (it_plot == 201)
+        ar_st_colnames_plot =  {<span class="string">'fracByP99'</span>, <span class="string">'fracByP90'</span>, <span class="string">'fracByP80'</span>};
+        ar_st_variablenames_plot =  repmat({<span class="string">'cl_mt_pol_c'</span>}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  {<span class="string">'share Excluding top 1%'</span>, <span class="string">'share Excluding top 10%'</span>, <span class="string">'share Excluding top 20%'</span>};
+        st_title = <span class="string">'Share of C for HHs Excluding Highest X Cons. Percentile HHs'</span>;
+        st_ytitle = <span class="string">'Share of Aggregate Consumption'</span>;
+    <span class="keyword">elseif</span> (it_plot == 202)
+        ar_st_colnames_plot =  {<span class="string">'fracByP1'</span>, <span class="string">'fracByP10'</span>, <span class="string">'fracByP20'</span>};
+        ar_st_variablenames_plot =  repmat({<span class="string">'cl_mt_pol_c'</span>}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  {<span class="string">'share of bottom 1%'</span>, <span class="string">'share of bottom 10%'</span>, <span class="string">'share of bottom 20%'</span>};
+        st_title = <span class="string">'Share of C for Lowest X Cons. Percentile HHs'</span>;
+        st_ytitle = <span class="string">'Share of Aggregate Consumption'</span>;
+    <span class="keyword">elseif</span> (it_plot == 203)
+        ar_st_colnames_plot =  {<span class="string">'fracByP99'</span>, <span class="string">'fracByP90'</span>, <span class="string">'fracByP80'</span>};
+        ar_st_variablenames_plot =  repmat({<span class="string">'cl_mt_pol_a'</span>}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  {<span class="string">'share Excluding top 1%'</span>, <span class="string">'share Excluding top 10%'</span>, <span class="string">'share Excluding top 20%'</span>};
+        st_title = <span class="string">'Share of Savings for HHs Excluding Highest X Savings Percentile HHs'</span>;
+        st_ytitle = <span class="string">'Share of Aggregate Savings'</span>;
+    <span class="keyword">elseif</span> (it_plot == 204)
+        ar_st_colnames_plot =  {<span class="string">'fracByP1'</span>, <span class="string">'fracByP10'</span>, <span class="string">'fracByP20'</span>};
+        ar_st_variablenames_plot =  repmat({<span class="string">'cl_mt_pol_a'</span>}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  {<span class="string">'share of bottom 1%'</span>, <span class="string">'share of bottom 10%'</span>, <span class="string">'share of bottom 20%'</span>};
+        st_title = <span class="string">'Share of Savings for Lowest X Savings Percentile HHs'</span>;
+        st_ytitle = <span class="string">'Share of Aggregate Savings'</span>;
+    <span class="keyword">elseif</span> (it_plot == 205)
+        ar_st_colnames_plot =  {<span class="string">'fracByP99'</span>, <span class="string">'fracByP90'</span>, <span class="string">'fracByP80'</span>};
+        ar_st_variablenames_plot =  repmat({<span class="string">'cl_mt_coh'</span>}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  {<span class="string">'share Excluding top 1%'</span>, <span class="string">'share Excluding top 10%'</span>, <span class="string">'share Excluding top 20%'</span>};
+        st_title = <span class="string">'Share of Wealth for HHs Excluding Highest X Wealth Percentile HHs'</span>;
+        st_ytitle = <span class="string">'Share of Aggregate Wealth (cash-on-hand)'</span>;
+    <span class="keyword">elseif</span> (it_plot == 206)
+        ar_st_colnames_plot =  {<span class="string">'fracByP1'</span>, <span class="string">'fracByP10'</span>, <span class="string">'fracByP20'</span>};
+        ar_st_variablenames_plot =  repmat({<span class="string">'cl_mt_coh'</span>}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  {<span class="string">'share of bottom 1%'</span>, <span class="string">'share of bottom 10%'</span>, <span class="string">'share of bottom 20%'</span>};
+        st_title = <span class="string">'Share of Wealth for Lowest X Wealth Percentile HHs'</span>;
+        st_ytitle = <span class="string">'Share of Aggregate Wealth (cash-on-hand)'</span>;
+    <span class="keyword">elseif</span> (it_plot == 207)
+        ar_st_colnames_plot =  {<span class="string">'fracByP99'</span>, <span class="string">'fracByP90'</span>, <span class="string">'fracByP80'</span>};
+        ar_st_variablenames_plot =  repmat({<span class="string">'cl_mt_pol_k'</span>}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  {<span class="string">'share Excluding top 1%'</span>, <span class="string">'share Excluding top 10%'</span>, <span class="string">'share Excluding top 20%'</span>};
+        st_title = <span class="string">'Share of K for HHs Excluding Highest X Capital Percentile HHs'</span>;
+        st_ytitle = <span class="string">'Share of Aggregate Capital'</span>;
+    <span class="keyword">elseif</span> (it_plot == 208)
+        ar_st_colnames_plot =  {<span class="string">'fracByP1'</span>, <span class="string">'fracByP10'</span>, <span class="string">'fracByP20'</span>};
+        ar_st_variablenames_plot =  repmat({<span class="string">'cl_mt_pol_k'</span>}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  {<span class="string">'share of bottom 1%'</span>, <span class="string">'share of bottom 10%'</span>, <span class="string">'share of bottom 20%'</span>};
+        st_title = <span class="string">'Share of K for Lowest X Capital Percentile HHs'</span>;
+        st_ytitle = <span class="string">'Share of Aggregate Capital'</span>;
+    <span class="keyword">end</span>
+</pre><h2 id="17">Store to cells</h2><pre class="codeinput">    cl_ar_st_variablenames{it_plot_ctr} = ar_st_variablenames_plot;
     cl_ar_st_legend{it_plot_ctr} = ar_st_legend_plot;
     cl_ar_st_colnames{it_plot_ctr} = ar_st_colnames_plot;
     cl_st_title{it_plot_ctr} = st_title;
     cl_st_ytitle{it_plot_ctr} = st_ytitle;
 </pre><pre class="codeinput"><span class="keyword">end</span>
-</pre><h2 id="17">Get Var Descs</h2><pre class="codeinput">cl_st_param_desc = values(param_desc_map, cl_st_param_keys);
+</pre><h2 id="19">Get Var Descs</h2><pre class="codeinput">cl_st_param_desc = values(param_desc_map, cl_st_param_keys);
 cl_st_param_desc = cellfun(@(m) m{1}, cl_st_param_desc, <span class="string">'UniformOutput'</span>, false);
-</pre><h2 id="18">Graph Outcomes</h2><pre class="codeinput">close <span class="string">all</span>;
+</pre><h2 id="20">Graph Outcomes</h2><pre class="codeinput">close <span class="string">all</span>;
 
 <span class="keyword">for</span> it_pcombi_ctr = 1:length(cl_st_param_keys)
 </pre><pre class="codeinput">    st_param_key = cl_st_param_keys{it_pcombi_ctr};
@@ -693,7 +746,7 @@ cl_st_param_desc = cellfun(@(m) m{1}, cl_st_param_desc, <span class="string">'Un
         tb_cur_data = tb_outcomes;
     <span class="keyword">end</span>
     st_x_label = st_param_desc;
-</pre><h2 id="20">Loop over Subplots (different sets of Outcomes)</h2><pre class="codeinput">    <span class="keyword">for</span> it_plot=1:1:it_plot_n
+</pre><h2 id="22">Loop over Subplots (different sets of Outcomes)</h2><pre class="codeinput">    <span class="keyword">for</span> it_plot=1:1:it_plot_n
 </pre><pre class="codeinput">        <span class="comment">% Get x variable and label</span>
         cl_legend = cl_ar_st_legend{it_plot};
         ar_st_variablenames_plot = cl_ar_st_variablenames{it_plot};
@@ -715,292 +768,234 @@ cl_st_param_desc = cellfun(@(m) m{1}, cl_st_param_desc, <span class="string">'Un
             <span class="keyword">end</span>
         <span class="keyword">end</span>
 </pre><pre class="codeoutput">------------------------
-xxxxx Consumption Percentiles xxxxx
-xxxxx C Distribution xxxxx
+xxxxx Consumption Mean and SD xxxxx
+xxxxx C Mean and SD xxxxx
 ------------------------
-                        fl_crra       p1         p25        p50        mean        p75       p99  
-                        _______    ________    _______    ________    _______    _______    ______
+                      fl_crra      mean         sd   
+                      _______    ________    ________
 
-    cl_mt_pol_a_p1v1       1              0          0    0.066756    0.39061    0.46729    3.3378
-    cl_mt_coh_p1v1         1        0.59175     1.0479      1.3944     1.6804     2.0102    5.4955
-    cl_mt_pol_c_p1v1       1        0.59175     1.0479      1.2789     1.2898     1.5468    2.2175
-    cl_mt_pol_a_p1v2       2              0    0.13351     0.80107      1.341     1.9359    7.2096
-    cl_mt_coh_p1v2         2        0.59175     1.2772      2.0971     2.6545     3.4471    9.2454
-    cl_mt_pol_c_p1v2       2        0.59175     1.1182      1.3039     1.3135     1.5229    2.0753
-    cl_mt_pol_a_p1v3       3              0    0.66756      1.7356     2.4357     3.4713    10.481
-    cl_mt_coh_p1v3         3        0.66017     1.8138      3.1006     3.7766     5.0209    12.488
-    cl_mt_pol_c_p1v3       3        0.65149     1.1437      1.3515     1.3409     1.5451    2.0387
-    cl_mt_pol_a_p1v4       4              0     1.3351      2.8705     3.6456     5.1402    13.551
-    cl_mt_coh_p1v4         4        0.75104     2.5532      4.2682     5.0168     6.6827    15.602
-    cl_mt_pol_c_p1v4       4        0.68262     1.1763      1.3732     1.3711     1.5497    2.0408
-    cl_mt_pol_a_p1v5       5       0.066756     2.1362      4.1389     4.9436     6.8758    16.622
-    cl_mt_coh_p1v5         5        0.88789     3.3876      5.5612     6.3472     8.4421    18.681
-    cl_mt_pol_c_p1v5       5        0.78744     1.2297      1.3957     1.4036     1.5796     2.052
+    cl_mt_pol_a_v1         1     0.014958    0.070101
+    cl_mt_coh_v1           1       1.2953     0.47883
+    cl_mt_pol_c_v1         1       1.2804     0.43668
+    cl_mt_pol_a_v2    1.2857     0.048699     0.15681
+    cl_mt_coh_v2      1.2857       1.3299     0.54002
+    cl_mt_pol_c_v2    1.2857       1.2812     0.42642
+    cl_mt_pol_a_v3    1.5714     0.096585     0.26402
+    cl_mt_coh_v3      1.5714        1.379     0.62258
+    cl_mt_pol_c_v3    1.5714       1.2824     0.41549
+    cl_mt_pol_a_v4    1.8571      0.17542     0.38119
+    cl_mt_coh_v4      1.8571       1.4598     0.72719
+    cl_mt_pol_c_v4    1.8571       1.2844     0.40254
+    cl_mt_pol_a_v5    2.1429      0.26682     0.50518
 
-</pre><pre class="codeoutput">------------------------
-xxxxx Savings Percentiles xxxxx
-xxxxx A Distribution xxxxx
-------------------------
-                        fl_crra       p1         p25        p50        mean        p75       p99  
-                        _______    ________    _______    ________    _______    _______    ______
+                        fl_crra     mean       sd   
+                        _______    ______    _______
 
-    cl_mt_pol_a_p1v1       1              0          0    0.066756    0.39061    0.46729    3.3378
-    cl_mt_coh_p1v1         1        0.59175     1.0479      1.3944     1.6804     2.0102    5.4955
-    cl_mt_pol_c_p1v1       1        0.59175     1.0479      1.2789     1.2898     1.5468    2.2175
-    cl_mt_pol_a_p1v2       2              0    0.13351     0.80107      1.341     1.9359    7.2096
-    cl_mt_coh_p1v2         2        0.59175     1.2772      2.0971     2.6545     3.4471    9.2454
-    cl_mt_pol_c_p1v2       2        0.59175     1.1182      1.3039     1.3135     1.5229    2.0753
-    cl_mt_pol_a_p1v3       3              0    0.66756      1.7356     2.4357     3.4713    10.481
-    cl_mt_coh_p1v3         3        0.66017     1.8138      3.1006     3.7766     5.0209    12.488
-    cl_mt_pol_c_p1v3       3        0.65149     1.1437      1.3515     1.3409     1.5451    2.0387
-    cl_mt_pol_a_p1v4       4              0     1.3351      2.8705     3.6456     5.1402    13.551
-    cl_mt_coh_p1v4         4        0.75104     2.5532      4.2682     5.0168     6.6827    15.602
-    cl_mt_pol_c_p1v4       4        0.68262     1.1763      1.3732     1.3711     1.5497    2.0408
-    cl_mt_pol_a_p1v5       5       0.066756     2.1362      4.1389     4.9436     6.8758    16.622
-    cl_mt_coh_p1v5         5        0.88789     3.3876      5.5612     6.3472     8.4421    18.681
-    cl_mt_pol_c_p1v5       5        0.78744     1.2297      1.3957     1.4036     1.5796     2.052
-
-</pre><pre class="codeoutput">------------------------
-xxxxx Savings Mean and SD xxxxx
-xxxxx A Mean and SD xxxxx
-------------------------
-                        fl_crra     mean        sd   
-                        _______    _______    _______
-
-    cl_mt_pol_a_p1v1       1       0.39061    0.70074
-    cl_mt_coh_p1v1         1        1.6804     1.0129
-    cl_mt_pol_c_p1v1       1        1.2898    0.37696
-    cl_mt_pol_a_p1v2       2         1.341     1.6059
-    cl_mt_coh_p1v2         2        2.6545     1.8815
-    cl_mt_pol_c_p1v2       2        1.3135     0.3224
-    cl_mt_pol_a_p1v3       3        2.4357     2.3673
-    cl_mt_coh_p1v3         3        3.7766     2.6281
-    cl_mt_pol_c_p1v3       3        1.3409    0.29467
-    cl_mt_pol_a_p1v4       4        3.6456     3.0477
-    cl_mt_coh_p1v4         4        5.0168     3.3019
-    cl_mt_pol_c_p1v4       4        1.3711     0.2794
-    cl_mt_pol_a_p1v5       5        4.9436       3.69
-    cl_mt_coh_p1v5         5        6.3472     3.9417
-    cl_mt_pol_c_p1v5       5        1.4036    0.27131
+    cl_mt_pol_c_v221    3.8571     1.6613    0.32713
+    cl_mt_pol_a_v222    4.1429     16.617     10.303
+    cl_mt_coh_v222      4.1429     18.312     10.631
+    cl_mt_pol_c_v222    4.1429     1.6954    0.33544
+    cl_mt_pol_a_v223    4.4286     17.999     10.722
+    cl_mt_coh_v223      4.4286     19.729     11.058
+    cl_mt_pol_c_v223    4.4286       1.73    0.34306
+    cl_mt_pol_a_v224    4.7143      19.39     11.075
+    cl_mt_coh_v224      4.7143     21.155     11.418
+    cl_mt_pol_c_v224    4.7143     1.7648    0.34974
+    cl_mt_pol_a_v225         5     20.769     11.359
+    cl_mt_coh_v225           5     22.568     11.708
+    cl_mt_pol_c_v225         5     1.7992    0.35534
 
 </pre><pre class="codeoutput">------------------------
 xxxxx Consumption Standard Deviation xxxxx
 xxxxx Standard Deviation xxxxx
 ------------------------
+                      fl_crra       sd   
+                      _______    ________
+
+    cl_mt_pol_a_v1         1     0.070101
+    cl_mt_coh_v1           1      0.47883
+    cl_mt_pol_c_v1         1      0.43668
+    cl_mt_pol_a_v2    1.2857      0.15681
+    cl_mt_coh_v2      1.2857      0.54002
+    cl_mt_pol_c_v2    1.2857      0.42642
+    cl_mt_pol_a_v3    1.5714      0.26402
+    cl_mt_coh_v3      1.5714      0.62258
+    cl_mt_pol_c_v3    1.5714      0.41549
+    cl_mt_pol_a_v4    1.8571      0.38119
+    cl_mt_coh_v4      1.8571      0.72719
+    cl_mt_pol_c_v4    1.8571      0.40254
+    cl_mt_pol_a_v5    2.1429      0.50518
+
                         fl_crra      sd   
                         _______    _______
 
-    cl_mt_pol_a_p1v1       1       0.70074
-    cl_mt_coh_p1v1         1        1.0129
-    cl_mt_pol_c_p1v1       1       0.37696
-    cl_mt_pol_a_p1v2       2        1.6059
-    cl_mt_coh_p1v2         2        1.8815
-    cl_mt_pol_c_p1v2       2        0.3224
-    cl_mt_pol_a_p1v3       3        2.3673
-    cl_mt_coh_p1v3         3        2.6281
-    cl_mt_pol_c_p1v3       3       0.29467
-    cl_mt_pol_a_p1v4       4        3.0477
-    cl_mt_coh_p1v4         4        3.3019
-    cl_mt_pol_c_p1v4       4        0.2794
-    cl_mt_pol_a_p1v5       5          3.69
-    cl_mt_coh_p1v5         5        3.9417
-    cl_mt_pol_c_p1v5       5       0.27131
+    cl_mt_pol_c_v221    3.8571     0.32713
+    cl_mt_pol_a_v222    4.1429      10.303
+    cl_mt_coh_v222      4.1429      10.631
+    cl_mt_pol_c_v222    4.1429     0.33544
+    cl_mt_pol_a_v223    4.4286      10.722
+    cl_mt_coh_v223      4.4286      11.058
+    cl_mt_pol_c_v223    4.4286     0.34306
+    cl_mt_pol_a_v224    4.7143      11.075
+    cl_mt_coh_v224      4.7143      11.418
+    cl_mt_pol_c_v224    4.7143     0.34974
+    cl_mt_pol_a_v225         5      11.359
+    cl_mt_coh_v225           5      11.708
+    cl_mt_pol_c_v225         5     0.35534
 
 </pre><pre class="codeoutput">------------------------
-xxxxx Savings Standard Deviation xxxxx
-xxxxx Standard Deviation xxxxx
+xxxxx Consumption Mean xxxxx
+xxxxx Average (Total) xxxxx
 ------------------------
-                        fl_crra      sd   
-                        _______    _______
+                      fl_crra      mean  
+                      _______    ________
 
-    cl_mt_pol_a_p1v1       1       0.70074
-    cl_mt_coh_p1v1         1        1.0129
-    cl_mt_pol_c_p1v1       1       0.37696
-    cl_mt_pol_a_p1v2       2        1.6059
-    cl_mt_coh_p1v2         2        1.8815
-    cl_mt_pol_c_p1v2       2        0.3224
-    cl_mt_pol_a_p1v3       3        2.3673
-    cl_mt_coh_p1v3         3        2.6281
-    cl_mt_pol_c_p1v3       3       0.29467
-    cl_mt_pol_a_p1v4       4        3.0477
-    cl_mt_coh_p1v4         4        3.3019
-    cl_mt_pol_c_p1v4       4        0.2794
-    cl_mt_pol_a_p1v5       5          3.69
-    cl_mt_coh_p1v5         5        3.9417
-    cl_mt_pol_c_p1v5       5       0.27131
+    cl_mt_pol_a_v1         1     0.014958
+    cl_mt_coh_v1           1       1.2953
+    cl_mt_pol_c_v1         1       1.2804
+    cl_mt_pol_a_v2    1.2857     0.048699
+    cl_mt_coh_v2      1.2857       1.3299
+    cl_mt_pol_c_v2    1.2857       1.2812
+    cl_mt_pol_a_v3    1.5714     0.096585
+    cl_mt_coh_v3      1.5714        1.379
+    cl_mt_pol_c_v3    1.5714       1.2824
+    cl_mt_pol_a_v4    1.8571      0.17542
+    cl_mt_coh_v4      1.8571       1.4598
+    cl_mt_pol_c_v4    1.8571       1.2844
+    cl_mt_pol_a_v5    2.1429      0.26682
+
+                        fl_crra     mean 
+                        _______    ______
+
+    cl_mt_pol_c_v221    3.8571     1.6613
+    cl_mt_pol_a_v222    4.1429     16.617
+    cl_mt_coh_v222      4.1429     18.312
+    cl_mt_pol_c_v222    4.1429     1.6954
+    cl_mt_pol_a_v223    4.4286     17.999
+    cl_mt_coh_v223      4.4286     19.729
+    cl_mt_pol_c_v223    4.4286       1.73
+    cl_mt_pol_a_v224    4.7143      19.39
+    cl_mt_coh_v224      4.7143     21.155
+    cl_mt_pol_c_v224    4.7143     1.7648
+    cl_mt_pol_a_v225         5     20.769
+    cl_mt_coh_v225           5     22.568
+    cl_mt_pol_c_v225         5     1.7992
 
 </pre><pre class="codeoutput">------------------------
-xxxxx Aggregate Outcomes (wealth, savings, consumption) xxxxx
-xxxxx Aggregate Levels xxxxx
+xxxxx Consumption Mean and SD xxxxx
+xxxxx C Mean and SD xxxxx
 ------------------------
-                        fl_crra     mean      mean_1     mean_2 
-                        _______    _______    _______    _______
+                      fl_beta      mean         sd   
+                      _______    ________    ________
 
-    cl_mt_pol_a_p1v1       1       0.39061    0.39061    0.39061
-    cl_mt_coh_p1v1         1        1.6804     1.6804     1.6804
-    cl_mt_pol_c_p1v1       1        1.2898     1.2898     1.2898
-    cl_mt_pol_a_p1v2       2         1.341      1.341      1.341
-    cl_mt_coh_p1v2         2        2.6545     2.6545     2.6545
-    cl_mt_pol_c_p1v2       2        1.3135     1.3135     1.3135
-    cl_mt_pol_a_p1v3       3        2.4357     2.4357     2.4357
-    cl_mt_coh_p1v3         3        3.7766     3.7766     3.7766
-    cl_mt_pol_c_p1v3       3        1.3409     1.3409     1.3409
-    cl_mt_pol_a_p1v4       4        3.6456     3.6456     3.6456
-    cl_mt_coh_p1v4         4        5.0168     5.0168     5.0168
-    cl_mt_pol_c_p1v4       4        1.3711     1.3711     1.3711
-    cl_mt_pol_a_p1v5       5        4.9436     4.9436     4.9436
-    cl_mt_coh_p1v5         5        6.3472     6.3472     6.3472
-    cl_mt_pol_c_p1v5       5        1.4036     1.4036     1.4036
+    cl_mt_pol_a_v1     0.87      0.014958    0.070101
+    cl_mt_coh_v1       0.87        1.2953     0.47883
+    cl_mt_pol_c_v1     0.87        1.2804     0.43668
+    cl_mt_pol_a_v2     0.87      0.048699     0.15681
+    cl_mt_coh_v2       0.87        1.3299     0.54002
+    cl_mt_pol_c_v2     0.87        1.2812     0.42642
+    cl_mt_pol_a_v3     0.87      0.096585     0.26402
+    cl_mt_coh_v3       0.87         1.379     0.62258
+    cl_mt_pol_c_v3     0.87        1.2824     0.41549
+    cl_mt_pol_a_v4     0.87       0.17542     0.38119
+    cl_mt_coh_v4       0.87        1.4598     0.72719
+    cl_mt_pol_c_v4     0.87        1.2844     0.40254
+    cl_mt_pol_a_v5     0.87       0.26682     0.50518
 
-</pre><pre class="codeoutput">------------------------
-xxxxx Consumption Percentiles xxxxx
-xxxxx C Distribution xxxxx
-------------------------
-                        fl_beta      p1         p25         p50         mean        p75        p99  
-                        _______    _______    ________    ________    ________    ________    ______
+                        fl_beta     mean       sd   
+                        _______    ______    _______
 
-    cl_mt_pol_a_p2v1      0.87           0           0           0    0.083735    0.066756    1.2016
-    cl_mt_coh_p2v1        0.87     0.59175     0.90837      1.2088      1.3658      1.6085     3.564
-    cl_mt_pol_c_p2v1      0.87     0.59175     0.90837      1.2088      1.2821      1.6085    2.3992
-    cl_mt_pol_a_p2v2     0.895           0           0           0      0.1837     0.20027    2.0027
-    cl_mt_coh_p2v2       0.895     0.59175     0.97679      1.2088      1.4683      1.7365    4.2617
-    cl_mt_pol_c_p2v2     0.895     0.59175     0.97679      1.2088      1.2846      1.5418    2.3294
-    cl_mt_pol_a_p2v3      0.92           0           0    0.066756     0.40859     0.53405    3.3378
-    cl_mt_coh_p2v3        0.92     0.59175      1.0479      1.3944      1.6988      2.0608    5.5087
-    cl_mt_pol_c_p2v3      0.92     0.59175      1.0479      1.2789      1.2902      1.5485    2.2209
-    cl_mt_pol_a_p2v4     0.945           0    0.066756     0.53405      1.0308      1.4686    6.2083
-    cl_mt_coh_p2v4       0.945     0.59175      1.1847      1.8246      2.3366       2.977    8.2303
-    cl_mt_pol_c_p2v4     0.945     0.59175      1.0495      1.3293      1.3058      1.5301    2.0854
-    cl_mt_pol_a_p2v5      0.97           0      1.8024      4.2056      5.4081      7.8104    20.961
-    cl_mt_coh_p2v5        0.97     0.68262      3.0295      5.6323      6.8233       9.393    23.012
-    cl_mt_pol_c_p2v5      0.97     0.68262      1.2422      1.4183      1.4152      1.5952    2.0683
-
-</pre><pre class="codeoutput">------------------------
-xxxxx Savings Percentiles xxxxx
-xxxxx A Distribution xxxxx
-------------------------
-                        fl_beta      p1         p25         p50         mean        p75        p99  
-                        _______    _______    ________    ________    ________    ________    ______
-
-    cl_mt_pol_a_p2v1      0.87           0           0           0    0.083735    0.066756    1.2016
-    cl_mt_coh_p2v1        0.87     0.59175     0.90837      1.2088      1.3658      1.6085     3.564
-    cl_mt_pol_c_p2v1      0.87     0.59175     0.90837      1.2088      1.2821      1.6085    2.3992
-    cl_mt_pol_a_p2v2     0.895           0           0           0      0.1837     0.20027    2.0027
-    cl_mt_coh_p2v2       0.895     0.59175     0.97679      1.2088      1.4683      1.7365    4.2617
-    cl_mt_pol_c_p2v2     0.895     0.59175     0.97679      1.2088      1.2846      1.5418    2.3294
-    cl_mt_pol_a_p2v3      0.92           0           0    0.066756     0.40859     0.53405    3.3378
-    cl_mt_coh_p2v3        0.92     0.59175      1.0479      1.3944      1.6988      2.0608    5.5087
-    cl_mt_pol_c_p2v3      0.92     0.59175      1.0479      1.2789      1.2902      1.5485    2.2209
-    cl_mt_pol_a_p2v4     0.945           0    0.066756     0.53405      1.0308      1.4686    6.2083
-    cl_mt_coh_p2v4       0.945     0.59175      1.1847      1.8246      2.3366       2.977    8.2303
-    cl_mt_pol_c_p2v4     0.945     0.59175      1.0495      1.3293      1.3058      1.5301    2.0854
-    cl_mt_pol_a_p2v5      0.97           0      1.8024      4.2056      5.4081      7.8104    20.961
-    cl_mt_coh_p2v5        0.97     0.68262      3.0295      5.6323      6.8233       9.393    23.012
-    cl_mt_pol_c_p2v5      0.97     0.68262      1.2422      1.4183      1.4152      1.5952    2.0683
-
-</pre><pre class="codeoutput">------------------------
-xxxxx Savings Mean and SD xxxxx
-xxxxx A Mean and SD xxxxx
-------------------------
-                        fl_beta      mean        sd   
-                        _______    ________    _______
-
-    cl_mt_pol_a_p2v1      0.87     0.083735    0.23518
-    cl_mt_coh_p2v1        0.87       1.3658     0.6001
-    cl_mt_pol_c_p2v1      0.87       1.2821    0.41818
-    cl_mt_pol_a_p2v2     0.895       0.1837    0.40215
-    cl_mt_coh_p2v2       0.895       1.4683    0.74402
-    cl_mt_pol_c_p2v2     0.895       1.2846    0.40112
-    cl_mt_pol_a_p2v3      0.92      0.40859     0.7045
-    cl_mt_coh_p2v3        0.92       1.6988     1.0188
-    cl_mt_pol_c_p2v3      0.92       1.2902    0.37555
-    cl_mt_pol_a_p2v4     0.945       1.0308     1.3631
-    cl_mt_coh_p2v4       0.945       2.3366     1.6448
-    cl_mt_pol_c_p2v4     0.945       1.3058    0.33496
-    cl_mt_pol_a_p2v5      0.97       5.4081     4.7673
-    cl_mt_coh_p2v5        0.97       6.8233     5.0167
-    cl_mt_pol_c_p2v5      0.97       1.4152    0.27424
+    cl_mt_pol_c_v221     0.97      1.6613    0.32713
+    cl_mt_pol_a_v222     0.97      16.617     10.303
+    cl_mt_coh_v222       0.97      18.312     10.631
+    cl_mt_pol_c_v222     0.97      1.6954    0.33544
+    cl_mt_pol_a_v223     0.97      17.999     10.722
+    cl_mt_coh_v223       0.97      19.729     11.058
+    cl_mt_pol_c_v223     0.97        1.73    0.34306
+    cl_mt_pol_a_v224     0.97       19.39     11.075
+    cl_mt_coh_v224       0.97      21.155     11.418
+    cl_mt_pol_c_v224     0.97      1.7648    0.34974
+    cl_mt_pol_a_v225     0.97      20.769     11.359
+    cl_mt_coh_v225       0.97      22.568     11.708
+    cl_mt_pol_c_v225     0.97      1.7992    0.35534
 
 </pre><pre class="codeoutput">------------------------
 xxxxx Consumption Standard Deviation xxxxx
 xxxxx Standard Deviation xxxxx
 ------------------------
+                      fl_beta       sd   
+                      _______    ________
+
+    cl_mt_pol_a_v1     0.87      0.070101
+    cl_mt_coh_v1       0.87       0.47883
+    cl_mt_pol_c_v1     0.87       0.43668
+    cl_mt_pol_a_v2     0.87       0.15681
+    cl_mt_coh_v2       0.87       0.54002
+    cl_mt_pol_c_v2     0.87       0.42642
+    cl_mt_pol_a_v3     0.87       0.26402
+    cl_mt_coh_v3       0.87       0.62258
+    cl_mt_pol_c_v3     0.87       0.41549
+    cl_mt_pol_a_v4     0.87       0.38119
+    cl_mt_coh_v4       0.87       0.72719
+    cl_mt_pol_c_v4     0.87       0.40254
+    cl_mt_pol_a_v5     0.87       0.50518
+
                         fl_beta      sd   
                         _______    _______
 
-    cl_mt_pol_a_p2v1      0.87     0.23518
-    cl_mt_coh_p2v1        0.87      0.6001
-    cl_mt_pol_c_p2v1      0.87     0.41818
-    cl_mt_pol_a_p2v2     0.895     0.40215
-    cl_mt_coh_p2v2       0.895     0.74402
-    cl_mt_pol_c_p2v2     0.895     0.40112
-    cl_mt_pol_a_p2v3      0.92      0.7045
-    cl_mt_coh_p2v3        0.92      1.0188
-    cl_mt_pol_c_p2v3      0.92     0.37555
-    cl_mt_pol_a_p2v4     0.945      1.3631
-    cl_mt_coh_p2v4       0.945      1.6448
-    cl_mt_pol_c_p2v4     0.945     0.33496
-    cl_mt_pol_a_p2v5      0.97      4.7673
-    cl_mt_coh_p2v5        0.97      5.0167
-    cl_mt_pol_c_p2v5      0.97     0.27424
+    cl_mt_pol_c_v221     0.97      0.32713
+    cl_mt_pol_a_v222     0.97       10.303
+    cl_mt_coh_v222       0.97       10.631
+    cl_mt_pol_c_v222     0.97      0.33544
+    cl_mt_pol_a_v223     0.97       10.722
+    cl_mt_coh_v223       0.97       11.058
+    cl_mt_pol_c_v223     0.97      0.34306
+    cl_mt_pol_a_v224     0.97       11.075
+    cl_mt_coh_v224       0.97       11.418
+    cl_mt_pol_c_v224     0.97      0.34974
+    cl_mt_pol_a_v225     0.97       11.359
+    cl_mt_coh_v225       0.97       11.708
+    cl_mt_pol_c_v225     0.97      0.35534
 
 </pre><pre class="codeoutput">------------------------
-xxxxx Savings Standard Deviation xxxxx
-xxxxx Standard Deviation xxxxx
+xxxxx Consumption Mean xxxxx
+xxxxx Average (Total) xxxxx
 ------------------------
-                        fl_beta      sd   
-                        _______    _______
+                      fl_beta      mean  
+                      _______    ________
 
-    cl_mt_pol_a_p2v1      0.87     0.23518
-    cl_mt_coh_p2v1        0.87      0.6001
-    cl_mt_pol_c_p2v1      0.87     0.41818
-    cl_mt_pol_a_p2v2     0.895     0.40215
-    cl_mt_coh_p2v2       0.895     0.74402
-    cl_mt_pol_c_p2v2     0.895     0.40112
-    cl_mt_pol_a_p2v3      0.92      0.7045
-    cl_mt_coh_p2v3        0.92      1.0188
-    cl_mt_pol_c_p2v3      0.92     0.37555
-    cl_mt_pol_a_p2v4     0.945      1.3631
-    cl_mt_coh_p2v4       0.945      1.6448
-    cl_mt_pol_c_p2v4     0.945     0.33496
-    cl_mt_pol_a_p2v5      0.97      4.7673
-    cl_mt_coh_p2v5        0.97      5.0167
-    cl_mt_pol_c_p2v5      0.97     0.27424
+    cl_mt_pol_a_v1     0.87      0.014958
+    cl_mt_coh_v1       0.87        1.2953
+    cl_mt_pol_c_v1     0.87        1.2804
+    cl_mt_pol_a_v2     0.87      0.048699
+    cl_mt_coh_v2       0.87        1.3299
+    cl_mt_pol_c_v2     0.87        1.2812
+    cl_mt_pol_a_v3     0.87      0.096585
+    cl_mt_coh_v3       0.87         1.379
+    cl_mt_pol_c_v3     0.87        1.2824
+    cl_mt_pol_a_v4     0.87       0.17542
+    cl_mt_coh_v4       0.87        1.4598
+    cl_mt_pol_c_v4     0.87        1.2844
+    cl_mt_pol_a_v5     0.87       0.26682
 
-</pre><pre class="codeoutput">------------------------
-xxxxx Aggregate Outcomes (wealth, savings, consumption) xxxxx
-xxxxx Aggregate Levels xxxxx
-------------------------
-                        fl_beta      mean       mean_1      mean_2 
-                        _______    ________    ________    ________
+                        fl_beta     mean 
+                        _______    ______
 
-    cl_mt_pol_a_p2v1      0.87     0.083735    0.083735    0.083735
-    cl_mt_coh_p2v1        0.87       1.3658      1.3658      1.3658
-    cl_mt_pol_c_p2v1      0.87       1.2821      1.2821      1.2821
-    cl_mt_pol_a_p2v2     0.895       0.1837      0.1837      0.1837
-    cl_mt_coh_p2v2       0.895       1.4683      1.4683      1.4683
-    cl_mt_pol_c_p2v2     0.895       1.2846      1.2846      1.2846
-    cl_mt_pol_a_p2v3      0.92      0.40859     0.40859     0.40859
-    cl_mt_coh_p2v3        0.92       1.6988      1.6988      1.6988
-    cl_mt_pol_c_p2v3      0.92       1.2902      1.2902      1.2902
-    cl_mt_pol_a_p2v4     0.945       1.0308      1.0308      1.0308
-    cl_mt_coh_p2v4       0.945       2.3366      2.3366      2.3366
-    cl_mt_pol_c_p2v4     0.945       1.3058      1.3058      1.3058
-    cl_mt_pol_a_p2v5      0.97       5.4081      5.4081      5.4081
-    cl_mt_coh_p2v5        0.97       6.8233      6.8233      6.8233
-    cl_mt_pol_c_p2v5      0.97       1.4152      1.4152      1.4152
+    cl_mt_pol_c_v221     0.97      1.6613
+    cl_mt_pol_a_v222     0.97      16.617
+    cl_mt_coh_v222       0.97      18.312
+    cl_mt_pol_c_v222     0.97      1.6954
+    cl_mt_pol_a_v223     0.97      17.999
+    cl_mt_coh_v223       0.97      19.729
+    cl_mt_pol_c_v223     0.97        1.73
+    cl_mt_pol_a_v224     0.97       19.39
+    cl_mt_coh_v224       0.97      21.155
+    cl_mt_pol_c_v224     0.97      1.7648
+    cl_mt_pol_a_v225     0.97      20.769
+    cl_mt_coh_v225       0.97      22.568
+    cl_mt_pol_c_v225     0.97      1.7992
 
-</pre><h2 id="22">Generate Graphs</h2><pre class="codeinput">        <span class="keyword">if</span> (bl_graph_onebyones)
-            figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
-        <span class="keyword">else</span>
-            subplot(it_plot_rows,it_plot_cols,it_plot);
-        <span class="keyword">end</span>
-
-        hold <span class="string">on</span>;
-
-        st_legend_loc = <span class="string">'southeast'</span>;
-
-        blue = [57 106 177]./255;
+</pre><h2 id="24">Color Options</h2><pre class="codeinput">        blue = [57 106 177]./255;
         red = [204 37 41]./255;
         black = [83 81 84]./255;
         green = [62 150 81]./255;
@@ -1010,73 +1005,204 @@ xxxxx Aggregate Levels xxxxx
             green, brown, purple};
         cl_scatter_shapes = {<span class="string">'s'</span>,<span class="string">'x'</span>,<span class="string">'o'</span>,<span class="string">'d'</span>,<span class="string">'p'</span>,<span class="string">'*'</span>};
         cl_linestyle = {<span class="string">'-'</span>,<span class="string">'-'</span>,<span class="string">'-'</span>,<span class="string">'-'</span>,<span class="string">'-'</span>,<span class="string">'-'</span>};
-        it_sca_bs = 3;
-        cl_scatter_csizes = {10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs};
         it_line_bs = 2;
         cl_line_csizes = {1*it_line_bs, 1*it_line_bs, 1*it_line_bs, 1*it_line_bs, 1*it_line_bs, 1*it_line_bs};
+</pre><h2 id="25">Graph</h2><pre class="codeinput">        <span class="comment">% Generate Graphs for Cross and Random Graphs</span>
+        <span class="keyword">if</span> (ismember(st_simu_type, [<span class="string">"r"</span>, <span class="string">"c"</span>]) || length(cl_st_param_keys) == 1)
+</pre><h2 id="27">Graph By Cross of Full</h2><p>each parameter as x one at a time</p><pre class="codeinput">            it_sca_bs = 6;
+            cl_scatter_csizes = {10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs};
 
-        it_graph_counter = 0;
-        ls_chart = [];
-        <span class="keyword">for</span> it_fig = 1:length(cl_ar_st_variablenames{it_plot})
+            <span class="keyword">if</span> (bl_graph_onebyones)
+                figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
+            <span class="keyword">else</span>
+                subplot(it_plot_rows,it_plot_cols,it_plot);
+            <span class="keyword">end</span>
 
-            <span class="comment">% Counter</span>
-            it_graph_counter = it_graph_counter + 1;
+            hold <span class="string">on</span>;
 
-            <span class="comment">% Color and Size etc</span>
-            it_csize = cl_scatter_csizes{it_fig};
-            ar_color = cl_colors{it_fig};
-            st_shape = cl_scatter_shapes{it_fig};
-            st_lnsty = cl_linestyle{it_fig};
-            st_lnwth = cl_line_csizes{it_fig};
+            st_legend_loc = <span class="string">'southeast'</span>;
 
-            <span class="comment">% Access Y Outcomes</span>
-            ar_cur_rows = strcmp(tb_cur_data.variablenames, ar_st_variablenames_plot(it_fig));
-            st_cur_stat_col = ar_st_colnames_plot{it_fig};
+            it_graph_counter = 0;
+            ls_chart = [];
+            <span class="keyword">for</span> it_outcome = 1:length(cl_ar_st_variablenames{it_plot})
 
-            <span class="comment">% Access X and Y Values</span>
-            mt_graph_data = tb_cur_data(ar_cur_rows, {st_param_key, st_cur_stat_col});
-            <span class="comment">% Access Y Values</span>
-            ar_y = real(mt_graph_data{:, st_cur_stat_col});
-            <span class="comment">% Access X Values</span>
-            ar_x = real(mt_graph_data{:, st_param_key});
+                <span class="comment">% Counter</span>
+                it_graph_counter = it_graph_counter + 1;
 
-            <span class="comment">% Plot Scatter</span>
-            ls_chart(it_graph_counter) = scatter(ar_x', ar_y', it_csize, ar_color, st_shape);
+                <span class="comment">% Color and Size etc</span>
+                it_csize = cl_scatter_csizes{it_outcome};
+                ar_color = cl_colors{it_outcome};
+                st_shape = cl_scatter_shapes{it_outcome};
+                st_lnsty = cl_linestyle{it_outcome};
+                st_lnwth = cl_line_csizes{it_outcome};
 
-            <span class="keyword">if</span> (strcmp(st_simu_type, <span class="string">'c'</span>))
-                <span class="comment">% plot line do not include in legend</span>
-                line = plot(ar_x, ar_y);
-                line.HandleVisibility = <span class="string">'off'</span>;
-                line.Color = ar_color;
-                line.LineStyle = st_lnsty;
-                line.HandleVisibility = <span class="string">'off'</span>;
-                line.LineWidth = st_lnwth;
-            <span class="keyword">elseif</span> (ismember(st_simu_type, [<span class="string">"g"</span>, <span class="string">"r"</span>]))
+                <span class="comment">% Access Y Outcomes</span>
+                ar_it_rows_outcome = strcmp(tb_cur_data.variablenames, ar_st_variablenames_plot(it_outcome));
+                st_cur_stat_col = ar_st_colnames_plot{it_outcome};
+
+                <span class="comment">% Access X and Y Values</span>
+                mt_graph_data = tb_cur_data(ar_it_rows_outcome, {st_param_key, st_cur_stat_col});
+                ar_y = real(mt_graph_data{:, st_cur_stat_col});
+                ar_x = real(mt_graph_data{:, st_param_key});
+                ar_it_real = (imag(ar_y) == 0) &amp; (imag(ar_x) == 0);
+                ar_y = ar_y(ar_it_real);
+                ar_x = ar_x(ar_it_real);
+
+                <span class="comment">% Plot Scatter</span>
+                ls_chart(it_graph_counter) = scatter(ar_x', ar_y', it_csize, ar_color, st_shape);
+
+                <span class="keyword">if</span> (strcmp(st_simu_type, <span class="string">'c'</span>))
+                    <span class="comment">% plot line do not include in legend</span>
+                    line = plot(ar_x, ar_y);
+                    line.HandleVisibility = <span class="string">'off'</span>;
+                    line.Color = ar_color;
+                    line.LineStyle = st_lnsty;
+                    line.HandleVisibility = <span class="string">'off'</span>;
+                    line.LineWidth = st_lnwth;
+                <span class="keyword">elseif</span> (ismember(st_simu_type, [<span class="string">"r"</span>]))
+
+                <span class="keyword">end</span>
+
+                cl_legend{it_graph_counter} = cl_legend{it_outcome};
 
             <span class="keyword">end</span>
 
-            cl_legend{it_graph_counter} = cl_legend{it_fig};
+            legend(ls_chart, cl_legend, <span class="string">'Location'</span>, st_legend_loc, <span class="string">'color'</span>, <span class="string">'none'</span>);
 
-        <span class="keyword">end</span>
+            <span class="comment">% 9. Titling etc</span>
+            grid <span class="string">on</span>;
+            grid <span class="string">minor</span>;
+            title(strrep(st_title, <span class="string">'_'</span>, <span class="string">'\_'</span>));
+            ylabel(strrep(st_ytitle, <span class="string">'_'</span>, <span class="string">'\_'</span>));
+            st_xlabel = strrep(st_x_label, <span class="string">'_'</span>, <span class="string">'\_'</span>);
+            <span class="keyword">if</span> (strcmp(st_simu_type, <span class="string">'c'</span>))
+                xlabel(st_xlabel);
+            <span class="keyword">elseif</span> (ismember(st_simu_type, [<span class="string">"g"</span>]))
+                st_xlabel_randvars = string([<span class="string">'full grid of: '</span> strrep(strjoin(cl_st_param_desc, <span class="string">' and '</span>), <span class="string">'_'</span>, <span class="string">'\_'</span>)]);
+                xlabel({st_xlabel{1} st_xlabel_randvars});
+            <span class="keyword">elseif</span> (ismember(st_simu_type, [<span class="string">"r"</span>]))
+                st_xlabel_randvars = string([<span class="string">'random vary by: '</span> strrep(strjoin(cl_st_param_desc, <span class="string">' and '</span>), <span class="string">'_'</span>, <span class="string">'\_'</span>)]);
+                xlabel({st_xlabel{1} st_xlabel_randvars});
+            <span class="keyword">end</span>
+</pre><pre class="codeinput">        <span class="keyword">elseif</span> (ismember(st_simu_type, [<span class="string">"g"</span>]))
+</pre><h2 id="30">Graph By N Parameters, Full Grid</h2><p>first element of cl_st_param_keys is x, second element of cl_st_param_keys is color, and various outcomes are y. If there are additional parameters, those are given the same color. This works best with N=2, but also works when N&gt;2</p><p>Several key concepts here: # for x-axis parameter, plot out all values # for y-axis parameters, plot only a subset (in case there are too many and it is confusing) # There are possibly multple outcomes of interests, and these are plotted out using different scattered markers on lines. That is, if we are plotting out both mean and sd for low and high wage, low and high wage would have different colors, and mean and sd would have different symbols.</p><pre class="codeinput">            it_sca_bs = 20;
+            cl_scatter_csizes = {10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs};
 
-        legend(ls_chart, cl_legend, <span class="string">'Location'</span>, st_legend_loc, <span class="string">'color'</span>, <span class="string">'none'</span>);
+            <span class="keyword">if</span> (bl_graph_onebyones)
+                figure(<span class="string">'PaperPosition'</span>, [0 0 7 4]);
+            <span class="keyword">else</span>
+                subplot(it_plot_rows,it_plot_cols,it_plot);
+            <span class="keyword">end</span>
 
-        <span class="comment">% 9. Titling etc</span>
-        grid <span class="string">on</span>;
-        grid <span class="string">minor</span>;
-        title(strrep(st_title, <span class="string">'_'</span>, <span class="string">'\_'</span>));
-        ylabel(strrep(st_ytitle, <span class="string">'_'</span>, <span class="string">'\_'</span>));
-        st_xlabel = strrep(st_x_label, <span class="string">'_'</span>, <span class="string">'\_'</span>);
-        <span class="keyword">if</span> (strcmp(st_simu_type, <span class="string">'c'</span>))
-            xlabel(st_xlabel);
-        <span class="keyword">elseif</span> (ismember(st_simu_type, [<span class="string">"g"</span>]))
-            st_xlabel_randvars = string([<span class="string">'full grid of: '</span> strrep(strjoin(cl_st_param_desc, <span class="string">' and '</span>), <span class="string">'_'</span>, <span class="string">'\_'</span>)]);
-            xlabel({st_xlabel{1} st_xlabel_randvars});
-        <span class="keyword">elseif</span> (ismember(st_simu_type, [<span class="string">"r"</span>]))
-            st_xlabel_randvars = string([<span class="string">'random vary by: '</span> strrep(strjoin(cl_st_param_desc, <span class="string">' and '</span>), <span class="string">'_'</span>, <span class="string">'\_'</span>)]);
-            xlabel({st_xlabel{1} st_xlabel_randvars});
-        <span class="keyword">end</span>
-</pre><img vspace="5" hspace="5" src="ff_az_test_analyze_01.png" alt=""> <img vspace="5" hspace="5" src="ff_az_test_analyze_02.png" alt=""> <img vspace="5" hspace="5" src="ff_az_test_analyze_03.png" alt=""> <img vspace="5" hspace="5" src="ff_az_test_analyze_04.png" alt=""> <img vspace="5" hspace="5" src="ff_az_test_analyze_05.png" alt=""> <img vspace="5" hspace="5" src="ff_az_test_analyze_06.png" alt=""> <img vspace="5" hspace="5" src="ff_az_test_analyze_07.png" alt=""> <img vspace="5" hspace="5" src="ff_az_test_analyze_08.png" alt=""> <img vspace="5" hspace="5" src="ff_az_test_analyze_09.png" alt=""> <img vspace="5" hspace="5" src="ff_az_test_analyze_10.png" alt=""> <img vspace="5" hspace="5" src="ff_az_test_analyze_11.png" alt=""> <img vspace="5" hspace="5" src="ff_az_test_analyze_12.png" alt=""> <pre class="codeinput">    <span class="keyword">end</span>
+            hold <span class="string">on</span>;
+
+            st_legend_loc = <span class="string">'southeast'</span>;
+
+            <span class="comment">% Count the number of outcomes that need to be graphed</span>
+            it_outcomes_n = length(ar_st_colnames_plot);
+
+            <span class="comment">% What is the color variable, first element excluding current</span>
+            cl_st_param_keys_full = cl_st_param_keys;
+            cl_st_param_keys_full(it_pcombi_ctr) = [];
+            st_var_color = cl_st_param_keys_full{1};
+
+            <span class="comment">% How many unique values of the color variable exists.</span>
+            ar_var_color_ndgrid = table2array(unique(tb_outcomes(:, {st_var_color})));
+            it_var_color_ndgrid = length(ar_var_color_ndgrid);
+            ar_fl_clr = jet(it_var_color_ndgrid);
+
+            f_subset = @(it_subset_n, it_ar_n) unique(round(((0:1:(it_subset_n-1))/(it_subset_n-1))*(it_ar_n-1)+1));
+            it_var_graph_subset = f_subset(it_grid_var_color_n, it_var_color_ndgrid);
+
+            <span class="comment">% Loop Over Different Outcomes</span>
+            it_graph_counter = 0;
+            ls_chart = [];
+            cl_legend_mesh = [];
+            <span class="keyword">for</span> it_outcome = 1:length(cl_ar_st_variablenames{it_plot})
+
+                <span class="comment">% Color and Size etc</span>
+                it_csize = cl_scatter_csizes{it_outcome};
+                st_shape = cl_scatter_shapes{it_outcome};
+                st_lnsty = cl_linestyle{it_outcome};
+                st_lnwth = cl_line_csizes{it_outcome};
+
+                <span class="comment">% Select Rows including values for this outcome</span>
+                ar_it_rows_outcome = strcmp(tb_cur_data.variablenames, ar_st_variablenames_plot(it_outcome));
+                st_cur_stat_col = ar_st_colnames_plot{it_outcome};
+                mt_graph_data_outcome = tb_cur_data(ar_it_rows_outcome, [st_cur_stat_col, cl_st_param_keys]);
+
+                <span class="comment">% Loop over values of the second variable</span>
+                <span class="keyword">for</span> it_color = 1:length(ar_var_color_ndgrid)
+
+                    <span class="comment">% Counter</span>
+                    it_graph_counter = it_graph_counter + 1;
+
+                    <span class="comment">% Get Data for for this outcome and only conditional</span>
+                    <span class="comment">% on one value of the color variable</span>
+                    fl_cur_color_var_val = ar_var_color_ndgrid(it_color);
+                    ar_it_rows_color_var_val = (mt_graph_data_outcome{:, st_var_color} == fl_cur_color_var_val);
+
+                    <span class="comment">% Select Rows including values for this outcome</span>
+                    mt_graph_data_outcome_color_var_val = mt_graph_data_outcome(ar_it_rows_color_var_val, {st_param_key, st_cur_stat_col});
+
+                    <span class="comment">% Access Y Values</span>
+                    ar_y = (mt_graph_data_outcome_color_var_val{:, st_cur_stat_col});
+                    <span class="comment">% Access X Values</span>
+                    ar_x = (mt_graph_data_outcome_color_var_val{:, st_param_key});
+
+                    <span class="comment">% plot only elements that are real</span>
+                    ar_it_real = (imag(ar_y) == 0) &amp; (imag(ar_x) == 0);
+                    ar_y = ar_y(ar_it_real);
+                    ar_x = ar_x(ar_it_real);
+
+                    <span class="comment">% Choose color</span>
+                    ar_color = ar_fl_clr(it_color,:);
+
+                    <span class="comment">% Plot Scatter</span>
+                    ls_chart(it_graph_counter) = scatter(ar_x', ar_y', it_csize, ar_color, st_shape, <span class="keyword">...</span>
+                                                         <span class="string">'MarkerFaceAlpha'</span>, 0.6, <span class="keyword">...</span>
+                                                         <span class="string">'MarkerEdgeAlpha'</span>, 0.6);
+
+                    <span class="comment">% If has exactly two keys only</span>
+                    <span class="keyword">if</span> (length(cl_st_param_keys) == 2)
+                        <span class="comment">% plot line do not include in legend</span>
+                        line = plot(ar_x, ar_y);
+                        line.HandleVisibility = <span class="string">'off'</span>;
+                        line.Color = ar_color;
+                        line.LineStyle = st_lnsty;
+                        line.HandleVisibility = <span class="string">'off'</span>;
+                        line.LineWidth = st_lnwth;
+                    <span class="keyword">else</span>
+
+                    <span class="keyword">end</span>
+
+                    <span class="comment">% Add to Legend</span>
+                    cl_legend_mesh{it_graph_counter} = strrep([cl_legend{it_outcome} <span class="string">';'</span> st_var_color num2str(fl_cur_color_var_val, <span class="string">'=%3.2f'</span>) ], <span class="string">'_'</span>, <span class="string">'\_'</span>);
+
+                <span class="keyword">end</span>
+
+            <span class="keyword">end</span>
+
+            legend(ls_chart(it_var_graph_subset), cl_legend_mesh(it_var_graph_subset), <span class="keyword">...</span>
+                    <span class="string">'Location'</span>, <span class="string">'northoutside'</span>, <span class="string">'NumColumns'</span>, length(it_var_graph_subset));
+
+            <span class="comment">% 9. Titling etc</span>
+            grid <span class="string">on</span>;
+            grid <span class="string">minor</span>;
+            title(strrep(st_title, <span class="string">'_'</span>, <span class="string">'\_'</span>));
+            ylabel(strrep(st_ytitle, <span class="string">'_'</span>, <span class="string">'\_'</span>));
+            st_xlabel = strrep(st_x_label, <span class="string">'_'</span>, <span class="string">'\_'</span>);
+            <span class="keyword">if</span> (strcmp(st_simu_type, <span class="string">'c'</span>))
+                xlabel(st_xlabel);
+            <span class="keyword">elseif</span> (ismember(st_simu_type, [<span class="string">"g"</span>]))
+                st_xlabel_randvars = string([<span class="string">'full grid of: '</span> strrep(strjoin(cl_st_param_desc, <span class="string">' and '</span>), <span class="string">'_'</span>, <span class="string">'\_'</span>)]);
+                xlabel({st_xlabel{1} st_xlabel_randvars});
+            <span class="keyword">elseif</span> (ismember(st_simu_type, [<span class="string">"r"</span>]))
+                st_xlabel_randvars = string([<span class="string">'random vary by: '</span> strrep(strjoin(cl_st_param_desc, <span class="string">' and '</span>), <span class="string">'_'</span>, <span class="string">'\_'</span>)]);
+                xlabel({st_xlabel{1} st_xlabel_randvars});
+            <span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="ff_az_test_analyze_01.png" alt=""> <img vspace="5" hspace="5" src="ff_az_test_analyze_02.png" alt=""> <img vspace="5" hspace="5" src="ff_az_test_analyze_03.png" alt=""> <img vspace="5" hspace="5" src="ff_az_test_analyze_04.png" alt=""> <img vspace="5" hspace="5" src="ff_az_test_analyze_05.png" alt=""> <img vspace="5" hspace="5" src="ff_az_test_analyze_06.png" alt=""> <pre class="codeinput">        <span class="keyword">end</span>
+</pre><pre class="codeinput">    <span class="keyword">end</span>
 
     <span class="comment">% snap figure in place</span>
     <span class="keyword">if</span> (bl_graph_onebyones)
@@ -1167,8 +1293,13 @@ function [tb_outcomes, support_map] = ff_az_test_analyze(varargin)
 % <https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_price/html/fsi_az_ds_vecsv_price_cross.html fsi_az_ds_vecsv_price_cross>
 %
 
+%% If Funcion Default Invoke
+
+if (isempty(varargin))
+    close all;
+end
+
 %% Default Parameter
-ar_it_plot_sets = [1,2,4,5,6,7];
 it_param_set = 9;
 [param_map, support_map] = ffs_az_set_default_param(it_param_set);
 support_map('bl_replacefile') = false;
@@ -1178,23 +1309,37 @@ support_map('bl_display_graph_stats') = true;
 %% Array Parameters
 % initiate empty map
 
-st_simu_type = 'c'; % if false, simu full grid
+st_simu_type = 'g';
+
 it_size_type = 2;
 cl_st_param_keys = {'fl_crra', 'fl_beta'};
 
-param_tstar_map = containers.Map('KeyType','char', 'ValueType','any');
-it_simu_vec_len = 5;
-param_tstar_map('fl_crra') = linspace(1, 5, it_simu_vec_len);
-param_tstar_map('fl_beta') = linspace(0.87, 0.97, it_simu_vec_len);
+if (strcmp(st_simu_type, 'c'))
+    ar_it_plot_sets = [1,2,4,5,6,7];
+    it_simu_vec_len = 10;
+    param_tstar_map = containers.Map('KeyType','char', 'ValueType','any');
+    param_tstar_map('fl_crra') = linspace(1, 5, it_simu_vec_len);
+    param_tstar_map('fl_beta') = linspace(0.87, 0.97, it_simu_vec_len);    
+end
+
+if (strcmp(st_simu_type, 'g'))
+    ar_it_plot_sets = [3,5,51];
+    % assume always plot the first parameter listed under cl_st_param_keys as x-axis variable
+    param_tstar_map = containers.Map('KeyType','char', 'ValueType','any');
+    param_tstar_map('fl_crra') = linspace(1, 5, 15);
+    param_tstar_map('fl_beta') = linspace(0.87, 0.97, 15);
+end
 
 param_desc_map = containers.Map('KeyType','char', 'ValueType','any');
 param_desc_map('fl_crra') = {'CRRA'};
 param_desc_map('fl_beta') = {'Discount'};
 
+it_grid_var_color_n = 3;
+
 %% Default
 default_params = {ar_it_plot_sets ...
                     st_simu_type it_size_type cl_st_param_keys ...
-                    param_map support_map param_tstar_map param_desc_map};
+                    param_map support_map param_tstar_map param_desc_map it_grid_var_color_n};
 
 %% Parse Parameters 1
 % override default set above if any parameters are updated
@@ -1211,6 +1356,9 @@ param_map = [param_map; default_params{5}];
 support_map = [support_map; default_params{6}];
 param_tstar_map = [param_tstar_map; default_params{7}];
 param_desc_map = [param_desc_map; default_params{8}];
+
+% if grid simulation, how many colors groups to include?
+it_grid_var_color_n = default_params{9};
 
 %% Parse Parameters 2
 
@@ -1229,13 +1377,16 @@ params_group = values(support_map, {'bl_graph_onebyones', 'bl_display_graph_stat
 %% Show Stats Only
 % Display the effect of changing parameters on mean cl_mt_pol_k and mean
 % cl_st_param_keys = {'fl_z_r_borr_poiss_mean', 'fl_z_r_borr_max', 'fl_b_bd', 'fl_c_min', 'fl_z_r_borr_n'};
-cl_st_outcome = {'cl_mt_pol_c'};
+cl_st_outcome = {'cl_mt_pol_c', 'cl_mt_pol_k', 'cl_mt_coh'};
 if (strcmp(st_simu_type, 'c'))
     for st_param_keys = cl_st_param_keys
         for st_outcome = cl_st_outcome
-            disp(tb_outcomes((strcmp(tb_outcomes.var_param_key, st_param_keys) & strcmp(tb_outcomes.variablenames, st_outcome)), ...
-                {'mean', st_param_keys{1}}));       
-        end
+            if (sum(strcmp(tb_outcomes.variablenames, st_outcome) > 0))
+                tb_outcomes_show = tb_outcomes((strcmp(tb_outcomes.var_param_key, st_param_keys) & strcmp(tb_outcomes.variablenames, st_outcome)), :);
+                tb_outcomes_show = movevars(tb_outcomes_show, {st_param_keys{1}, 'mean', 'sd'}, 'Before', 'variablenames');
+                disp(tb_outcomes_show);
+            end
+        end        
     end
 end
 
@@ -1334,7 +1485,7 @@ for it_plot = ar_it_plot_sets
         ar_st_colnames_plot =  {'mean'};
         ar_st_variablenames_plot =  repmat({'cl_mt_pol_k'}, [1, length(ar_st_colnames_plot)]);
         ar_st_legend_plot =  ar_st_colnames_plot;
-        st_title = 'Savings Mean';
+        st_title = 'Risky Capial Mean';
         st_ytitle = 'Average (Total)';        
     end
     
@@ -1377,6 +1528,60 @@ for it_plot = ar_it_plot_sets
         st_ytitle = 'Correlation Coefficient';
     end   
     
+    %% Inequality Measures, Consumption Shares
+    % Asset Shares could look strange due to negative levels
+    if (it_plot == 201)
+        ar_st_colnames_plot =  {'fracByP99', 'fracByP90', 'fracByP80'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_pol_c'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  {'share Excluding top 1%', 'share Excluding top 10%', 'share Excluding top 20%'};
+        st_title = 'Share of C for HHs Excluding Highest X Cons. Percentile HHs';
+        st_ytitle = 'Share of Aggregate Consumption';
+    elseif (it_plot == 202)
+        ar_st_colnames_plot =  {'fracByP1', 'fracByP10', 'fracByP20'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_pol_c'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  {'share of bottom 1%', 'share of bottom 10%', 'share of bottom 20%'};
+        st_title = 'Share of C for Lowest X Cons. Percentile HHs';
+        st_ytitle = 'Share of Aggregate Consumption';
+    elseif (it_plot == 203)
+        ar_st_colnames_plot =  {'fracByP99', 'fracByP90', 'fracByP80'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_pol_a'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  {'share Excluding top 1%', 'share Excluding top 10%', 'share Excluding top 20%'};
+        st_title = 'Share of Savings for HHs Excluding Highest X Savings Percentile HHs';
+        st_ytitle = 'Share of Aggregate Savings';
+    elseif (it_plot == 204)
+        ar_st_colnames_plot =  {'fracByP1', 'fracByP10', 'fracByP20'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_pol_a'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  {'share of bottom 1%', 'share of bottom 10%', 'share of bottom 20%'};
+        st_title = 'Share of Savings for Lowest X Savings Percentile HHs';
+        st_ytitle = 'Share of Aggregate Savings';
+    elseif (it_plot == 205)
+        ar_st_colnames_plot =  {'fracByP99', 'fracByP90', 'fracByP80'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_coh'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  {'share Excluding top 1%', 'share Excluding top 10%', 'share Excluding top 20%'};
+        st_title = 'Share of Wealth for HHs Excluding Highest X Wealth Percentile HHs';
+        st_ytitle = 'Share of Aggregate Wealth (cash-on-hand)';
+    elseif (it_plot == 206)
+        ar_st_colnames_plot =  {'fracByP1', 'fracByP10', 'fracByP20'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_coh'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  {'share of bottom 1%', 'share of bottom 10%', 'share of bottom 20%'};
+        st_title = 'Share of Wealth for Lowest X Wealth Percentile HHs';
+        st_ytitle = 'Share of Aggregate Wealth (cash-on-hand)';
+    elseif (it_plot == 207)
+        ar_st_colnames_plot =  {'fracByP99', 'fracByP90', 'fracByP80'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_pol_k'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  {'share Excluding top 1%', 'share Excluding top 10%', 'share Excluding top 20%'};
+        st_title = 'Share of K for HHs Excluding Highest X Capital Percentile HHs';
+        st_ytitle = 'Share of Aggregate Capital';
+    elseif (it_plot == 208)
+        ar_st_colnames_plot =  {'fracByP1', 'fracByP10', 'fracByP20'};
+        ar_st_variablenames_plot =  repmat({'cl_mt_pol_k'}, [1, length(ar_st_colnames_plot)]);
+        ar_st_legend_plot =  {'share of bottom 1%', 'share of bottom 10%', 'share of bottom 20%'};
+        st_title = 'Share of K for Lowest X Capital Percentile HHs';
+        st_ytitle = 'Share of Aggregate Capital';                
+    end   
+    
+    
+    
     %% Store to cells
     cl_ar_st_variablenames{it_plot_ctr} = ar_st_variablenames_plot;
     cl_ar_st_legend{it_plot_ctr} = ar_st_legend_plot;
@@ -1395,7 +1600,7 @@ cl_st_param_desc = cellfun(@(m) m{1}, cl_st_param_desc, 'UniformOutput', false);
 close all;
 
 for it_pcombi_ctr = 1:length(cl_st_param_keys)
-    
+        
     st_param_key = cl_st_param_keys{it_pcombi_ctr};
     st_param_desc = cl_st_param_desc(it_pcombi_ctr);
     
@@ -1436,17 +1641,7 @@ for it_pcombi_ctr = 1:length(cl_st_param_keys)
             end
         end
         
-        %% Generate Graphs
-        if (bl_graph_onebyones)
-            figure('PaperPosition', [0 0 7 4]);
-        else
-            subplot(it_plot_rows,it_plot_cols,it_plot);
-        end
-        
-        hold on;
-        
-        st_legend_loc = 'southeast';
-        
+        %% Color Options
         blue = [57 106 177]./255;
         red = [204 37 41]./255;
         black = [83 81 84]./255;
@@ -1457,72 +1652,230 @@ for it_pcombi_ctr = 1:length(cl_st_param_keys)
             green, brown, purple};
         cl_scatter_shapes = {'s','x','o','d','p','*'};
         cl_linestyle = {'-','-','-','-','-','-'};
-        it_sca_bs = 3;
-        cl_scatter_csizes = {10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs};
         it_line_bs = 2;
         cl_line_csizes = {1*it_line_bs, 1*it_line_bs, 1*it_line_bs, 1*it_line_bs, 1*it_line_bs, 1*it_line_bs};
         
-        it_graph_counter = 0;
-        ls_chart = [];
-        for it_fig = 1:length(cl_ar_st_variablenames{it_plot})
+        %% Graph 
+        
+        % Generate Graphs for Cross and Random Graphs
+        if (ismember(st_simu_type, ["r", "c"]) || length(cl_st_param_keys) == 1)
+                        
+            %% Graph By Cross of Full
+            % each parameter as x one at a time
             
-            % Counter
-            it_graph_counter = it_graph_counter + 1;
+            it_sca_bs = 6;
+            cl_scatter_csizes = {10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs};
             
-            % Color and Size etc
-            it_csize = cl_scatter_csizes{it_fig};
-            ar_color = cl_colors{it_fig};
-            st_shape = cl_scatter_shapes{it_fig};
-            st_lnsty = cl_linestyle{it_fig};
-            st_lnwth = cl_line_csizes{it_fig};
+            if (bl_graph_onebyones)
+                figure('PaperPosition', [0 0 7 4]);
+            else
+                subplot(it_plot_rows,it_plot_cols,it_plot);
+            end
             
-            % Access Y Outcomes
-            ar_cur_rows = strcmp(tb_cur_data.variablenames, ar_st_variablenames_plot(it_fig));
-            st_cur_stat_col = ar_st_colnames_plot{it_fig};
+            hold on;
+
+            st_legend_loc = 'southeast';
+
+            it_graph_counter = 0;
+            ls_chart = [];
+            for it_outcome = 1:length(cl_ar_st_variablenames{it_plot})
+
+                % Counter
+                it_graph_counter = it_graph_counter + 1;
+
+                % Color and Size etc
+                it_csize = cl_scatter_csizes{it_outcome};
+                ar_color = cl_colors{it_outcome};
+                st_shape = cl_scatter_shapes{it_outcome};
+                st_lnsty = cl_linestyle{it_outcome};
+                st_lnwth = cl_line_csizes{it_outcome};
+
+                % Access Y Outcomes
+                ar_it_rows_outcome = strcmp(tb_cur_data.variablenames, ar_st_variablenames_plot(it_outcome));
+                st_cur_stat_col = ar_st_colnames_plot{it_outcome};
+
+                % Access X and Y Values
+                mt_graph_data = tb_cur_data(ar_it_rows_outcome, {st_param_key, st_cur_stat_col});
+                ar_y = real(mt_graph_data{:, st_cur_stat_col});
+                ar_x = real(mt_graph_data{:, st_param_key});                
+                ar_it_real = (imag(ar_y) == 0) & (imag(ar_x) == 0);
+                ar_y = ar_y(ar_it_real);
+                ar_x = ar_x(ar_it_real);
+                
+                % Plot Scatter
+                ls_chart(it_graph_counter) = scatter(ar_x', ar_y', it_csize, ar_color, st_shape);
+
+                if (strcmp(st_simu_type, 'c'))
+                    % plot line do not include in legend
+                    line = plot(ar_x, ar_y);
+                    line.HandleVisibility = 'off';
+                    line.Color = ar_color;
+                    line.LineStyle = st_lnsty;
+                    line.HandleVisibility = 'off';
+                    line.LineWidth = st_lnwth;
+                elseif (ismember(st_simu_type, ["r"]))
+
+                end
+
+                cl_legend{it_graph_counter} = cl_legend{it_outcome};            
+
+            end
+
+            legend(ls_chart, cl_legend, 'Location', st_legend_loc, 'color', 'none');
+
+            % 9. Titling etc
+            grid on;
+            grid minor;
+            title(strrep(st_title, '_', '\_'));
+            ylabel(strrep(st_ytitle, '_', '\_'));        
+            st_xlabel = strrep(st_x_label, '_', '\_');
+            if (strcmp(st_simu_type, 'c'))        
+                xlabel(st_xlabel);
+            elseif (ismember(st_simu_type, ["g"]))
+                st_xlabel_randvars = string(['full grid of: ' strrep(strjoin(cl_st_param_desc, ' and '), '_', '\_')]);
+                xlabel({st_xlabel{1} st_xlabel_randvars});
+            elseif (ismember(st_simu_type, ["r"]))
+                st_xlabel_randvars = string(['random vary by: ' strrep(strjoin(cl_st_param_desc, ' and '), '_', '\_')]);
+                xlabel({st_xlabel{1} st_xlabel_randvars});
+            end
             
-            % Access X and Y Values
-            mt_graph_data = tb_cur_data(ar_cur_rows, {st_param_key, st_cur_stat_col});
-            % Access Y Values
-            ar_y = real(mt_graph_data{:, st_cur_stat_col});
-            % Access X Values
-            ar_x = real(mt_graph_data{:, st_param_key});
+        elseif (ismember(st_simu_type, ["g"]))
+                        
+            %% Graph By N Parameters, Full Grid
+            % first element of cl_st_param_keys is x, second element of
+            % cl_st_param_keys is color, and various outcomes are y. If
+            % there are additional parameters, those are given the same
+            % color. This works best with N=2, but also works when N>2
+            %
+            % Several key concepts here:
+            % # for x-axis parameter, plot out all values
+            % # for y-axis parameters, plot only a subset (in case there
+            % are too many and it is confusing)
+            % # There are possibly multple outcomes of interests, and these
+            % are plotted out using different scattered markers on lines.
+            % That is, if we are plotting out both mean and sd for low and
+            % high wage, low and high wage would have different colors, and
+            % mean and sd would have different symbols. 
             
-            % Plot Scatter            
-            ls_chart(it_graph_counter) = scatter(ar_x', ar_y', it_csize, ar_color, st_shape);
+            it_sca_bs = 20;
+            cl_scatter_csizes = {10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs, 10*it_sca_bs};
             
-            if (strcmp(st_simu_type, 'c'))
-                % plot line do not include in legend
-                line = plot(ar_x, ar_y);
-                line.HandleVisibility = 'off';
-                line.Color = ar_color;
-                line.LineStyle = st_lnsty;
-                line.HandleVisibility = 'off';
-                line.LineWidth = st_lnwth;
-            elseif (ismember(st_simu_type, ["g", "r"]))
+            if (bl_graph_onebyones)
+                figure('PaperPosition', [0 0 7 4]);
+            else
+                subplot(it_plot_rows,it_plot_cols,it_plot);
+            end
+            
+            hold on;
+            
+            st_legend_loc = 'southeast';
+            
+            % Count the number of outcomes that need to be graphed
+            it_outcomes_n = length(ar_st_colnames_plot);
+            
+            % What is the color variable, first element excluding current
+            cl_st_param_keys_full = cl_st_param_keys;
+            cl_st_param_keys_full(it_pcombi_ctr) = [];
+            st_var_color = cl_st_param_keys_full{1};
+                
+            % How many unique values of the color variable exists. 
+            ar_var_color_ndgrid = table2array(unique(tb_outcomes(:, {st_var_color})));
+            it_var_color_ndgrid = length(ar_var_color_ndgrid);
+            ar_fl_clr = jet(it_var_color_ndgrid);
+            
+            f_subset = @(it_subset_n, it_ar_n) unique(round(((0:1:(it_subset_n-1))/(it_subset_n-1))*(it_ar_n-1)+1));
+            it_var_graph_subset = f_subset(it_grid_var_color_n, it_var_color_ndgrid);
+            
+            % Loop Over Different Outcomes
+            it_graph_counter = 0;
+            ls_chart = [];
+            cl_legend_mesh = [];
+            for it_outcome = 1:length(cl_ar_st_variablenames{it_plot})
+                
+                % Color and Size etc
+                it_csize = cl_scatter_csizes{it_outcome};
+                st_shape = cl_scatter_shapes{it_outcome};
+                st_lnsty = cl_linestyle{it_outcome};
+                st_lnwth = cl_line_csizes{it_outcome};
+                
+                % Select Rows including values for this outcome
+                ar_it_rows_outcome = strcmp(tb_cur_data.variablenames, ar_st_variablenames_plot(it_outcome));
+                st_cur_stat_col = ar_st_colnames_plot{it_outcome};                
+                mt_graph_data_outcome = tb_cur_data(ar_it_rows_outcome, [st_cur_stat_col, cl_st_param_keys]);
+                
+                % Loop over values of the second variable
+                for it_color = 1:length(ar_var_color_ndgrid)             
+                    
+                    % Counter
+                    it_graph_counter = it_graph_counter + 1;
+                    
+                    % Get Data for for this outcome and only conditional
+                    % on one value of the color variable
+                    fl_cur_color_var_val = ar_var_color_ndgrid(it_color);
+                    ar_it_rows_color_var_val = (mt_graph_data_outcome{:, st_var_color} == fl_cur_color_var_val);
+                    
+                    % Select Rows including values for this outcome
+                    mt_graph_data_outcome_color_var_val = mt_graph_data_outcome(ar_it_rows_color_var_val, {st_param_key, st_cur_stat_col});
+                    
+                    % Access Y Values
+                    ar_y = (mt_graph_data_outcome_color_var_val{:, st_cur_stat_col});
+                    % Access X Values
+                    ar_x = (mt_graph_data_outcome_color_var_val{:, st_param_key});
+                    
+                    % plot only elements that are real
+                    ar_it_real = (imag(ar_y) == 0) & (imag(ar_x) == 0);
+                    ar_y = ar_y(ar_it_real);
+                    ar_x = ar_x(ar_it_real);
+                    
+                    % Choose color
+                    ar_color = ar_fl_clr(it_color,:);
+
+                    % Plot Scatter
+                    ls_chart(it_graph_counter) = scatter(ar_x', ar_y', it_csize, ar_color, st_shape, ...
+                                                         'MarkerFaceAlpha', 0.6, ...
+                                                         'MarkerEdgeAlpha', 0.6);
+                    
+                    % If has exactly two keys only
+                    if (length(cl_st_param_keys) == 2)
+                        % plot line do not include in legend
+                        line = plot(ar_x, ar_y);
+                        line.HandleVisibility = 'off';
+                        line.Color = ar_color;
+                        line.LineStyle = st_lnsty;
+                        line.HandleVisibility = 'off';
+                        line.LineWidth = st_lnwth;
+                    else
+
+                    end
+                    
+                    % Add to Legend                                        
+                    cl_legend_mesh{it_graph_counter} = strrep([cl_legend{it_outcome} ';' st_var_color num2str(fl_cur_color_var_val, '=%3.2f') ], '_', '\_');
+                                        
+                end
                 
             end
             
-            cl_legend{it_graph_counter} = cl_legend{it_fig};            
+            legend(ls_chart(it_var_graph_subset), cl_legend_mesh(it_var_graph_subset), ...
+                    'Location', 'northoutside', 'NumColumns', length(it_var_graph_subset));
+
+            % 9. Titling etc
+            grid on;
+            grid minor;
+            title(strrep(st_title, '_', '\_'));
+            ylabel(strrep(st_ytitle, '_', '\_'));        
+            st_xlabel = strrep(st_x_label, '_', '\_');
+            if (strcmp(st_simu_type, 'c'))        
+                xlabel(st_xlabel);
+            elseif (ismember(st_simu_type, ["g"]))
+                st_xlabel_randvars = string(['full grid of: ' strrep(strjoin(cl_st_param_desc, ' and '), '_', '\_')]);
+                xlabel({st_xlabel{1} st_xlabel_randvars});
+            elseif (ismember(st_simu_type, ["r"]))
+                st_xlabel_randvars = string(['random vary by: ' strrep(strjoin(cl_st_param_desc, ' and '), '_', '\_')]);
+                xlabel({st_xlabel{1} st_xlabel_randvars});
+            end
             
         end
         
-        legend(ls_chart, cl_legend, 'Location', st_legend_loc, 'color', 'none');
-        
-        % 9. Titling etc
-        grid on;
-        grid minor;
-        title(strrep(st_title, '_', '\_'));
-        ylabel(strrep(st_ytitle, '_', '\_'));        
-        st_xlabel = strrep(st_x_label, '_', '\_');
-        if (strcmp(st_simu_type, 'c'))        
-            xlabel(st_xlabel);
-        elseif (ismember(st_simu_type, ["g"]))
-            st_xlabel_randvars = string(['full grid of: ' strrep(strjoin(cl_st_param_desc, ' and '), '_', '\_')]);
-            xlabel({st_xlabel{1} st_xlabel_randvars});
-        elseif (ismember(st_simu_type, ["r"]))
-            st_xlabel_randvars = string(['random vary by: ' strrep(strjoin(cl_st_param_desc, ' and '), '_', '\_')]);
-            xlabel({st_xlabel{1} st_xlabel_randvars});
-        end
     end
     
     % snap figure in place

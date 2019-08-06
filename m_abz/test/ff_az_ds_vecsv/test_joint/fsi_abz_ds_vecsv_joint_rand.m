@@ -14,8 +14,11 @@
 %
 % * test interest rate no default: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_borr/html/fsi_abz_ds_vecsv_nbc.html fsi_abz_ds_vecsv_nbc>
 % * test interest rate no default *CROSS*: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_borr/html/fsi_abz_ds_vecsv_nbc_cross.html fsi_abz_ds_vecsv_nbc_cross>
+% * test interest rate no default *GRID*: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_borr/html/fsi_abz_ds_vecsv_nbc_grid.html fsi_abz_ds_vecsv_nbc_grid>
 % * test interest rate default: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_borr/html/fsi_abz_ds_vecsv_default.html fsi_abz_ds_vecsv_default>
+% * test interest rate default *V(a,z)* Comparison: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_borr/html/fsi_abz_ds_vecsv_default_compaz.html fsi_abz_ds_vecsv_default_compaz>
 % * test interest rate default *CROSS*: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_borr/html/fsi_abz_ds_vecsv_default_cross.html fsi_abz_ds_vecsv_default_cross>
+% * test interest rate default *GRID*: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_borr/html/fsi_abz_ds_vecsv_default_grid.html fsi_abz_ds_vecsv_default_grid>
 %
 % * test shock default (very low cmin): <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_ds_vecsv_shk_default_lowcmin.html fsi_abz_ds_vecsv_shk_default_lowcmin>
 % * test shock no default: <https://fanwangecon.github.io/CodeDynaAsset/m_abz/test/ff_az_ds_vecsv/test_shock/html/fsi_abz_ds_vecsv_shk_nbc.html fsi_abz_ds_vecsv_shk_nbc>
@@ -77,17 +80,6 @@ close all;
 %% Medium Grid Simulation (Limited Graphs)
 it_size_type = 2;
 ar_it_plot_sets = [3,4, 7,8, 9,10];
-
-% Simulate along parameters
-ff_az_test_analyze( ...
-    ar_it_plot_sets, bl_simu_cross, it_size_type, cl_st_param_keys, ...
-    param_map, support_map, param_tstar_map);
-
-close all;
-
-%% Larger Grid Simulation
-it_size_type = 3;
-ar_it_plot_sets = [1,2, 3,4, 5,6, 51,52, 201,205, 9,203, 7,10];
 
 % Simulate along parameters
 ff_az_test_analyze( ...

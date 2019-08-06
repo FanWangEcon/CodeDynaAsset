@@ -24,12 +24,16 @@
 %
 % * _SPEED_ savings only overall benchmark speed testing: <https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_speed/html/fsi_az_ds_vecsv_speed.html fsi_az_ds_vecsv_speed>
 % * _PREFERENCE_ savings only preference testing: <https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_pref/html/fsi_az_ds_vecsv_pref.html fsi_az_ds_vecsv_pref>
-% * _PREFERENCE_ savings only preference testing cross:
+% * _PREFERENCE_ savings only preference testing *CROSS*:
 % <https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_pref/html/fsi_az_ds_vecsv_pref_cross.html fsi_az_ds_vecsv_pref_cross>
+% * _PREFERENCE_ savings only preference testing *GRID*:
+% <https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_pref/html/fsi_az_ds_vecsv_pref_grid.html fsi_az_ds_vecsv_pref_grid>
 % * _SHOCK_ savings only shock testing: <https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_shock/html/fsi_az_ds_vecsv_shock.html fsi_az_ds_vecsv_shock>
-% * _SHOCK_ savings only shock testing cross:
+% * _SHOCK_ savings only shock testing *CROSS*:
 % <https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_shock/html/fsi_az_ds_vecsv_shock_cross.html fsi_az_ds_vecsv_shock_cross>
-% * _PRICE_ savings only wage and interest rate testing cross: adjust wage and savings rate
+% * _SHOCK_ savings only shock testing *GRID*:
+% <https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_shock/html/fsi_az_ds_vecsv_shock_grid.html fsi_az_ds_vecsv_shock_grid>
+% * _PRICE_ savings only wage and interest rate testing *CROSS*: adjust wage and savings rate
 % <https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_price/html/fsi_az_ds_vecsv_price_cross.html fsi_az_ds_vecsv_price_cross>
 % * _JOINT_ all parameters random draws joint test
 % <https://fanwangecon.github.io/CodeDynaAsset/m_az/test/ff_az_ds_vecsv/test_joint/html/fsi_az_ds_vecsv_joint_rand.html fsi_az_ds_vecsv_joint_rand>
@@ -41,7 +45,7 @@ close all;
 clear all;
 
 % Start Profiling
-bl_profile = true;
+bl_profile = false;
 if (bl_profile)
     profile off;
     profile on;
@@ -78,18 +82,18 @@ end
 if (bl_profile)
     profile off
     profile viewer
-        
+
     % append function name
     st_func_name = 'fsi_az_ds_vecsv_speed';
-    support_map('st_profile_path') = [support_map('st_matimg_path_root') '/test/ff_az_ds_vecsv/test_speed/profile/'];    
-    support_map('st_profile_name_main') = [st_func_name support_map('st_profile_name_main')];    
-    
+    support_map('st_profile_path') = [support_map('st_matimg_path_root') '/test/ff_az_ds_vecsv/test_speed/profile/'];
+    support_map('st_profile_name_main') = [st_func_name support_map('st_profile_name_main')];
+
     % support_map
     params_group = values(support_map, {'st_profile_path', ...
         'st_profile_prefix', 'st_profile_name_main', 'st_profile_suffix'});
     [st_profile_path, st_profile_prefix, st_profile_name_main, st_profile_suffix] = params_group{:};
-    
+
     % Save
     st_file_name = [st_profile_prefix st_profile_name_main st_profile_suffix];
-    profsave(profile('info'), strcat(st_profile_path, st_file_name));    
+    profsave(profile('info'), strcat(st_profile_path, st_file_name));
 end

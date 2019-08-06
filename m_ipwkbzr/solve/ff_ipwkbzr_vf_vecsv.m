@@ -595,7 +595,8 @@ result_map('cl_mt_pol_k') = {mt_pol_k, zeros(1)};
 mt_pol_c = f_cons(mt_interp_coh_grid_mesh_z, mt_pol_a, mt_pol_k);
 mt_pol_c(mt_pol_c <= fl_c_min) = fl_c_min;
 result_map('cl_mt_pol_c') = {mt_pol_c, zeros(1)};
-result_map('ar_st_pol_names') = ["cl_mt_coh", "cl_mt_pol_a", "cl_mt_pol_k", "cl_mt_pol_c"];
+result_map('cl_mt_val') = {mt_val, zeros(1)};
+result_map('ar_st_pol_names') = ["cl_mt_val", "cl_mt_coh", "cl_mt_pol_a", "cl_mt_pol_k", "cl_mt_pol_c"];
 
 if (bl_post)
     bl_input_override = true;

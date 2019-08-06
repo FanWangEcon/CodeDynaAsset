@@ -118,7 +118,9 @@ ls_st_param_key = {'fl_crra', 'fl_beta', ...
                     'fl_b_bd', 'fl_c_min', 'fl_z_r_borr_n',...
                     'fl_z_wage_rho', 'fl_z_wage_sig', ...
                     ...
-                    'fl_alpha', 'fl_delta'};
+                    'fl_alpha', 'fl_delta', ...
+                    ...
+                    'fl_r_borr'};
 
 param_tstar_map = containers.Map('KeyType','char', 'ValueType','any');
 it_simu_vec_len = 5;
@@ -143,6 +145,8 @@ param_tstar_map(ls_st_param_key{16}) = linspace(0.01, 0.5, it_simu_vec_len);
 param_tstar_map(ls_st_param_key{17}) = linspace(0.30, 0.50, it_simu_vec_len);
 param_tstar_map(ls_st_param_key{18}) = linspace(0.02, 0.14, it_simu_vec_len);
 
+param_tstar_map(ls_st_param_key{19}) = linspace(0, 0.25, it_simu_vec_len);
+
 param_desc_map = containers.Map('KeyType','char', 'ValueType','any');
 param_desc_map(ls_st_param_key{1}) = {'CRRA'};
 param_desc_map(ls_st_param_key{2}) = {'Discount'};
@@ -164,6 +168,8 @@ param_desc_map(ls_st_param_key{16}) = {'Inc/Prod Shock SD'};
 
 param_desc_map(ls_st_param_key{17}) = {'Prod Func Elasticity'};
 param_desc_map(ls_st_param_key{18}) = {'Prod Func Depreciation'};
+
+param_desc_map(ls_st_param_key{19}) = {'Single Borrow Rate'};
 
 %% Default
 
@@ -292,22 +298,28 @@ elseif (it_size_type == 3)
 
     elseif (ismember(st_model, ["abz", "ipwkbzr"]))
 
-        % keep the interest rate structure the same as default
-        param_map('fl_z_r_borr_n') = 11;
-        param_map('it_z_wage_n') = 11;
-        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
 
         if (ismember(st_model, ["abz"]))
 
+            % keep the interest rate structure the same as default
+            param_map('fl_z_r_borr_n') = 11;
+            param_map('it_z_wage_n') = 11;
+            param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+            
             param_map('it_a_n') = 1250;
 
         elseif (ismember(st_model, ["ipwkbzr"]))
 
-            param_map('fl_coh_interp_grid_gap') = 0.05;
+            % keep the interest rate structure the same as default
+            param_map('fl_z_r_borr_n') = 7;
+            param_map('it_z_wage_n') = 11;
+            param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+            
+            param_map('fl_coh_interp_grid_gap') = 0.07;
             param_map('it_c_interp_grid_gap') = 10^-4;
-            param_map('it_w_perc_n') = 100;
+            param_map('it_w_perc_n') = 85;
             param_map('it_ak_perc_n') = param_map('it_w_perc_n');
-            param_map('fl_w_interp_grid_gap') = 0.05;
+            param_map('fl_w_interp_grid_gap') = 0.07;
 
         end
 
@@ -561,7 +573,7 @@ if (ismember(st_model, ["az", "abz"]))
         result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
     end
 
-    result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map);
+    result_map = ff_az_ds_vec(param_map, support_map, armt_map, func_map, result_map);
 
 elseif (ismember(st_model, ["akz_wkz_iwkz"]))
 
@@ -601,7 +613,7 @@ function param_map = map_correction(param_map)
 
     params_group = values(param_map, {'st_model'});
     [st_model] = params_group{:};
-
+    
     if (isKey(param_map, 'fl_z_r_borr_n'))
         param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
     end
@@ -614,6 +626,19 @@ function param_map = map_correction(param_map)
         end
         if (isKey(param_map, 'fl_w_max'))
             param_map('fl_k_max') = (param_map('fl_w_max') - param_map('fl_b_bd'));
+        end
+    end
+    
+    if (ismember(st_model, ["abz", "ipwkbzr"]))    
+        % Set Borrowing and Savings Interest Rates the same
+        
+        if (isKey(param_map, 'fl_r_borr'))
+            % This key does not have any effect on abz or ipwkbzr, the
+            % intent is to generate a single borrowing interest rate.
+            param_map('fl_z_r_borr_max') = param_map('fl_r_borr');
+            param_map('fl_z_r_borr_min') = param_map('fl_r_borr');
+            param_map('fl_z_r_borr_n') = 1;            
+            param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
         end
     end
 

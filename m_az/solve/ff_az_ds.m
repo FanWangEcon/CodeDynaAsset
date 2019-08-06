@@ -350,6 +350,7 @@ end
 % interest.
 
 bl_input_override = true;
+result_map('mt_dist') = mt_dist_az;
 result_map = ff_az_ds_post_stats(support_map, result_map, mt_dist_az, bl_input_override);
 
 end

@@ -86,7 +86,7 @@ param_map('fl_z_r_infbr_n') = 5;
 
 % Production Function
 % Productivity Shock Parameters
-param_map('it_z_wage_n') = 15;
+param_map('it_z_wage_n') = 5;
 param_map('fl_z_wage_mu') = 0;
 param_map('fl_z_wage_rho') = 0.8;
 param_map('fl_z_wage_sig') = 0.2;

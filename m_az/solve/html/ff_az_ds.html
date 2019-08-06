@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Derive Asset and Choices/Outcomes Distribution (Loop)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-23"><meta name="DC.source" content="ff_az_ds.m"><style type="text/css">
+      --><title>Derive Asset and Choices/Outcomes Distribution (Loop)</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-08-04"><meta name="DC.source" content="ff_az_ds.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -67,7 +67,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
   </style></head><body><div class="content"><h1>Derive Asset and Choices/Outcomes Distribution (Loop)</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FF_AZ_DS finds the stationary asset distributions</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Start Profiler and Timer</a></li><li><a href="#6"><b>f(a,z)</b>: Initialize Output Matrixes</a></li><li><a href="#7"><b>f(a,z)</b>: Initialize Convergence Conditions</a></li><li><a href="#8"><b>f(a,z)</b>: Derive Stationary Distribution</a></li><li><a href="#10"><b>f(a,z)</b>: Iterate over Probability mass for Discrete Random Variable</a></li><li><a href="#11"><b>f(a,z)</b>: Check Tolerance and Continuation</a></li><li><a href="#13">End Time and Profiler</a></li><li><a href="#14"><b>f(y), f(c), f(a)</b>: Generate Key Distributional Statistics for Each outcome</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [result_map] = ff_az_ds(varargin)
-</pre><h2 id="2">FF_AZ_DS finds the stationary asset distributions</h2><p>Building on the Asset Dynamic Programming Problem <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a>, here we solve for the asset distribution. This version of the program uses loops.</p><p>This finds the asset distribution induced by the policy functions. Note that the asset distribution is a joint discrete random variable. We derive f(a,z), where f is the joint discrete random variables probability mass. Then we can derive f(a'(a,z)), f(c(a,z)) directly. The procedure here does not involve simulation. Simulation could also be used to derive these distributions, but given the discrete grid based solution algorithm, there is no need to introduce simulation and associated errors once we have fixed the shock process that generates randomness.</p><p>The code here works when we are looking for the distribution of f(a,z), where a'(a,z), meaning that the a next period is determined by <i>a</i> last period and some shock. Given this, the <i>a'</i> is fixed for all <i>z'</i>. If however, the outcome of interest is such that: y'(y,z,z'), meaning that y' is different depending on realized z', the code below does not work, rather, this code <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_ds.html">ff_iwkz_ds</a> should be used.</p><p>The function here accomplishes two tasks: (1) deriving the asset distribution as a discrete random variable over the states (2) calculating various statistics based on the discrete joint random variable's probability mass function for various outcomes of the model</p><p>Distributions of Interest:</p><div><ul><li><img src="ff_az_ds_eq08795144712269443427.png" alt="$p(a,z)$" style="width:39px;height:15px;"></li><li><img src="ff_az_ds_eq04843764051820646606.png" alt="$p(Y=y, z) = \sum_{a} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$" style="width:273px;height:15px;"></li><li><img src="ff_az_ds_eq00564633710101136588.png" alt="$p(Y=y, a) = \sum_{z} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$" style="width:274px;height:15px;"></li><li><img src="ff_az_ds_eq11786329523256587778.png" alt="$p(Y=y) = \sum_{a,z} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$" style="width:268px;height:17px;"></li></ul></div><p>Statistics include:</p><div><ul><li><img src="ff_az_ds_eq03016783485460700593.png" alt="$\mu_y = \sum_{y} p(Y=y) \cdot y$" style="width:134px;height:17px;"></li><li><img src="ff_az_ds_eq13414381062043947873.png" alt="$\sigma_y = \sqrt{ \sum_{y} p(Y=y) \cdot \left( y - \mu_y \right)^2}$" style="width:199px;height:27px;"></li><li><img src="ff_az_ds_eq05433369603455155594.png" alt="$p(y=0)$" style="width:53px;height:15px;"></li><li><img src="ff_az_ds_eq09585247606302904929.png" alt="$p(y=\max(y))$" style="width:91px;height:15px;"></li><li>percentiles: <img src="ff_az_ds_eq09488738859326996168.png" alt="$min_{y} \left\{ P(Y \le y) - percentile \mid P(Y \le y) \ge percentile \right\}$" style="width:352px;height:15px;"></li><li>fraction of outcome held by up to percentiles: <img src="ff_az_ds_eq11722476300337688867.png" alt="$E(Y<y)/E(Y)$" style="width:103px;height:15px;"></li></ul></div><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@param func_map container container with function handles for consumption cash-on-hand etc.</p><p>@return result_map container contains policy function matrix, value function matrix, iteration results, and policy function, value function and iteration results tables.</p><p>new keys included in result_map in addition to the output from <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a> are various distribution statistics for each model outcome, keys include <b>cl_mt_pol_a</b>, <b>cl_mt_pol_c</b>, <b>cl_mt_pol_coh</b>, etc, these include:</p><div><ul><li>the first element of each of these cell array is y(a,z), the outcome/choice at the state space points</li><li>the second element of the cell is another container, which contains statistics computed for f(y) based on y(a,z) and f(a,z), f(y) is the probability mass function for outcome y given the stationary distribution f(a,z). The second element container also includes f(y) itself as well as f(y,z).</li><li>additionally, result_map also stores some of the statistics for different variables jointly together. (a) <b>tb_outcomes_meansdperc</b>: where each row is a different outcome of the model, and each table column stores a different statistics of interest. (b) <b>tb_outcomes_fracheld</b>: which measures the fraction of asset held by different people.</li></ul></div><p>@example</p><pre>  % Get Default Parameters
+</pre><h2 id="2">FF_AZ_DS finds the stationary asset distributions</h2><p>Building on the Asset Dynamic Programming Problem <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a>, here we solve for the asset distribution. This version of the program uses loops.</p><p>This finds the asset distribution induced by the policy functions. Note that the asset distribution is a joint discrete random variable. We derive f(a,z), where f is the joint discrete random variables probability mass. Then we can derive f(a'(a,z)), f(c(a,z)) directly. The procedure here does not involve simulation. Simulation could also be used to derive these distributions, but given the discrete grid based solution algorithm, there is no need to introduce simulation and associated errors once we have fixed the shock process that generates randomness.</p><p>The code here works when we are looking for the distribution of f(a,z), where a'(a,z), meaning that the a next period is determined by <i>a</i> last period and some shock. Given this, the <i>a'</i> is fixed for all <i>z'</i>. If however, the outcome of interest is such that: y'(y,z,z'), meaning that y' is different depending on realized z', the code below does not work, rather, this code <a href="https://fanwangecon.github.io/CodeDynaAsset/m_akz/solve/html/ff_iwkz_ds.html">ff_iwkz_ds</a> should be used.</p><p>The function here accomplishes two tasks: (1) deriving the asset distribution as a discrete random variable over the states (2) calculating various statistics based on the discrete joint random variable's probability mass function for various outcomes of the model</p><p>Distributions of Interest:</p><div><ul><li><img src="ff_az_ds_eq08795144712269443427.png" alt="$p(a,z)$"></li><li><img src="ff_az_ds_eq04843764051820646606.png" alt="$p(Y=y, z) = \sum_{a} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$"></li><li><img src="ff_az_ds_eq00564633710101136588.png" alt="$p(Y=y, a) = \sum_{z} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$"></li><li><img src="ff_az_ds_eq11786329523256587778.png" alt="$p(Y=y) = \sum_{a,z} \left( 1\left\{Y(a,z)=y\right\} \cdot p(a,z) \right)$"></li></ul></div><p>Statistics include:</p><div><ul><li><img src="ff_az_ds_eq03016783485460700593.png" alt="$\mu_y = \sum_{y} p(Y=y) \cdot y$"></li><li><img src="ff_az_ds_eq13414381062043947873.png" alt="$\sigma_y = \sqrt{ \sum_{y} p(Y=y) \cdot \left( y - \mu_y \right)^2}$"></li><li><img src="ff_az_ds_eq05433369603455155594.png" alt="$p(y=0)$"></li><li><img src="ff_az_ds_eq09585247606302904929.png" alt="$p(y=\max(y))$"></li><li>percentiles: <img src="ff_az_ds_eq09488738859326996168.png" alt="$min_{y} \left\{ P(Y \le y) - percentile \mid P(Y \le y) \ge percentile \right\}$"></li><li>fraction of outcome held by up to percentiles: <img src="ff_az_ds_eq11722476300337688867.png" alt="$E(Y<y)/E(Y)$"></li></ul></div><p>@param param_map container parameter container</p><p>@param support_map container support container</p><p>@param armt_map container container with states, choices and shocks grids that are inputs for grid based solution algorithm</p><p>@param func_map container container with function handles for consumption cash-on-hand etc.</p><p>@return result_map container contains policy function matrix, value function matrix, iteration results, and policy function, value function and iteration results tables.</p><p>new keys included in result_map in addition to the output from <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf_vecsv.html">ff_az_vf_vecsv</a> are various distribution statistics for each model outcome, keys include <b>cl_mt_pol_a</b>, <b>cl_mt_pol_c</b>, <b>cl_mt_pol_coh</b>, etc, these include:</p><div><ul><li>the first element of each of these cell array is y(a,z), the outcome/choice at the state space points</li><li>the second element of the cell is another container, which contains statistics computed for f(y) based on y(a,z) and f(a,z), f(y) is the probability mass function for outcome y given the stationary distribution f(a,z). The second element container also includes f(y) itself as well as f(y,z).</li><li>additionally, result_map also stores some of the statistics for different variables jointly together. (a) <b>tb_outcomes_meansdperc</b>: where each row is a different outcome of the model, and each table column stores a different statistics of interest. (b) <b>tb_outcomes_fracheld</b>: which measures the fraction of asset held by different people.</li></ul></div><p>@example</p><pre>  % Get Default Parameters
   it_param_set = 6;
   [param_map, support_map] = ffs_az_set_default_param(it_param_set);
   % Change Keys in param_map
@@ -124,31 +124,6 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ----------------------------------------
 ----------------------------------------
-pos = 1 ; key = bl_display ; val = false
-pos = 2 ; key = bl_display_defparam ; val = true
-pos = 3 ; key = bl_display_dist ; val = false
-pos = 4 ; key = bl_display_final ; val = false
-pos = 5 ; key = bl_display_final_dist ; val = true
-pos = 6 ; key = bl_display_final_dist_detail ; val = true
-pos = 7 ; key = bl_display_funcgrids ; val = false
-pos = 8 ; key = bl_graph ; val = true
-pos = 9 ; key = bl_graph_coh_t_coh ; val = true
-pos = 10 ; key = bl_graph_funcgrids ; val = false
-pos = 11 ; key = bl_graph_onebyones ; val = true
-pos = 12 ; key = bl_graph_pol_lvl ; val = false
-pos = 13 ; key = bl_graph_pol_pct ; val = false
-pos = 14 ; key = bl_graph_val ; val = false
-pos = 15 ; key = bl_img_save ; val = false
-pos = 16 ; key = bl_mat ; val = false
-pos = 17 ; key = bl_post ; val = true
-pos = 18 ; key = bl_profile ; val = false
-pos = 19 ; key = bl_profile_dist ; val = false
-pos = 20 ; key = bl_time ; val = false
-pos = 21 ; key = it_display_every ; val = 20
-pos = 22 ; key = it_display_final_colmax ; val = 12
-pos = 23 ; key = it_display_final_rowmax ; val = 100
-pos = 24 ; key = it_display_summmat_colmax ; val = 5
-pos = 25 ; key = it_display_summmat_rowmax ; val = 5
 pos = 26 ; key = st_img_name_main ; val = ff_az_vf_vecsv_default
 pos = 27 ; key = st_img_path ; val = C:/Users/fan/CodeDynaAsset//m_az//solve/img/
 pos = 28 ; key = st_img_prefix ; val = 
@@ -168,57 +143,34 @@ pos = 40 ; key = st_title_prefix ; val =
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Scalars in Container and Sizes and Basic Statistics
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                        i     idx    value
-                        __    ___    _____
+                                    i     idx    value
+                                    __    ___    _____
 
-    bl_display           1     1        0 
-    bl_display_def&#8230;      2     2        1 
-    bl_display_dist      3     3        0 
-    bl_display_final     4     4        0 
-    bl_display_fin&#8230;      5     5        1 
-    bl_display_fin&#8230;      6     6        1 
-    bl_display_fun&#8230;      7     7        0 
-    bl_graph             8     8        1 
-    bl_graph_coh_t&#8230;      9     9        1 
-    bl_graph_funcg&#8230;     10    10        0 
-    bl_graph_oneby&#8230;     11    11        1 
-    bl_graph_pol_lvl    12    12        0 
-    bl_graph_pol_pct    13    13        0 
-    bl_graph_val        14    14        0 
-    bl_img_save         15    15        0 
-    bl_mat              16    16        0 
-    bl_post             17    17        1 
-    bl_profile          18    18        0 
-    bl_profile_dist     19    19        0 
-    bl_time             20    20        0 
-    it_display_every    21    21       20 
-    it_display_fin&#8230;     22    22       12 
-    it_display_fin&#8230;     23    23      100 
-    it_display_sum&#8230;     24    24        5 
-    it_display_sum&#8230;     25    25        5 
-
-----------------------------------------
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-Strings in Container and Sizes and Basic Statistics
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                        i     idx
-                        __    ___
-
-    st_img_name_main     1    26 
-    st_img_path          2    27 
-    st_img_prefix        3    28 
-    st_img_suffix        4    29 
-    st_mat_name_main     5    30 
-    st_mat_path          6    31 
-    st_mat_prefix        7    32 
-    st_mat_suffix        8    33 
-    st_mat_test_path     9    34 
-    st_matimg_path&#8230;     10    35 
-    st_profile_nam&#8230;     11    36 
-    st_profile_path     12    37 
-    st_profile_pre&#8230;     13    38 
-    st_profile_suf&#8230;     14    39 
-    st_title_prefix     15    40 
+    bl_display                       1     1        0 
+    bl_display_defparam              2     2        1 
+    bl_display_dist                  3     3        0 
+    bl_display_final                 4     4        0 
+    bl_display_final_dist            5     5        1 
+    bl_display_final_dist_detail     6     6        1 
+    bl_display_funcgrids             7     7        0 
+    bl_graph                         8     8        1 
+    bl_graph_coh_t_coh               9     9        1 
+    bl_graph_funcgrids              10    10        0 
+    bl_graph_onebyones              11    11        1 
+    bl_graph_pol_lvl                12    12        0 
+    bl_graph_pol_pct                13    13        0 
+    bl_graph_val                    14    14        0 
+    bl_img_save                     15    15        0 
+    bl_mat                          16    16        0 
+    bl_post                         17    17        1 
+    bl_profile                      18    18        0 
+    bl_profile_dist                 19    19        0 
+    bl_time                         20    20        0 
+    it_display_every                21    21       20 
+    it_display_final_colmax         22    22       12 
+    it_display_final_rowmax         23    23      100 
+    it_display_summmat_colmax       24    24        5 
+    it_display_summmat_rowmax       25    25        5 
 
 ----------------------------------------
 ----------------------------------------
@@ -237,38 +189,6 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ----------------------------------------
 ----------------------------------------
-pos = 1 ; key = ar_a ;rown= 1 ,coln= 750
-ar_a :mu= 25 ,sd= 14.4627 ,min= 0 ,max= 50
-               zi_1_C1    zi_2_C2     zi_375_c375    zi_749_c749    zi_750_c750
-               _______    ________    ___________    ___________    ___________
-
-    zi_1_r1       0       0.066756      24.967         49.933           50     
-
-pos = 2 ; key = ar_stationary ;rown= 1 ,coln= 15
-ar_stationary :mu= 0.066667 ,sd= 0.060897 ,min= 0.0027089 ,max= 0.16757
-                zi_1_C1      zi_2_C2     zi_8_C8    zi_14_c14    zi_15_c15
-               _________    _________    _______    _________    _________
-
-    zi_1_r1    0.0027089    0.0069499    0.16757    0.0069499    0.0027089
-
-pos = 3 ; key = ar_z ;rown= 1 ,coln= 15
-ar_z :mu= 1.1347 ,sd= 0.69878 ,min= 0.34741 ,max= 2.567
-               zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
-               _______    _______    _______    _________    _________
-
-    zi_1_r1    0.34741    0.40076    0.94436     2.2253        2.567  
-
-pos = 4 ; key = mt_z_trans ;rown= 15 ,coln= 15
-mt_z_trans :mu= 0.066667 ,sd= 0.095337 ,min= 0 ,max= 0.27902
-                  zi_1_C1       zi_2_C2       zi_8_C8      zi_14_c14     zi_15_c15 
-                 __________    __________    __________    __________    __________
-
-    zi_1_R1         0.26016       0.26831    0.00012823    1.1102e-15             0
-    zi_2_R2         0.11232       0.19622    0.00098855    9.3592e-14    3.3307e-16
-    zi_8_R8      1.7181e-06    4.1008e-05       0.27902    4.1008e-05    1.7181e-06
-    zi_14_r14     3.474e-16    9.3597e-14    0.00098855       0.19622       0.11232
-    zi_15_r15    2.7412e-18    1.1057e-15    0.00012823       0.26831       0.26016
-
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Matrix in Container and Sizes and Basic Statistics
@@ -298,69 +218,37 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ----------------------------------------
 ----------------------------------------
-pos = 1 ; key = bl_loglin ; val = false
-pos = 2 ; key = fl_a_max ; val = 50
-pos = 3 ; key = fl_a_min ; val = 0
-pos = 4 ; key = fl_b_bd ; val = 0
-pos = 5 ; key = fl_beta ; val = 0.94
-pos = 6 ; key = fl_crra ; val = 1.5
-pos = 7 ; key = fl_loglin_threshold ; val = 1
-pos = 8 ; key = fl_nan_replace ; val = -9999
-pos = 9 ; key = fl_r_save ; val = 0.025
-pos = 10 ; key = fl_tol_dist ; val = 1e-05
-pos = 11 ; key = fl_tol_pol ; val = 1e-05
-pos = 12 ; key = fl_tol_val ; val = 1e-05
-pos = 13 ; key = fl_w ; val = 1.28
-pos = 14 ; key = fl_z_mu ; val = 0
-pos = 15 ; key = fl_z_rho ; val = 0.8
-pos = 16 ; key = fl_z_sig ; val = 0.2
-pos = 17 ; key = it_a_n ; val = 750
-pos = 18 ; key = it_maxiter_dist ; val = 1000
-pos = 19 ; key = it_maxiter_val ; val = 1000
-pos = 20 ; key = it_tol_pol_nochange ; val = 25
-pos = 21 ; key = it_trans_power_dist ; val = 1000
-pos = 22 ; key = it_z_n ; val = 15
 pos = 23 ; key = st_analytical_stationary_type ; val = eigenvector
 pos = 24 ; key = st_model ; val = az
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Scalars in Container and Sizes and Basic Statistics
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                       i     idx    value
-                       __    ___    _____
+                           i     idx    value
+                           __    ___    _____
 
-    bl_loglin           1     1         0
-    fl_a_max            2     2        50
-    fl_a_min            3     3         0
-    fl_b_bd             4     4         0
-    fl_beta             5     5      0.94
-    fl_crra             6     6       1.5
-    fl_loglin_thre&#8230;     7     7         1
-    fl_nan_replace      8     8     -9999
-    fl_r_save           9     9     0.025
-    fl_tol_dist        10    10     1e-05
-    fl_tol_pol         11    11     1e-05
-    fl_tol_val         12    12     1e-05
-    fl_w               13    13      1.28
-    fl_z_mu            14    14         0
-    fl_z_rho           15    15       0.8
-    fl_z_sig           16    16       0.2
-    it_a_n             17    17       750
-    it_maxiter_dist    18    18      1000
-    it_maxiter_val     19    19      1000
-    it_tol_pol_noc&#8230;    20    20        25
-    it_trans_power&#8230;    21    21      1000
-    it_z_n             22    22        15
-
-----------------------------------------
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-Strings in Container and Sizes and Basic Statistics
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                       i    idx
-                       _    ___
-
-    st_analytical_&#8230;    1    23 
-    st_model           2    24 
+    bl_loglin               1     1         0
+    fl_a_max                2     2        50
+    fl_a_min                3     3         0
+    fl_b_bd                 4     4         0
+    fl_beta                 5     5      0.94
+    fl_crra                 6     6       1.5
+    fl_loglin_threshold     7     7         1
+    fl_nan_replace          8     8     -9999
+    fl_r_save               9     9     0.025
+    fl_tol_dist            10    10     1e-05
+    fl_tol_pol             11    11     1e-05
+    fl_tol_val             12    12     1e-05
+    fl_w                   13    13      1.28
+    fl_z_mu                14    14         0
+    fl_z_rho               15    15       0.8
+    fl_z_sig               16    16       0.2
+    it_a_n                 17    17       750
+    it_maxiter_dist        18    18      1000
+    it_maxiter_val         19    19      1000
+    it_tol_pol_nochange    20    20        25
+    it_trans_power_dist    21    21      1000
+    it_z_n                 22    22        15
 
 ----------------------------------------
 ----------------------------------------
@@ -408,7 +296,7 @@ CONTAINER NAME: RESULT_MAP
 ----------------------------------------
   Map with properties:
 
-        Count: 9
+        Count: 10
       KeyType: char
     ValueType: any
 
@@ -416,119 +304,23 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ----------------------------------------
 ----------------------------------------
-pos = 1 ; key = ar_pol_diff_norm ;rown= 105 ,coln= 1
-ar_pol_diff_norm :mu= 29.0792 ,sd= 159.483 ,min= 0 ,max= 1532.8618
-                   zi_1_c1
-                   _______
-
-    zi_1_R1         106.07
-    zi_2_R2         1532.9
-    zi_53_R53      0.20361
-    zi_104_r104          0
-    zi_105_r105          0
-
-pos = 2 ; key = ar_st_pol_names ; val = cl_mt_pol_a cl_mt_coh cl_mt_pol_c
-pos = 3 ; key = ar_val_diff_norm ;rown= 105 ,coln= 1
-ar_val_diff_norm :mu= 10.9154 ,sd= 26.2469 ,min= 0.02899 ,max= 163.7499
-                   zi_1_c1 
-                   ________
-
-    zi_1_R1          163.75
-    zi_2_R2          124.31
-    zi_53_R53        0.7572
-    zi_104_r104    0.030841
-    zi_105_r105     0.02899
-
-pos = 4 ; key = cl_mt_coh ;rown= 750 ,coln= 15
-cl_mt_coh :mu= 27.0775 ,sd= 14.8402 ,min= 0.44468 ,max= 54.5358
-                   zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
-                   _______    _______    _______    _________    _________
-
-    zi_1_R1        0.44468    0.51297    1.2088      2.8484       3.2858  
-    zi_2_R2        0.51311     0.5814    1.2772      2.9168       3.3542  
-    zi_375_r375     26.035     26.104      26.8      28.439       28.877  
-    zi_749_r749     51.626     51.695     52.39       54.03       54.467  
-    zi_750_r750     51.695     51.763    52.459      54.098       54.536  
-
-pos = 5 ; key = cl_mt_pol_a ;rown= 750 ,coln= 15
-cl_mt_pol_a :mu= 23.9415 ,sd= 13.9263 ,min= 0 ,max= 49.5995
-                   zi_1_C1    zi_2_C2    zi_8_C8     zi_14_c14    zi_15_c15
-                   _______    _______    ________    _________    _________
-
-    zi_1_R1             0          0            0     1.0013       1.3351  
-    zi_2_R2             0          0     0.066756     1.0681       1.4019  
-    zi_375_r375    23.097     23.164       23.632       24.9         25.3  
-    zi_749_r749    47.263      47.33       47.797     49.132       49.533  
-    zi_750_r750     47.33     47.397       47.864     49.199       49.599  
-
-pos = 6 ; key = cl_mt_pol_c ;rown= 750 ,coln= 15
-cl_mt_pol_c :mu= 3.136 ,sd= 0.93512 ,min= 0.44468 ,max= 4.9363
-                   zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
-                   _______    _______    _______    _________    _________
-
-    zi_1_R1        0.44468    0.51297    1.2088       1.847       1.9507  
-    zi_2_R2        0.51311     0.5814    1.2104      1.8487       1.9523  
-    zi_375_r375      2.938     2.9395    3.1681      3.5393       3.5762  
-    zi_749_r749     4.3632     4.3648    4.5933      4.8978       4.9347  
-    zi_750_r750     4.3649     4.3664     4.595      4.8995       4.9363  
-
-pos = 7 ; key = mt_pol_idx ;rown= 750 ,coln= 15
-mt_pol_idx :mu= 359.643 ,sd= 208.6162 ,min= 1 ,max= 744
-                   zi_1_C1    zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
-                   _______    _______    _______    _________    _________
-
-    zi_1_R1            1          1          1          16           21   
-    zi_2_R2            1          1          2          17           22   
-    zi_375_r375      347        348        355         374          380   
-    zi_749_r749      709        710        717         737          743   
-    zi_750_r750      710        711        718         738          744   
-
-pos = 8 ; key = mt_pol_perc_change ;rown= 105 ,coln= 15
-mt_pol_perc_change :mu= 0.21725 ,sd= 0.34614 ,min= 0 ,max= 1
-                    zi_1_C1     zi_2_C2    zi_8_C8    zi_14_c14    zi_15_c15
-                   _________    _______    _______    _________    _________
-
-    zi_1_R1                1         1           1           1           1  
-    zi_2_R2            0.996     0.996     0.99867           1           1  
-    zi_53_R53      0.0053333     0.004       0.012    0.010667       0.012  
-    zi_104_r104            0         0           0           0           0  
-    zi_105_r105            0         0           0           0           0  
-
-pos = 9 ; key = mt_val ;rown= 750 ,coln= 15
-mt_val :mu= 10.2881 ,sd= 3.1692 ,min= -1.496 ,max= 15.0119
-                   zi_1_C1    zi_2_C2     zi_8_C8    zi_14_c14    zi_15_c15
-                   _______    ________    _______    _________    _________
-
-    zi_1_R1         -1.496    -0.85738    2.7704      5.8799       6.3576  
-    zi_2_R2        -1.2889    -0.68792    2.8234      5.9069       6.3825  
-    zi_375_r375     10.061      10.148    10.857      11.874       12.064  
-    zi_749_r749     13.832      13.881    14.284      14.889       15.006  
-    zi_750_r750      13.84      13.888    14.291      14.895       15.012  
-
+pos = 2 ; key = ar_st_pol_names ; val = cl_mt_val cl_mt_pol_a cl_mt_coh cl_mt_pol_c
 ----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Matrix in Container and Sizes and Basic Statistics
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                        i    idx    rowN    colN     mean        std        min       max  
-                        _    ___    ____    ____    _______    _______    _______    ______
+                          i    idx    rowN    colN     mean        std        min       max  
+                          _    ___    ____    ____    _______    _______    _______    ______
 
-    ar_pol_diff_norm    1     1     105       1      29.079     159.48          0    1532.9
-    ar_val_diff_norm    2     3     105       1      10.915     26.247    0.02899    163.75
-    cl_mt_coh           3     4     750      15      27.077      14.84    0.44468    54.536
-    cl_mt_pol_a         4     5     750      15      23.941     13.926          0    49.599
-    cl_mt_pol_c         5     6     750      15       3.136    0.93512    0.44468    4.9363
-    mt_pol_idx          6     7     750      15      359.64     208.62          1       744
-    mt_pol_perc_ch&#8230;     7     8     105      15     0.21725    0.34614          0         1
-    mt_val              8     9     750      15      10.288     3.1692     -1.496    15.012
-
-----------------------------------------
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-Strings in Container and Sizes and Basic Statistics
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                       i    idx
-                       _    ___
-
-    ar_st_pol_names    1     2 
+    ar_pol_diff_norm      1     1     105       1      29.079     159.48          0    1532.9
+    ar_val_diff_norm      2     3     105       1      10.915     26.247    0.02899    163.75
+    cl_mt_coh             3     4     750      15      27.077      14.84    0.44468    54.536
+    cl_mt_pol_a           4     5     750      15      23.941     13.926          0    49.599
+    cl_mt_pol_c           5     6     750      15       3.136    0.93512    0.44468    4.9363
+    cl_mt_val             6     7     750      15      10.288     3.1692     -1.496    15.012
+    mt_pol_idx            7     8     750      15      359.64     208.62          1       744
+    mt_pol_perc_change    8     9     105      15     0.21725    0.34614          0         1
+    mt_val                9    10     750      15      10.288     3.1692     -1.496    15.012
 
 </pre><img vspace="5" hspace="5" src="ff_az_ds_01.png" alt=""> <img vspace="5" hspace="5" src="ff_az_ds_02.png" alt=""> <h2 id="4">Parse Parameters</h2><pre class="codeinput"><span class="comment">% append function name</span>
 st_func_name = <span class="string">'ff_az_ds'</span>;
@@ -578,7 +370,7 @@ mt_dist_az_zeros = zeros(length(ar_a),it_z_n);
 it_iter = 0;
 ar_dist_diff_norm = zeros([it_maxiter_dist, 1]);
 mt_dist_perc_change = zeros([it_maxiter_dist, it_z_n]);
-</pre><h2 id="8"><b>f(a,z)</b>: Derive Stationary Distribution</h2><p>Iterate over the discrete joint random variable variables (a,z)</p><p>We are looking for the distribution of: <img src="ff_az_ds_eq08795144712269443427.png" alt="$p(a,z)$" style="width:39px;height:15px;"> where <img src="ff_az_ds_eq00898647392984908260.png" alt="$a'(a,z)$" style="width:43px;height:15px;">, meaning that the a next period is determined by a last period and some shock. Given this, the <img src="ff_az_ds_eq17452403353718736463.png" alt="$a'$" style="width:11px;height:12px;"> is fixed for all <img src="ff_az_ds_eq02181288228541889949.png" alt="$z'$" style="width:11px;height:12px;"></p><p>To make the code work for life-cycle model: # <i>mt_dist_az_init</i>: Initialize with potentially exogenous initial asset distribution # <i>mt_dist_az</i>: change mt_dist_az to tensor with a third dimension for age # at the beginning of the third loop over ar_z, get mass at current age, meaning: fl_cur_za_prob = ts_dist_az(it_a_prime_idx, it_zp_q, age) # at the end of the third loop over ar_z, add accumulated mass to next period, meaning: ts_dist_az(it_a_prime_idx, it_zp_q, age+1) =+ fl_zfromza</p><pre class="codeinput"><span class="keyword">while</span> (bl_histiter_continue)
+</pre><h2 id="8"><b>f(a,z)</b>: Derive Stationary Distribution</h2><p>Iterate over the discrete joint random variable variables (a,z)</p><p>We are looking for the distribution of: <img src="ff_az_ds_eq08795144712269443427.png" alt="$p(a,z)$"> where <img src="ff_az_ds_eq00898647392984908260.png" alt="$a'(a,z)$">, meaning that the a next period is determined by a last period and some shock. Given this, the <img src="ff_az_ds_eq17452403353718736463.png" alt="$a'$"> is fixed for all <img src="ff_az_ds_eq02181288228541889949.png" alt="$z'$"></p><p>To make the code work for life-cycle model: # <i>mt_dist_az_init</i>: Initialize with potentially exogenous initial asset distribution # <i>mt_dist_az</i>: change mt_dist_az to tensor with a third dimension for age # at the beginning of the third loop over ar_z, get mass at current age, meaning: fl_cur_za_prob = ts_dist_az(it_a_prime_idx, it_zp_q, age) # at the end of the third loop over ar_z, add accumulated mass to next period, meaning: ts_dist_az(it_a_prime_idx, it_zp_q, age+1) =+ fl_zfromza</p><pre class="codeinput"><span class="keyword">while</span> (bl_histiter_continue)
 </pre><pre class="codeinput">    it_iter = it_iter + 1;
 </pre><h2 id="10"><b>f(a,z)</b>: Iterate over Probability mass for Discrete Random Variable</h2><p>compared to <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solve/html/ff_az_vf.html">ff_az_vf</a>, we basically have the same set of loops. There, there were four loops, here there are three loops. We eliminated the loop over next period choices, because here we already know optimal choices</p><pre class="codeinput">    <span class="comment">% initialize empty</span>
     mt_dist_az = mt_dist_az_zeros;
@@ -660,6 +452,83 @@ mt_dist_perc_change = zeros([it_maxiter_dist, it_z_n]);
 </pre><h2 id="14"><b>f(y), f(c), f(a)</b>: Generate Key Distributional Statistics for Each outcome</h2><p>Having derived f(a,z) the probability mass function of the joint discrete random variables, we now obtain distributional statistics. Note that we know f(a,z), and we also know relevant policy functions a'(a,z), c(a,z), or other policy functions. We can simulate any choices that are a function of the random variables (a,z), using f(a,z). We call function <a href="https://fanwangecon.github.io/CodeDynaAsset/m_az/solvepost/html/ff_az_ds_post_stats.html">ff_az_ds_post_stats</a> which uses <a href="https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_stats.html">fft_disc_rand_var_stats</a> and <a href="https://fanwangecon.github.io/CodeDynaAsset/tools/html/fft_disc_rand_var_mass2outcomes.html">fft_disc_rand_var_mass2outcomes</a> to compute various statistics of interest.</p><pre class="codeinput">bl_input_override = true;
 result_map = ff_az_ds_post_stats(support_map, result_map, mt_dist_az, bl_input_override);
 </pre><pre class="codeoutput">----------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Summary Statistics for: cl_mt_val
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+----------------------------------------
+fl_choice_mean
+    3.2160
+
+fl_choice_sd
+    1.5949
+
+fl_choice_coefofvar
+    0.4959
+
+fl_choice_prob_zero
+     0
+
+fl_choice_prob_below_zero
+    0.0237
+
+fl_choice_prob_above_zero
+    0.9763
+
+fl_choice_prob_max
+     0
+
+tb_disc_cumu
+    cl_mt_valDiscreteVal    cl_mt_valDiscreteValProbMass      CDF      cumsumFrac
+    ____________________    ____________________________    _______    __________
+
+            -1.496                    0.0022497             0.22497    -0.0010465
+           -1.2889                   0.00011708             0.23667    -0.0010934
+           -1.1195                   5.0166e-05             0.24169    -0.0011109
+          -0.96773                   5.0905e-05             0.24678    -0.0011262
+          -0.85738                    0.0054589             0.79267    -0.0025815
+          -0.82642                   2.8104e-05             0.79548    -0.0025887
+          -0.69878                   2.9614e-05             0.79844    -0.0025952
+          -0.68792                   0.00036451              0.8349    -0.0026731
+          -0.57856                    2.249e-05             0.83714    -0.0026772
+          -0.54598                   0.00014412             0.85156    -0.0027016
+
+    cl_mt_valDiscreteVal    cl_mt_valDiscreteValProbMass    CDF    cumsumFrac
+    ____________________    ____________________________    ___    __________
+
+           14.956                        0                  100        1     
+           14.962                        0                  100        1     
+           14.968                        0                  100        1     
+           14.975                        0                  100        1     
+           14.981                        0                  100        1     
+           14.987                        0                  100        1     
+           14.993                        0                  100        1     
+           14.999                        0                  100        1     
+           15.006                        0                  100        1     
+           15.012                        0                  100        1     
+
+tb_prob_drv
+    percentiles    cl_mt_valDiscreteValPercentileValues    fracOfSumHeldBelowThisPercentile
+    ___________    ____________________________________    ________________________________
+
+        0.1                        -1.496                             -0.0010465           
+          1                      -0.20677                             -0.0036078           
+          5                        0.4326                             0.00013246           
+         10                         1.051                               0.016595           
+         15                        1.6461                               0.054864           
+         20                        1.7912                               0.064583           
+         25                        2.2186                                0.12076           
+         35                        2.6167                                0.16824           
+         50                         3.239                                0.30272           
+         65                         3.834                                0.46974           
+         75                        4.2838                                0.59101           
+         80                        4.5488                                0.65996           
+         85                        4.8767                                0.73282           
+         90                        5.2801                                0.81138           
+         95                        5.8899                                0.89847           
+         99                        7.0098                                0.97682           
+       99.9                        8.0879                                0.99741           
+
+----------------------------------------
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Summary Statistics for: cl_mt_pol_a
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -890,65 +759,61 @@ tb_prob_drv
          99                        2.1241                                  0.98296           
        99.9                        2.3562                                  0.99811           
 
-xxx PERCENTILES AND STATS xxx
-tb_outcomes_meansdperc: mean, sd, percentiles
-xxx All Variables Fraction of Y Held up to Percentile xxx
-tb_outcomes_fracheld: fraction of asset/income/etc held by hh up to this percentile
-xxx Variance and Covariance xxx
-tb_outcomes_covvar: variance correlation
-    OriginalVariableNames    cl_mt_pol_a    cl_mt_coh     cl_mt_pol_c
-    _____________________    ___________    __________    ___________
+    OriginalVariableNames    cl_mt_val     cl_mt_pol_a    cl_mt_coh     cl_mt_pol_c
+    _____________________    __________    ___________    __________    ___________
 
-    'mean'                     0.83075          2.1316        1.3008 
-    'sd'                        1.1783          1.4662       0.34504 
-    'coefofvar'                 1.4183         0.68783       0.26524 
-    'min'                            0         0.44468       0.44468 
-    'max'                       49.599          54.536        4.9363 
-    'pYis0'                    0.28147               0             0 
-    'pYls0'                          0               0             0 
-    'pYgr0'                    0.71853               1             1 
-    'pYisMINY'                 0.28147       0.0022497     0.0022497 
-    'pYisMAXY'                       0               0             0 
-    'p0_1'                           0         0.44468       0.44468 
-    'p1'                             0         0.59175       0.59175 
-    'p5'                             0         0.68262       0.68262 
-    'p10'                            0         0.85587       0.81947 
-    'p15'                            0         0.90837       0.90837 
-    'p20'                            0          1.0479        1.0364 
-    'p25'                            0          1.1136        1.0479 
-    'p35'                      0.13351          1.2772        1.1964 
-    'p50'                      0.33378          1.6681        1.3276 
-    'p65'                      0.73431          2.1977        1.4161 
-    'p75'                       1.1348          2.6879        1.5268 
-    'p80'                       1.4686          3.0188        1.5952 
-    'p85'                       1.8024          3.4471        1.6619 
-    'p90'                       2.3364          4.0585        1.7521 
-    'p95'                        3.271           5.109        1.8668 
-    'p99'                       5.3405          7.4642        2.1241 
-    'p99_9'                     8.0774          10.402        2.3562 
-    'fl_cov_cl_mt_pol_a'        1.3883          1.7095       0.32116 
-    'fl_cor_cl_mt_pol_a'             1         0.98953       0.78994 
-    'fl_cov_cl_mt_coh'          1.7095          2.1497       0.44021 
-    'fl_cor_cl_mt_coh'         0.98953               1       0.87016 
-    'fl_cov_cl_mt_pol_c'       0.32116         0.44021       0.11905 
-    'fl_cor_cl_mt_pol_c'       0.78994         0.87016             1 
-    'fracByP0_1'                     0      0.00046931    0.00076903 
-    'fracByP1'                       0       0.0056855     0.0093392 
-    'fracByP5'                       0        0.014805      0.024372 
-    'fracByP10'                      0        0.035362      0.054869 
-    'fracByP15'                      0        0.060387       0.10332 
-    'fracByP20'                      0        0.098878       0.12492 
-    'fracByP25'                      0         0.10377       0.17674 
-    'fracByP35'                0.01087         0.15913       0.25332 
-    'fracByP50'                0.04828         0.26465       0.41338 
-    'fracByP65'                0.14685         0.39975       0.55319 
-    'fracByP75'                0.25996         0.51052       0.66718 
-    'fracByP80'                0.35468         0.57781       0.72753 
-    'fracByP85'                0.43783         0.65507       0.78829 
-    'fracByP90'                0.56644         0.74042       0.85351 
-    'fracByP95'                0.73086         0.84688       0.92266 
-    'fracByP99'                0.92153         0.95916       0.98296 
-    'fracByP99_9'              0.98949         0.99463       0.99811 
+    'mean'                        3.216      0.83075          2.1316        1.3008 
+    'sd'                         1.5949       1.1783          1.4662       0.34504 
+    'coefofvar'                 0.49593       1.4183         0.68783       0.26524 
+    'min'                        -1.496            0         0.44468       0.44468 
+    'max'                        15.012       49.599          54.536        4.9363 
+    'pYis0'                           0      0.28147               0             0 
+    'pYls0'                    0.023701            0               0             0 
+    'pYgr0'                      0.9763      0.71853               1             1 
+    'pYisMINY'                0.0022497      0.28147       0.0022497     0.0022497 
+    'pYisMAXY'                        0            0               0             0 
+    'p0_1'                       -1.496            0         0.44468       0.44468 
+    'p1'                       -0.20677            0         0.59175       0.59175 
+    'p5'                         0.4326            0         0.68262       0.68262 
+    'p10'                         1.051            0         0.85587       0.81947 
+    'p15'                        1.6461            0         0.90837       0.90837 
+    'p20'                        1.7912            0          1.0479        1.0364 
+    'p25'                        2.2186            0          1.1136        1.0479 
+    'p35'                        2.6167      0.13351          1.2772        1.1964 
+    'p50'                         3.239      0.33378          1.6681        1.3276 
+    'p65'                         3.834      0.73431          2.1977        1.4161 
+    'p75'                        4.2838       1.1348          2.6879        1.5268 
+    'p80'                        4.5488       1.4686          3.0188        1.5952 
+    'p85'                        4.8767       1.8024          3.4471        1.6619 
+    'p90'                        5.2801       2.3364          4.0585        1.7521 
+    'p95'                        5.8899        3.271           5.109        1.8668 
+    'p99'                        7.0098       5.3405          7.4642        2.1241 
+    'p99_9'                      8.0879       8.0774          10.402        2.3562 
+    'fl_cov_cl_mt_val'           2.5438       1.4648          2.0125       0.54766 
+    'fl_cor_cl_mt_val'                1      0.77947         0.86061       0.99518 
+    'fl_cov_cl_mt_pol_a'         1.4648       1.3883          1.7095       0.32116 
+    'fl_cor_cl_mt_pol_a'        0.77947            1         0.98953       0.78994 
+    'fl_cov_cl_mt_coh'           2.0125       1.7095          2.1497       0.44021 
+    'fl_cor_cl_mt_coh'          0.86061      0.98953               1       0.87016 
+    'fl_cov_cl_mt_pol_c'        0.54766      0.32116         0.44021       0.11905 
+    'fl_cor_cl_mt_pol_c'        0.99518      0.78994         0.87016             1 
+    'fracByP0_1'             -0.0010465            0      0.00046931    0.00076903 
+    'fracByP1'               -0.0036078            0       0.0056855     0.0093392 
+    'fracByP5'               0.00013246            0        0.014805      0.024372 
+    'fracByP10'                0.016595            0        0.035362      0.054869 
+    'fracByP15'                0.054864            0        0.060387       0.10332 
+    'fracByP20'                0.064583            0        0.098878       0.12492 
+    'fracByP25'                 0.12076            0         0.10377       0.17674 
+    'fracByP35'                 0.16824      0.01087         0.15913       0.25332 
+    'fracByP50'                 0.30272      0.04828         0.26465       0.41338 
+    'fracByP65'                 0.46974      0.14685         0.39975       0.55319 
+    'fracByP75'                 0.59101      0.25996         0.51052       0.66718 
+    'fracByP80'                 0.65996      0.35468         0.57781       0.72753 
+    'fracByP85'                 0.73282      0.43783         0.65507       0.78829 
+    'fracByP90'                 0.81138      0.56644         0.74042       0.85351 
+    'fracByP95'                 0.89847      0.73086         0.84688       0.92266 
+    'fracByP99'                 0.97682      0.92153         0.95916       0.98296 
+    'fracByP99_9'               0.99741      0.98949         0.99463       0.99811 
 
 </pre><pre class="codeinput"><span class="keyword">end</span>
 </pre><pre class="codeoutput">
@@ -956,7 +821,7 @@ ans =
 
   Map with properties:
 
-        Count: 11
+        Count: 12
       KeyType: char
     ValueType: any
 

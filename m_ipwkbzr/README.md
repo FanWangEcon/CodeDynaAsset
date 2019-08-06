@@ -21,4 +21,12 @@ See descriptions for **Section 2** on the [Dynamic Assets Repository](https://fa
 
 ### Savings Interest Rates
 
-As savings interest rate increases, consumption increases and risky k investment decrease. 
+As savings interest rate increases, consumption increases and risky k investment decrease monotonically.
+
+Under default, slightly higher consumption and lower variance.
+
+Under Default, slightly higher K investment, and higher K sd slightly.
+
+Under these simulations, share defaulting was low.
+
+As savings increase the correlation between savings and consumption increase
