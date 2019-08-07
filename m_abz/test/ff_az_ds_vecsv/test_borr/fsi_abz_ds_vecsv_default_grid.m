@@ -33,12 +33,12 @@
 %
 
 %% Set Shared Parameters
-
 close all;
 clear all;
 
 % Borrowing/Savings Parameters
 bl_default = true;
+fl_b_bd = -60;
 
 %% Simulate and Graph
 % Note: as for example _fl_beta_ increases, willingness to save increases,
@@ -57,11 +57,21 @@ param_map('bl_default') = bl_default;
 support_map('bl_replacefile') = false;
 support_map('bl_graph_onebyones') = true;
 support_map('bl_display_graph_stats') = false;
-support_map('st_mat_test_prefix') = ['dft_'];
+st_mat_test_prefix_base = ['dft_'];
 
 %% No Savings, Vary Borrowing Interest Rate, Single Borrowing Rate (GRID) (Vary fl_r_borr, fl_beta)
-%
+% Still in the context where savings are not allowed and income is
+% exogenous. In contrast to the world without default, once default is
+% possible, aggregate consumption no longer constrained by aggregate
+% income. For example, even though tomorrow's minimum income is 10 dollars,
+% a houseold could borrow 20 and then default. A borrowing bound is
+% required to prevent borrowing up to infinity. Additionally, households
+% will consider in how many states of the future they will have to default
+% and face minimum consumption's associated utility level in deciding how
+% much to borrow. As interest rates go down, default fraction could go up
+% or go down, depending on parameters. 
 
+support_map('st_mat_test_prefix') = [st_mat_test_prefix_base 'amax0_'];
 cl_st_param_keys = {'fl_r_borr', 'fl_beta'};
 
 param_tstar_map = containers.Map('KeyType','char', 'ValueType','any');
@@ -75,11 +85,11 @@ param_map('fl_a_max') = 0;
 
 % Initialize to be replaced by param_tstar_map inside function
 param_map('fl_r_borr') = 0;
-param_map('fl_b_bd') = -100;
+param_map('fl_b_bd') = fl_b_bd;
 
 % Simu Size and Graph Type
 it_size_type = 2;
-ar_it_plot_sets = [51,52,54, 5,6,153, 61,62,64];
+ar_it_plot_sets = [51,52,54, 5,6,153, 61,62,10];
 bl_simu_cross = 'g';
 
 % Simulate along parameters
@@ -91,7 +101,7 @@ close all;
 
 %% Single Saving Interest Rate, Single Borrowing Interest Rate (GRID) (Vary fl_r_borr, fl_beta)
 
-
+support_map('st_mat_test_prefix') = [st_mat_test_prefix_base 'amax50_'];
 param_map('fl_a_max') = fl_a_max_ori;
 
 cl_st_param_keys = {'fl_r_borr', 'fl_beta'};
@@ -102,7 +112,7 @@ param_tstar_map('fl_beta') = linspace(0.87, 0.97, it_simu_vec_len);
 
 % Simu Size and Graph Type
 it_size_type = 2;
-ar_it_plot_sets = [51,52,54, 5,6,153, 61,62,64];
+ar_it_plot_sets = [51,52,54, 5,6,153, 61,62,10];
 bl_simu_cross = 'g';
 
 % Simulate along parameters
@@ -113,7 +123,11 @@ ff_az_test_analyze( ...
 close all;
 
 %% Single Saving Interest Rate, Single Borrowing Interest Rate (GRID) (Vary fl_r_borr, fl_r_save)
+% Similar to above, except we allow for savings. Still vary borrowing
+% interest rate and discount. Do not vary savings interest rate. Use
+% default savings rate
 
+support_map('st_mat_test_prefix') = [st_mat_test_prefix_base];
 param_map('fl_a_max') = fl_a_max_ori;
 
 cl_st_param_keys = {'fl_r_borr', 'fl_r_save'};
@@ -124,7 +138,7 @@ param_tstar_map('fl_r_save') = linspace(0.00, 0.06, it_simu_vec_len);
 
 % Simu Size and Graph Type
 it_size_type = 2;
-ar_it_plot_sets = [51,52,54, 5,6,153, 61,62,64];
+ar_it_plot_sets = [51,52,54, 5,6,153, 61,62,10];
 bl_simu_cross = 'g';
 
 % Simulate along parameters
@@ -140,6 +154,7 @@ it_param_set = 9;
 
 % Borrowing Parameters
 param_map('bl_default') = bl_default;
+param_map('fl_b_bd') = fl_b_bd;
 
 % Support Parameters
 support_map('bl_replacefile') = false;
@@ -148,7 +163,7 @@ support_map('bl_display_graph_stats') = false;
 support_map('st_mat_test_prefix') = ['dft_'];
 
 it_size_type = 10;
-ar_it_plot_sets = [51,52,54, 5,6,153, 61,62,64];
+ar_it_plot_sets = [51,52,54, 5,6,153, 61,62,10];
 bl_simu_cross = 'g';
 
 cl_st_param_keys = {'fl_z_r_borr_poiss_mean', 'fl_r_save'};

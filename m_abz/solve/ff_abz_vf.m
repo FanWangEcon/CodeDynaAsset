@@ -133,8 +133,8 @@ params_group = values(armt_map, {'ar_a', 'mt_z_trans', 'ar_z_r_borr_mesh_wage', 
 [ar_a, mt_z_trans, ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr] = params_group{:};
 
 % func_map
-params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons_checkcmin', 'f_coh', 'f_cons_coh'});
-[f_util_log, f_util_crra, f_cons_checkcmin, f_coh, f_cons_coh] = params_group{:};
+params_group = values(func_map, {'f_util_log', 'f_util_crra', 'f_cons_checkcmin', 'f_awithr_to_anor', 'f_coh', 'f_cons_coh'});
+[f_util_log, f_util_crra, f_cons_checkcmin, f_awithr_to_anor, f_coh, f_cons_coh] = params_group{:};
 
 % param_map
 params_group = values(param_map, {'it_a_n', 'it_z_n', 'fl_crra', 'fl_beta', 'fl_c_min',...
@@ -259,7 +259,7 @@ while bl_vfi_continue
             ar_val_cur = zeros(size(ar_a));
 
             % calculate cash on hand
-            fl_coh = f_coh(fl_z_r_borr, fl_z_wage, fl_a);
+            fl_coh = f_coh(fl_z_wage, fl_a);
             
             % loop 3: over choices
             for it_ap_k = 1:length(ar_a)
@@ -268,7 +268,7 @@ while bl_vfi_continue
                 fl_ap = ar_a(it_ap_k);
 
                 % calculate consumption
-                fl_c = f_cons_coh(fl_coh, fl_ap);
+                fl_c = f_cons_coh(fl_coh, fl_z_r_borr, fl_ap);
 
                 % assign u(c)
                 if (fl_c <= fl_c_min)
@@ -306,7 +306,7 @@ while bl_vfi_continue
             % optimal choice value
             [fl_opti_val_z, fl_opti_idx_z] = max(ar_val_cur);
             fl_opti_aprime_z = ar_a(fl_opti_idx_z);
-            fl_opti_c_z = f_cons_coh(fl_coh, fl_opti_aprime_z);
+            fl_opti_c_z = f_cons_coh(fl_coh, fl_z_r_borr, fl_opti_aprime_z);
 
             % Handle Default is optimal or not
             if (fl_opti_c_z <= fl_c_min)
@@ -390,8 +390,8 @@ result_map = containers.Map('KeyType','char', 'ValueType','any');
 result_map('mt_val') = mt_val;
 
 result_map('cl_mt_val') = {mt_val, zeros(1)};
-result_map('cl_mt_coh') = {f_coh(ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr, ar_a'), zeros(1)};
-result_map('cl_mt_pol_a') = {mt_pol_a, zeros(1)};
+result_map('cl_mt_coh') = {f_coh(ar_z_wage_mesh_r_borr, ar_a'), zeros(1)};
+result_map('cl_mt_pol_a') = {f_awithr_to_anor(ar_z_r_borr_mesh_wage, mt_pol_a), zeros(1)};
 result_map('cl_mt_pol_c') = {f_cons_checkcmin(ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr, ar_a', mt_pol_a), zeros(1)};
 result_map('ar_st_pol_names') = ["cl_mt_val", "cl_mt_pol_a", "cl_mt_coh", "cl_mt_pol_c"];
 

@@ -9,6 +9,19 @@ function [result_map] = ff_abz_ds_wrapper(varargin)
 % This is a warpper function. Note that when invoked by *abz*, there are
 % two shocks, one for wage, another for the borrowing interest rate.
 %
+% @example
+%
+%   it_param_set = 9;
+%   [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
+%   [armt_map, func_map] = ffs_abz_get_funcgrid(param_map, support_map);
+%   result_map = ff_abz_vf_vecsv(param_map, support_map, armt_map, func_map);
+%   result_map = ff_az_ds_vecsv(param_map, support_map, armt_map, func_map, result_map);
+%   tb_outcomes = result_map('tb_outcomes');
+%   cl_mt_pol_a = result_map('cl_mt_pol_a');
+%   ds_stats_pol_a_map = cl_mt_pol_a{2};
+%   ds_stats_pol_a_map_keys = ds_stats_pol_a_map.keys;
+%   ds_stats_pol_a_map('mt_choice_prob_byYZ');
+%
 % @include
 %
 % * <https://fanwangecon.github.io/CodeDynaAsset/m_abz/paramfunc/html/ffs_abz_set_default_param.html ffs_abz_set_default_param>

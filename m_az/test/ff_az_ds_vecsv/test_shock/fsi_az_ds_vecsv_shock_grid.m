@@ -49,7 +49,7 @@ param_tstar_map('fl_z_sig') = linspace(0.05, 0.95, it_simu_vec_len);
 
 %% Denser Simulation
 it_size_type = 2;
-ar_it_plot_sets = [51,52,54, 5,6,153, 61,62,64];
+ar_it_plot_sets = [51,52,54, 5,6,153, 61,62,10];
 
 % Simulate along parameters
 [tb_outcomes, support_map] = ff_az_test_analyze( ...

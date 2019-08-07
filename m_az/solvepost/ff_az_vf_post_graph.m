@@ -180,7 +180,7 @@ if (bl_graph_coh_t_coh)
 
     % 2. COH Next Period
     if (ismember(st_model, ["abz"]))
-        mt_coh_next = f_coh(ar_z_r_borr_mesh_wage, ar_z_wage_mesh_r_borr, ar_pol_a_full);
+        mt_coh_next = f_coh(ar_z_wage_mesh_r_borr, ar_pol_a_full);
     elseif (ismember(st_model, ["abzr_fibs"]))
         mt_coh_next = f_coh(ar_z_wage_mesh_r_borr, ar_pol_a_full);
     else

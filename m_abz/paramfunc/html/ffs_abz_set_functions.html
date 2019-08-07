@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Set Model Functions One Asset Borrowing and Savings</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-22"><meta name="DC.source" content="ffs_abz_set_functions.m"><style type="text/css">
+      --><title>Set Model Functions One Asset Borrowing and Savings</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-08-06"><meta name="DC.source" content="ffs_abz_set_functions.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Set Model Functions One Asset Borrowing and Savings</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FFS_ABZ_SET_FUNCTIONS setting model functions</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Equations</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons_coh, f_cons, f_cons_checkcmin] = <span class="keyword">...</span>
+  </style></head><body><div class="content"><h1>Set Model Functions One Asset Borrowing and Savings</h1><!--introduction--><p><b>back to <a href="https://fanwangecon.github.io">Fan</a>'s <a href="https://fanwangecon.github.io/CodeDynaAsset/">Dynamic Assets Repository</a> Table of Content.</b></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">FFS_ABZ_SET_FUNCTIONS setting model functions</a></li><li><a href="#3">Default</a></li><li><a href="#4">Parse Parameters</a></li><li><a href="#5">Equations if Choice is Principle</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [f_util_log, f_util_crra, f_util_standin, f_coh, f_cons_coh, f_cons_checkcmin] = <span class="keyword">...</span>
     ffs_abz_set_functions(varargin)
 </pre><h2 id="2">FFS_ABZ_SET_FUNCTIONS setting model functions</h2><p>define functions here to avoid copy paste mistakes</p><p>@param fl_crra float crra utility</p><p>@param fl_c_min float minimum consumption</p><p>@param fl_r_save float savings interest rate, the borrowing interest rate is a paramter for the coh and inc functions, not a parameter for the overall function here.</p><p>@param fl_w float wage rate</p><p>@return f_util_log handle log utility</p><p>@return f_util_crra handle crra utility general</p><p>@return f_util_standin handle log utility with coh for testing graphing codes</p><p>@return f_inc income handle equation wage and interests</p><p>@return f_coh handle cash on hand equation given current period shock</p><p>@return f_cons handle consumption equation given coh and asset choice</p><p>@example</p><pre class="language-matlab">[f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons_coh, f_cons, f_cons_checkcmin] = <span class="keyword">...</span>
      ffs_abz_set_functions(fl_crra, fl_c_min, fl_r_save, fl_w);
@@ -76,26 +76,28 @@ default_params = {fl_crra fl_c_min fl_r_save fl_w};
 </pre><h2 id="4">Parse Parameters</h2><pre class="codeinput"><span class="comment">% numvarargs is the number of varagin inputted</span>
 [default_params{1:length(varargin)}] = varargin{:};
 [fl_crra, fl_c_min, fl_r_save, fl_w] = default_params{:};
-</pre><h2 id="5">Equations</h2><p>z here refers to z_wage</p><pre class="codeinput"><span class="comment">% utility</span>
+</pre><h2 id="5">Equations if Choice is Principle</h2><p>Choice is principle does not work in this structure with variation in borrowing interest rate.</p><pre class="codeinput"><span class="comment">% utility</span>
 f_util_log = @(c) log(c);
 f_util_crra = @(c) (((c).^(1-fl_crra)-1)./(1-fl_crra));
-<span class="comment">% Production Function</span>
-f_inc = @(fl_r_borr, z, b) (z*fl_w + (b.*(fl_r_save).*(b&gt;0) + b.*(fl_r_borr).*(b&lt;=0))); <span class="comment">% z already exp</span>
-<span class="comment">% Cash on Hand, b is principle</span>
-f_coh = @(fl_r_borr, z, b) (z*fl_w + (b.*(1+fl_r_save).*(b&gt;0) + b.*(1+fl_r_borr).*(b&lt;=0)));
-<span class="comment">% Simple Consumption b and k</span>
-f_cons_coh = @(coh, bprime) (coh - bprime);
-f_cons = @(z, b, bprime) (f_coh(z, b) - bprime);
+
+<span class="comment">% COH and C</span>
+f_coh = @(z, b) (z*fl_w + b);
+f_cons_coh = @(coh, fl_r_borr, bprime) (coh - (bprime.*(1./(1+fl_r_save)).*(bprime&gt;0) + bprime.*(1./(1+fl_r_borr)).*(bprime&lt;=0)));
+
+<span class="comment">% Support</span>
+f_coh_princ = @(fl_r_borr, z, b) (z*fl_w + (b.*(1+fl_r_save).*(b&gt;0) + b.*(1+fl_r_borr).*(b&lt;=0)));
+f_cons_coh_princ = @(coh, bprime) (coh - bprime);
+
 <span class="comment">% f_cons_checkcmin is not used in main solution, but at the end of solution file to</span>
 <span class="comment">% get consumption based on optimal choices. Here we add conditioning based</span>
 <span class="comment">% on cmin, so that consumption is not negative. If do not do this, for</span>
 <span class="comment">% defaulters, next period a'=0, would seem like they have large negative</span>
 <span class="comment">% consumption.</span>
-f_cons_checkcmin = @(fl_r_borr, z, b, bprime) ((f_coh(fl_r_borr, z, b) - bprime).*((f_coh(fl_r_borr, z, b) - bprime) &gt;= fl_c_min) + <span class="keyword">...</span>
-                                               fl_c_min.*((f_coh(fl_r_borr, z, b) - bprime) &lt; fl_c_min));
+f_cons_checkcmin = @(fl_r_borr, z, b, bprime) ((f_cons_coh(f_coh(z, b),fl_r_borr,bprime)).*((f_cons_coh(f_coh(z, b),fl_r_borr,bprime)) &gt;= fl_c_min) + <span class="keyword">...</span>
+                                               fl_c_min.*((f_cons_coh(f_coh(z, b),fl_r_borr,bprime)) &lt; fl_c_min));
 <span class="comment">% Simple Consumption b and k</span>
-f_util_standin = @(fl_r_borr, z, b) f_util_log(f_coh(fl_r_borr,z,b).*(f_coh(fl_r_borr,z,b) &gt; 0) + <span class="keyword">...</span>
-                                    fl_c_min.*(f_coh(fl_r_borr,z,b) &lt;= 0));
+f_util_standin = @(fl_r_borr, z, b) f_util_log(f_coh_princ(fl_r_borr,z,b).*(f_coh_princ(fl_r_borr,z,b) &gt; 0) + <span class="keyword">...</span>
+                                    fl_c_min.*(f_coh_princ(fl_r_borr,z,b) &lt;= 0));
 </pre><pre class="codeinput"><span class="keyword">end</span>
 </pre><pre class="codeoutput">
 ans =
@@ -112,7 +114,7 @@ ans =
 % Table of Content.*
 
 %%
-function [f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons_coh, f_cons, f_cons_checkcmin] = ...
+function [f_util_log, f_util_crra, f_util_standin, f_coh, f_cons_coh, f_cons_checkcmin] = ...
     ffs_abz_set_functions(varargin)
 %% FFS_ABZ_SET_FUNCTIONS setting model functions
 % define functions here to avoid copy paste mistakes
@@ -166,29 +168,33 @@ default_params = {fl_crra fl_c_min fl_r_save fl_w};
 [default_params{1:length(varargin)}] = varargin{:};
 [fl_crra, fl_c_min, fl_r_save, fl_w] = default_params{:};
 
-%% Equations
-% z here refers to z_wage
+%% Equations if Choice is Principle
+% Choice is principle does not work in this structure with variation in
+% borrowing interest rate. 
 
 % utility
 f_util_log = @(c) log(c);
 f_util_crra = @(c) (((c).^(1-fl_crra)-1)./(1-fl_crra));
-% Production Function
-f_inc = @(fl_r_borr, z, b) (z*fl_w + (b.*(fl_r_save).*(b>0) + b.*(fl_r_borr).*(b<=0))); % z already exp
-% Cash on Hand, b is principle
-f_coh = @(fl_r_borr, z, b) (z*fl_w + (b.*(1+fl_r_save).*(b>0) + b.*(1+fl_r_borr).*(b<=0)));
-% Simple Consumption b and k
-f_cons_coh = @(coh, bprime) (coh - bprime);
-f_cons = @(z, b, bprime) (f_coh(z, b) - bprime);
+
+% COH and C
+f_coh = @(z, b) (z*fl_w + b);
+f_cons_coh = @(coh, fl_r_borr, bprime) (coh - (bprime.*(1./(1+fl_r_save)).*(bprime>0) + bprime.*(1./(1+fl_r_borr)).*(bprime<=0)));
+
+% Support
+f_coh_princ = @(fl_r_borr, z, b) (z*fl_w + (b.*(1+fl_r_save).*(b>0) + b.*(1+fl_r_borr).*(b<=0)));
+f_cons_coh_princ = @(coh, bprime) (coh - bprime);
+
 % f_cons_checkcmin is not used in main solution, but at the end of solution file to
 % get consumption based on optimal choices. Here we add conditioning based
 % on cmin, so that consumption is not negative. If do not do this, for
 % defaulters, next period a'=0, would seem like they have large negative
 % consumption.
-f_cons_checkcmin = @(fl_r_borr, z, b, bprime) ((f_coh(fl_r_borr, z, b) - bprime).*((f_coh(fl_r_borr, z, b) - bprime) >= fl_c_min) + ...
-                                               fl_c_min.*((f_coh(fl_r_borr, z, b) - bprime) < fl_c_min));
+f_cons_checkcmin = @(fl_r_borr, z, b, bprime) ((f_cons_coh(f_coh(z, b),fl_r_borr,bprime)).*((f_cons_coh(f_coh(z, b),fl_r_borr,bprime)) >= fl_c_min) + ...
+                                               fl_c_min.*((f_cons_coh(f_coh(z, b),fl_r_borr,bprime)) < fl_c_min));
 % Simple Consumption b and k
-f_util_standin = @(fl_r_borr, z, b) f_util_log(f_coh(fl_r_borr,z,b).*(f_coh(fl_r_borr,z,b) > 0) + ...
-                                    fl_c_min.*(f_coh(fl_r_borr,z,b) <= 0));
+f_util_standin = @(fl_r_borr, z, b) f_util_log(f_coh_princ(fl_r_borr,z,b).*(f_coh_princ(fl_r_borr,z,b) > 0) + ...
+                                    fl_c_min.*(f_coh_princ(fl_r_borr,z,b) <= 0));
+
 
 end
 

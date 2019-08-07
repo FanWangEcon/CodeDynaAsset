@@ -218,7 +218,7 @@ end
 
 %% Get Equations
 
-[f_util_log, f_util_crra, f_util_standin, f_inc, f_coh, f_cons_coh, f_cons, f_cons_checkcmin] = ...
+[f_util_log, f_util_crra, f_util_standin, f_awithr_to_anor, f_coh, f_cons_coh, f_cons_checkcmin] = ...
     ffs_abz_set_functions(fl_crra, fl_c_min, fl_r_save, fl_w);
 
 %% Get Asset and Choice Grid
@@ -241,16 +241,17 @@ armt_map('ar_a') = ar_a;
 armt_map('mt_z_trans') = mt_z_trans;
 armt_map('ar_z_r_borr_mesh_wage') = ar_z_r_borr_mesh_wage;
 armt_map('ar_z_wage_mesh_r_borr') = ar_z_wage_mesh_r_borr;
+armt_map('ar_z_r_borr') = ar_z_r_borr;
+armt_map('ar_z_r_borr_prob') = ar_z_r_borr_prob; % Exo. Prob
 
 func_map = containers.Map('KeyType','char', 'ValueType','any');
 func_map('f_util_log') = f_util_log;
 func_map('f_util_crra') = f_util_crra;
 func_map('f_util_standin') = f_util_standin;
-func_map('f_inc') = f_inc;
 func_map('f_coh') = f_coh;
-func_map('f_cons') = f_cons;
 func_map('f_cons_coh') = f_cons_coh;
 func_map('f_cons_checkcmin') = f_cons_checkcmin;
+func_map('f_awithr_to_anor') = f_awithr_to_anor;
 
 %% Graph: A, Shocks, COH, and Defaults
 % # y-axis : coh(a,z)
@@ -264,8 +265,7 @@ if (bl_graph_funcgrids)
     [mt_a_mesh_z, mt_z_mesh_a] = ndgrid(ar_a, ar_z_wage);
     
     % cash-on-hand given a and z
-    fl_r_borr_max = max(ar_z_r_borr);
-    mt_coh = f_coh(fl_r_borr_max, mt_z_mesh_a, mt_a_mesh_z);
+    mt_coh = f_coh(mt_z_mesh_a, mt_a_mesh_z);
     
     % loop over level vs log graphs
     for sub_j=1:1:1

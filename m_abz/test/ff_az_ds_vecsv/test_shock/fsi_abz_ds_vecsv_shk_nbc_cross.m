@@ -113,7 +113,7 @@ close all;
 
 %% Larger Grid Simulation (GRID)
 it_size_type = 2;
-ar_it_plot_sets = [51,52,54, 5,6,153, 61,62,64];
+ar_it_plot_sets = [51,52,54, 5,6,153, 61,62,10];
 bl_simu_cross = 'g';
 
 % Simulate along parameters

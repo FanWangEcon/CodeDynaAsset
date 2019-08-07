@@ -56,7 +56,7 @@ else
     param_dsv_map('st_drv_prb_type') = 'poiss';
     param_dsv_map('fl_max') = 0.095;
     param_dsv_map('fl_min') = 0.025;
-    param_dsv_map('fl_n') = 5;
+    param_dsv_map('fl_n') = 3;
     
     bl_display_dvg = true;
 end

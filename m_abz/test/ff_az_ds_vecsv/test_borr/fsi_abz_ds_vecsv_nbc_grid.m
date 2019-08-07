@@ -39,6 +39,7 @@ clear all;
 
 % Borrowing/Savings Parameters
 bl_default = false;
+fl_b_bd = -60;
 
 %% Simulate and Graph
 % Note: as for example _fl_beta_ increases, willingness to save increases,
@@ -57,7 +58,7 @@ param_map('bl_default') = bl_default;
 support_map('bl_replacefile') = false;
 support_map('bl_graph_onebyones') = true;
 support_map('bl_display_graph_stats') = false;
-support_map('st_mat_test_prefix') = ['nbc_'];
+st_mat_test_prefix_base = ['nbc_'];
 
 %% No Savings, Vary Borrowing Interest Rate, Single Borrowing Rate (GRID) (Vary fl_r_borr, fl_beta)
 % The aggregate income level is fixed, since borrowing does not impact the
@@ -98,8 +99,7 @@ support_map('st_mat_test_prefix') = ['nbc_'];
 % interest rate.
 %
 
-support_map('st_mat_test_prefix') = ['amax0_'];
-
+support_map('st_mat_test_prefix') = [st_mat_test_prefix_base 'amax0_'];
 cl_st_param_keys = {'fl_r_borr', 'fl_beta'};
 
 param_tstar_map = containers.Map('KeyType','char', 'ValueType','any');
@@ -113,11 +113,11 @@ param_map('fl_a_max') = 0;
 
 % Initialize to be replaced by param_tstar_map inside function
 param_map('fl_r_borr') = 0;
-param_map('fl_b_bd') = -100;
+param_map('fl_b_bd') = fl_b_bd;
 
 % Simu Size and Graph Type
 it_size_type = 2;
-ar_it_plot_sets = [51,52,54, 5,6,153, 61,62,64];
+ar_it_plot_sets = [51,52,54, 5,6,153, 61,62,10];
 bl_simu_cross = 'g';
 
 % Simulate along parameters
@@ -132,8 +132,7 @@ close all;
 % interest rate and discount. Do not vary savings interest rate. Use
 % default savings rate
 
-support_map('st_mat_test_prefix') = ['amax50_'];
-
+support_map('st_mat_test_prefix') = [st_mat_test_prefix_base 'amax50_'];
 param_map('fl_a_max') = fl_a_max_ori;
 
 cl_st_param_keys = {'fl_r_borr', 'fl_beta'};
@@ -144,7 +143,7 @@ param_tstar_map('fl_beta') = linspace(0.87, 0.97, it_simu_vec_len);
 
 % Simu Size and Graph Type
 it_size_type = 2;
-ar_it_plot_sets = [51,52,54, 5,6,153, 61,62,64];
+ar_it_plot_sets = [51,52,54, 5,6,153, 61,62,10];
 bl_simu_cross = 'g';
 
 % Simulate along parameters
@@ -159,6 +158,7 @@ close all;
 % interest rate and discount. Do not vary savings interest rate. Use
 % default savings rate
 
+support_map('st_mat_test_prefix') = [st_mat_test_prefix_base];
 param_map('fl_a_max') = fl_a_max_ori;
 
 cl_st_param_keys = {'fl_r_borr', 'fl_r_save'};
@@ -169,7 +169,7 @@ param_tstar_map('fl_r_save') = linspace(0.00, 0.06, it_simu_vec_len);
 
 % Simu Size and Graph Type
 it_size_type = 2;
-ar_it_plot_sets = [51,52,54, 5,6,153, 61,62,64];
+ar_it_plot_sets = [51,52,54, 5,6,153, 61,62,10];
 bl_simu_cross = 'g';
 
 % Simulate along parameters
@@ -180,14 +180,12 @@ ff_az_test_analyze( ...
 close all;
 
 %% Multiple Borrowing Interest Rates (GRID) (Vary fl_r_borr, fl_r_save)
-% Borrow Interest Rate Draws and Very Savings Interest Rate
-
-% Generate Benchmark Parameters
 it_param_set = 9;
 [param_map, support_map] = ffs_abz_set_default_param(it_param_set);
 
 % Borrowing Parameters
 param_map('bl_default') = bl_default;
+param_map('fl_b_bd') = fl_b_bd;
 
 % Support Parameters
 support_map('bl_replacefile') = false;
@@ -196,7 +194,7 @@ support_map('bl_display_graph_stats') = false;
 support_map('st_mat_test_prefix') = ['nbc_'];
 
 it_size_type = 2;
-ar_it_plot_sets = [51,52,54, 5,6,153, 61,62,64];
+ar_it_plot_sets = [51,52,54, 5,6,153, 61,62,10];
 bl_simu_cross = 'g';
 
 cl_st_param_keys = {'fl_z_r_borr_poiss_mean', 'fl_r_save'};
