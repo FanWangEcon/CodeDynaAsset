@@ -73,6 +73,8 @@ ds_stats_pol_a_map = cl_mt_pol_a{2};
 ds_stats_pol_a_map_keys = ds_stats_pol_a_map.keys;
 
 mt_choice_prob_byYZ = ds_stats_pol_a_map('mt_choice_prob_byYZ');
+
+ar_choice_prob_byY = ds_stats_pol_a_map('ar_choice_prob_byY');
 ar_choice_unique_sorted_byY = ds_stats_pol_a_map('ar_choice_unique_sorted_byY');
 
 % disp(mt_choice_prob_byYZ);
