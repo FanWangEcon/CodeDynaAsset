@@ -21,7 +21,7 @@ it_param_set = 6;
 %% Change Parameter to Main Options
 
 % Set Parameter Types
-st_param_which = 'dense';
+st_param_which = 'default';
 
 if (ismember(st_param_which, ["default"]))
     

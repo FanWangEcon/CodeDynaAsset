@@ -206,7 +206,14 @@ for it_outcome_ctr=1:length(ar_st_pol_names)
     % Append prob mass functions to ds_stats_map
     ds_stats_map('mt_choice_prob_byYZ') = mt_choice_prob_byYZ;
     ds_stats_map('mt_choice_prob_byYA') = mt_choice_prob_byYA;
-    ds_stats_map('ar_choice_unique_sorted_byY') = ar_choice_unique_sorted_byY;
+    ds_stats_map('ar_choice_unique_sorted_byY') = ar_choice_unique_sorted_byY;    
+    fl_neg_sum = sum(ar_choice_prob_byY<0);
+%     if (fl_neg_sum >= -1e20)
+%         warning('fl_neg_sum is too large')
+%     end
+    ar_choice_prob_byY(ar_choice_prob_byY<0) = 0;
+    ar_choice_prob_byY = ar_choice_prob_byY/sum(ar_choice_prob_byY);
+%     sum(ar_choice_prob_byY)
     ds_stats_map('ar_choice_prob_byY') = ar_choice_prob_byY;
     % ds_stats_map is second element of cell for the key for the variable
     % in result_map

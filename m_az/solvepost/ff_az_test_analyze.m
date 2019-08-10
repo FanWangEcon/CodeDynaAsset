@@ -429,6 +429,28 @@ for it_plot = ar_it_plot_sets
         st_ytitle = 'Share of Aggregate Value';                        
     end
     
+    %% FIBS Related Outcomes
+    if (it_plot == 1001)
+        ar_st_variablenames_plot =  {'cl_mt_pol_b_bridge', 'cl_mt_pol_inf_borr_nobridge', 'cl_mt_pol_for_borr', 'cl_mt_pol_for_save'};
+        ar_st_legend_plot =  {'Bridge Loans', 'Informal Non-Bridge Loans', 'Formal Loans', 'Formal Savings'};
+        ar_st_colnames_plot =  repmat({'mean'}, [1, length(ar_st_variablenames_plot)]);
+        st_title = 'Aggregate Borrowing and Savings Volume';
+        st_ytitle = 'Aggregate Levels';
+    elseif (it_plot == 1002)
+        ar_st_variablenames_plot =  {'cl_mt_it_inf_only_nbdg', 'cl_mt_it_frin_brr_nbdg', 'cl_mt_it_fr_brrsv_nbdg', 'cl_mt_it_frmsavng_only'};
+        ar_st_legend_plot =  {'informal borrowing only', 'joint formal + informal borrw', 'formal br + save', 'save only'};
+        ar_st_colnames_plot =  repmat({'mean'}, [1, length(ar_st_variablenames_plot)]);
+        st_title = 'Aggregate Participation Shares for Borrowing and Savings';
+        st_ytitle = 'Percentages (sum to 1)';
+    elseif (it_plot == 1003)
+        ar_st_variablenames_plot =  {'cl_mt_coh', 'cl_mt_pol_a_principleonly', 'cl_mt_pol_c', 'cl_mt_pol_k'};
+        ar_st_legend_plot =  {'coh=wealth', 'net savings', 'consumption', 'risky k'};
+        ar_st_colnames_plot =  repmat({'mean'}, [1, length(ar_st_variablenames_plot)]);
+        st_title = 'Aggregate Outcomes (wealth, net-save, consumption, k)';
+        st_ytitle = 'Aggregate Levels';        
+    elseif (it_plot == 1004)
+    end    
+    
     %% Store to cells
     cl_ar_st_variablenames{it_plot_ctr} = ar_st_variablenames_plot;
     cl_ar_st_legend{it_plot_ctr} = ar_st_legend_plot;
@@ -569,7 +591,7 @@ for it_pcombi_ctr = 1:length(cl_st_param_keys)
             end
 
             legend(ls_chart, cl_legend, 'Location', st_legend_loc, 'color', 'none');
-
+            
             % 9. Titling etc
             grid on;
             grid minor;
@@ -585,6 +607,15 @@ for it_pcombi_ctr = 1:length(cl_st_param_keys)
                 st_xlabel_randvars = string(['random vary by: ' strrep(strjoin(cl_st_param_desc, ' and '), '_', '\_')]);
                 xlabel({st_xlabel{1} st_xlabel_randvars});
             end
+            
+            % 10. Special X-labe
+            if (strcmp(st_param_key, 'fl_z_r_infbr_poiss_mean'))
+                xticks([2:1:10])
+                xticklabels({'5.7%', '6.7%', '7.3%', '7.8%', '8,1%', '8.3%', '8.5%', '8.6%', '8.7%'});
+                xlabel('Mean Informal Interest Rate (Poisson Truncated)');
+            end
+            yline0 = yline(0);
+            yline0.HandleVisibility = 'off';            
             
         elseif (ismember(st_simu_type, ["g"]))
                         

@@ -49,14 +49,14 @@ else
     param_dsv_map = containers.Map('KeyType','char', 'ValueType','any');
     
     param_dsv_map('fl_binom_p') = 0.25;
-    param_dsv_map('fl_poiss_mean') = 5;
+    param_dsv_map('fl_poiss_mean') = 10;
     param_dsv_map('fl_logspace_adj') = 0.075;
     
     param_dsv_map('st_drv_ele_type') = 'unif';
     param_dsv_map('st_drv_prb_type') = 'poiss';
     param_dsv_map('fl_max') = 0.095;
     param_dsv_map('fl_min') = 0.025;
-    param_dsv_map('fl_n') = 3;
+    param_dsv_map('fl_n') = 5;
     
     bl_display_dvg = true;
 end
@@ -140,6 +140,14 @@ if (bl_display_dvg)
     disp(ar_drv_ele);
     disp('ar_drv_prb');
     disp(ar_drv_prb);
+    
+    fl_mean = sum(ar_drv_ele.*ar_drv_prb);
+    fl_sd = sqrt(sum((ar_drv_ele- fl_mean).^2.*ar_drv_prb));
+    
+    disp('mean');
+    disp(fl_mean);
+    disp('fl_sd');
+    disp(fl_sd);
 end
 
 end

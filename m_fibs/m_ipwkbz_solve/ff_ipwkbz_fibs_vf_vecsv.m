@@ -535,6 +535,7 @@ end
 % cost.
 %
 
+result_map('cl_mt_val') = {mt_val, zeros(1)};
 result_map('cl_mt_coh') = {mt_interp_coh_grid_mesh_z, zeros(1)};
 result_map('cl_mt_pol_k') = {mt_pol_k, zeros(1)};
 result_map('cl_mt_pol_c') = {f_cons(mt_interp_coh_grid_mesh_z, mt_pol_a, mt_pol_k), zeros(1)};
@@ -553,7 +554,7 @@ result_map('cl_mt_pol_for_save') = {mt_pol_for_save, zeros(1)};
 % distributional statistcs will be computed for elements in the list here.
 
 result_map('ar_st_pol_names') = ...
-    ["cl_mt_coh", "cl_mt_pol_a", "cl_mt_pol_k", "cl_mt_pol_c", "cl_mt_pol_a_principleonly", ...
+    ["cl_mt_val", "cl_mt_coh", "cl_mt_pol_a", "cl_mt_pol_k", "cl_mt_pol_c", "cl_mt_pol_a_principleonly", ...
     "cl_mt_pol_b_bridge", "cl_mt_pol_inf_borr_nobridge", "cl_mt_pol_for_borr", "cl_mt_pol_for_save"];
 
 % Get Discrete Choice Outcomes

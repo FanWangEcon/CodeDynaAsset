@@ -120,7 +120,9 @@ ls_st_param_key = {'fl_crra', 'fl_beta', ...
                     ...
                     'fl_alpha', 'fl_delta', ...
                     ...
-                    'fl_r_borr'};
+                    'fl_r_borr',...
+                    'fl_z_r_infbr_poiss_mean', 'fl_forbrblk_gap',...
+                    'fl_r_fsv', 'fl_r_fbr'};
 
 param_tstar_map = containers.Map('KeyType','char', 'ValueType','any');
 it_simu_vec_len = 5;
@@ -147,6 +149,12 @@ param_tstar_map(ls_st_param_key{18}) = linspace(0.02, 0.14, it_simu_vec_len);
 
 param_tstar_map(ls_st_param_key{19}) = linspace(0, 0.25, it_simu_vec_len);
 
+param_tstar_map(ls_st_param_key{20}) = linspace(2, 10, it_simu_vec_len);
+param_tstar_map(ls_st_param_key{21}) = linspace(-0.1, -2.5, it_simu_vec_len);
+param_tstar_map(ls_st_param_key{22}) = linspace(0.01, 0.04, it_simu_vec_len);
+param_tstar_map(ls_st_param_key{23}) = linspace(0, 0.25, it_simu_vec_len);
+
+
 param_desc_map = containers.Map('KeyType','char', 'ValueType','any');
 param_desc_map(ls_st_param_key{1}) = {'CRRA'};
 param_desc_map(ls_st_param_key{2}) = {'Discount'};
@@ -170,6 +178,11 @@ param_desc_map(ls_st_param_key{17}) = {'Prod Func Elasticity'};
 param_desc_map(ls_st_param_key{18}) = {'Prod Func Depreciation'};
 
 param_desc_map(ls_st_param_key{19}) = {'Single Borrow Rate'};
+
+param_desc_map(ls_st_param_key{20}) = {'pois-max(shift br r mean)'};
+param_desc_map(ls_st_param_key{21}) = {'formal menu even gap'};
+param_desc_map(ls_st_param_key{22}) = {'formal savings rate'};
+param_desc_map(ls_st_param_key{23}) = {'formal borrowing rate'};
 
 %% Default
 
@@ -238,7 +251,7 @@ if (it_size_type == 1)
 
         param_map('it_a_n') = 100;
 
-    elseif (ismember(st_model, ["abz", "ipwkbzr"]))
+    elseif (ismember(st_model, ["abz", "ipwkbzr", "ipwkbzr_fibs"]))
 
         if (ismember(st_model, ["abz"]))
 
@@ -248,17 +261,28 @@ if (it_size_type == 1)
 
             param_map('it_a_n') = 100;
 
-        elseif (ismember(st_model, ["ipwkbzr"]))
+        elseif (ismember(st_model, ["ipwkbzr", "ipwkbzr_fibs"]))
 
-            param_map('fl_z_r_borr_n') = 5;
             param_map('it_z_wage_n') = 5;
-            param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
 
             param_map('fl_coh_interp_grid_gap') = 0.3;
             param_map('it_c_interp_grid_gap') = 10^-4;
             param_map('it_w_perc_n') = 25;
             param_map('it_ak_perc_n') = param_map('it_w_perc_n');
             param_map('fl_w_interp_grid_gap') = 0.3;
+
+            if (ismember(st_model, ["ipwkbzr"]))
+
+                param_map('fl_z_r_borr_n') = 5;
+                param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+
+            elseif (ismember(st_model, ["ipwkbzr_fibs"]))
+
+                param_map('it_coh_bridge_perc_n') = param_map('it_w_perc_n')/3;
+                param_map('fl_z_r_infbr_n') = 5;
+                param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_infbr_n');
+
+            end
 
         end
 
@@ -296,7 +320,7 @@ elseif (it_size_type == 3)
 
         param_map('it_a_n') = 2250;
 
-    elseif (ismember(st_model, ["abz", "ipwkbzr"]))
+    elseif (ismember(st_model, ["abz", "ipwkbzr", "ipwkbzr_fibs"]))
 
 
         if (ismember(st_model, ["abz"]))
@@ -305,21 +329,32 @@ elseif (it_size_type == 3)
             param_map('fl_z_r_borr_n') = 11;
             param_map('it_z_wage_n') = 11;
             param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
-            
+
             param_map('it_a_n') = 1250;
 
-        elseif (ismember(st_model, ["ipwkbzr"]))
+        elseif (ismember(st_model, ["ipwkbzr", "ipwkbzr_fibs"]))
 
             % keep the interest rate structure the same as default
-            param_map('fl_z_r_borr_n') = 7;
             param_map('it_z_wage_n') = 11;
-            param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
-            
-            param_map('fl_coh_interp_grid_gap') = 0.07;
+
+            param_map('fl_coh_interp_grid_gap') = 0.05;
             param_map('it_c_interp_grid_gap') = 10^-4;
-            param_map('it_w_perc_n') = 85;
+            param_map('it_w_perc_n') = 100;
             param_map('it_ak_perc_n') = param_map('it_w_perc_n');
-            param_map('fl_w_interp_grid_gap') = 0.07;
+            param_map('fl_w_interp_grid_gap') = 0.05;
+
+            if (ismember(st_model, ["ipwkbzr"]))
+
+                param_map('fl_z_r_borr_n') = 11;
+                param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+
+            elseif (ismember(st_model, ["ipwkbzr_fibs"]))
+
+                param_map('it_coh_bridge_perc_n') = param_map('it_w_perc_n')/3;
+                param_map('fl_z_r_infbr_n') = 11;
+                param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_infbr_n');
+
+            end
 
         end
 
@@ -551,7 +586,7 @@ elseif (ismember(st_model, ["akz_wkz_iwkz"]))
     disp(['xxxxx st_model = ' st_model ...
           ', it_w_n = ' num2str(it_w_n) ', it_ak_n = ' num2str(it_ak_n) ...
           ', it_z_n = ' num2str(it_z_n) ' xxxxx']);
-elseif (ismember(st_model, ["ipwkz", "ipwkbzr"]))
+elseif (ismember(st_model, ["ipwkz", "ipwkbzr", "ipwkbzr_fibs"]))
     it_w_perc_n = param_map('it_w_perc_n');
     it_ak_perc_n = param_map('it_ak_perc_n');
     it_z_n = param_map('it_z_n');
@@ -593,6 +628,12 @@ elseif (ismember(st_model, ["ipwkbzr"]))
     result_map = ff_ipwkbzr_vf_vecsv(param_map, support_map, armt_map, func_map);
     result_map = ff_iwkz_ds_vecsv(param_map, support_map, armt_map, func_map, result_map);
 
+elseif (ismember(st_model, ["ipwkbzr_fibs"]))
+
+    [armt_map, func_map] = ffs_ipwkbzr_fibs_get_funcgrid(param_map, support_map);
+    result_map = ff_ipwkbzr_fibs_vf_vecsv(param_map, support_map, armt_map, func_map);
+    result_map = ff_iwkz_ds_vecsv(param_map, support_map, armt_map, func_map, result_map);
+
 end
 
 %% Store Results to Table
@@ -613,12 +654,16 @@ function param_map = map_correction(param_map)
 
     params_group = values(param_map, {'st_model'});
     [st_model] = params_group{:};
-    
+
     if (isKey(param_map, 'fl_z_r_borr_n'))
         param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
     end
+    if (isKey(param_map, 'fl_z_r_infbr_n'))
+        param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_infbr_n');
+    end
 
-    if (ismember(st_model, ["ipwkbz", "ipwkbzr"]))
+
+    if (ismember(st_model, ["ipwkbz", "ipwkbzr", "ipwkbzr_fibs"]))
 
         if (isKey(param_map, 'fl_b_bd'))
             param_map('fl_w_min') = param_map('fl_b_bd');
@@ -628,17 +673,28 @@ function param_map = map_correction(param_map)
             param_map('fl_k_max') = (param_map('fl_w_max') - param_map('fl_b_bd'));
         end
     end
-    
-    if (ismember(st_model, ["abz", "ipwkbzr"]))    
+
+    if (ismember(st_model, ["abz", "ipwkbzr"]))
         % Set Borrowing and Savings Interest Rates the same
-        
         if (isKey(param_map, 'fl_r_borr'))
             % This key does not have any effect on abz or ipwkbzr, the
             % intent is to generate a single borrowing interest rate.
             param_map('fl_z_r_borr_max') = param_map('fl_r_borr');
             param_map('fl_z_r_borr_min') = param_map('fl_r_borr');
-            param_map('fl_z_r_borr_n') = 1;            
+            param_map('fl_z_r_borr_n') = 1;
             param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_borr_n');
+        end
+    end
+
+    if (ismember(st_model, ["ipwkbzr_fibs"]))
+        % Set Borrowing and Savings Interest Rates the same
+        if (isKey(param_map, 'fl_r_borr'))
+            % This key does not have any effect on abz or ipwkbzr, the
+            % intent is to generate a single borrowing interest rate.
+            param_map('fl_z_r_infbr_max') = param_map('fl_r_borr');
+            param_map('fl_z_r_infbr_min') = param_map('fl_r_borr');
+            param_map('fl_z_r_infbr_n') = 1;
+            param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_infbr_n');
         end
     end
 
