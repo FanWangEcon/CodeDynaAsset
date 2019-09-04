@@ -27,8 +27,8 @@ ar_it_size_type = [1,2,3];
 
 ar_it_plot_map = containers.Map('KeyType','char', 'ValueType','any');
 
-ar_it_plot_map('ar_it_plot_sets_cross_limited') = [3,4,102, 152,104,106];
-ar_it_plot_map('ar_it_plot_sets_cross_full') = [3,4,102, 152,104,106, 10, 201, 1001, 1002, 1003];
+ar_it_plot_map('ar_it_plot_sets_cross_limited') = [3,4, 104,106];
+ar_it_plot_map('ar_it_plot_sets_cross_full') = [3,4,102,152, 104,106,201,101, 1001,1002,1003,10];
 
 ar_it_plot_map('ar_it_plot_sets_grid_limited') = [51,52,53,54, 5,6,103,153];
 ar_it_plot_map('ar_it_plot_sets_grid_full') = [51,52,53,54, 5,6,103,153, 61,62,63,64];
@@ -51,11 +51,16 @@ param_tstar_map('fl_w') = linspace(0, 0.5, it_simu_vec_len);
 param_tstar_map('fl_crra') = linspace(1, 5, it_simu_vec_len);
 param_tstar_map('fl_beta') = linspace(0.87, 0.97, it_simu_vec_len);
 
+param_tstar_map('fl_alpha') = linspace(0.30, 0.50, it_simu_vec_len);
+param_tstar_map('fl_delta') = linspace(0.02, 0.14, it_simu_vec_len);
+
+%% Parameter Grids requiring Explanations
+
+% When the persistence of shock exceeds 0.9, results investments,
+% consumptions all increase dramatically
 param_tstar_map('fl_z_wage_rho') = linspace(0, 0.985, it_simu_vec_len);
 param_tstar_map('fl_z_wage_sig') = linspace(0.01, 0.50, it_simu_vec_len);
 
-param_tstar_map('fl_alpha') = linspace(0.30, 0.50, it_simu_vec_len);
-param_tstar_map('fl_delta') = linspace(0.02, 0.14, it_simu_vec_len);
 
 %% Various Controls
 
