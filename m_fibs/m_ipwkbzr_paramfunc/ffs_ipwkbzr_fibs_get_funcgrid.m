@@ -713,7 +713,13 @@ end
 % values, the interpolate to find v(k',b',z) at (k',b') choices. Crucially,
 % we have to coh matrxies
 
+% for highly persistent shock with high sd, this fl_max_mt_coh could get
+% very high leading to out of memory error. So to resolve this, give this a
+% bound. Which means some parameter that limits matrix size
 fl_max_mt_coh = max(max(mt_coh_wkb));
+if (fl_max_mt_coh > 0 )
+    fl_max_mt_coh = min(fl_max_mt_coh, fl_w_max*5);    
+end
 
 % This is savings only condition
 % fl_min_mt_coh = min(min(mt_coh_wkb));

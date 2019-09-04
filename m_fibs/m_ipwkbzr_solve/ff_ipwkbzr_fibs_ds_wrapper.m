@@ -15,31 +15,30 @@ function [result_map] = ff_ipwkbzr_fibs_ds_wrapper(varargin)
 % # it_subset = 8 is matlab publish
 % # it_subset = 9 is invoke operational (only final stats) and coh graph
 
-it_param_set = 6;
+it_param_set = 7;
 [param_map, support_map] = ffs_ipwkbzr_fibs_set_default_param(it_param_set);
 
 %% Change Parameter to Main Options
 
 % Set Parameter Types
-st_param_which = 'default';
+st_param_which = 'dense';
 
 if (ismember(st_param_which, ["default"]))
     
 elseif (ismember(st_param_which, ["dense"]))
     support_map('it_display_every') = 1;
     
-    param_map('it_maxiter_val') = 50;
+%     param_map('it_maxiter_val') = 20;
+    
+    param_map('fl_coh_interp_grid_gap') = 0.05;
+    param_map('it_c_interp_grid_gap') = 10^-4;
     param_map('it_w_perc_n') = 100;
     param_map('it_ak_perc_n') = param_map('it_w_perc_n');
+    param_map('fl_w_interp_grid_gap') = 0.05;
+    param_map('it_z_wage_n') = 5;
     param_map('it_coh_bridge_perc_n') = param_map('it_w_perc_n')/5;
-
-    param_map('fl_coh_interp_grid_gap') = 0.025;
-    param_map('it_c_interp_grid_gap') = 10^-4;
-    param_map('fl_w_interp_grid_gap') = 0.025;
-
-    param_map('it_z_wage_n') = 9;
-    param_map('fl_z_r_infbr_n') = 5;
-    param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_infbr_n');
+    param_map('fl_z_r_infbr_n') = 11;
+    param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_infbr_n');   
     
 elseif ismember(st_param_which, ["ff_ipwkbzr_ds_wrapper", "ff_ipwkbzrr_ds_wrapper"])
 

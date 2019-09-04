@@ -58,7 +58,7 @@ param_map('bl_b_is_principle') = true;
 
 % formal informal parameters
 % fl_for_br_block are the formal borrowing grid block sizes.
-param_map('fl_r_fsv') = 0.025;
+param_map('fl_r_fsv') = 0.015;
 param_map('fl_r_fbr') = 0.065;
 % see: ffs_for_br_block.m
 param_map('st_forbrblk_type') = 'unif';
@@ -75,8 +75,8 @@ param_map('fl_forbrblk_gap') = -1.5;
 param_map('st_z_r_infbr_drv_ele_type') = 'unif';
 param_map('st_z_r_infbr_drv_prb_type') = 'poiss';
 param_map('fl_z_r_infbr_poiss_mean') = 20;
-param_map('fl_z_r_infbr_max') = 0.095;
-param_map('fl_z_r_infbr_min') = 0.025;
+param_map('fl_z_r_infbr_max') = 0.150;
+param_map('fl_z_r_infbr_min') = 0.015;
 param_map('fl_z_r_infbr_n') = 5;
 % param_map('fl_z_r_infbr_max') = 0.095;
 % param_map('fl_z_r_infbr_min') = 0.095;

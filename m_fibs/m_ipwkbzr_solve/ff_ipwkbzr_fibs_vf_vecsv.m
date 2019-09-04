@@ -56,7 +56,7 @@ function result_map = ff_ipwkbzr_fibs_vf_vecsv(varargin)
 % * it_param_set = 3: benchmark profile
 % * it_param_set = 4: press publish button
 
-it_param_set = 4;
+it_param_set = 2;
 [param_map, support_map] = ffs_ipwkbzr_fibs_set_default_param(it_param_set);
 
 % parameters can be set inside ffs_ipwkbzr_set_default_param or updated here
@@ -73,6 +73,16 @@ it_param_set = 4;
 % param_map('fl_coh_interp_grid_gap') = 0.1;
 % param_map('it_c_interp_grid_gap') = 10^-4;
 % param_map('fl_w_interp_grid_gap') = 0.1;
+
+% param_map('fl_coh_interp_grid_gap') = 0.05;
+% param_map('it_c_interp_grid_gap') = 10^-4;
+% param_map('it_w_perc_n') = 100;
+% param_map('it_ak_perc_n') = param_map('it_w_perc_n');
+% param_map('fl_w_interp_grid_gap') = 0.05;
+% param_map('it_z_wage_n') = 5;
+% param_map('it_coh_bridge_perc_n') = param_map('it_w_perc_n')/5;
+% param_map('fl_z_r_infbr_n') = 11;
+% param_map('it_z_n') = param_map('it_z_wage_n') * param_map('fl_z_r_infbr_n');
 
 st_param_which = 'default';
 
